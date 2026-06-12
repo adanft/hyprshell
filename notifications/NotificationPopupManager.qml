@@ -1,27 +1,37 @@
 import QtQuick
 import Quickshell
+import "../theme"
 
 PopupWindow {
     id: root
 
+    readonly property var theme: AppTheme {}
     required property var palette
     required property var services
     required property var barWindow
 
-    readonly property int popupWidth: 380
-    readonly property int topMargin: 52
-    readonly property int rightMargin: 12
-    readonly property int spacing: 6
+    readonly property int popupWidth: theme.notificationPopupWidth
+    readonly property int topMargin: theme.notificationPopupTopMargin
+    readonly property int rightMargin: theme.notificationPopupRightMargin
+    readonly property int bottomMargin: theme.notificationPopupBottomMargin
+    readonly property int spacing: theme.notificationPopupSpacing
     property var popupItems: []
     property real stackHeight: 0
+    readonly property string screenName: barWindow.screen ? barWindow.screen.name : ""
+    readonly property bool isFocusedScreen: screenName === services.focusedNotificationScreenName
+
+    onIsFocusedScreenChanged: {
+        updatePopupActivity()
+        updatePopupCapacity()
+    }
 
     implicitWidth: popupWidth
     implicitHeight: Math.max(1, stackHeight)
-    visible: stackHeight > 0
+    visible: isFocusedScreen && stackHeight > 0
     color: "transparent"
 
     anchor.window: barWindow
-    anchor.rect.x: Math.max(6, barWindow.width - width - rightMargin)
+    anchor.rect.x: Math.max(theme.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin
 
     Component {
@@ -44,7 +54,10 @@ PopupWindow {
         }
     }
 
-    Component.onCompleted: syncPopups()
+    Component.onCompleted: {
+        updatePopupCapacity()
+        syncPopups()
+    }
 
     function itemFor(popupData) {
         if (!popupData)
@@ -58,6 +71,7 @@ PopupWindow {
             palette: root.palette,
             services: root.services,
             popupData: popupData,
+            active: root.isFocusedScreen,
             width: root.popupWidth
         })
 
@@ -82,11 +96,18 @@ PopupWindow {
             let item = itemFor(popupData)
             if (!item) {
                 item = createPopupItem(popupData)
-                if (item)
+                if (item && root.isFocusedScreen)
                     enteringItems.push(item)
+                else if (item)
+                    item.enterOffset = 0
             }
             if (item)
                 nextItems.push(item)
+        }
+
+        for (const item of nextItems) {
+            if (item)
+                item.active = root.isFocusedScreen
         }
 
         for (const item of popupItems) {
@@ -109,6 +130,21 @@ PopupWindow {
             setPopupYAnimationEnabled(true)
             repositionPopups()
         }
+    }
+
+    function updatePopupActivity() {
+        for (const item of popupItems) {
+            if (item)
+                item.active = root.isFocusedScreen
+        }
+    }
+
+    function updatePopupCapacity() {
+        if (!root.isFocusedScreen || !root.services || typeof root.services.setNotificationPopupAvailableHeight !== "function")
+            return
+
+        const screenHeight = root.barWindow.screen ? root.barWindow.screen.height : root.barWindow.height
+        root.services.setNotificationPopupAvailableHeight(screenHeight - root.topMargin - root.bottomMargin)
     }
 
     function finishPopupExit(item) {

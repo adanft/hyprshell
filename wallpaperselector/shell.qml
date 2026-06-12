@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 
 ShellRoot {
-    PowerMenu {
+    WallpaperSelector {
         visible: true
         quitOnClose: true
     }

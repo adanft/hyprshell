@@ -1,0 +1,43 @@
+import QtQuick
+
+QtObject {
+    readonly property string workspaceDot: ""
+
+    readonly property string time: "󱑂"
+    readonly property string date: "󰨳"
+    readonly property string window: "󰰤"
+
+    readonly property string networkLanConnected: "󰌗"
+    readonly property string networkLanDisconnected: "󰌙"
+    readonly property string networkUpload: ""
+    readonly property string networkDownload: ""
+    readonly property string wifiConnected: "󰤨"
+    readonly property string wifiDisconnected: "󰤭"
+
+    readonly property string bluetoothOff: "󰂲"
+    readonly property string bluetoothConnected: "󰂱"
+    readonly property string bluetoothOn: "󰂯"
+
+    readonly property string microphoneMuted: ""
+    readonly property string microphone: ""
+    readonly property string volumeMuted: ""
+    readonly property string volumeLow: ""
+    readonly property string volumeMedium: ""
+    readonly property string volumeHigh: ""
+
+    readonly property string notifications: "󰂚"
+    readonly property string notificationsEmpty: "󰂜"
+    readonly property string notificationsDnd: "󰂛"
+    readonly property string notificationsClear: ""
+    readonly property string close: "󰅖"
+
+    readonly property string powerPerformance: "󰠠"
+    readonly property string powerSaver: "󱤆"
+    readonly property string powerBalanced: "󰚀"
+
+    readonly property string wallpaperSelectedCheck: "✓"
+
+    readonly property string trayBack: "‹"
+    readonly property string trayCheck: "✓"
+    readonly property string traySubmenu: "›"
+}

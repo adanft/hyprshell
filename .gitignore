@@ -1,3 +1,4 @@
 .atl/
 *.log
 *.qslog
+.qmlls.ini

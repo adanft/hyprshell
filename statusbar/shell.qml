@@ -2,12 +2,14 @@
 
 import QtQuick
 import Quickshell
+import "../services" as Services
+import "../theme" as Theme
 
 ShellRoot {
     id: shell
 
-    Theme { id: colors }
-    Services { id: serviceState }
+    Theme.Theme { id: colors }
+    Services.Services { id: serviceState }
 
     Variants {
         model: Quickshell.screens

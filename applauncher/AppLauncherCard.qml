@@ -1,0 +1,66 @@
+import QtQuick
+import Quickshell
+import Quickshell.Widgets
+import "../shared/components" as Shared
+
+Rectangle {
+    id: card
+
+    required property var app
+    required property var theme
+    property bool selected: false
+
+    signal activated
+    signal hovered
+
+    readonly property bool active: selected || mouseArea.containsMouse
+    readonly property string fallbackIcon: "application-x-executable"
+    readonly property string iconSource: app && app.icon ? Quickshell.iconPath(app.icon, fallbackIcon) : Quickshell.iconPath(fallbackIcon)
+
+    width: theme.appLauncherCardWidth
+    height: theme.appLauncherCardHeight
+    radius: theme.appLauncherCardRadius
+    color: active ? theme.appLauncherCardActiveColor : theme.appLauncherCardColor
+    border.width: active ? theme.appLauncherCardBorderWidth : 0
+    border.color: selected ? theme.appLauncherAccentColor : theme.appLauncherCardHoverBorderColor
+
+    Column {
+        anchors.fill: parent
+        anchors.margins: card.theme.appLauncherCardPadding
+        spacing: card.theme.appLauncherCardSpacing
+
+        Item {
+            width: parent.width
+            height: card.theme.appLauncherIconSlotSize
+
+            IconImage {
+                anchors.centerIn: parent
+                width: card.theme.appLauncherIconSize
+                height: card.theme.appLauncherIconSize
+                implicitSize: card.theme.appLauncherIconSize
+                source: card.iconSource
+            }
+        }
+
+        Shared.AppText {
+            width: parent.width
+            text: card.app ? (card.app.name || "Unnamed") : "Unnamed"
+            color: card.theme.appLauncherTextColor
+            font.pixelSize: card.theme.appLauncherCardLabelFontSize
+            font.styleName: "Medium"
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            maximumLineCount: 1
+        }
+    }
+
+    MouseArea {
+        id: mouseArea
+
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onEntered: card.hovered()
+        onClicked: card.activated()
+    }
+}

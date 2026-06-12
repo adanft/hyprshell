@@ -1,46 +1,54 @@
 import QtQuick
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
+import "../theme"
 
 Item {
     id: card
 
+    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme {}
     required property var palette
     property var notificationData: null
     property string timeText: "now"
-    property int cornerRadius: 16
+    property int cornerRadius: theme.notificationCardRadius
     property bool expanded: false
     property bool collapsedTextMode: true
+    property bool useRenderedHeightForLayout: false
     property bool inlineHeightAnimating: false
     property bool inlineGeometryReady: false
+    readonly property bool cardHovered: cardHoverHandler.hovered
     property real renderedLayoutHeight: layoutHeight
     property real allocatedLayoutHeight: layoutHeight
     signal layoutChanged()
     signal slotHeightChanged()
     signal closeRequested()
     signal actionInvoked(var action)
+    signal hoverStarted()
+    signal hoverEnded()
 
-    readonly property string textFont: "SF Pro Display"
-    readonly property string iconFont: "Symbols Nerd Font"
-    readonly property int spacing: 8
-    readonly property int cardPadding: 8
-    readonly property int borderWidth: 2
-    readonly property int iconSlotSize: 32
-    readonly property int iconSize: 24
-    readonly property int closeButtonSize: 24
-    readonly property int actionButtonHeight: 24
-    readonly property int actionButtonRadius: 999
-    readonly property int actionButtonMinWidth: 68
-    readonly property int actionButtonHorizontalPadding: 18
-    readonly property int labelFontSize: 12
-    readonly property int titleFontSize: 15
-    readonly property int bodyFontSize: 13
-    readonly property int closeIconFontSize: 14
-    readonly property int collapsedBodyLines: 2
-    readonly property real bodyLineHeight: 1.35
-    readonly property int resizeAnimationMs: 1200
+    readonly property string textFont: theme.textFontFamily
+    readonly property string iconFont: theme.iconFontFamily
+    readonly property int spacing: theme.notificationCardSpacing
+    readonly property int cardPadding: theme.notificationCardPadding
+    readonly property int borderWidth: theme.notificationCardBorderWidth
+    readonly property int iconSlotSize: theme.notificationCardIconSlotSize
+    readonly property int iconSize: theme.notificationCardIconSize
+    readonly property int closeButtonSize: theme.notificationCardCloseButtonSize
+    readonly property int actionButtonHeight: theme.notificationCardActionButtonHeight
+    readonly property int actionButtonRadius: theme.notificationCardActionButtonRadius
+    readonly property int actionButtonMinWidth: theme.notificationCardActionButtonMinWidth
+    readonly property int actionButtonHorizontalPadding: theme.notificationCardActionButtonHorizontalPadding
+    readonly property int labelFontSize: theme.notificationCardLabelFontSize
+    readonly property int titleFontSize: theme.notificationCardTitleFontSize
+    readonly property int bodyFontSize: theme.notificationCardBodyFontSize
+    readonly property int closeIconFontSize: theme.notificationCardCloseIconFontSize
+    readonly property int collapsedBodyLines: theme.notificationCardCollapsedBodyLines
+    readonly property real bodyLineHeight: theme.notificationCardBodyLineHeight
+    readonly property int resizeAnimationMs: theme.notificationCardResizeAnimationMs
     readonly property real contentInset: cardPadding + cardRect.border.width
-    readonly property bool hasActions: notificationData && notificationData.actions && notificationData.actions.length > 0
+    readonly property int actionCount: countInvokableActions()
+    readonly property bool hasActions: actionCount > 0
     readonly property real headerHeight: Math.ceil(labelFontSize * bodyLineHeight)
     readonly property real titleHeight: Math.ceil(titleFontSize * bodyLineHeight)
     readonly property string bodyHtml: notificationData ? (notificationData.htmlBody || notificationData.body || "") : ""
@@ -55,17 +63,17 @@ Item {
         const actionSpace = hasActions ? spacing + actionButtonHeight : 0
         return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
     }
-    readonly property color urgencyBorderColor: {
+    readonly property color urgencyTimeColor: {
         if (!notificationData)
-            return card.palette.mauve
+            return card.palette.overlay1
 
         switch (notificationData.urgency) {
-        case NotificationUrgency.Low:
-            return card.palette.overlay1
         case NotificationUrgency.Critical:
             return card.palette.red
+        case NotificationUrgency.Normal:
+            return card.palette.blue
         default:
-            return card.palette.mauve
+            return card.palette.overlay1
         }
     }
     readonly property string iconSource: {
@@ -76,17 +84,22 @@ Item {
         if (image.length > 0)
             return image
 
-        const appIcon = notificationData.appIcon || ""
+        const appIcon = notificationData.appIcon || notificationData.desktopEntry || ""
         if (appIcon.length === 0)
             return ""
-        if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://") || appIcon.includes("/"))
+        if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
+            return appIcon
+        if (appIcon.startsWith("/"))
+            return `file://${appIcon}`
+        if (appIcon.includes("/"))
             return appIcon
         return `image://icon/${appIcon}`
     }
+    readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://")
 
     implicitWidth: width
-    implicitHeight: allocatedLayoutHeight
-    height: allocatedLayoutHeight
+    implicitHeight: useRenderedHeightForLayout ? renderedLayoutHeight : allocatedLayoutHeight
+    height: implicitHeight
     visible: notificationData !== null
 
     onNotificationDataChanged: {
@@ -122,6 +135,31 @@ Item {
             collapsedTextMode = false
     }
 
+    function countInvokableActions() {
+        const actions = notificationData && notificationData.actions ? notificationData.actions : []
+        let count = 0
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i]
+            if (action && action.invoke)
+                count++
+        }
+        return count
+    }
+
+    function invokableActionAt(invokableIndex) {
+        const actions = notificationData && notificationData.actions ? notificationData.actions : []
+        let current = 0
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i]
+            if (!action || !action.invoke)
+                continue
+            if (current === invokableIndex)
+                return action
+            current++
+        }
+        return null
+    }
+
     function bodyTargetHeight(forExpanded) {
         if (bodyHtml.length === 0)
             return 0
@@ -146,14 +184,14 @@ Item {
 
         const currentRendered = Math.max(0, Number(renderedLayoutHeight))
         const nextAllocation = Math.max(target, currentRendered, allocatedLayoutHeight)
-        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= 0.5
+        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= theme.notificationCardGeometryEpsilon
 
         if (allocationChanged) {
             allocatedLayoutHeight = nextAllocation
             slotHeightChanged()
         }
 
-        if (Math.abs(target - renderedLayoutHeight) < 0.5) {
+        if (Math.abs(target - renderedLayoutHeight) < theme.notificationCardGeometryEpsilon) {
             finishLayoutHeightAnimation()
             return
         }
@@ -167,7 +205,7 @@ Item {
         if (isNaN(target))
             return
 
-        if (Math.abs(renderedLayoutHeight - target) >= 0.5)
+        if (Math.abs(renderedLayoutHeight - target) >= theme.notificationCardGeometryEpsilon)
             renderedLayoutHeight = target
         allocatedLayoutHeight = target
         collapsedTextMode = !expanded
@@ -190,7 +228,7 @@ Item {
     Timer {
         id: allocationFinalizeTimer
 
-        interval: card.resizeAnimationMs + 32
+        interval: card.resizeAnimationMs + card.theme.notificationCardAllocationFinalizeDelayMs
         repeat: false
         onTriggered: card.finishLayoutHeightAnimation()
     }
@@ -202,14 +240,19 @@ Item {
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
         color: card.palette.base
-        border.color: card.urgencyBorderColor
+        border.color: card.theme.notificationCardBorderColor
         border.width: card.borderWidth
         clip: true
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
+        HoverHandler {
+            id: cardHoverHandler
+
+            onHoveredChanged: {
+                if (hovered)
+                    card.hoverStarted()
+                else
+                    card.hoverEnded()
+            }
         }
 
         Item {
@@ -237,16 +280,38 @@ Item {
 
                     width: card.iconSlotSize
                     height: card.iconSlotSize
-                    anchors.top: parent.top
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    Image {
+                        anchors.centerIn: parent
+                        width: card.iconSize
+                        height: card.iconSize
+                        source: card.iconSource
+                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
 
                     IconImage {
-                        anchors.left: parent.left
-                        anchors.top: parent.top
+                        anchors.centerIn: parent
                         width: card.iconSize
                         height: card.iconSize
                         implicitSize: card.iconSize
                         source: card.iconSource
-                        visible: card.iconSource.length > 0
+                        visible: card.iconSource.length > 0 && !card.iconSourceIsImageFile
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        width: card.iconSize
+                        height: card.iconSize
+                        text: card.icons.notificationsEmpty
+                        color: card.palette.mauve
+                        font.family: card.iconFont
+                        font.pixelSize: card.iconSize
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        visible: card.iconSource.length === 0
                     }
                 }
 
@@ -280,7 +345,7 @@ Item {
                             id: timeLabel
 
                             text: card.timeText
-                            color: card.palette.overlay1
+                            color: card.urgencyTimeColor
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
                             elide: Text.ElideRight
@@ -290,7 +355,7 @@ Item {
                     Text {
                         width: parent.width
                         text: card.notificationData ? (card.notificationData.summary || "Notification") : "Notification"
-                        color: card.palette.text
+                        color: card.palette.mauve
                         font.family: card.textFont
                         font.pixelSize: card.titleFontSize
                         font.weight: Font.DemiBold
@@ -357,22 +422,23 @@ Item {
                         visible: card.hasActions
 
                         Repeater {
-                            model: card.notificationData ? (card.notificationData.actions || []) : []
+                            model: card.actionCount
 
                             Rectangle {
-                                required property var modelData
+                                required property int index
+                                readonly property var action: card.invokableActionAt(index)
 
                                 width: Math.max(actionText.implicitWidth + card.actionButtonHorizontalPadding, card.actionButtonMinWidth)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
-                                color: "#11111b"
+                                color: card.theme.notificationCardActionButtonColor
                                 border.width: 0
 
                                 Text {
                                     id: actionText
 
                                     anchors.centerIn: parent
-                                    text: modelData.text || "Open"
+                                    text: parent.action ? (parent.action.text || "Open") : "Open"
                                     color: actionMouse.containsMouse ? card.palette.blue : card.palette.subtext1
                                     font.family: card.textFont
                                     font.pixelSize: card.labelFontSize
@@ -386,7 +452,7 @@ Item {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: card.actionInvoked(modelData)
+                                    onClicked: card.actionInvoked(parent.action)
                                 }
                             }
                         }
@@ -405,13 +471,13 @@ Item {
                         anchors.top: parent.top
                         width: card.closeButtonSize
                         height: card.closeButtonSize
-                        radius: 999
+                        radius: card.theme.notificationCardCloseButtonRadius
                         color: closeMouse.containsMouse ? card.palette.surface1 : "transparent"
 
                         Text {
                             anchors.fill: parent
-                            text: "󰅖"
-                            color: card.urgencyBorderColor
+                            text: card.icons.close
+                            color: card.palette.overlay1
                             font.family: card.iconFont
                             font.pixelSize: card.closeIconFontSize
                             horizontalAlignment: Text.AlignHCenter
@@ -430,5 +496,6 @@ Item {
                 }
             }
         }
+
     }
 }

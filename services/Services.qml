@@ -1,15 +1,26 @@
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
+import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Networking
 import Quickshell.Services.Notifications
+import Quickshell.Services.Pipewire
+import Quickshell.Services.UPower
+import "../theme"
 
 Scope {
     id: service
 
-    readonly property string lanInterface: "enp6s0"
-    readonly property string wifiInterface: "wlan0"
-    readonly property var powerProfiles: ["performance", "balanced", "power-saver"]
+    readonly property var theme: AppTheme {}
+    readonly property var networkDevices: Networking.devices?.values ?? []
+    readonly property var lanDevice: networkDevices.find(device => device.type === DeviceType.Wired) ?? null
+    readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null
+    readonly property string lanInterface: lanDevice?.name ?? ""
+    readonly property string wifiInterface: wifiDevice?.name ?? ""
+    readonly property var powerProfiles: [PowerProfile.Performance, PowerProfile.Balanced, PowerProfile.PowerSaver]
+    readonly property var sink: Pipewire.defaultAudioSink
+    readonly property var source: Pipewire.defaultAudioSource
     readonly property var bluetoothAdapter: Bluetooth.defaultAdapter
     readonly property bool bluetoothAvailable: bluetoothAdapter !== null
     readonly property bool bluetoothPowered: bluetoothAvailable ? bluetoothAdapter.enabled : false
@@ -24,54 +35,67 @@ Scope {
         })
         return count
     }
-    readonly property int notificationCount: notificationServer.trackedNotifications.values.length
+    readonly property int notificationCount: notificationHistory.length
     readonly property bool hasNotifications: notificationCount > 0
-    readonly property var notifications: notificationServer.trackedNotifications.values
-    readonly property int maxVisibleNotifications: 4
+    readonly property var notifications: notificationHistory
+    readonly property int minVisibleNotifications: 1
+    readonly property int notificationPopupEstimatedHeight: 96
+    readonly property int maxNotificationHistory: 100
+    readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/statusbar-notifications.json`
+    readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
     readonly property int maxPopupIngressPerSecond: 6
     readonly property int maxNotificationQueueSize: 32
-    readonly property int notificationDedupBurstMs: 5000
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 10000
     property int notificationTimeoutCritical: 0
     property var notificationRules: []
     property var notificationQueue: []
     property var visibleNotifications: []
-    property var recentNotificationDedupKeys: []
+    property int notificationPopupCapacity: 4
     property int notificationPopupSequence: 0
     property int notificationIngressSecond: 0
     property int notificationIngressCount: 0
     property bool notificationTimeUpdateTick: false
     property bool notificationCenterOpen: false
+    property var notificationHistory: []
 
     property string time: ""
     property string date: ""
-    property string powerProfile: ""
-    property int sinkVolume: 0
-    property bool sinkMuted: false
-    property int sourceVolume: 0
-    property bool sourceMuted: false
+    readonly property string powerProfile: profileSlug(PowerProfiles.profile)
+    readonly property int sinkVolume: Math.round((sink?.audio?.volume ?? 0) * 100)
+    readonly property bool sinkMuted: sink?.audio?.muted ?? false
+    readonly property int sourceVolume: Math.round((source?.audio?.volume ?? 0) * 100)
+    readonly property bool sourceMuted: source?.audio?.muted ?? false
     property real previousLanRx: 0
     property real previousLanTx: 0
     property real lanRxRate: 0
     property real lanTxRate: 0
-    property bool lanUp: false
-    property bool wifiUp: false
-    property int wifiSignal: 0
-    property bool notificationDnd: false
-
-    FileView {
-        id: lanState
-        path: `/sys/class/net/${service.lanInterface}/operstate`
-        blockLoading: true
-        printErrors: false
+    property bool lanThroughputEnabled: false
+    readonly property bool lanUp: lanDevice?.connected ?? false
+    readonly property bool wifiUp: wifiDevice?.connected ?? false
+    readonly property var connectedWifiNetwork: {
+        const networks = wifiDevice?.networks?.values ?? []
+        return networks.find(network => network.connected) ?? null
     }
+    readonly property int wifiSignal: Math.round((connectedWifiNetwork?.signalStrength ?? 0) * 100)
+    property bool notificationDnd: false
+    property string previousLanInterface: ""
+    property real previousNetworkSampleMs: 0
 
     FileView {
-        id: wifiState
-        path: `/sys/class/net/${service.wifiInterface}/operstate`
-        blockLoading: true
+        id: notificationHistoryFileView
+        path: service.notificationHistoryFile
         printErrors: false
+        onLoaded: service.loadNotificationHistory()
+        onLoadFailed: error => {
+            if (error === 2)
+                notificationHistoryFileView.writeAdapter()
+        }
+
+        JsonAdapter {
+            id: notificationHistoryAdapter
+            property var notifications: []
+        }
     }
 
     FileView {
@@ -88,43 +112,8 @@ Scope {
         printErrors: false
     }
 
-    Process {
-        id: sinkVolumeProcess
-        command: ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: service.parseAudio(text, false)
-        }
-    }
-
-    Process {
-        id: sourceVolumeProcess
-        command: ["wpctl", "get-volume", "@DEFAULT_AUDIO_SOURCE@"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: service.parseAudio(text, true)
-        }
-    }
-
-    Process {
-        id: wifiProcess
-        command: ["nmcli", "-t", "-f", "IN-USE,SIGNAL", "dev", "wifi"]
-
-        stdout: StdioCollector {
-            onStreamFinished: service.parseWifi(text)
-        }
-    }
-
-    Process {
-        id: powerProfileProcess
-        command: ["powerprofilesctl", "get"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: service.powerProfile = text.trim()
-        }
+    PwObjectTracker {
+        objects: [service.sink, service.source]
     }
 
     NotificationServer {
@@ -141,12 +130,20 @@ Scope {
 
         onNotification: notification => {
             const policy = service.evaluateNotificationPolicy(notification)
-            if (policy.drop || service.notificationDnd) {
+            if (policy.block || service.notificationDnd) {
                 notification.dismiss()
                 return
             }
 
             notification.tracked = !notification.transient && !policy.hideFromCenter
+
+            if (!notification.transient && !policy.hideFromCenter)
+                service.addNotificationToHistory(notification, policy)
+
+            if (policy.hide) {
+                notification.dismiss()
+                return
+            }
 
             if (!policy.disablePopup && !service.notificationCenterOpen)
                 service.enqueueNotificationPopup(notification, policy)
@@ -159,44 +156,28 @@ Scope {
         repeat: true
         onTriggered: {
             service.updateClock()
-            service.refreshAudio()
         }
     }
 
     Timer {
-        interval: 5000
-        running: true
+        interval: service.theme.networkRefreshMs
+        running: service.lanThroughputEnabled
         repeat: true
         onTriggered: {
             service.refreshNetwork()
-            service.refreshPowerProfile()
         }
     }
 
     Timer {
         interval: 30000
-        running: visibleNotifications.length > 0 || notificationQueue.length > 0
+        running: notificationCenterOpen || notificationHistory.length > 0 || visibleNotifications.length > 0 || notificationQueue.length > 0
         repeat: true
         onTriggered: notificationTimeUpdateTick = !notificationTimeUpdateTick
     }
 
-    Timer {
-        id: audioRefreshTimer
-        interval: 80
-        onTriggered: service.refreshAudio()
-    }
-
-    Timer {
-        id: powerRefreshTimer
-        interval: 120
-        onTriggered: service.refreshPowerProfile()
-    }
-
     Component.onCompleted: {
         updateClock()
-        refreshAudio()
         refreshNetwork()
-        refreshPowerProfile()
     }
 
     function updateClock() {
@@ -212,90 +193,80 @@ Scope {
         return String(value).padStart(2, "0")
     }
 
-    function refreshAudio() {
-        sinkVolumeProcess.running = true
-        sourceVolumeProcess.running = true
-    }
-
-    function parseAudio(output, isSource) {
-        const match = output.match(/Volume:\s+([0-9.]+)/)
-        const volume = match ? Math.round(parseFloat(match[1]) * 100) : 0
-        const muted = output.includes("MUTED")
-
-        if (isSource) {
-            sourceVolume = volume
-            sourceMuted = muted
-        } else {
-            sinkVolume = volume
-            sinkMuted = muted
-        }
-    }
-
     function toggleMute(isSource) {
-        if (isSource)
-            sourceMuted = !sourceMuted
-        else
-            sinkMuted = !sinkMuted
-
-        Quickshell.execDetached(["wpctl", "set-mute", isSource ? "@DEFAULT_AUDIO_SOURCE@" : "@DEFAULT_AUDIO_SINK@", "toggle"])
-        audioRefreshTimer.restart()
+        const node = isSource ? source : sink
+        if (node?.audio)
+            node.audio.muted = !node.audio.muted
     }
 
     function changeVolume(isSource, delta) {
-        const currentVolume = isSource ? sourceVolume : sinkVolume
+        const node = isSource ? source : sink
+        if (!node?.audio)
+            return
+
+        const currentVolume = Math.round(node.audio.volume * 100)
         const nextVolume = Math.max(0, Math.min(currentVolume + delta, 100))
 
-        if (isSource) {
-            sourceVolume = nextVolume
-            sourceMuted = false
-        } else {
-            sinkVolume = nextVolume
-            sinkMuted = false
-        }
-
-        Quickshell.execDetached(["wpctl", "set-volume", "-l", "1", isSource ? "@DEFAULT_AUDIO_SOURCE@" : "@DEFAULT_AUDIO_SINK@", `${nextVolume}%`])
-        audioRefreshTimer.restart()
+        node.audio.volume = nextVolume / 100
+        node.audio.muted = false
     }
 
     function refreshNetwork() {
-        lanState.reload()
-        wifiState.reload()
+        if (!lanThroughputEnabled || !lanInterface || !lanUp) {
+            lanRxRate = 0
+            lanTxRate = 0
+            previousLanRx = 0
+            previousLanTx = 0
+            previousLanInterface = ""
+            previousNetworkSampleMs = 0
+            return
+        }
+
+        if (previousLanInterface !== lanInterface) {
+            previousLanInterface = lanInterface
+            previousLanRx = 0
+            previousLanTx = 0
+            previousNetworkSampleMs = 0
+        }
+
         lanRxBytes.reload()
         lanTxBytes.reload()
 
-        lanUp = lanState.text().trim() === "up"
-        wifiUp = wifiState.text().trim() === "up"
-
+        const now = Date.now()
         const rx = Number(lanRxBytes.text().trim())
         const tx = Number(lanTxBytes.text().trim())
+        const elapsedSeconds = previousNetworkSampleMs > 0 ? (now - previousNetworkSampleMs) / 1000 : 0
 
-        if (previousLanRx > 0 && previousLanTx > 0) {
-            lanRxRate = (rx - previousLanRx) / 5
-            lanTxRate = (tx - previousLanTx) / 5
+        if (!Number.isFinite(rx) || !Number.isFinite(tx)) {
+            lanRxRate = 0
+            lanTxRate = 0
+        } else if (previousLanRx > 0 && previousLanTx > 0 && Number.isFinite(elapsedSeconds) && elapsedSeconds > 0) {
+            lanRxRate = Math.max(0, (rx - previousLanRx) / elapsedSeconds)
+            lanTxRate = Math.max(0, (tx - previousLanTx) / elapsedSeconds)
         }
 
-        previousLanRx = rx
-        previousLanTx = tx
-
-        if (wifiUp)
-            wifiProcess.running = true
-        else
-            wifiSignal = 0
-    }
-
-    function parseWifi(output) {
-        const active = output.split("\n").find(line => line.startsWith("*:"))
-        wifiSignal = active ? Number(active.split(":")[1]) : 0
-    }
-
-    function refreshPowerProfile() {
-        powerProfileProcess.running = true
+        previousLanRx = Number.isFinite(rx) ? rx : 0
+        previousLanTx = Number.isFinite(tx) ? tx : 0
+        previousNetworkSampleMs = now
     }
 
     function dismissNotifications() {
         notificationServer.trackedNotifications.values.forEach(notification => notification.dismiss())
+        notificationHistory = []
+        saveNotificationHistory()
         notificationQueue = []
         visibleNotifications = []
+    }
+
+    function dismissNotificationHistoryEntry(entry) {
+        if (!entry)
+            return
+
+        if (entry.notification && entry.notification.dismiss)
+            entry.notification.dismiss()
+
+        notificationHistory = notificationHistory.filter(item => item && item.id !== entry.id)
+        saveNotificationHistory()
     }
 
     function setNotificationCenterOpen(open) {
@@ -352,14 +323,7 @@ Scope {
         if (urgency !== NotificationUrgency.Critical && notificationIngressCount >= maxPopupIngressPerSecond)
             return false
 
-        const dedupKey = notificationDedupKey(notification)
-        if (findActiveDuplicate(dedupKey) || hasRecentDuplicate(dedupKey)) {
-            notification.dismiss()
-            return false
-        }
-
         notificationIngressCount += 1
-        recordDedupKey(dedupKey)
 
         return true
     }
@@ -369,6 +333,7 @@ Scope {
 
         const appName = notification.appName || "App"
         const appIcon = notification.appIcon || ""
+        const desktopEntry = notification.desktopEntry || ""
         const image = notification.image || ""
         const body = stripImages(notification.body || "")
 
@@ -380,24 +345,109 @@ Scope {
             htmlBody: resolveHtmlBody(body),
             appName: appName,
             appIcon: appIcon,
+            desktopEntry: desktopEntry,
             image: image,
             urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
             actions: notification.actions || [],
             transient: notification.transient,
-            dedupKey: notificationDedupKey(notification),
             createdAt: Date.now()
         }
+    }
+
+    function addNotificationToHistory(notification, policy) {
+        const entry = createNotificationHistoryEntry(notification, policy)
+        let history = notificationHistory.slice()
+        history.unshift(entry)
+
+        if (history.length > maxNotificationHistory)
+            history = history.slice(0, maxNotificationHistory)
+
+        notificationHistory = history
+        saveNotificationHistory()
+    }
+
+    function createNotificationHistoryEntry(notification, policy) {
+        const body = stripImages(notification.body || "")
+        const createdAt = Date.now()
+
+        return {
+            id: `${createdAt}-${Math.random()}`,
+            notification: notification,
+            summary: stripImages(notification.summary || "Notification"),
+            body: body,
+            htmlBody: resolveHtmlBody(body),
+            appName: notification.appName || "App",
+            appIcon: notification.appIcon || "",
+            desktopEntry: notification.desktopEntry || "",
+            image: notification.image || "",
+            urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
+            actions: [],
+            createdAt: createdAt,
+            timestamp: createdAt
+        }
+    }
+
+    function saveNotificationHistory() {
+        notificationHistoryAdapter.notifications = notificationHistory.map(item => ({
+            id: item.id,
+            summary: item.summary || "Notification",
+            body: item.body || "",
+            htmlBody: item.htmlBody || resolveHtmlBody(item.body || ""),
+            appName: item.appName || "App",
+            appIcon: item.appIcon || "",
+            desktopEntry: item.desktopEntry || "",
+            image: item.image || "",
+            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+            actions: [],
+            createdAt: item.createdAt || item.timestamp || Date.now(),
+            timestamp: item.timestamp || item.createdAt || Date.now()
+        }))
+        notificationHistoryFileView.writeAdapter()
+    }
+
+    function loadNotificationHistory() {
+        notificationHistory = (notificationHistoryAdapter.notifications || []).map(item => ({
+            id: item.id || `${item.timestamp || Date.now()}-${Math.random()}`,
+            summary: item.summary || "Notification",
+            body: item.body || "",
+            htmlBody: item.htmlBody || resolveHtmlBody(item.body || ""),
+            appName: item.appName || "App",
+            appIcon: item.appIcon || "",
+            desktopEntry: item.desktopEntry || "",
+            image: item.image || "",
+            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+            actions: [],
+            createdAt: item.createdAt || item.timestamp || Date.now(),
+            timestamp: item.timestamp || item.createdAt || Date.now()
+        }))
     }
 
     function processNotificationPopupQueue() {
         let visible = visibleNotifications.slice()
         let queued = notificationQueue.slice()
 
-        while (visible.length < maxVisibleNotifications && queued.length > 0)
+        const capacity = Math.max(minVisibleNotifications, notificationPopupCapacity)
+
+        while (visible.length > capacity)
+            queued.unshift(visible.pop())
+
+        while (visible.length < capacity && queued.length > 0)
             visible.unshift(queued.shift())
 
         visibleNotifications = visible
         notificationQueue = queued
+    }
+
+    function setNotificationPopupAvailableHeight(height) {
+        const availableHeight = Math.max(0, height || 0)
+        const slotHeight = notificationPopupEstimatedHeight + 6
+        const capacity = Math.max(minVisibleNotifications, Math.floor((availableHeight + 6) / slotHeight))
+
+        if (notificationPopupCapacity === capacity)
+            return
+
+        notificationPopupCapacity = capacity
+        processNotificationPopupQueue()
     }
 
     function closeNotificationPopup(id) {
@@ -426,10 +476,11 @@ Scope {
     function notificationTimeText(popup) {
         notificationTimeUpdateTick
 
-        if (!popup || !popup.createdAt)
+        const timestamp = popup ? (popup.createdAt || popup.timestamp) : 0
+        if (!timestamp)
             return "now"
 
-        const time = new Date(popup.createdAt)
+        const time = new Date(timestamp)
         const now = new Date()
         const diff = now.getTime() - time.getTime()
         const minutes = Math.floor(diff / 60000)
@@ -452,34 +503,13 @@ Scope {
         return date.toLocaleTimeString(Qt.locale(), "HH:mm")
     }
 
-    function notificationDedupKey(notification) {
-        return `${notification.appName || ""}|${notification.desktopEntry || ""}|${notification.summary || ""}|${notification.body || ""}`.toLowerCase()
-    }
-
-    function findActiveDuplicate(key) {
-        return visibleNotifications.concat(notificationQueue).find(item => item && item.dedupKey === key)
-    }
-
-    function pruneRecentDedupKeys() {
-        const cutoff = Date.now() - notificationDedupBurstMs
-        recentNotificationDedupKeys = recentNotificationDedupKeys.filter(item => item && item.at >= cutoff)
-    }
-
-    function hasRecentDuplicate(key) {
-        pruneRecentDedupKeys()
-        return recentNotificationDedupKeys.some(item => item && item.key === key)
-    }
-
-    function recordDedupKey(key) {
-        pruneRecentDedupKeys()
-        recentNotificationDedupKeys = recentNotificationDedupKeys.concat([{ key: key, at: Date.now() }])
-    }
-
     function evaluateNotificationPolicy(notification) {
         const policy = {
-            drop: false,
+            block: false,
             disablePopup: false,
             hideFromCenter: false,
+            hide: false,
+            mute: false,
             urgency: typeof notification.urgency === "number" ? notification.urgency : NotificationUrgency.Normal
         }
 
@@ -488,13 +518,15 @@ Scope {
                 continue
 
             const action = String(rule.action || "default").toLowerCase()
-            if (action === "ignore")
-                policy.drop = true
+            if (action === "block" || action === "ignore")
+                policy.block = true
+            else if (action === "hide" || action === "no_popup")
+                policy.hide = true
             else if (action === "mute")
-                policy.disablePopup = true
+                policy.mute = true
             else if (action === "popup_only")
                 policy.hideFromCenter = true
-            else if (action === "no_popup")
+            else if (action === "disable_popup")
                 policy.disablePopup = true
 
             if (rule.urgency !== undefined)
@@ -563,12 +595,21 @@ Scope {
     }
 
     function nextPowerProfile() {
-        const currentIndex = Math.max(0, powerProfiles.indexOf(powerProfile))
+        const currentIndex = Math.max(0, powerProfiles.indexOf(PowerProfiles.profile))
         const next = powerProfiles[(currentIndex + 1) % powerProfiles.length]
 
-        powerProfile = next
-        Quickshell.execDetached(["powerprofilesctl", "set", next])
-        powerRefreshTimer.restart()
+        PowerProfiles.profile = next
+    }
+
+    function profileSlug(profile) {
+        switch (profile) {
+        case PowerProfile.Performance:
+            return "performance"
+        case PowerProfile.PowerSaver:
+            return "power-saver"
+        default:
+            return "balanced"
+        }
     }
 
 }

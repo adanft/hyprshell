@@ -1,32 +1,34 @@
 import QtQuick
+import "../theme"
 
 Rectangle {
     id: button
 
+    readonly property var theme: AppTheme {}
     property string icon: ""
     property bool selected: false
     property color accent: "#cba6f7"
 
     readonly property bool active: selected || mouseArea.containsMouse
-    readonly property color backgroundColor: active ? "#11111b" : "#181825"
-    readonly property color inactiveColor: "#1e1e2e"
+    readonly property color backgroundColor: active ? theme.powerMenuActionBackgroundColor : theme.powerMenuActionInactiveBackgroundColor
+    readonly property color inactiveColor: theme.powerMenuActionInactiveColor
 
     signal activated()
     signal hovered()
 
-    width: 136
-    height: 136
-    radius: 36
+    width: theme.powerMenuActionSize
+    height: theme.powerMenuActionSize
+    radius: theme.powerMenuActionRadius
     color: backgroundColor
-    border.width: 6
+    border.width: theme.powerMenuActionBorderWidth
     border.color: active ? accent : inactiveColor
 
     Text {
         anchors.centerIn: parent
         text: icon
         color: active ? accent : inactiveColor
-        font.family: "Symbols Nerd Font"
-        font.pixelSize: 68
+        font.family: theme.iconFontFamily
+        font.pixelSize: theme.powerMenuActionIconFontSize
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

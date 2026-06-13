@@ -410,7 +410,7 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             enabled: bodyText.hoveredLink.length === 0 && (bodyContainer.canExpand || card.expanded)
-                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            cursorShape: Qt.ArrowCursor
                             propagateComposedEvents: true
                             z: -1
                             onClicked: card.toggleExpanded()
@@ -443,7 +443,7 @@ Item {
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
                                     color: actionMouse.containsMouse ? card.palette.blue : card.palette.subtext1
                                     font.family: card.textFont
-                                    font.pixelSize: card.labelFontSize
+                                    font.pixelSize: card.theme.fontSizeSm
                                     font.weight: Font.Medium
                                     elide: Text.ElideRight
                                 }

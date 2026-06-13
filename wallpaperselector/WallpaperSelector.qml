@@ -1,6 +1,6 @@
 import QtQuick
+import Qt.labs.folderlistmodel
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import "../theme"
 
@@ -10,10 +10,10 @@ Scope {
     readonly property var theme: AppTheme {}
     property alias visible: panel.visible
     property bool quitOnClose: false
-    property bool wallpaperScanCompleted: false
 
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string wallpapersDir: Quickshell.env("AWWW_WALLPAPERS_DIR") || `${home}/Wallpapers`
+    readonly property string wallpapersFolderUrl: wallpapersDir ? "file://" + wallpapersDir.split('/').map(segment => encodeURIComponent(segment)).join('/') : ""
     readonly property var transitionArgs: [
         "--transition-type", "center",
         "--transition-duration", "1.0",
@@ -21,7 +21,6 @@ Scope {
     ]
 
     property int selectedIndex: 0
-    property var wallpapers: []
 
     PanelWindow {
         id: panel
@@ -90,30 +89,32 @@ Scope {
 
                     cellWidth: width / columns
                     cellHeight: selector.theme.wallpaperSelectorGridCellHeight
-                    model: selector.wallpapers
+                    model: wallpaperFolderModel
                     currentIndex: selector.selectedIndex
 
                     delegate: Item {
-                        required property var modelData
+                        required property string filePath
                         required property int index
+
+                        readonly property string wallpaperPath: String(filePath || "").replace(/^file:\/\//, "")
 
                         width: grid.cellWidth
                         height: grid.cellHeight
 
                         WallpaperCard {
                             anchors.centerIn: parent
-                            path: modelData
+                            path: wallpaperPath
                             selected: selector.selectedIndex === index
                             onHovered: selector.selectedIndex = index
-                            onActivated: selector.setWallpaper(modelData)
+                            onActivated: selector.setWallpaper(wallpaperPath)
                         }
                     }
 
                     Text {
                         anchors.centerIn: parent
-                        visible: selector.wallpapers.length === 0
+                        visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
                         width: parent.width - selector.theme.wallpaperSelectorEmptyTextHorizontalMargin
-                        text: `No wallpapers found in ${selector.wallpapersDir}`
+                        text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
                         color: selector.theme.wallpaperSelectorEmptyTextColor
                         font.pixelSize: selector.theme.wallpaperSelectorEmptyFontSize
                         horizontalAlignment: Text.AlignHCenter
@@ -124,22 +125,25 @@ Scope {
         }
     }
 
-    Process {
-        running: selector.visible && !selector.wallpaperScanCompleted
-        command: [
-            "find", "-L", selector.wallpapersDir,
-            "-regextype", "posix-extended",
-            "-type", "f",
-            "-iregex", ".*\\.(jpg|jpeg|png|webp|tif|tiff|gif|bmp|avif)"
-        ]
+    FolderListModel {
+        id: wallpaperFolderModel
 
-        stdout: StdioCollector {
-            onStreamFinished: selector.loadWallpapers(text)
-        }
+        showDirsFirst: false
+        showDotAndDotDot: false
+        showHidden: false
+        caseSensitive: false
+        nameFilters: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp", "*.jxl", "*.avif", "*.heif", "*.exr"]
+        showFiles: true
+        showDirs: false
+        sortField: FolderListModel.Name
+        folder: selector.visible ? selector.wallpapersFolderUrl : ""
+
+        onCountChanged: selector.clampSelection()
+        onStatusChanged: selector.clampSelection()
     }
 
     function open() {
-        selectedIndex = Math.min(selectedIndex, Math.max(0, wallpapers.length - 1))
+        clampSelection()
         panel.visible = true
     }
 
@@ -155,7 +159,7 @@ Scope {
     }
 
     function moveSelection(direction) {
-        const count = selector.wallpapers.length
+        const count = wallpaperFolderModel.count
         if (count === 0)
             return
 
@@ -164,19 +168,13 @@ Scope {
     }
 
     function applySelection() {
-        const entry = selector.wallpapers[selector.selectedIndex]
+        const entry = wallpaperFolderModel.get(selector.selectedIndex, "filePath")
         if (entry)
-            selector.setWallpaper(entry)
+            selector.setWallpaper(String(entry).replace(/^file:\/\//, ""))
     }
 
-    function loadWallpapers(output) {
-        selector.wallpaperScanCompleted = true
-        selector.wallpapers = (output || "")
-            .split("\n")
-            .filter(path => path.length > 0)
-            .sort((a, b) => a.localeCompare(b))
-
-        selector.selectedIndex = Math.min(selector.selectedIndex, Math.max(0, selector.wallpapers.length - 1))
+    function clampSelection() {
+        selector.selectedIndex = Math.min(selector.selectedIndex, Math.max(0, wallpaperFolderModel.count - 1))
     }
 
     function setWallpaper(path) {

@@ -1,26 +1,96 @@
+import "../theme"
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../theme"
 
 Scope {
     id: powerMenu
 
-    readonly property var theme: AppTheme {}
+    readonly property var
+    theme: AppTheme {
+    }
+
     property alias visible: panel.visible
     property bool quitOnClose: false
     property bool confirming: false
     property var pendingCommand: []
     property int selectedIndex: 0
     property int confirmSelectedIndex: 0
+    readonly property var actions: [{
+        "icon": "",
+        "command": ["loginctl", "lock-session"],
+        "accent": theme.powerMenuLockColor
+    }, {
+        "icon": "",
+        "command": ["systemctl", "suspend"],
+        "accent": theme.powerMenuSuspendColor
+    }, {
+        "icon": "",
+        "command": ["hyprctl", "dispatch", "hl.dsp.exit()"],
+        "accent": theme.powerMenuLogoutColor
+    }, {
+        "icon": "",
+        "command": ["systemctl", "reboot"],
+        "accent": theme.powerMenuRebootColor
+    }, {
+        "icon": "",
+        "command": ["systemctl", "poweroff"],
+        "accent": theme.powerMenuPoweroffColor
+    }]
 
-    readonly property var actions: [
-        { icon: "", command: ["loginctl", "lock-session"], accent: theme.powerMenuLockColor },
-        { icon: "", command: ["systemctl", "suspend"], accent: theme.powerMenuSuspendColor },
-        { icon: "", command: ["hyprctl", "dispatch", "hl.dsp.exit()"], accent: theme.powerMenuLogoutColor },
-        { icon: "", command: ["systemctl", "reboot"], accent: theme.powerMenuRebootColor },
-        { icon: "", command: ["systemctl", "poweroff"], accent: theme.powerMenuPoweroffColor }
-    ]
+    function open() {
+        confirming = false;
+        pendingCommand = [];
+        selectedIndex = 0;
+        confirmSelectedIndex = 0;
+        panel.visible = true;
+    }
+
+    function close() {
+        panel.visible = false;
+        confirming = false;
+        pendingCommand = [];
+        if (quitOnClose)
+            Qt.quit();
+
+    }
+
+    function toggle() {
+        panel.visible ? close() : open();
+    }
+
+    function confirmCommand(command) {
+        powerMenu.pendingCommand = command;
+        powerMenu.confirming = true;
+        powerMenu.confirmSelectedIndex = 0;
+    }
+
+    function runCommand(command) {
+        Quickshell.execDetached(command);
+        powerMenu.close();
+    }
+
+    function cancelConfirm() {
+        powerMenu.confirming = false;
+        powerMenu.pendingCommand = [];
+    }
+
+    function moveSelection(direction) {
+        if (powerMenu.confirming) {
+            powerMenu.confirmSelectedIndex = (powerMenu.confirmSelectedIndex + direction + 2) % 2;
+            return ;
+        }
+        powerMenu.selectedIndex = (powerMenu.selectedIndex + direction + powerMenu.actions.length) % powerMenu.actions.length;
+    }
+
+    function triggerSelection() {
+        if (powerMenu.confirming) {
+            powerMenu.confirmSelectedIndex === 0 ? powerMenu.runCommand(powerMenu.pendingCommand) : powerMenu.cancelConfirm();
+            return ;
+        }
+        const action = powerMenu.actions[powerMenu.selectedIndex];
+        powerMenu.confirmCommand(action.command);
+    }
 
     PanelWindow {
         id: panel
@@ -33,7 +103,6 @@ Scope {
         mask: null
         color: "transparent"
         surfaceFormat.opaque: false
-
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -48,7 +117,6 @@ Scope {
             anchors.fill: parent
             color: powerMenu.theme.overlayScrimColor
             focus: true
-
             Keys.onEscapePressed: powerMenu.confirming ? powerMenu.cancelConfirm() : powerMenu.close()
             Keys.onLeftPressed: powerMenu.moveSelection(-1)
             Keys.onRightPressed: powerMenu.moveSelection(1)
@@ -64,7 +132,9 @@ Scope {
                 anchors.centerIn: parent
                 sourceComponent: powerMenu.confirming ? confirmButtons : powerButtons
             }
+
         }
+
     }
 
     Component {
@@ -86,8 +156,11 @@ Scope {
                     onHovered: powerMenu.selectedIndex = index
                     onActivated: powerMenu.confirmCommand(modelData.command)
                 }
+
             }
+
         }
+
     }
 
     Component {
@@ -111,62 +184,9 @@ Scope {
                 onHovered: powerMenu.confirmSelectedIndex = 1
                 onActivated: powerMenu.cancelConfirm()
             }
-        }
-    }
 
-    function open() {
-        confirming = false
-        pendingCommand = []
-        selectedIndex = 0
-        confirmSelectedIndex = 0
-        panel.visible = true
-    }
-
-    function close() {
-        panel.visible = false
-        confirming = false
-        pendingCommand = []
-
-        if (quitOnClose)
-            Qt.quit()
-    }
-
-    function toggle() {
-        panel.visible ? close() : open()
-    }
-
-    function confirmCommand(command) {
-        powerMenu.pendingCommand = command
-        powerMenu.confirming = true
-        powerMenu.confirmSelectedIndex = 0
-    }
-
-    function runCommand(command) {
-        Quickshell.execDetached(command)
-        powerMenu.close()
-    }
-
-    function cancelConfirm() {
-        powerMenu.confirming = false
-        powerMenu.pendingCommand = []
-    }
-
-    function moveSelection(direction) {
-        if (powerMenu.confirming) {
-            powerMenu.confirmSelectedIndex = (powerMenu.confirmSelectedIndex + direction + 2) % 2
-            return
         }
 
-        powerMenu.selectedIndex = (powerMenu.selectedIndex + direction + powerMenu.actions.length) % powerMenu.actions.length
     }
 
-    function triggerSelection() {
-        if (powerMenu.confirming) {
-            powerMenu.confirmSelectedIndex === 0 ? powerMenu.runCommand(powerMenu.pendingCommand) : powerMenu.cancelConfirm()
-            return
-        }
-
-        const action = powerMenu.actions[powerMenu.selectedIndex]
-        powerMenu.confirmCommand(action.command)
-    }
 }

@@ -6,4 +6,5 @@ ShellRoot {
         visible: true
         quitOnClose: true
     }
+
 }

@@ -10,6 +10,7 @@ Scope {
     readonly property var theme: AppTheme {}
     property alias visible: panel.visible
     property bool quitOnClose: false
+    property bool wallpaperScanCompleted: false
 
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string wallpapersDir: Quickshell.env("AWWW_WALLPAPERS_DIR") || `${home}/Wallpapers`
@@ -124,7 +125,7 @@ Scope {
     }
 
     Process {
-        running: true
+        running: selector.visible && !selector.wallpaperScanCompleted
         command: [
             "find", "-L", selector.wallpapersDir,
             "-regextype", "posix-extended",
@@ -169,6 +170,7 @@ Scope {
     }
 
     function loadWallpapers(output) {
+        selector.wallpaperScanCompleted = true
         selector.wallpapers = (output || "")
             .split("\n")
             .filter(path => path.length > 0)

@@ -1,14 +1,20 @@
+import ".."
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
-import ".."
 
 Item {
     id: root
 
-    readonly property var icons: BarIcons {}
-    readonly property var theme: BarTheme {}
+    readonly property var
+    icons: BarIcons {
+    }
+
+    readonly property var
+    theme: BarTheme {
+    }
+
     required property var palette
     required property var barWindow
     property var currentTrayItem: null
@@ -18,20 +24,95 @@ Item {
     property int openRetryCount: 0
     readonly property int maxOpenRetries: 2
 
+    function open(trayItem, anchorItem) {
+        close();
+        const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height);
+        const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
+        const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
+        currentTrayItem = trayItem;
+        menuAnchorX = globalPosition.x - screenX;
+        menuAnchorY = globalPosition.y - screenY + theme.gap;
+        finishOpen(anchorItem);
+    }
+
+    function finishOpen(anchorItem) {
+        if (!currentTrayItem)
+            return ;
+
+        if (!hasRootMenuChildren()) {
+            if (openRetryCount >= maxOpenRetries) {
+                menuOpen = true;
+                return ;
+            }
+            const retryTrayItem = currentTrayItem;
+            const retryAnchorItem = anchorItem;
+            openRetryCount += 1;
+            Qt.callLater(function() {
+                if (root.currentTrayItem === retryTrayItem)
+                    root.finishOpen(retryAnchorItem);
+
+            });
+            return ;
+        }
+        if (anchorItem) {
+            const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height);
+            const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
+            const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
+            menuAnchorX = globalPosition.x - screenX;
+            menuAnchorY = globalPosition.y - screenY + theme.gap;
+        }
+        menuOpen = true;
+    }
+
+    function hasRootMenuChildren() {
+        if (!rootMenuOpener.children)
+            return false;
+
+        if (rootMenuOpener.children.values)
+            return rootMenuOpener.children.values.length > 0;
+
+        return rootMenuOpener.children.length > 0;
+    }
+
+    function close() {
+        menuOpen = false;
+        currentTrayItem = null;
+        openRetryCount = 0;
+        submenuStack.clear();
+    }
+
+    function openSubmenu(entry) {
+        submenuStack.append({
+            "handle": entry
+        });
+    }
+
+    function closeSubmenu() {
+        if (submenuStack.count > 0)
+            submenuStack.remove(submenuStack.count - 1);
+
+    }
+
+    function topSubmenuEntry() {
+        return submenuStack.count > 0 ? submenuStack.get(submenuStack.count - 1).handle : null;
+    }
+
     ListModel {
         id: submenuStack
     }
 
     QsMenuOpener {
         id: rootMenuOpener
+
         menu: root.currentTrayItem ? root.currentTrayItem.menu : null
     }
 
     QsMenuOpener {
         id: submenuOpener
+
         menu: {
-            const entry = root.topSubmenuEntry()
-            return entry ? (entry.menu || entry) : null
+            const entry = root.topSubmenuEntry();
+            return entry ? (entry.menu || entry) : null;
         }
     }
 
@@ -113,15 +194,18 @@ Item {
                             font.family: root.theme.textFontFamily
                             font.pixelSize: root.theme.fontSize
                         }
+
                     }
 
                     MouseArea {
                         id: backArea
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.closeSubmenu()
                     }
+
                 }
 
                 Repeater {
@@ -141,23 +225,25 @@ Item {
 
                         MouseArea {
                             id: entryMouseArea
+
                             anchors.fill: parent
                             enabled: !menuEntryRoot.separator && menuEntryRoot.enabledEntry
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                const entry = menuEntryRoot.modelData
+                                const entry = menuEntryRoot.modelData;
                                 if (!entry || entry.isSeparator)
-                                    return
+                                    return ;
+
                                 if (entry.hasChildren) {
-                                    root.openSubmenu(entry)
-                                    return
+                                    root.openSubmenu(entry);
+                                    return ;
                                 }
                                 if (typeof entry.activate === "function")
-                                    entry.activate()
+                                    entry.activate();
                                 else if (typeof entry.triggered === "function")
-                                    entry.triggered()
-                                root.close()
+                                    entry.triggered();
+                                root.close();
                             }
                         }
 
@@ -187,6 +273,7 @@ Item {
                                     color: root.palette.blue
                                     font.pixelSize: root.theme.trayMenuCheckFontSize
                                 }
+
                             }
 
                             IconImage {
@@ -215,84 +302,17 @@ Item {
                                 color: root.palette.subtext1
                                 font.family: root.theme.textFontFamily
                             }
+
                         }
+
                     }
+
                 }
-            }
-        }
-    }
 
-    function open(trayItem, anchorItem) {
-        close()
-
-        const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height)
-        const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0
-        const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0
-
-        currentTrayItem = trayItem
-        menuAnchorX = globalPosition.x - screenX
-        menuAnchorY = globalPosition.y - screenY + theme.gap
-
-        finishOpen(anchorItem)
-    }
-
-    function finishOpen(anchorItem) {
-        if (!currentTrayItem)
-            return
-
-        if (!hasRootMenuChildren()) {
-            if (openRetryCount >= maxOpenRetries) {
-                menuOpen = true
-                return
             }
 
-            const retryTrayItem = currentTrayItem
-            const retryAnchorItem = anchorItem
-            openRetryCount += 1
-            Qt.callLater(function() {
-                if (root.currentTrayItem === retryTrayItem)
-                    root.finishOpen(retryAnchorItem)
-            })
-            return
         }
 
-        if (anchorItem) {
-            const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height)
-            const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0
-            const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0
-
-            menuAnchorX = globalPosition.x - screenX
-            menuAnchorY = globalPosition.y - screenY + theme.gap
-        }
-
-        menuOpen = true
     }
 
-    function hasRootMenuChildren() {
-        if (!rootMenuOpener.children)
-            return false
-        if (rootMenuOpener.children.values)
-            return rootMenuOpener.children.values.length > 0
-        return rootMenuOpener.children.length > 0
-    }
-
-    function close() {
-        menuOpen = false
-        currentTrayItem = null
-        openRetryCount = 0
-        submenuStack.clear()
-    }
-
-    function openSubmenu(entry) {
-        submenuStack.append({ handle: entry })
-    }
-
-    function closeSubmenu() {
-        if (submenuStack.count > 0)
-            submenuStack.remove(submenuStack.count - 1)
-    }
-
-    function topSubmenuEntry() {
-        return submenuStack.count > 0 ? submenuStack.get(submenuStack.count - 1).handle : null
-    }
 }

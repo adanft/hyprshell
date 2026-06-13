@@ -5,22 +5,26 @@ import Quickshell.Wayland
 PanelWindow {
     id: window
 
-    readonly property var theme: BarTheme {}
+    readonly property var
+    theme: BarTheme {
+    }
+
     required property var palette
     required property var services
-    signal openNotificationCenterRequested()
 
-    anchors {
-        top: true
-        left: true
-        right: true
-    }
+    signal openNotificationCenterRequested()
 
     implicitHeight: theme.outerHeight
     exclusiveZone: theme.outerHeight
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "qs-statusbar"
+
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
 
     BarContent {
         anchors.fill: parent
@@ -33,4 +37,5 @@ PanelWindow {
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()
     }
+
 }

@@ -1,12 +1,17 @@
-import QtQuick
 import ".."
 import "../components"
+import QtQuick
 
 Row {
     id: root
 
-    readonly property var icons: BarIcons {}
-    readonly property var theme: BarTheme {}
+    readonly property var
+    icons: BarIcons {
+    }
+
+    readonly property var
+    theme: BarTheme {
+    }
 
     required property var palette
     required property var services
@@ -22,4 +27,5 @@ Row {
         text: root.services.date
         color: root.palette.text
     }
+
 }

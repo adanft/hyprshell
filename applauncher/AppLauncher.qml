@@ -1,19 +1,136 @@
+import "../shared/components" as Shared
+import "../theme"
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../shared/components" as Shared
-import "../theme"
 
 Scope {
     id: launcher
 
-    readonly property var theme: AppTheme {}
+    readonly property var
+    theme: AppTheme {
+    }
+
     property alias visible: panel.visible
     property bool quitOnClose: false
     property string searchText: ""
     property int selectedIndex: 0
     property var apps: []
     readonly property var filteredApps: filterApps(searchText)
+
+    function open() {
+        refreshApplications();
+        searchText = "";
+        selectedIndex = 0;
+        panel.visible = true;
+        Qt.callLater(() => {
+            return searchInput.forceActiveFocus();
+        });
+    }
+
+    function close() {
+        panel.visible = false;
+        if (quitOnClose)
+            Qt.quit();
+
+    }
+
+    function toggle() {
+        panel.visible ? close() : open();
+    }
+
+    function refreshApplications() {
+        if (typeof DesktopEntries === "undefined") {
+            apps = [];
+            return ;
+        }
+        apps = (DesktopEntries.applications.values || []).filter((app) => {
+            return app && !app.hidden && !app.noDisplay;
+        }).sort((a, b) => {
+            return appName(a).localeCompare(appName(b));
+        });
+        clampSelection();
+    }
+
+    function filterApps(query) {
+        const normalizedQuery = normalizeText(query);
+        if (normalizedQuery.length === 0)
+            return apps;
+
+        return apps.filter((app) => {
+            return searchableText(app).includes(normalizedQuery);
+        });
+    }
+
+    function searchableText(app) {
+        return [appName(app), app ? (app.genericName || "") : "", app ? (app.comment || "") : "", app ? (app.id || "") : "", app ? (app.desktopEntry || "") : ""].map(normalizeText).join(" ");
+    }
+
+    function normalizeText(value) {
+        return String(value || "").toLowerCase();
+    }
+
+    function appName(app) {
+        return app ? (app.name || app.id || app.desktopEntry || "") : "";
+    }
+
+    function clampSelection() {
+        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, filteredApps.length - 1)));
+    }
+
+    function moveSelection(direction) {
+        const count = filteredApps.length;
+        if (count === 0)
+            return ;
+
+        selectedIndex = Math.max(0, Math.min(count - 1, selectedIndex + direction));
+        grid.positionViewAtIndex(selectedIndex, GridView.Contain);
+    }
+
+    function launchSelection() {
+        const app = filteredApps[selectedIndex];
+        if (app)
+            launchApp(app);
+
+    }
+
+    function launchApp(app) {
+        if (!app)
+            return ;
+
+        if (typeof app.execute === "function") {
+            close();
+            Qt.callLater(() => {
+                return app.execute();
+            });
+            return ;
+        }
+        const command = fallbackCommand(app);
+        close();
+        if (command.length > 0)
+            Qt.callLater(() => {
+            return Quickshell.execDetached(command);
+        });
+
+    }
+
+    function fallbackCommand(app) {
+        const command = app.command || "";
+        if (Array.isArray(command))
+            return command;
+
+        if (typeof command === "string" && command.length > 0 && !/\s/.test(command))
+            return [command];
+
+        return [];
+    }
+
+    Component.onCompleted: refreshApplications()
+    onSearchTextChanged: {
+        selectedIndex = 0;
+        grid.positionViewAtBeginning();
+    }
+    onFilteredAppsChanged: clampSelection()
 
     PanelWindow {
         id: panel
@@ -26,7 +143,6 @@ Scope {
         mask: null
         color: "transparent"
         surfaceFormat.opaque: false
-
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -41,7 +157,6 @@ Scope {
             anchors.fill: parent
             color: launcher.theme.overlayScrimColor
             focus: true
-
             Keys.onEscapePressed: launcher.close()
             Keys.onLeftPressed: launcher.moveSelection(-1)
             Keys.onRightPressed: launcher.moveSelection(1)
@@ -130,29 +245,26 @@ Scope {
                             font.styleName: "Medium"
                             verticalAlignment: TextInput.AlignVCenter
                             text: launcher.searchText
-
                             onTextChanged: launcher.searchText = text
-
                             Keys.onEscapePressed: launcher.close()
-                            Keys.onLeftPressed: event => {
-                                if (cursorPosition === 0) {
-                                    launcher.moveSelection(-1)
-                                } else {
-                                    event.accepted = false
-                                }
+                            Keys.onLeftPressed: (event) => {
+                                if (cursorPosition === 0)
+                                    launcher.moveSelection(-1);
+                                else
+                                    event.accepted = false;
                             }
-                            Keys.onRightPressed: event => {
-                                if (cursorPosition === text.length) {
-                                    launcher.moveSelection(1)
-                                } else {
-                                    event.accepted = false
-                                }
+                            Keys.onRightPressed: (event) => {
+                                if (cursorPosition === text.length)
+                                    launcher.moveSelection(1);
+                                else
+                                    event.accepted = false;
                             }
                             Keys.onUpPressed: launcher.moveSelection(-grid.columns)
                             Keys.onDownPressed: launcher.moveSelection(grid.columns)
                             Keys.onReturnPressed: launcher.launchSelection()
                             Keys.onEnterPressed: launcher.launchSelection()
                         }
+
                     }
 
                     GridView {
@@ -169,6 +281,17 @@ Scope {
                         model: launcher.filteredApps
                         currentIndex: launcher.selectedIndex
 
+                        Shared.AppText {
+                            anchors.centerIn: parent
+                            visible: launcher.filteredApps.length === 0
+                            width: parent.width - launcher.theme.appLauncherEmptyTextHorizontalMargin
+                            text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
+                            color: launcher.theme.appLauncherMutedTextColor
+                            font.pixelSize: launcher.theme.appLauncherEmptyFontSize
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                        }
+
                         delegate: Item {
                             required property var modelData
                             required property int index
@@ -184,131 +307,17 @@ Scope {
                                 onHovered: launcher.selectedIndex = index
                                 onActivated: launcher.launchApp(modelData)
                             }
+
                         }
 
-                        Shared.AppText {
-                            anchors.centerIn: parent
-                            visible: launcher.filteredApps.length === 0
-                            width: parent.width - launcher.theme.appLauncherEmptyTextHorizontalMargin
-                            text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
-                            color: launcher.theme.appLauncherMutedTextColor
-                            font.pixelSize: launcher.theme.appLauncherEmptyFontSize
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                        }
                     }
+
                 }
+
             }
-        }
-    }
 
-    Component.onCompleted: refreshApplications()
-
-    onSearchTextChanged: {
-        selectedIndex = 0
-        grid.positionViewAtBeginning()
-    }
-
-    onFilteredAppsChanged: clampSelection()
-
-    function open() {
-        refreshApplications()
-        searchText = ""
-        selectedIndex = 0
-        panel.visible = true
-        Qt.callLater(() => searchInput.forceActiveFocus())
-    }
-
-    function close() {
-        panel.visible = false
-
-        if (quitOnClose)
-            Qt.quit()
-    }
-
-    function toggle() {
-        panel.visible ? close() : open()
-    }
-
-    function refreshApplications() {
-        if (typeof DesktopEntries === "undefined") {
-            apps = []
-            return
         }
 
-        apps = (DesktopEntries.applications.values || [])
-            .filter(app => app && !app.hidden && !app.noDisplay)
-            .sort((a, b) => appName(a).localeCompare(appName(b)))
-        clampSelection()
     }
 
-    function filterApps(query) {
-        const normalizedQuery = normalizeText(query)
-        if (normalizedQuery.length === 0)
-            return apps
-
-        return apps.filter(app => searchableText(app).includes(normalizedQuery))
-    }
-
-    function searchableText(app) {
-        return [
-            appName(app),
-            app ? (app.genericName || "") : "",
-            app ? (app.comment || "") : "",
-            app ? (app.id || "") : "",
-            app ? (app.desktopEntry || "") : ""
-        ].map(normalizeText).join(" ")
-    }
-
-    function normalizeText(value) {
-        return String(value || "").toLowerCase()
-    }
-
-    function appName(app) {
-        return app ? (app.name || app.id || app.desktopEntry || "") : ""
-    }
-
-    function clampSelection() {
-        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, filteredApps.length - 1)))
-    }
-
-    function moveSelection(direction) {
-        const count = filteredApps.length
-        if (count === 0)
-            return
-
-        selectedIndex = Math.max(0, Math.min(count - 1, selectedIndex + direction))
-        grid.positionViewAtIndex(selectedIndex, GridView.Contain)
-    }
-
-    function launchSelection() {
-        const app = filteredApps[selectedIndex]
-        if (app)
-            launchApp(app)
-    }
-
-    function launchApp(app) {
-        if (!app)
-            return
-
-        if (typeof app.execute === "function") {
-            close()
-            Qt.callLater(() => app.execute())
-            return
-        }
-
-        const command = fallbackCommand(app)
-        close()
-        if (command.length > 0)
-            Qt.callLater(() => Quickshell.execDetached(command))
-    }
-
-    function fallbackCommand(app) {
-        const command = app.command || ""
-        if (Array.isArray(command))
-            return command
-        if (typeof command === "string" && command.length > 0 && !/\s/.test(command))
-            return [command]
-        return []
-    }
 }

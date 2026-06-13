@@ -8,27 +8,23 @@ QtObject {
     readonly property int space12: 12
     readonly property int space16: 16
     readonly property int space24: 24
-
     readonly property int radius3: 3
     readonly property int radius8: 8
     readonly property int radius12: 12
     readonly property int radius16: 16
     readonly property int radius24: 24
     readonly property int radiusFull: 999
-
     readonly property int borderThin: 1
     readonly property int borderMedium: 2
     readonly property int borderSelection: 4
     readonly property int borderEmphasis: 6
-
-    readonly property int fontSize2xs: 10
-    readonly property int fontSizeXs: 12
-    readonly property int fontSizeSm: 14
-    readonly property int fontSizeBase: size16
+    readonly property int fontSizeXs: 10
+    readonly property int fontSizeSm: 12
+    readonly property int fontSizeMd: 14
     readonly property int fontSizeLg: size16
-    readonly property int fontSizeDisplay: 56
-    readonly property int fontSizeHero: 68
-
+    readonly property int fontSizeXl: 20
+    readonly property int displayIconSize: 56
+    readonly property int heroIconSize: 68
     readonly property int size14: 14
     readonly property int size16: 16
     readonly property int size24: 24
@@ -37,16 +33,13 @@ QtObject {
     readonly property int size30: 30
     readonly property int size32: 32
     readonly property int size34: 34
-
     readonly property string textFontFamily: "SF Pro Display"
     readonly property string iconFontFamily: "Symbols Nerd Font"
     readonly property string fontFamily: textFontFamily
-    readonly property int fontSize: fontSizeBase
-    readonly property int iconFontSize: 20
+    readonly property int fontSize: fontSizeLg
+    readonly property int iconFontSize: fontSizeXl
     readonly property int networkRefreshMs: 2000
-
     readonly property string overlayScrimColor: "#bf1e1e2e"
-
     readonly property int appLauncherRadius: radius16
     readonly property int appLauncherBorderWidth: borderMedium
     readonly property int appLauncherScreenMargin: 128
@@ -58,9 +51,9 @@ QtObject {
     readonly property int appLauncherSearchRadius: radiusFull
     readonly property int appLauncherSearchBorderWidth: borderMedium
     readonly property int appLauncherSearchHorizontalPadding: space16
-    readonly property int appLauncherSearchIconSize: fontSizeBase
+    readonly property int appLauncherSearchIconSize: fontSizeLg
     readonly property int appLauncherSearchIconSlotWidth: size24
-    readonly property int appLauncherSearchFontSize: fontSizeBase
+    readonly property int appLauncherSearchFontSize: fontSizeLg
     readonly property int appLauncherGridCellWidth: 110
     readonly property int appLauncherGridCellHeight: 110
     readonly property int appLauncherEmptyFontSize: fontSizeLg
@@ -73,7 +66,7 @@ QtObject {
     readonly property int appLauncherCardBorderWidth: borderMedium
     readonly property int appLauncherIconSlotSize: 56
     readonly property int appLauncherIconSize: 52
-    readonly property int appLauncherCardLabelFontSize: fontSizeBase
+    readonly property int appLauncherCardLabelFontSize: fontSizeLg
     readonly property string appLauncherBackgroundColor: "#f0181825"
     readonly property string appLauncherAccentColor: "#cba6f7"
     readonly property string appLauncherBorderColor: "#45475a"
@@ -86,12 +79,11 @@ QtObject {
     readonly property string appLauncherSelectedTextColor: "#11111b"
     readonly property string appLauncherMutedTextColor: "#a6adc8"
     readonly property string appLauncherPlaceholderColor: "#7f849c"
-
     readonly property int powerMenuActionSpacing: space16
     readonly property int powerMenuActionSize: 136
     readonly property int powerMenuActionRadius: 36
     readonly property int powerMenuActionBorderWidth: borderEmphasis
-    readonly property int powerMenuActionIconFontSize: fontSizeHero
+    readonly property int powerMenuActionIconFontSize: heroIconSize
     readonly property string powerMenuActionBackgroundColor: "#11111b"
     readonly property string powerMenuActionInactiveBackgroundColor: "#181825"
     readonly property string powerMenuActionInactiveColor: "#1e1e2e"
@@ -102,7 +94,6 @@ QtObject {
     readonly property string powerMenuPoweroffColor: "#f38ba8"
     readonly property string powerMenuConfirmColor: powerMenuRebootColor
     readonly property string powerMenuCancelColor: powerMenuPoweroffColor
-
     readonly property int wallpaperSelectorRadius: radius24
     readonly property int wallpaperSelectorBorderWidth: borderMedium
     readonly property int wallpaperSelectorScreenMargin: 96
@@ -116,7 +107,6 @@ QtObject {
     readonly property string wallpaperSelectorBackgroundColor: "#f0181825"
     readonly property string wallpaperSelectorBorderColor: "#45475a"
     readonly property string wallpaperSelectorEmptyTextColor: "#a6adc8"
-
     readonly property int wallpaperCardRadius: radius24
     readonly property int wallpaperCardWidth: 220
     readonly property int wallpaperCardHeight: 150
@@ -131,12 +121,10 @@ QtObject {
     readonly property string wallpaperCardInactiveBorderColor: "#313244"
     readonly property string wallpaperCardSelectedBadgeColor: "#f5c2e7"
     readonly property string wallpaperCardSelectedBadgeIconColor: "#11111b"
-
     readonly property int notificationBadgeSize: space6
     readonly property int notificationBadgeRadius: radius3
     readonly property int notificationBadgeTopMargin: space6
     readonly property int notificationBadgeRightMargin: space8
-
     readonly property int notificationPopupWidth: 380
     readonly property int notificationPopupTopMargin: 52
     readonly property int notificationPopupRightMargin: space12
@@ -146,7 +134,6 @@ QtObject {
     readonly property int notificationPopupMoveAnimationMs: 220
     readonly property int notificationPopupEnterOffsetMargin: space16
     readonly property int notificationPopupAutoCloseTickMs: 250
-
     readonly property int notificationCenterPadding: space16
     readonly property int notificationCenterCardWidth: 380
     readonly property real notificationCenterHeightRatio: 0.75
@@ -159,7 +146,7 @@ QtObject {
     readonly property int notificationCenterHeaderHeight: size30
     readonly property int notificationCenterHeaderSpacing: space8
     readonly property int notificationCenterHeaderIconFontSize: fontSizeLg
-    readonly property int notificationCenterTextFontSize: fontSizeSm
+    readonly property int notificationCenterTextFontSize: fontSizeMd
     readonly property int notificationCenterSpacerHeight: borderThin
     readonly property int notificationCenterClearButtonHeight: size26
     readonly property int notificationCenterClearButtonSpacing: space4
@@ -169,11 +156,10 @@ QtObject {
     readonly property int notificationCenterDndKnobSize: size14
     readonly property int notificationCenterDndKnobMargin: space2
     readonly property int notificationCenterDndAnimationMs: 120
-    readonly property int notificationCenterEmptyIconFontSize: fontSizeDisplay
-    readonly property int notificationCenterEmptyTextFontSize: fontSizeBase
+    readonly property int notificationCenterEmptyIconFontSize: displayIconSize
+    readonly property int notificationCenterEmptyTextFontSize: fontSizeLg
     readonly property int notificationCenterListSpacing: space12
     readonly property int notificationCenterCardRadius: radius12
-
     readonly property int notificationCardRadius: radius16
     readonly property int notificationCardSpacing: space8
     readonly property int notificationCardPadding: space8
@@ -189,9 +175,9 @@ QtObject {
     readonly property int notificationCardActionButtonHorizontalPadding: space16
     readonly property string notificationCardActionButtonColor: "#11111b"
     readonly property int notificationCardLabelFontSize: fontSizeXs
-    readonly property int notificationCardTitleFontSize: fontSizeBase
-    readonly property int notificationCardBodyFontSize: fontSizeSm
-    readonly property int notificationCardCloseIconFontSize: fontSizeSm
+    readonly property int notificationCardTitleFontSize: fontSizeLg
+    readonly property int notificationCardBodyFontSize: fontSizeMd
+    readonly property int notificationCardCloseIconFontSize: fontSizeMd
     readonly property int notificationCardCollapsedBodyLines: 2
     readonly property real notificationCardBodyLineHeight: 1.35
     readonly property int notificationCardResizeAnimationMs: 220

@@ -1,20 +1,25 @@
+import "../theme"
 import QtQuick
 import QtQuick.Effects
-import "../theme"
 
 Rectangle {
     id: card
 
-    readonly property var theme: AppTheme {}
-    readonly property var icons: Icons {}
+    readonly property var
+    theme: AppTheme {
+    }
+
+    readonly property var
+    icons: Icons {
+    }
+
     required property string path
     property bool selected: false
+    readonly property bool active: selected || mouseArea.containsMouse
+    readonly property int previewScale: 2
 
     signal activated()
     signal hovered()
-
-    readonly property bool active: selected || mouseArea.containsMouse
-    readonly property int previewScale: 2
 
     width: theme.wallpaperCardWidth
     height: theme.wallpaperCardHeight
@@ -30,12 +35,14 @@ Rectangle {
         smooth: true
         sourceSize: Qt.size(card.width * card.previewScale, card.height * card.previewScale)
         layer.enabled: true
+
         layer.effect: MultiEffect {
             maskEnabled: true
             maskSource: imageMask
             maskThresholdMin: 0.5
             maskSpreadAtMin: 1
         }
+
     }
 
     Rectangle {
@@ -73,14 +80,17 @@ Rectangle {
             font.pixelSize: card.theme.wallpaperCardSelectedBadgeIconFontSize
             font.bold: true
         }
+
     }
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onEntered: card.hovered()
         onClicked: card.activated()
     }
+
 }

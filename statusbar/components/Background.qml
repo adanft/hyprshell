@@ -1,10 +1,13 @@
-import QtQuick
 import ".."
+import QtQuick
 
 Rectangle {
     id: root
 
-    readonly property var theme: BarTheme {}
+    readonly property var
+    theme: BarTheme {
+    }
+
     required property var palette
     default property alias content: contentRow.data
     property color backgroundColor: palette.base
@@ -22,4 +25,5 @@ Rectangle {
         anchors.centerIn: parent
         spacing: root.contentSpacing
     }
+
 }

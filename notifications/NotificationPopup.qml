@@ -1,10 +1,13 @@
-import QtQuick
 import "../theme"
+import QtQuick
 
 Item {
     id: popup
 
-    readonly property var theme: AppTheme {}
+    readonly property var
+    theme: AppTheme {
+    }
+
     required property var palette
     required property var services
     property var popupData: null
@@ -13,67 +16,58 @@ Item {
     property bool animateY: true
     property real enterOffset: width + theme.notificationPopupEnterOffsetMargin
     property int autoCloseRemainingMs: 0
-    signal layoutChanged()
-    signal slotHeightChanged()
-    signal exitFinished()
-
     readonly property int enterAnimationMs: theme.notificationPopupEnterAnimationMs
     readonly property int moveAnimationMs: theme.notificationPopupMoveAnimationMs
     readonly property real layoutHeight: notificationCard.layoutHeight
     readonly property real renderedLayoutHeight: notificationCard.renderedLayoutHeight
     readonly property real allocatedLayoutHeight: notificationCard.allocatedLayoutHeight
 
-    implicitWidth: width
-    implicitHeight: allocatedLayoutHeight
-    height: allocatedLayoutHeight
-    visible: popupData !== null
-
-    Behavior on y {
-        enabled: popup.animateY
-        NumberAnimation { duration: popup.moveAnimationMs; easing.type: Easing.Linear }
-    }
-
-    onPopupDataChanged: {
-        Qt.callLater(popup.resetAutoCloseTimer)
-    }
-
-    Component.onCompleted: {
-        Qt.callLater(popup.resetAutoCloseTimer)
-    }
-
-    onActiveChanged: {
-        if (!active)
-            autoCloseTimer.stop()
-    }
+    signal layoutChanged()
+    signal slotHeightChanged()
+    signal exitFinished()
 
     function startEnterAnimation() {
-        exiting = false
-        exitAnimation.stop()
-        enterAnimation.stop()
-        enterOffset = width + theme.notificationPopupEnterOffsetMargin
-        enterAnimation.start()
+        exiting = false;
+        exitAnimation.stop();
+        enterAnimation.stop();
+        enterOffset = width + theme.notificationPopupEnterOffsetMargin;
+        enterAnimation.start();
     }
 
     function startExitAnimation() {
         if (exiting)
-            return
+            return ;
 
-        exiting = true
-        enterAnimation.stop()
-        exitAnimation.stop()
-        autoCloseTimer.stop()
-        exitAnimation.start()
+        exiting = true;
+        enterAnimation.stop();
+        exitAnimation.stop();
+        autoCloseTimer.stop();
+        exitAnimation.start();
     }
 
     function resetAutoCloseTimer() {
-        autoCloseTimer.stop()
-
+        autoCloseTimer.stop();
         if (!popup.popupData || !popup.services || typeof popup.services.notificationPopupTimeout !== "function") {
-            autoCloseRemainingMs = 0
-            return
+            autoCloseRemainingMs = 0;
+            return ;
         }
+        autoCloseRemainingMs = popup.services.notificationPopupTimeout(popup.popupData.urgency);
+    }
 
-        autoCloseRemainingMs = popup.services.notificationPopupTimeout(popup.popupData.urgency)
+    implicitWidth: width
+    implicitHeight: allocatedLayoutHeight
+    height: allocatedLayoutHeight
+    visible: popupData !== null
+    onPopupDataChanged: {
+        Qt.callLater(popup.resetAutoCloseTimer);
+    }
+    Component.onCompleted: {
+        Qt.callLater(popup.resetAutoCloseTimer);
+    }
+    onActiveChanged: {
+        if (!active)
+            autoCloseTimer.stop();
+
     }
 
     NumberAnimation {
@@ -104,10 +98,10 @@ Item {
         repeat: true
         running: popup.active && popup.visible && !popup.exiting && !notificationCard.cardHovered && autoCloseRemainingMs > 0
         onTriggered: {
-            popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval)
-
+            popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval);
             if (popup.popupData && popup.autoCloseRemainingMs <= 0)
-                popup.services.closeNotificationPopup(popup.popupData.id)
+                popup.services.closeNotificationPopup(popup.popupData.id);
+
         }
     }
 
@@ -124,11 +118,24 @@ Item {
         onSlotHeightChanged: popup.slotHeightChanged()
         onCloseRequested: {
             if (popup.popupData)
-                popup.services.closeNotificationPopup(popup.popupData.id)
+                popup.services.closeNotificationPopup(popup.popupData.id);
+
         }
-        onActionInvoked: action => {
+        onActionInvoked: (action) => {
             if (popup.popupData)
-                popup.services.invokeNotificationPopupAction(popup.popupData.id, action)
+                popup.services.invokeNotificationPopupAction(popup.popupData.id, action);
+
         }
     }
+
+    Behavior on y {
+        enabled: popup.animateY
+
+        NumberAnimation {
+            duration: popup.moveAnimationMs
+            easing.type: Easing.Linear
+        }
+
+    }
+
 }

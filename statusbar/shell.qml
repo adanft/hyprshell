@@ -1,15 +1,20 @@
 //@ pragma UseQApplication
 
-import QtQuick
-import Quickshell
 import "../services" as Services
 import "../theme" as Theme
+import QtQuick
+import Quickshell
 
 ShellRoot {
     id: shell
 
-    Theme.Theme { id: colors }
-    Services.Services { id: serviceState }
+    Theme.Theme {
+        id: colors
+    }
+
+    Services.Services {
+        id: serviceState
+    }
 
     Variants {
         model: Quickshell.screens
@@ -21,5 +26,7 @@ ShellRoot {
             palette: colors
             services: serviceState
         }
+
     }
+
 }

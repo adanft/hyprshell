@@ -16,4 +16,5 @@ Item {
         barWindow: root.barWindow
         onOpenNotificationCenterRequested: root.openNotificationCenterRequested()
     }
+
 }

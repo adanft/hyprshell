@@ -1,14 +1,16 @@
-import QtQuick
 import "../theme"
+import QtQuick
 
 Rectangle {
     id: button
 
-    readonly property var theme: AppTheme {}
+    readonly property var
+    theme: AppTheme {
+    }
+
     property string icon: ""
     property bool selected: false
     property color accent: "#cba6f7"
-
     readonly property bool active: selected || mouseArea.containsMouse
     readonly property color backgroundColor: active ? theme.powerMenuActionBackgroundColor : theme.powerMenuActionInactiveBackgroundColor
     readonly property color inactiveColor: theme.powerMenuActionInactiveColor
@@ -35,10 +37,12 @@ Rectangle {
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onEntered: button.hovered()
         onClicked: button.activated()
     }
+
 }

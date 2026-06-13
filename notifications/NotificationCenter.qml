@@ -1,19 +1,24 @@
+import "../shared/components"
+import "../theme"
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
-import "../shared/components"
-import "../theme"
 
 PopupWindow {
     id: popup
 
-    readonly property var icons: Icons {}
-    readonly property var theme: AppTheme {}
+    readonly property var
+    icons: Icons {
+    }
+
+    readonly property var
+    theme: AppTheme {
+    }
+
     required property var palette
     required property var services
     required property var barWindow
-
     readonly property int contentPadding: theme.notificationCenterPadding
     readonly property int cardWidth: theme.notificationCenterCardWidth
 
@@ -22,11 +27,9 @@ PopupWindow {
     visible: false
     grabFocus: true
     color: "transparent"
-
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.notificationCenterScreenMargin, barWindow.width - width - theme.notificationCenterScreenMargin)
     anchor.rect.y: theme.notificationCenterTopOffset
-
     onVisibleChanged: popup.services.setNotificationCenterOpen(visible)
 
     Rectangle {
@@ -84,6 +87,7 @@ PopupWindow {
 
                 Item {
                     id: clearButton
+
                     anchors.verticalCenter: parent.verticalCenter
                     width: clearContent.implicitWidth
                     height: popup.theme.notificationCenterClearButtonHeight
@@ -110,6 +114,7 @@ PopupWindow {
                             font.family: popup.theme.iconFontFamily
                             font.pixelSize: popup.theme.notificationCenterTextFontSize
                         }
+
                     }
 
                     MouseArea {
@@ -120,7 +125,9 @@ PopupWindow {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: popup.services.dismissNotifications()
                     }
+
                 }
+
             }
 
             Row {
@@ -157,8 +164,13 @@ PopupWindow {
                         color: popup.services.notificationDnd ? popup.palette.base : popup.palette.overlay1
 
                         Behavior on x {
-                            NumberAnimation { duration: popup.theme.notificationCenterDndAnimationMs; easing.type: Easing.OutCubic }
+                            NumberAnimation {
+                                duration: popup.theme.notificationCenterDndAnimationMs
+                                easing.type: Easing.OutCubic
+                            }
+
                         }
+
                     }
 
                     MouseArea {
@@ -167,7 +179,9 @@ PopupWindow {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: popup.services.toggleNotificationDnd()
                     }
+
                 }
+
             }
 
             Item {
@@ -194,6 +208,7 @@ PopupWindow {
                         font.family: popup.theme.textFontFamily
                         font.pixelSize: popup.theme.notificationCenterEmptyTextFontSize
                     }
+
                 }
 
                 Flickable {
@@ -210,7 +225,7 @@ PopupWindow {
                         spacing: popup.theme.notificationCenterListSpacing
 
                         Repeater {
-                            model: popup.services.notifications
+                            model: popup.visible && popup.services.hasNotifications ? popup.services.notifications : []
 
                             NotificationCard {
                                 required property var modelData
@@ -222,15 +237,23 @@ PopupWindow {
                                 useRenderedHeightForLayout: true
                                 timeText: popup.services.notificationTimeText(modelData)
                                 onCloseRequested: popup.services.dismissNotificationHistoryEntry(modelData)
-                                onActionInvoked: action => {
+                                onActionInvoked: (action) => {
                                     if (action && action.invoke)
-                                        action.invoke()
+                                        action.invoke();
+
                                 }
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

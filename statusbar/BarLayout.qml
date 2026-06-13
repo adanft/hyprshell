@@ -5,7 +5,10 @@ import "modules"
 Item {
     id: root
 
-    readonly property var theme: BarTheme {}
+    readonly property var
+    theme: BarTheme {
+    }
+
     required property var palette
     required property var services
     required property var barWindow
@@ -30,9 +33,11 @@ Item {
 
                 palette: root.palette
             }
+
         }
 
-        Spacer {}
+        Spacer {
+        }
 
         Background {
             width: windowTitle.width
@@ -45,7 +50,9 @@ Item {
 
                 palette: root.palette
             }
+
         }
+
     }
 
     Item {
@@ -69,6 +76,7 @@ Item {
                 palette: root.palette
                 services: root.services
             }
+
         }
 
         Row {
@@ -76,7 +84,8 @@ Item {
             anchors.verticalCenter: timeBackground.verticalCenter
             spacing: 0
 
-            Spacer {}
+            Spacer {
+            }
 
             Background {
                 width: root.theme.iconSize
@@ -88,8 +97,11 @@ Item {
                     palette: root.palette
                     services: root.services
                 }
+
             }
+
         }
+
     }
 
     Row {
@@ -114,9 +126,11 @@ Item {
                 palette: root.palette
                 barWindow: root.barWindow
             }
+
         }
 
-        Spacer {}
+        Spacer {
+        }
 
         Background {
             width: implicitWidth
@@ -126,22 +140,46 @@ Item {
 
             Row {
                 id: rightClusterContent
+
                 spacing: root.theme.gap * 2
 
-                NetworkLan { palette: root.palette; services: root.services }
-                NetworkWifi { palette: root.palette; services: root.services }
-                Bluetooth { palette: root.palette; services: root.services }
-                Sound { palette: root.palette; services: root.services }
-                Microphone { palette: root.palette; services: root.services }
+                NetworkLan {
+                    palette: root.palette
+                    services: root.services
+                }
+
+                NetworkWifi {
+                    palette: root.palette
+                    services: root.services
+                }
+
+                Bluetooth {
+                    palette: root.palette
+                    services: root.services
+                }
+
+                Sound {
+                    palette: root.palette
+                    services: root.services
+                }
+
+                Microphone {
+                    palette: root.palette
+                    services: root.services
+                }
+
                 Notifications {
                     palette: root.palette
                     services: root.services
                     onOpenRequested: root.openNotificationCenterRequested()
                 }
+
             }
+
         }
 
-        Spacer {}
+        Spacer {
+        }
 
         Background {
             width: implicitWidth
@@ -151,9 +189,13 @@ Item {
 
             Date {
                 id: dateModule
+
                 palette: root.palette
                 services: root.services
             }
+
         }
+
     }
+
 }

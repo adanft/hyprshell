@@ -1,15 +1,31 @@
-import QtQuick
-import Quickshell
 import ".."
 import "../components"
+import QtQuick
+import Quickshell
 
 Item {
     id: root
 
-    readonly property var icons: BarIcons {}
-    readonly property var theme: BarTheme {}
+    readonly property var
+    icons: BarIcons {
+    }
+
+    readonly property var
+    theme: BarTheme {
+    }
+
     required property var palette
     required property var services
+
+    function icon() {
+        if (!services.bluetoothPowered)
+            return icons.bluetoothOff;
+
+        if (services.bluetoothConnectedCount > 0)
+            return icons.bluetoothConnected;
+
+        return icons.bluetoothOn;
+    }
 
     implicitWidth: content.implicitWidth
     implicitHeight: theme.height
@@ -31,6 +47,7 @@ Item {
             text: root.services.bluetoothConnectedCount
             color: root.palette.pink
         }
+
     }
 
     MouseArea {
@@ -39,11 +56,4 @@ Item {
         onClicked: Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd(\"[float] blueman-manager\")"])
     }
 
-    function icon() {
-        if (!services.bluetoothPowered)
-            return icons.bluetoothOff
-        if (services.bluetoothConnectedCount > 0)
-            return icons.bluetoothConnected
-        return icons.bluetoothOn
-    }
 }

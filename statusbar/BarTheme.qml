@@ -1,8 +1,10 @@
-import QtQuick
 import "../theme"
+import QtQuick
 
 QtObject {
-    readonly property var appTheme: AppTheme {}
+    readonly property var
+    appTheme: AppTheme {
+    }
 
     readonly property int outerHeight: 42
     readonly property int height: appTheme.size30
@@ -28,12 +30,11 @@ QtObject {
     readonly property int trayMenuIconSize: appTheme.size16
     readonly property int trayMenuCheckSize: appTheme.size14
     readonly property int trayMenuCheckRadius: appTheme.radius3
-    readonly property int trayMenuCheckFontSize: appTheme.fontSize2xs
+    readonly property int trayMenuCheckFontSize: appTheme.fontSizeXs
     readonly property int trayMenuTextMinWidth: 120
     readonly property int trayMenuTextRightReserve: 56
     readonly property int trayMenuClampMargin: appTheme.space8
     readonly property int trayMenuAnchorDefaultY: outerHeight
-
     readonly property string fontFamily: appTheme.fontFamily
     readonly property string textFontFamily: appTheme.textFontFamily
     readonly property string iconFontFamily: appTheme.iconFontFamily

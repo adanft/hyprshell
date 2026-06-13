@@ -1,7 +1,7 @@
+import "../shared/components" as Shared
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import "../shared/components" as Shared
 
 Rectangle {
     id: card
@@ -9,13 +9,12 @@ Rectangle {
     required property var app
     required property var theme
     property bool selected: false
-
-    signal activated
-    signal hovered
-
     readonly property bool active: selected || mouseArea.containsMouse
     readonly property string fallbackIcon: "application-x-executable"
     readonly property string iconSource: app && app.icon ? Quickshell.iconPath(app.icon, fallbackIcon) : Quickshell.iconPath(fallbackIcon)
+
+    signal activated()
+    signal hovered()
 
     width: theme.appLauncherCardWidth
     height: theme.appLauncherCardHeight
@@ -40,6 +39,7 @@ Rectangle {
                 implicitSize: card.theme.appLauncherIconSize
                 source: card.iconSource
             }
+
         }
 
         Shared.AppText {
@@ -52,6 +52,7 @@ Rectangle {
             elide: Text.ElideRight
             maximumLineCount: 1
         }
+
     }
 
     MouseArea {
@@ -63,4 +64,5 @@ Rectangle {
         onEntered: card.hovered()
         onClicked: card.activated()
     }
+
 }

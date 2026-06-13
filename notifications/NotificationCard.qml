@@ -1,13 +1,19 @@
+import "../theme"
 import QtQuick
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
-import "../theme"
 
 Item {
     id: card
 
-    readonly property var icons: Icons {}
-    readonly property var theme: AppTheme {}
+    readonly property var
+    icons: Icons {
+    }
+
+    readonly property var
+    theme: AppTheme {
+    }
+
     required property var palette
     property var notificationData: null
     property string timeText: "now"
@@ -20,13 +26,6 @@ Item {
     readonly property bool cardHovered: cardHoverHandler.hovered
     property real renderedLayoutHeight: layoutHeight
     property real allocatedLayoutHeight: layoutHeight
-    signal layoutChanged()
-    signal slotHeightChanged()
-    signal closeRequested()
-    signal actionInvoked(var action)
-    signal hoverStarted()
-    signal hoverEnded()
-
     readonly property string textFont: theme.textFontFamily
     readonly property string iconFont: theme.iconFontFamily
     readonly property int spacing: theme.notificationCardSpacing
@@ -58,171 +57,167 @@ Item {
     readonly property real viewportHeight: Math.max(0, renderedLayoutHeight - contentInset * 2)
     readonly property real bodyViewportHeight: {
         if (bodyHtml.length === 0)
-            return 0
+            return 0;
 
-        const actionSpace = hasActions ? spacing + actionButtonHeight : 0
-        return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
+        const actionSpace = hasActions ? spacing + actionButtonHeight : 0;
+        return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace);
     }
     readonly property color urgencyTimeColor: {
         if (!notificationData)
-            return card.palette.overlay1
+            return card.palette.overlay1;
 
         switch (notificationData.urgency) {
         case NotificationUrgency.Critical:
-            return card.palette.red
+            return card.palette.red;
         case NotificationUrgency.Normal:
-            return card.palette.blue
+            return card.palette.blue;
         default:
-            return card.palette.overlay1
+            return card.palette.overlay1;
         }
     }
     readonly property string iconSource: {
         if (!notificationData)
-            return ""
+            return "";
 
-        const image = notificationData.image || ""
+        const image = notificationData.image || "";
         if (image.length > 0)
-            return image
+            return image;
 
-        const appIcon = notificationData.appIcon || notificationData.desktopEntry || ""
+        const appIcon = notificationData.appIcon || notificationData.desktopEntry || "";
         if (appIcon.length === 0)
-            return ""
+            return "";
+
         if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
-            return appIcon
+            return appIcon;
+
         if (appIcon.startsWith("/"))
-            return `file://${appIcon}`
+            return `file://${appIcon}`;
+
         if (appIcon.includes("/"))
-            return appIcon
-        return `image://icon/${appIcon}`
+            return appIcon;
+
+        return `image://icon/${appIcon}`;
     }
     readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://")
+
+    signal layoutChanged()
+    signal slotHeightChanged()
+    signal closeRequested()
+    signal actionInvoked(var action)
+    signal hoverStarted()
+    signal hoverEnded()
+
+    function toggleExpanded() {
+        const nextExpanded = !expanded;
+        expanded = nextExpanded;
+        if (nextExpanded)
+            collapsedTextMode = false;
+
+    }
+
+    function countInvokableActions() {
+        const actions = notificationData && notificationData.actions ? notificationData.actions : [];
+        let count = 0;
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            if (action && action.invoke)
+                count++;
+
+        }
+        return count;
+    }
+
+    function invokableActionAt(invokableIndex) {
+        const actions = notificationData && notificationData.actions ? notificationData.actions : [];
+        let current = 0;
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            if (!action || !action.invoke)
+                continue;
+
+            if (current === invokableIndex)
+                return action;
+
+            current++;
+        }
+        return null;
+    }
+
+    function bodyTargetHeight(forExpanded) {
+        if (bodyHtml.length === 0)
+            return 0;
+
+        if (forExpanded)
+            return bodyMeasure.implicitHeight;
+
+        return Math.min(bodyMeasure.implicitHeight, bodyText.font.pixelSize * bodyLineHeight * collapsedBodyLines);
+    }
+
+    function syncLayoutHeight() {
+        const target = Math.max(0, Number(layoutHeight));
+        if (isNaN(target))
+            return ;
+
+        if (!inlineGeometryReady) {
+            renderedHeightAnimation.stop();
+            renderedLayoutHeight = target;
+            allocatedLayoutHeight = target;
+            return ;
+        }
+        const currentRendered = Math.max(0, Number(renderedLayoutHeight));
+        const nextAllocation = Math.max(target, currentRendered, allocatedLayoutHeight);
+        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= theme.notificationCardGeometryEpsilon;
+        if (allocationChanged) {
+            allocatedLayoutHeight = nextAllocation;
+            slotHeightChanged();
+        }
+        if (Math.abs(target - renderedLayoutHeight) < theme.notificationCardGeometryEpsilon) {
+            finishLayoutHeightAnimation();
+            return ;
+        }
+        renderedLayoutHeight = target;
+        allocationFinalizeTimer.restart();
+    }
+
+    function finishLayoutHeightAnimation() {
+        const target = Math.max(0, Number(layoutHeight));
+        if (isNaN(target))
+            return ;
+
+        if (Math.abs(renderedLayoutHeight - target) >= theme.notificationCardGeometryEpsilon)
+            renderedLayoutHeight = target;
+
+        allocatedLayoutHeight = target;
+        collapsedTextMode = !expanded;
+        slotHeightChanged();
+    }
 
     implicitWidth: width
     implicitHeight: useRenderedHeightForLayout ? renderedLayoutHeight : allocatedLayoutHeight
     height: implicitHeight
     visible: notificationData !== null
-
     onNotificationDataChanged: {
-        expanded = false
-        collapsedTextMode = true
-        renderedHeightAnimation.stop()
+        expanded = false;
+        collapsedTextMode = true;
+        renderedHeightAnimation.stop();
         Qt.callLater(() => {
-            renderedLayoutHeight = layoutHeight
-            allocatedLayoutHeight = layoutHeight
-            inlineGeometryReady = true
-            layoutChanged()
-        })
+            renderedLayoutHeight = layoutHeight;
+            allocatedLayoutHeight = layoutHeight;
+            inlineGeometryReady = true;
+            layoutChanged();
+        });
     }
-
     onLayoutHeightChanged: syncLayoutHeight()
     onRenderedLayoutHeightChanged: {
         if (inlineHeightAnimating)
-            slotHeightChanged()
-    }
+            slotHeightChanged();
 
+    }
     Component.onCompleted: {
-        renderedHeightAnimation.stop()
-        renderedLayoutHeight = layoutHeight
-        allocatedLayoutHeight = layoutHeight
-        inlineGeometryReady = true
-    }
-
-    function toggleExpanded() {
-        const nextExpanded = !expanded
-
-        expanded = nextExpanded
-        if (nextExpanded)
-            collapsedTextMode = false
-    }
-
-    function countInvokableActions() {
-        const actions = notificationData && notificationData.actions ? notificationData.actions : []
-        let count = 0
-        for (let i = 0; i < actions.length; i++) {
-            const action = actions[i]
-            if (action && action.invoke)
-                count++
-        }
-        return count
-    }
-
-    function invokableActionAt(invokableIndex) {
-        const actions = notificationData && notificationData.actions ? notificationData.actions : []
-        let current = 0
-        for (let i = 0; i < actions.length; i++) {
-            const action = actions[i]
-            if (!action || !action.invoke)
-                continue
-            if (current === invokableIndex)
-                return action
-            current++
-        }
-        return null
-    }
-
-    function bodyTargetHeight(forExpanded) {
-        if (bodyHtml.length === 0)
-            return 0
-
-        if (forExpanded)
-            return bodyMeasure.implicitHeight
-
-        return Math.min(bodyMeasure.implicitHeight, bodyText.font.pixelSize * bodyLineHeight * collapsedBodyLines)
-    }
-
-    function syncLayoutHeight() {
-        const target = Math.max(0, Number(layoutHeight))
-        if (isNaN(target))
-            return
-
-        if (!inlineGeometryReady) {
-            renderedHeightAnimation.stop()
-            renderedLayoutHeight = target
-            allocatedLayoutHeight = target
-            return
-        }
-
-        const currentRendered = Math.max(0, Number(renderedLayoutHeight))
-        const nextAllocation = Math.max(target, currentRendered, allocatedLayoutHeight)
-        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= theme.notificationCardGeometryEpsilon
-
-        if (allocationChanged) {
-            allocatedLayoutHeight = nextAllocation
-            slotHeightChanged()
-        }
-
-        if (Math.abs(target - renderedLayoutHeight) < theme.notificationCardGeometryEpsilon) {
-            finishLayoutHeightAnimation()
-            return
-        }
-
-        renderedLayoutHeight = target
-        allocationFinalizeTimer.restart()
-    }
-
-    function finishLayoutHeightAnimation() {
-        const target = Math.max(0, Number(layoutHeight))
-        if (isNaN(target))
-            return
-
-        if (Math.abs(renderedLayoutHeight - target) >= theme.notificationCardGeometryEpsilon)
-            renderedLayoutHeight = target
-        allocatedLayoutHeight = target
-        collapsedTextMode = !expanded
-        slotHeightChanged()
-    }
-
-    Behavior on renderedLayoutHeight {
-        NumberAnimation {
-            id: renderedHeightAnimation
-            duration: card.resizeAnimationMs
-            easing.type: Easing.Linear
-            onRunningChanged: card.inlineHeightAnimating = running
-            onFinished: {
-                allocationFinalizeTimer.stop()
-                card.finishLayoutHeightAnimation()
-            }
-        }
+        renderedHeightAnimation.stop();
+        renderedLayoutHeight = layoutHeight;
+        allocatedLayoutHeight = layoutHeight;
+        inlineGeometryReady = true;
     }
 
     Timer {
@@ -249,9 +244,9 @@ Item {
 
             onHoveredChanged: {
                 if (hovered)
-                    card.hoverStarted()
+                    card.hoverStarted();
                 else
-                    card.hoverEnded()
+                    card.hoverEnded();
             }
         }
 
@@ -313,6 +308,7 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         visible: card.iconSource.length === 0
                     }
+
                 }
 
                 Column {
@@ -350,6 +346,7 @@ Item {
                             font.pixelSize: card.labelFontSize
                             elide: Text.ElideRight
                         }
+
                     }
 
                     Text {
@@ -367,6 +364,7 @@ Item {
 
                         readonly property real collapsedHeight: bodyText.font.pixelSize * card.bodyLineHeight * card.collapsedBodyLines
                         readonly property bool canExpand: bodyMeasure.implicitHeight > collapsedHeight + 1
+
                         width: parent.width
                         height: card.bodyViewportHeight
                         visible: height > 0
@@ -385,11 +383,14 @@ Item {
                             wrapMode: Text.WordWrap
                             maximumLineCount: card.collapsedTextMode ? card.collapsedBodyLines : -1
                             elide: card.collapsedTextMode ? Text.ElideRight : Text.ElideNone
-                            onLinkActivated: link => Qt.openUrlExternally(link)
+                            onLinkActivated: (link) => {
+                                return Qt.openUrlExternally(link);
+                            }
 
                             HoverHandler {
                                 cursorShape: bodyText.hoveredLink.length > 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
                             }
+
                         }
 
                         Text {
@@ -414,6 +415,7 @@ Item {
                             z: -1
                             onClicked: card.toggleExpanded()
                         }
+
                     }
 
                     Row {
@@ -454,9 +456,13 @@ Item {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: card.actionInvoked(parent.action)
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 Item {
@@ -492,10 +498,30 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: card.closeRequested()
                         }
+
                     }
+
                 }
+
+            }
+
+        }
+
+    }
+
+    Behavior on renderedLayoutHeight {
+        NumberAnimation {
+            id: renderedHeightAnimation
+
+            duration: card.resizeAnimationMs
+            easing.type: Easing.Linear
+            onRunningChanged: card.inlineHeightAnimating = running
+            onFinished: {
+                allocationFinalizeTimer.stop();
+                card.finishLayoutHeightAnimation();
             }
         }
 
     }
+
 }

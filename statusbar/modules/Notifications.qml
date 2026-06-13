@@ -1,17 +1,34 @@
-import QtQuick
 import ".."
-import "../components"
 import "../../theme"
+import "../components"
+import QtQuick
 
 Item {
     id: root
 
-    readonly property var icons: BarIcons {}
-    readonly property var theme: BarTheme {}
-    readonly property var appTheme: AppTheme {}
+    readonly property var
+    icons: BarIcons {
+    }
+
+    readonly property var
+    theme: BarTheme {
+    }
+
+    readonly property var
+    appTheme: AppTheme {
+    }
+
     required property var palette
     required property var services
+
     signal openRequested()
+
+    function iconText() {
+        if (services.notificationDnd)
+            return icons.notificationsDnd;
+
+        return icons.notifications;
+    }
 
     implicitWidth: content.implicitWidth
     implicitHeight: theme.height
@@ -42,17 +59,12 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: mouse => {
+        onClicked: (mouse) => {
             if (mouse.button === Qt.RightButton)
-                services.toggleNotificationDnd()
+                services.toggleNotificationDnd();
             else
-                root.openRequested()
+                root.openRequested();
         }
     }
 
-    function iconText() {
-        if (services.notificationDnd)
-            return icons.notificationsDnd
-        return icons.notifications
-    }
 }

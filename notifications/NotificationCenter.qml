@@ -105,7 +105,7 @@ PopupWindow {
                             color: clearMouse.containsMouse ? popup.palette.blue : popup.palette.subtext1
                             font.family: popup.theme.textFontFamily
                             font.pixelSize: popup.theme.notificationCenterTextFontSize
-                            font.weight: Font.Medium
+                            font.styleName: popup.theme.fontStyleMedium
                         }
 
                         AppText {

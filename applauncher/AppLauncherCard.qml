@@ -47,7 +47,7 @@ Rectangle {
             text: card.app ? (card.app.name || "Unnamed") : "Unnamed"
             color: card.theme.colors.text
             font.pixelSize: card.theme.appLauncherCardLabelFontSize
-            font.styleName: "Medium"
+            font.styleName: card.theme.fontStyleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             maximumLineCount: 1

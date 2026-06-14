@@ -78,7 +78,7 @@ Rectangle {
             text: card.icons.wallpaperSelectedCheck
             color: card.theme.colors.crust
             font.pixelSize: card.theme.wallpaperCardSelectedBadgeIconFontSize
-            font.bold: true
+            font.styleName: card.theme.fontStyleBold
         }
 
     }

@@ -161,7 +161,7 @@ Scope {
                             text: "Cursor"
                             color: tool.theme.colors.text
                             font.pixelSize: tool.theme.fontSizeMd
-                            font.styleName: "Semibold"
+                            font.styleName: tool.theme.fontStyleSemibold
                         }
 
                         Rectangle {

@@ -46,7 +46,7 @@ Rectangle {
             text: action.title
             color: action.theme.colors.text
             font.pixelSize: action.theme.fontSizeSm
-            font.styleName: "Medium"
+            font.styleName: action.theme.fontStyleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             maximumLineCount: 1

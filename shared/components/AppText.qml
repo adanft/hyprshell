@@ -8,6 +8,6 @@ Text {
 
     font.family: theme.textFontFamily
     font.pixelSize: theme.fontSize
-    font.styleName: "Semibold"
+    font.styleName: theme.fontStyleSemibold
     verticalAlignment: Text.AlignVCenter
 }

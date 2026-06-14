@@ -215,7 +215,7 @@ Scope {
                             color: searchInput.activeFocus ? launcher.theme.colors.mauve : launcher.theme.colors.overlay1
                             font.family: launcher.theme.iconFontFamily
                             font.pixelSize: launcher.theme.appLauncherSearchIconSize
-                            font.styleName: "Medium"
+                            font.styleName: launcher.theme.fontStyleMedium
                             horizontalAlignment: Text.AlignLeft
                         }
 
@@ -227,7 +227,7 @@ Scope {
                             text: "Search Apps"
                             color: launcher.theme.colors.overlay1
                             font.pixelSize: launcher.theme.appLauncherSearchFontSize
-                            font.styleName: "Medium"
+                            font.styleName: launcher.theme.fontStyleMedium
                         }
 
                         TextInput {
@@ -242,7 +242,7 @@ Scope {
                             selectedTextColor: launcher.theme.colors.crust
                             font.family: launcher.theme.textFontFamily
                             font.pixelSize: launcher.theme.appLauncherSearchFontSize
-                            font.styleName: "Medium"
+                            font.styleName: launcher.theme.fontStyleMedium
                             verticalAlignment: TextInput.AlignVCenter
                             text: launcher.searchText
                             onTextChanged: launcher.searchText = text

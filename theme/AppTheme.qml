@@ -3,6 +3,8 @@ import QtQuick
 QtObject {
     readonly property var colors: Colors {
     }
+    readonly property var typography: Typography {
+    }
 
     readonly property int space2: 2
     readonly property int space4: 4
@@ -21,13 +23,13 @@ QtObject {
     readonly property int borderMedium: 2
     readonly property int borderSelection: 4
     readonly property int borderEmphasis: 6
-    readonly property int fontSizeXs: 10
-    readonly property int fontSizeSm: 12
-    readonly property int fontSizeMd: 14
-    readonly property int fontSizeLg: size16
-    readonly property int fontSizeXl: 20
-    readonly property int displayIconSize: 56
-    readonly property int heroIconSize: 68
+    readonly property int fontSizeXs: typography.sizeXs
+    readonly property int fontSizeSm: typography.sizeSm
+    readonly property int fontSizeMd: typography.sizeMd
+    readonly property int fontSizeLg: typography.sizeLg
+    readonly property int fontSizeXl: typography.sizeXl
+    readonly property int displayIconSize: typography.displayIconFontSize
+    readonly property int heroIconSize: typography.heroIconFontSize
     readonly property int size14: 14
     readonly property int size16: 16
     readonly property int size24: 24
@@ -36,11 +38,14 @@ QtObject {
     readonly property int size30: 30
     readonly property int size32: 32
     readonly property int size34: 34
-    readonly property string textFontFamily: "SF Pro Display"
-    readonly property string iconFontFamily: "Symbols Nerd Font"
-    readonly property string fontFamily: textFontFamily
+    readonly property string textFontFamily: typography.textFontFamily
+    readonly property string iconFontFamily: typography.iconFontFamily
+    readonly property string fontFamily: typography.defaultFontFamily
     readonly property int fontSize: fontSizeLg
     readonly property int iconFontSize: fontSizeXl
+    readonly property string fontStyleMedium: typography.styleMedium
+    readonly property string fontStyleSemibold: typography.styleSemibold
+    readonly property string fontStyleBold: typography.styleBold
     readonly property int networkRefreshMs: 2000
     readonly property int appLauncherRadius: radius16
     readonly property int appLauncherBorderWidth: borderMedium
@@ -103,7 +108,7 @@ QtObject {
     readonly property int screenshotToolActionPadding: space8
     readonly property int screenshotToolActionSpacing: space4
     readonly property int screenshotToolActionIconSlotSize: 44
-    readonly property int screenshotToolActionIconSize: size28
+    readonly property int screenshotToolActionIconSize: typography.actionIconFontSize
     readonly property int screenshotToolCursorRowHeight: size24
     readonly property int notificationBadgeSize: space6
     readonly property int notificationBadgeRadius: radius3

@@ -355,7 +355,7 @@ Item {
                         color: card.palette.mauve
                         font.family: card.textFont
                         font.pixelSize: card.titleFontSize
-                        font.weight: Font.DemiBold
+                        font.styleName: card.theme.fontStyleSemibold
                         elide: Text.ElideRight
                     }
 
@@ -444,7 +444,7 @@ Item {
                                     color: actionMouse.containsMouse ? card.palette.blue : card.palette.subtext1
                                     font.family: card.textFont
                                     font.pixelSize: card.theme.fontSizeSm
-                                    font.weight: Font.Medium
+                                    font.styleName: card.theme.fontStyleMedium
                                     elide: Text.ElideRight
                                 }
 

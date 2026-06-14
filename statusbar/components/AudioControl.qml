@@ -62,7 +62,12 @@ Item {
         cursorShape: Qt.PointingHandCursor
         onClicked: root.services.toggleMute(root.source)
         onWheel: (wheel) => {
-            return root.services.changeVolume(root.source, wheel.angleDelta.y > 0 ? 1 : -1);
+            const delta = wheel.angleDelta.y;
+            if (delta === 0)
+                return;
+
+            root.services.changeVolume(root.source, delta > 0 ? 1 : -1);
+            wheel.accepted = true;
         }
     }
 

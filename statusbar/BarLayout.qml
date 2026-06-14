@@ -163,6 +163,16 @@ Item {
                     services: root.services
                 }
 
+                Backlight {
+                    palette: root.palette
+                    services: root.services
+                }
+
+                Battery {
+                    palette: root.palette
+                    services: root.services
+                }
+
                 Microphone {
                     palette: root.palette
                     services: root.services

@@ -21,6 +21,18 @@ Scope {
     readonly property var powerProfiles: [PowerProfile.Performance, PowerProfile.Balanced, PowerProfile.PowerSaver]
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
+    readonly property var batteries: UPower.devices.values.filter(device => device && device.isLaptopBattery)
+    readonly property var readyBatteries: batteries.filter(device => device.ready)
+    readonly property bool batteryAvailable: batteries.length > 0
+    readonly property bool batteryCharging: hasBatteryState(UPowerDeviceState.Charging)
+    readonly property bool batteryEmpty: hasBatteryState(UPowerDeviceState.Empty)
+    readonly property bool batteryFull: readyBatteries.length > 0 && readyBatteries.every(device => device.state === UPowerDeviceState.FullyCharged)
+    readonly property bool batteryPendingCharge: hasBatteryState(UPowerDeviceState.PendingCharge)
+    readonly property bool batteryPendingDischarge: hasBatteryState(UPowerDeviceState.PendingDischarge)
+    readonly property bool batteryUnknown: !batteryAvailable || readyBatteries.length === 0 || readyBatteries.every(device => device.state === UPowerDeviceState.Unknown)
+    readonly property bool batteryLow: !batteryUnknown && batteryLevel <= 30
+    readonly property bool batteryCritical: !batteryUnknown && batteryLevel <= 15
+    readonly property int batteryLevel: computeBatteryLevel()
     readonly property var bluetoothAdapter: Bluetooth.defaultAdapter
     readonly property bool bluetoothAvailable: bluetoothAdapter !== null
     readonly property bool bluetoothPowered: bluetoothAvailable ? bluetoothAdapter.enabled : false
@@ -81,6 +93,11 @@ Scope {
     property bool notificationDnd: false
     property string previousLanInterface: ""
     property real previousNetworkSampleMs: 0
+    property string brightnessDevice: ""
+    property bool brightnessAvailable: false
+    property int brightnessLevel: 0
+    readonly property string brightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/brightness` : ""
+    readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/max_brightness` : ""
 
     FileView {
         id: notificationHistoryFileView
@@ -110,6 +127,30 @@ Scope {
         path: `/sys/class/net/${service.lanInterface}/statistics/tx_bytes`
         blockLoading: true
         printErrors: false
+    }
+
+    FileView {
+        id: brightnessValueFile
+
+        path: service.brightnessPath
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        onLoaded: service.updateBrightnessFromFiles()
+        onLoadFailed: service.brightnessAvailable = false
+        onFileChanged: reload()
+    }
+
+    FileView {
+        id: maxBrightnessValueFile
+
+        path: service.maxBrightnessPath
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        onLoaded: service.updateBrightnessFromFiles()
+        onLoadFailed: service.brightnessAvailable = false
+        onFileChanged: reload()
     }
 
     PwObjectTracker {
@@ -175,9 +216,22 @@ Scope {
         onTriggered: notificationTimeUpdateTick = !notificationTimeUpdateTick
     }
 
+    Process {
+        id: brightnessDetectProcess
+
+        stdout: StdioCollector {
+            onStreamFinished: service.detectBrightnessDevice(this.text)
+        }
+    }
+
+    Process {
+        id: brightnessWriteProcess
+    }
+
     Component.onCompleted: {
         updateClock()
         refreshNetwork()
+        detectBrightness()
     }
 
     function updateClock() {
@@ -209,6 +263,85 @@ Scope {
 
         node.audio.volume = nextVolume / 100
         node.audio.muted = false
+    }
+
+    function computeBatteryLevel() {
+        if (readyBatteries.length === 0)
+            return 0
+
+        const capacity = readyBatteries.reduce((sum, device) => sum + device.energyCapacity, 0)
+        let level = 0
+
+        if (capacity > 0) {
+            const energy = readyBatteries.reduce((sum, device) => sum + device.energy, 0)
+            level = Math.round((energy * 100) / capacity)
+        } else {
+            const percentage = readyBatteries.reduce((sum, device) => sum + normalizePercentage(device.percentage), 0) / readyBatteries.length
+            level = Math.round(percentage)
+        }
+
+        return Math.max(0, Math.min(100, level))
+    }
+
+    function hasBatteryState(state) {
+        return readyBatteries.some(device => device.state === state)
+    }
+
+    function normalizePercentage(value) {
+        const percentage = Number(value) || 0
+        return percentage <= 1 ? percentage * 100 : percentage
+    }
+
+    function detectBrightness() {
+        if (brightnessDevice.length > 0) {
+            updateBrightnessFromFiles()
+            return
+        }
+
+        brightnessDetectProcess.exec(["sh", "-c", "brightnessctl -m 2>/dev/null || true"])
+    }
+
+    function detectBrightnessDevice(output) {
+        const fields = String(output || "").trim().split(",")
+        if (fields.length === 0 || fields[0].length === 0) {
+            brightnessAvailable = false
+            return
+        }
+
+        brightnessDevice = fields[0]
+        const percentageMatch = String(output || "").match(/(\d+)%/)
+        if (percentageMatch)
+            brightnessLevel = Math.max(0, Math.min(100, parseInt(percentageMatch[1], 10)))
+
+        Qt.callLater(updateBrightnessFromFiles)
+    }
+
+    function updateBrightnessFromFiles() {
+        if (brightnessDevice.length === 0 || !brightnessValueFile.loaded || !maxBrightnessValueFile.loaded)
+            return
+
+        const current = Number(String(brightnessValueFile.text()).trim())
+        const maximum = Number(String(maxBrightnessValueFile.text()).trim())
+        if (!Number.isFinite(current) || !Number.isFinite(maximum) || maximum <= 0) {
+            brightnessAvailable = false
+            return
+        }
+
+        brightnessAvailable = true
+        brightnessLevel = Math.max(0, Math.min(100, Math.round((current * 100) / maximum)))
+    }
+
+    function setBrightness(percent) {
+        const next = Math.max(0, Math.min(100, Math.round(percent)))
+        if (next === brightnessLevel)
+            return
+
+        brightnessLevel = next
+        brightnessWriteProcess.exec(["brightnessctl", "set", `${next}%`])
+    }
+
+    function changeBrightness(delta) {
+        setBrightness(brightnessLevel + delta)
     }
 
     function refreshNetwork() {

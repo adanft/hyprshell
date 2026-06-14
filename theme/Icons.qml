@@ -28,6 +28,13 @@ QtObject {
     readonly property string powerPerformance: "󰠠"
     readonly property string powerSaver: "󱤆"
     readonly property string powerBalanced: "󰚀"
+    readonly property var backlightLevels: ["", "", "", "", "", "", "", "", ""]
+    readonly property var batteryLevels: ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂"]
+    readonly property string batteryFull: "󱃌"
+    readonly property string batteryWarning: "󰂃"
+    readonly property string batteryCritical: "󱃍"
+    readonly property string batteryCharging: "󱘖"
+    readonly property string batteryUnknown: "󰂑"
     readonly property string wallpaperSelectedCheck: "✓"
     readonly property string trayBack: "‹"
     readonly property string trayCheck: "✓"

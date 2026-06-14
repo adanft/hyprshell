@@ -1,30 +1,30 @@
-import ".."
 import "../components"
 import QtQuick
+import "../../theme"
 
 Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
     required property var services
     readonly property string profile: services.powerProfile
 
-    width: theme.iconSize
-    height: theme.iconSize
+    width: theme.sizing.statusBarIconSize
+    height: theme.sizing.statusBarIconSize
 
     BarText {
         anchors.centerIn: parent
         color: root.profile === "performance" ? root.palette.red : root.profile === "power-saver" ? root.palette.green : root.palette.blue
         text: root.profile === "performance" ? root.icons.powerPerformance : root.profile === "power-saver" ? root.icons.powerSaver : root.icons.powerBalanced
-        font.pixelSize: root.theme.iconFontSize
+        font.pixelSize: root.theme.typography.sizeXl
     }
 
     MouseArea {

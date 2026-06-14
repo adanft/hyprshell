@@ -1,4 +1,5 @@
 import QtQuick
+import "../theme"
 import "components"
 import "modules"
 
@@ -6,7 +7,7 @@ Item {
     id: root
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -24,9 +25,9 @@ Item {
 
         Background {
             width: implicitWidth
-            height: root.theme.height
+            height: root.theme.sizing.statusBarHeight
             palette: root.palette
-            padding: root.theme.workspaceContainerPadding
+            padding: root.theme.spacing.space16
 
             Workspaces {
                 id: workspaces
@@ -41,7 +42,7 @@ Item {
 
         Background {
             width: windowTitle.width
-            height: root.theme.height
+            height: root.theme.sizing.statusBarHeight
             palette: root.palette
             backgroundColor: root.palette.transparent
 
@@ -64,11 +65,11 @@ Item {
             id: timeBackground
 
             width: implicitWidth
-            height: root.theme.height
+            height: root.theme.sizing.statusBarHeight
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             palette: root.palette
-            padding: root.theme.containerPadding
+            padding: root.theme.spacing.space12
 
             Time {
                 id: timeWidget
@@ -88,8 +89,8 @@ Item {
             }
 
             Background {
-                width: root.theme.iconSize
-                height: root.theme.height
+                width: root.theme.sizing.statusBarIconSize
+                height: root.theme.sizing.statusBarHeight
                 palette: root.palette
                 backgroundColor: root.palette.transparent
 
@@ -115,7 +116,7 @@ Item {
             id: trayBackground
 
             width: tray.implicitWidth
-            height: root.theme.height
+            height: root.theme.sizing.statusBarHeight
             visible: tray.hasItems
             palette: root.palette
             backgroundColor: root.palette.transparent
@@ -134,14 +135,14 @@ Item {
 
         Background {
             width: implicitWidth
-            height: root.theme.height
+            height: root.theme.sizing.statusBarHeight
             palette: root.palette
-            padding: root.theme.compactContainerPadding + root.theme.gap
+            padding: root.theme.spacing.space12 + root.theme.spacing.space6
 
             Row {
                 id: rightClusterContent
 
-                spacing: root.theme.gap * 2
+                spacing: root.theme.spacing.space6 * 2
 
                 NetworkLan {
                     palette: root.palette
@@ -193,9 +194,9 @@ Item {
 
         Background {
             width: implicitWidth
-            height: root.theme.height
+            height: root.theme.sizing.statusBarHeight
             palette: root.palette
-            padding: root.theme.containerPadding
+            padding: root.theme.spacing.space12
 
             Date {
                 id: dateModule

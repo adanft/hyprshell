@@ -1,19 +1,19 @@
-import ".."
 import "../components"
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
+import "../../theme"
 
 Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -46,13 +46,13 @@ Item {
 
     implicitWidth: hasItems ? iconRow.implicitWidth : 0
     width: implicitWidth
-    height: theme.height
+    height: theme.sizing.statusBarHeight
 
     Row {
         id: iconRow
 
         anchors.centerIn: parent
-        spacing: root.theme.trayIconGap
+        spacing: root.theme.spacing.space12
 
         Repeater {
             id: trayItems
@@ -60,9 +60,9 @@ Item {
             IconImage {
                 required property var modelData
 
-                width: root.theme.iconSize
-                height: root.theme.height
-                implicitSize: root.theme.iconSize
+                width: root.theme.sizing.statusBarIconSize
+                height: root.theme.sizing.statusBarHeight
+                implicitSize: root.theme.sizing.statusBarIconSize
                 source: root.trayIconSourceFor(modelData)
 
                 MouseArea {

@@ -1,11 +1,11 @@
-import ".."
 import QtQuick
+import "../../theme"
 
 Rectangle {
     id: root
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -15,8 +15,8 @@ Rectangle {
     property int contentSpacing: 0
 
     implicitWidth: contentRow.implicitWidth + padding * 2
-    implicitHeight: theme.height
-    radius: theme.radius
+    implicitHeight: theme.sizing.statusBarHeight
+    radius: theme.shape.radiusFull
     color: backgroundColor
 
     Row {

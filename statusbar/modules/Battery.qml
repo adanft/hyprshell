@@ -1,12 +1,12 @@
-import ".."
 import "../components"
 import QtQuick
+import "../../theme"
 
 Item {
     id: root
 
-    readonly property var icons: BarIcons {}
-    readonly property var theme: BarTheme {}
+    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme {}
 
     required property var palette
     required property var services
@@ -36,7 +36,7 @@ Item {
 
     visible: services.batteryAvailable
     implicitWidth: visible ? content.implicitWidth : 0
-    implicitHeight: theme.height
+    implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
     height: implicitHeight
 
@@ -44,7 +44,7 @@ Item {
         id: content
 
         anchors.centerIn: parent
-        spacing: root.theme.gap
+        spacing: root.theme.spacing.space6
 
         BarText {
             text: root.iconText

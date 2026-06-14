@@ -1,17 +1,17 @@
-import ".."
 import "../components"
 import QtQuick
 import Quickshell
+import "../../theme"
 
 Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -19,7 +19,7 @@ Item {
     readonly property bool connected: services.wifiUp && services.wifiSignal > 0
 
     implicitWidth: content.implicitWidth
-    implicitHeight: theme.height
+    implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
     height: implicitHeight
 
@@ -27,7 +27,7 @@ Item {
         id: content
 
         anchors.centerIn: parent
-        spacing: root.theme.gap
+        spacing: root.theme.spacing.space6
 
         BarText {
             text: root.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected

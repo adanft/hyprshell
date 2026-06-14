@@ -1,17 +1,17 @@
-import ".."
 import "../components"
 import QtQuick
 import Quickshell
+import "../../theme"
 
 Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -28,7 +28,7 @@ Item {
     }
 
     implicitWidth: content.implicitWidth
-    implicitHeight: theme.height
+    implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
     height: implicitHeight
     Component.onCompleted: {
@@ -43,7 +43,7 @@ Item {
         id: content
 
         anchors.centerIn: parent
-        spacing: root.theme.gap
+        spacing: root.theme.spacing.space6
 
         BarText {
             text: root.services.lanUp ? root.icons.networkLanConnected : root.icons.networkLanDisconnected

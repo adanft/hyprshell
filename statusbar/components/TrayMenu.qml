@@ -1,18 +1,18 @@
-import ".."
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
+import "../../theme"
 
 Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -20,7 +20,7 @@ Item {
     property var currentTrayItem: null
     property bool menuOpen: false
     property real menuAnchorX: 0
-    property real menuAnchorY: theme.trayMenuAnchorDefaultY
+    property real menuAnchorY: theme.sizing.statusBarOuterHeight
     property int openRetryCount: 0
     readonly property int maxOpenRetries: 2
 
@@ -31,7 +31,7 @@ Item {
         const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
         currentTrayItem = trayItem;
         menuAnchorX = globalPosition.x - screenX;
-        menuAnchorY = globalPosition.y - screenY + theme.gap;
+        menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
         finishOpen(anchorItem);
     }
 
@@ -59,7 +59,7 @@ Item {
             const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
             const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
             menuAnchorX = globalPosition.x - screenX;
-            menuAnchorY = globalPosition.y - screenY + theme.gap;
+            menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
         }
         menuOpen = true;
     }
@@ -142,17 +142,16 @@ Item {
         Rectangle {
             id: menuContainer
 
-            readonly property real desiredWidth: root.theme.trayMenuWidth
-            readonly property real desiredHeight: Math.max(root.theme.trayMenuMinHeight, menuColumn.implicitHeight + root.theme.trayMenuPadding * 2)
+            readonly property real desiredHeight: Math.max(root.theme.sizing.statusBarTrayMenuMinHeight, menuColumn.implicitHeight + root.theme.spacing.space8 * 2)
 
-            width: desiredWidth
+            width: root.theme.sizing.statusBarTrayMenuWidth
             height: desiredHeight
-            x: Math.max(root.theme.trayMenuClampMargin, Math.min(menuWindow.width - width - root.theme.trayMenuClampMargin, root.menuAnchorX - width / 2))
-            y: Math.max(root.theme.trayMenuClampMargin, Math.min(menuWindow.height - height - root.theme.trayMenuClampMargin, root.menuAnchorY))
-            radius: root.theme.trayMenuRadius
+            x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX - width / 2))
+            y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8, root.menuAnchorY))
+            radius: root.theme.shape.radius12
             color: root.palette.base
             border.color: root.palette.surface1
-            border.width: root.theme.trayMenuBorderWidth
+            border.width: root.theme.shape.borderThin
 
             MouseArea {
                 anchors.fill: parent
@@ -163,36 +162,36 @@ Item {
                 id: menuColumn
 
                 anchors.fill: parent
-                anchors.margins: root.theme.trayMenuPadding
-                spacing: root.theme.trayMenuSpacing
+                anchors.margins: root.theme.spacing.space8
+                spacing: root.theme.spacing.space2
 
                 Rectangle {
                     visible: submenuStack.count > 0
                     width: parent.width
-                    height: root.theme.trayMenuItemHeight
-                    radius: root.theme.trayMenuItemRadius
+                    height: root.theme.sizing.statusBarTrayMenuItemHeight
+                    radius: root.theme.shape.radius8
                     color: backArea.containsMouse ? root.palette.surface1 : root.palette.transparent
 
                     Row {
                         anchors.left: parent.left
-                        anchors.leftMargin: root.theme.trayMenuPadding
+                        anchors.leftMargin: root.theme.spacing.space8
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: root.theme.trayMenuPadding
+                        spacing: root.theme.spacing.space8
 
                         BarText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.icons.trayBack
                             color: root.palette.text
-                            font.family: root.theme.textFontFamily
-                            font.pixelSize: root.theme.fontSize
+                            font.family: root.theme.typography.textFontFamily
+                            font.pixelSize: root.theme.typography.sizeLg
                         }
 
                         BarText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Back"
                             color: root.palette.text
-                            font.family: root.theme.textFontFamily
-                            font.pixelSize: root.theme.fontSize
+                            font.family: root.theme.typography.textFontFamily
+                            font.pixelSize: root.theme.typography.sizeLg
                         }
 
                     }
@@ -219,8 +218,8 @@ Item {
                         readonly property bool enabledEntry: modelData && modelData.enabled !== false
 
                         width: menuColumn.width
-                        height: separator ? root.theme.trayMenuSeparatorHeight : root.theme.trayMenuItemHeight
-                        radius: separator ? 0 : root.theme.trayMenuItemRadius
+                        height: separator ? root.theme.shape.borderThin : root.theme.sizing.statusBarTrayMenuItemHeight
+                        radius: separator ? 0 : root.theme.shape.radius8
                         color: separator ? root.palette.surface1 : entryMouseArea.containsMouse ? root.palette.surface1 : root.palette.transparent
 
                         MouseArea {
@@ -249,20 +248,20 @@ Item {
 
                         Row {
                             anchors.left: parent.left
-                            anchors.leftMargin: root.theme.trayMenuPadding
+                            anchors.leftMargin: root.theme.spacing.space8
                             anchors.right: parent.right
-                            anchors.rightMargin: root.theme.trayMenuPadding
+                            anchors.rightMargin: root.theme.spacing.space8
                             anchors.verticalCenter: parent.verticalCenter
-                            spacing: root.theme.trayMenuPadding
+                            spacing: root.theme.spacing.space8
                             visible: !menuEntryRoot.separator
 
                             Rectangle {
-                                width: root.theme.trayMenuCheckSize
-                                height: root.theme.trayMenuCheckSize
+                                width: root.theme.sizing.statusBarTrayMenuCheckSize
+                                height: root.theme.sizing.statusBarTrayMenuCheckSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType !== undefined && menuEntryRoot.modelData.buttonType !== 0
-                                radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 : root.theme.trayMenuCheckRadius
-                                border.width: root.theme.trayMenuBorderWidth
+                                radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 : root.theme.shape.radius3
+                                border.width: root.theme.shape.borderThin
                                 border.color: root.palette.overlay1
                                 color: root.palette.transparent
 
@@ -271,27 +270,27 @@ Item {
                                     visible: menuEntryRoot.modelData && menuEntryRoot.modelData.checkState === 2
                                     text: root.icons.trayCheck
                                     color: root.palette.blue
-                                    font.pixelSize: root.theme.trayMenuCheckFontSize
+                                    font.pixelSize: root.theme.typography.sizeXs
                                 }
 
                             }
 
                             IconImage {
-                                width: root.theme.trayMenuIconSize
-                                height: root.theme.trayMenuIconSize
-                                implicitSize: root.theme.trayMenuIconSize
+                                width: root.theme.sizing.statusBarTrayMenuIconSize
+                                height: root.theme.sizing.statusBarTrayMenuIconSize
+                                implicitSize: root.theme.sizing.statusBarTrayMenuIconSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.icon !== ""
                                 source: menuEntryRoot.modelData ? menuEntryRoot.modelData.icon : ""
                             }
 
                             BarText {
-                                width: Math.max(root.theme.trayMenuTextMinWidth, parent.width - root.theme.trayMenuTextRightReserve)
+                                width: Math.max(root.theme.sizing.statusBarTrayMenuTextMinWidth, parent.width - root.theme.sizing.statusBarTrayMenuTextRightReserve)
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: menuEntryRoot.modelData ? (menuEntryRoot.modelData.text || "") : ""
                                 color: menuEntryRoot.enabledEntry ? root.palette.text : root.palette.overlay1
-                                font.family: root.theme.textFontFamily
-                                font.pixelSize: root.theme.fontSize
+                                font.family: root.theme.typography.textFontFamily
+                                font.pixelSize: root.theme.typography.sizeLg
                                 elide: Text.ElideRight
                             }
 
@@ -300,7 +299,7 @@ Item {
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.hasChildren
                                 text: root.icons.traySubmenu
                                 color: root.palette.subtext1
-                                font.family: root.theme.textFontFamily
+                                font.family: root.theme.typography.textFontFamily
                             }
 
                         }

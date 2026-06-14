@@ -1,4 +1,3 @@
-import ".."
 import "../../theme"
 import "../components"
 import QtQuick
@@ -7,15 +6,11 @@ Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
-    }
-
-    readonly property var
-    appTheme: AppTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -31,7 +26,7 @@ Item {
     }
 
     implicitWidth: content.implicitWidth
-    implicitHeight: theme.height
+    implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
     height: implicitHeight
 
@@ -44,15 +39,15 @@ Item {
     }
 
     Rectangle {
-        width: root.appTheme.sizing.notificationBadgeSize
-        height: root.appTheme.sizing.notificationBadgeSize
-        radius: root.appTheme.shape.notificationBadgeRadius
+        width: root.theme.sizing.notificationBadgeSize
+        height: root.theme.sizing.notificationBadgeSize
+        radius: root.theme.shape.notificationBadgeRadius
         color: root.palette.red
         visible: root.services.hasNotifications
         anchors.top: parent.top
-        anchors.topMargin: root.appTheme.spacing.notificationBadgeTopMargin
+        anchors.topMargin: root.theme.spacing.notificationBadgeTopMargin
         anchors.right: parent.right
-        anchors.rightMargin: root.appTheme.spacing.notificationBadgeRightMargin
+        anchors.rightMargin: root.theme.spacing.notificationBadgeRightMargin
     }
 
     MouseArea {

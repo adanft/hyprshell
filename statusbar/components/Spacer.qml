@@ -1,11 +1,11 @@
-import ".."
 import QtQuick
+import "../../theme"
 
 Item {
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
-    width: theme.gap
+    width: theme.spacing.space6
     height: parent.height
 }

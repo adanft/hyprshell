@@ -8,7 +8,7 @@ import Quickshell
 ShellRoot {
     id: shell
 
-    Theme.Theme {
+    Theme.Colors {
         id: colors
     }
 

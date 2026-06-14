@@ -1,15 +1,15 @@
-import ".."
 import QtQuick
+import "../../theme"
 
 Item {
     id: root
 
     readonly property var
-    icons: BarIcons {
+    icons: Icons {
     }
 
     readonly property var
-    theme: BarTheme {
+    theme: AppTheme {
     }
 
     required property var palette
@@ -36,13 +36,13 @@ Item {
     }
 
     width: content.implicitWidth
-    height: theme.height
+    height: theme.sizing.statusBarHeight
 
     Row {
         id: content
 
         anchors.centerIn: parent
-        spacing: root.theme.gap
+        spacing: root.theme.spacing.space6
 
         BarText {
             text: root.iconText()

@@ -1,14 +1,14 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-import ".."
 import "../components"
+import "../../theme"
 
 Item {
     id: root
 
-    readonly property var icons: BarIcons {}
-    readonly property var theme: BarTheme {}
+    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme {}
     required property var palette
 
     readonly property var workspaces: [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -60,10 +60,10 @@ Item {
                 readonly property bool empty: !(root.occupiedWorkspaceIds[modelData] ?? false)
                 readonly property bool hovered: mouseArea.containsMouse
 
-                width: root.theme.workspaceSlotSize
+                width: root.theme.sizing.statusBarWorkspaceSlotSize
                 text: root.icons.workspaceDot
                 color: root.workspaceColor(urgent, active, onOtherMonitor, hovered, empty)
-                font.family: root.theme.iconFontFamily
+                font.family: root.theme.typography.iconFontFamily
                 horizontalAlignment: Text.AlignHCenter
 
                 MouseArea {

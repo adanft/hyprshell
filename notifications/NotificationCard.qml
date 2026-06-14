@@ -38,7 +38,7 @@ Item {
     readonly property int actionButtonRadius: theme.shape.notificationCardActionButtonRadius
     readonly property int actionButtonMinWidth: theme.sizing.notificationCardActionButtonMinWidth
     readonly property int actionButtonHorizontalPadding: theme.spacing.notificationCardActionButtonHorizontalPadding
-    readonly property int labelFontSize: theme.typography.sizeXs
+    readonly property int labelFontSize: theme.typography.sizeSm
     readonly property int titleFontSize: theme.typography.sizeLg
     readonly property int bodyFontSize: theme.typography.sizeMd
     readonly property int closeIconFontSize: theme.typography.sizeMd

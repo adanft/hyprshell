@@ -192,6 +192,7 @@ Item {
                             color: root.palette.text
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.sizeLg
+                            font.styleName: root.theme.typography.styleRegular
                         }
 
                     }
@@ -270,7 +271,7 @@ Item {
                                     visible: menuEntryRoot.modelData && menuEntryRoot.modelData.checkState === 2
                                     text: root.icons.trayCheck
                                     color: root.palette.blue
-                                    font.pixelSize: root.theme.typography.sizeXs
+                                    font.pixelSize: root.theme.typography.sizeSm
                                 }
 
                             }
@@ -291,6 +292,7 @@ Item {
                                 color: menuEntryRoot.enabledEntry ? root.palette.text : root.palette.overlay1
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
+                                font.styleName: root.theme.typography.styleRegular
                                 elide: Text.ElideRight
                             }
 

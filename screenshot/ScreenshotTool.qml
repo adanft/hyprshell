@@ -94,7 +94,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: "transparent"
+        color: tool.theme.colors.transparent
         surfaceFormat.opaque: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -110,7 +110,7 @@ Scope {
             id: overlay
 
             anchors.fill: parent
-            color: tool.theme.overlayScrimColor
+            color: tool.theme.colors.baseScrim
             focus: true
             Keys.onEscapePressed: tool.close()
             Keys.onLeftPressed: tool.moveSelection(-1)
@@ -133,9 +133,9 @@ Scope {
                 width: Math.min(parent.width - tool.theme.screenshotToolScreenMargin, tool.contentWidth + tool.theme.screenshotToolPadding * 2)
                 height: Math.min(parent.height - tool.theme.screenshotToolScreenMargin, content.implicitHeight + tool.theme.screenshotToolPadding * 2)
                 radius: tool.theme.screenshotToolRadius
-                color: tool.theme.screenshotToolBackgroundColor
+                color: tool.theme.colors.mantlePanel
                 border.width: tool.theme.screenshotToolBorderWidth
-                border.color: tool.theme.screenshotToolBorderColor
+                border.color: tool.theme.colors.surface1
 
                 MouseArea {
                     anchors.fill: parent
@@ -159,7 +159,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - cursorSwitch.width
                             text: "Cursor"
-                            color: tool.theme.screenshotToolTextColor
+                            color: tool.theme.colors.text
                             font.pixelSize: tool.theme.fontSizeMd
                             font.styleName: "Semibold"
                         }
@@ -171,7 +171,7 @@ Scope {
                             width: tool.theme.notificationCenterDndSwitchWidth
                             height: tool.theme.notificationCenterDndSwitchHeight
                             radius: height / 2
-                            color: tool.includeCursor ? tool.theme.screenshotToolAccentColor : tool.theme.screenshotToolActionSelectedColor
+                            color: tool.includeCursor ? tool.theme.colors.mauve : tool.theme.colors.surface0
 
                             Rectangle {
                                 width: tool.theme.notificationCenterDndKnobSize
@@ -179,7 +179,7 @@ Scope {
                                 radius: width / 2
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: tool.includeCursor ? parent.width - width - tool.theme.notificationCenterDndKnobMargin : tool.theme.notificationCenterDndKnobMargin
-                                color: tool.includeCursor ? tool.theme.screenshotToolSwitchActiveKnobColor : tool.theme.screenshotToolMutedTextColor
+                                color: tool.includeCursor ? tool.theme.colors.crust : tool.theme.colors.subtext0
 
                                 Behavior on x {
                                     NumberAnimation {

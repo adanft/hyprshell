@@ -31,7 +31,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: "transparent"
+        color: selector.theme.colors.transparent
         surfaceFormat.opaque: false
 
         WlrLayershell.layer: WlrLayer.Overlay
@@ -46,7 +46,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: selector.theme.overlayScrimColor
+            color: selector.theme.colors.baseScrim
             focus: true
 
             Keys.onEscapePressed: selector.close()
@@ -68,9 +68,9 @@ Scope {
                 width: Math.min(parent.width - selector.theme.wallpaperSelectorScreenMargin, selector.theme.wallpaperSelectorMaxWidth)
                 height: Math.min(parent.height - selector.theme.wallpaperSelectorScreenMargin, selector.theme.wallpaperSelectorMaxHeight)
                 radius: selector.theme.wallpaperSelectorRadius
-                color: selector.theme.wallpaperSelectorBackgroundColor
+                color: selector.theme.colors.mantlePanel
                 border.width: selector.theme.wallpaperSelectorBorderWidth
-                border.color: selector.theme.wallpaperSelectorBorderColor
+                border.color: selector.theme.colors.surface1
 
                 MouseArea {
                     anchors.fill: parent
@@ -115,7 +115,7 @@ Scope {
                         visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
                         width: parent.width - selector.theme.wallpaperSelectorEmptyTextHorizontalMargin
                         text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
-                        color: selector.theme.wallpaperSelectorEmptyTextColor
+                        color: selector.theme.colors.subtext0
                         font.pixelSize: selector.theme.wallpaperSelectorEmptyFontSize
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap

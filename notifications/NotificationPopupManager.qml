@@ -189,7 +189,7 @@ PopupWindow {
     implicitWidth: popupWidth
     implicitHeight: Math.max(1, stackHeight)
     visible: isFocusedScreen && stackHeight > 0
-    color: "transparent"
+    color: root.palette.transparent
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin

@@ -15,7 +15,7 @@ import "wallpaperselector" as Wallpaperselector
 ShellRoot {
     id: shell
 
-    Theme.Theme {
+    Theme.Colors {
         id: colors
     }
     Services.Services {

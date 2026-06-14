@@ -10,10 +10,8 @@ Rectangle {
 
     property string icon: ""
     property bool selected: false
-    property color accent: "#cba6f7"
+    property color accent: theme.colors.mauve
     readonly property bool active: selected || mouseArea.containsMouse
-    readonly property color backgroundColor: active ? theme.powerMenuActionBackgroundColor : theme.powerMenuActionInactiveBackgroundColor
-    readonly property color inactiveColor: theme.powerMenuActionInactiveColor
 
     signal activated()
     signal hovered()
@@ -21,14 +19,14 @@ Rectangle {
     width: theme.powerMenuActionSize
     height: theme.powerMenuActionSize
     radius: theme.powerMenuActionRadius
-    color: backgroundColor
+    color: active ? theme.colors.crust : theme.colors.mantle
     border.width: theme.powerMenuActionBorderWidth
-    border.color: active ? accent : inactiveColor
+    border.color: active ? accent : theme.colors.base
 
     Text {
         anchors.centerIn: parent
         text: icon
-        color: active ? accent : inactiveColor
+        color: active ? accent : theme.colors.base
         font.family: theme.iconFontFamily
         font.pixelSize: theme.powerMenuActionIconFontSize
         horizontalAlignment: Text.AlignHCenter

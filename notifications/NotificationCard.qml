@@ -235,7 +235,7 @@ Item {
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
         color: card.palette.base
-        border.color: card.theme.notificationCardBorderColor
+        border.color: card.palette.overlay0
         border.width: card.borderWidth
         clip: true
 
@@ -433,7 +433,7 @@ Item {
                                 width: Math.max(actionText.implicitWidth + card.actionButtonHorizontalPadding, card.actionButtonMinWidth)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
-                                color: card.theme.notificationCardActionButtonColor
+                                color: card.palette.crust
                                 border.width: 0
 
                                 Text {
@@ -478,7 +478,7 @@ Item {
                         width: card.closeButtonSize
                         height: card.closeButtonSize
                         radius: card.theme.notificationCardCloseButtonRadius
-                        color: closeMouse.containsMouse ? card.palette.surface1 : "transparent"
+                        color: closeMouse.containsMouse ? card.palette.surface1 : card.palette.transparent
 
                         Text {
                             anchors.fill: parent

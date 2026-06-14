@@ -141,7 +141,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: "transparent"
+        color: launcher.theme.colors.transparent
         surfaceFormat.opaque: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -155,7 +155,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: launcher.theme.overlayScrimColor
+            color: launcher.theme.colors.baseScrim
             focus: true
             Keys.onEscapePressed: launcher.close()
             Keys.onLeftPressed: launcher.moveSelection(-1)
@@ -178,9 +178,9 @@ Scope {
                 width: Math.min(parent.width - launcher.theme.appLauncherScreenMargin, launcher.theme.appLauncherMaxWidth)
                 height: Math.min(parent.height - launcher.theme.appLauncherScreenMargin, launcher.theme.appLauncherMaxHeight)
                 radius: launcher.theme.appLauncherRadius
-                color: launcher.theme.appLauncherBackgroundColor
+                color: launcher.theme.colors.mantlePanel
                 border.width: launcher.theme.appLauncherBorderWidth
-                border.color: launcher.theme.appLauncherBorderColor
+                border.color: launcher.theme.colors.surface1
 
                 MouseArea {
                     anchors.fill: parent
@@ -202,9 +202,9 @@ Scope {
                         height: launcher.theme.appLauncherSearchHeight
                         anchors.horizontalCenter: parent.horizontalCenter
                         radius: launcher.theme.appLauncherSearchRadius
-                        color: launcher.theme.appLauncherSearchBackgroundColor
+                        color: launcher.theme.colors.surface0
                         border.width: launcher.theme.appLauncherSearchBorderWidth
-                        border.color: searchInput.activeFocus ? launcher.theme.appLauncherAccentColor : launcher.theme.appLauncherSearchBorderColor
+                        border.color: searchInput.activeFocus ? launcher.theme.colors.mauve : launcher.theme.colors.surface1
 
                         Shared.AppText {
                             anchors.left: parent.left
@@ -212,7 +212,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             width: launcher.theme.appLauncherSearchIconSlotWidth
                             text: ""
-                            color: searchInput.activeFocus ? launcher.theme.appLauncherAccentColor : launcher.theme.appLauncherPlaceholderColor
+                            color: searchInput.activeFocus ? launcher.theme.colors.mauve : launcher.theme.colors.overlay1
                             font.family: launcher.theme.iconFontFamily
                             font.pixelSize: launcher.theme.appLauncherSearchIconSize
                             font.styleName: "Medium"
@@ -225,7 +225,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: searchInput.text.length === 0
                             text: "Search Apps"
-                            color: launcher.theme.appLauncherPlaceholderColor
+                            color: launcher.theme.colors.overlay1
                             font.pixelSize: launcher.theme.appLauncherSearchFontSize
                             font.styleName: "Medium"
                         }
@@ -237,9 +237,9 @@ Scope {
                             anchors.leftMargin: launcher.theme.appLauncherSearchHorizontalPadding + launcher.theme.appLauncherSearchIconSlotWidth
                             anchors.rightMargin: launcher.theme.appLauncherSearchHorizontalPadding
                             clip: true
-                            color: launcher.theme.appLauncherTextColor
-                            selectionColor: launcher.theme.appLauncherAccentColor
-                            selectedTextColor: launcher.theme.appLauncherSelectedTextColor
+                            color: launcher.theme.colors.text
+                            selectionColor: launcher.theme.colors.mauve
+                            selectedTextColor: launcher.theme.colors.crust
                             font.family: launcher.theme.textFontFamily
                             font.pixelSize: launcher.theme.appLauncherSearchFontSize
                             font.styleName: "Medium"
@@ -286,7 +286,7 @@ Scope {
                             visible: launcher.filteredApps.length === 0
                             width: parent.width - launcher.theme.appLauncherEmptyTextHorizontalMargin
                             text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
-                            color: launcher.theme.appLauncherMutedTextColor
+                            color: launcher.theme.colors.subtext0
                             font.pixelSize: launcher.theme.appLauncherEmptyFontSize
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.WordWrap

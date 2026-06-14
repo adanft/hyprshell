@@ -16,7 +16,7 @@ PanelWindow {
 
     implicitHeight: theme.outerHeight
     exclusiveZone: theme.outerHeight
-    color: "transparent"
+    color: window.palette.transparent
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "qs-statusbar"
 

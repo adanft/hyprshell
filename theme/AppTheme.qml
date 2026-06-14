@@ -1,6 +1,9 @@
 import QtQuick
 
 QtObject {
+    readonly property var colors: Colors {
+    }
+
     readonly property int space2: 2
     readonly property int space4: 4
     readonly property int space6: 6
@@ -39,7 +42,6 @@ QtObject {
     readonly property int fontSize: fontSizeLg
     readonly property int iconFontSize: fontSizeXl
     readonly property int networkRefreshMs: 2000
-    readonly property string overlayScrimColor: "#bf1e1e2e"
     readonly property int appLauncherRadius: radius16
     readonly property int appLauncherBorderWidth: borderMedium
     readonly property int appLauncherScreenMargin: 128
@@ -67,33 +69,11 @@ QtObject {
     readonly property int appLauncherIconSlotSize: 56
     readonly property int appLauncherIconSize: 52
     readonly property int appLauncherCardLabelFontSize: fontSizeLg
-    readonly property string appLauncherBackgroundColor: "#f0181825"
-    readonly property string appLauncherAccentColor: "#cba6f7"
-    readonly property string appLauncherBorderColor: "#45475a"
-    readonly property string appLauncherSearchBackgroundColor: "#313244"
-    readonly property string appLauncherSearchBorderColor: "#45475a"
-    readonly property string appLauncherCardColor: "#0011111b"
-    readonly property string appLauncherCardActiveColor: "#313244"
-    readonly property string appLauncherCardHoverBorderColor: "#cba6f7"
-    readonly property string appLauncherTextColor: "#cdd6f4"
-    readonly property string appLauncherSelectedTextColor: "#11111b"
-    readonly property string appLauncherMutedTextColor: "#a6adc8"
-    readonly property string appLauncherPlaceholderColor: "#7f849c"
     readonly property int powerMenuActionSpacing: space16
     readonly property int powerMenuActionSize: 136
     readonly property int powerMenuActionRadius: 36
     readonly property int powerMenuActionBorderWidth: borderEmphasis
     readonly property int powerMenuActionIconFontSize: heroIconSize
-    readonly property string powerMenuActionBackgroundColor: "#11111b"
-    readonly property string powerMenuActionInactiveBackgroundColor: "#181825"
-    readonly property string powerMenuActionInactiveColor: "#1e1e2e"
-    readonly property string powerMenuLockColor: "#fab387"
-    readonly property string powerMenuSuspendColor: "#89b4fa"
-    readonly property string powerMenuLogoutColor: "#cba6f7"
-    readonly property string powerMenuRebootColor: "#a6e3a1"
-    readonly property string powerMenuPoweroffColor: "#f38ba8"
-    readonly property string powerMenuConfirmColor: powerMenuRebootColor
-    readonly property string powerMenuCancelColor: powerMenuPoweroffColor
     readonly property int wallpaperSelectorRadius: radius24
     readonly property int wallpaperSelectorBorderWidth: borderMedium
     readonly property int wallpaperSelectorScreenMargin: 96
@@ -104,9 +84,6 @@ QtObject {
     readonly property int wallpaperSelectorGridCellHeight: 170
     readonly property int wallpaperSelectorEmptyFontSize: fontSizeLg
     readonly property int wallpaperSelectorEmptyTextHorizontalMargin: 80
-    readonly property string wallpaperSelectorBackgroundColor: "#f0181825"
-    readonly property string wallpaperSelectorBorderColor: "#45475a"
-    readonly property string wallpaperSelectorEmptyTextColor: "#a6adc8"
     readonly property int wallpaperCardRadius: radius24
     readonly property int wallpaperCardWidth: 220
     readonly property int wallpaperCardHeight: 150
@@ -115,12 +92,6 @@ QtObject {
     readonly property int wallpaperCardSelectedBadgeSize: size32
     readonly property int wallpaperCardSelectedBadgeRadius: radius16
     readonly property int wallpaperCardSelectedBadgeIconFontSize: iconFontSize
-    readonly property string wallpaperCardBackgroundColor: "#181825"
-    readonly property string wallpaperCardSelectedBorderColor: "#f5c2e7"
-    readonly property string wallpaperCardHoverBorderColor: "#cba6f7"
-    readonly property string wallpaperCardInactiveBorderColor: "#313244"
-    readonly property string wallpaperCardSelectedBadgeColor: "#f5c2e7"
-    readonly property string wallpaperCardSelectedBadgeIconColor: "#11111b"
     readonly property int screenshotToolRadius: radius24
     readonly property int screenshotToolBorderWidth: borderMedium
     readonly property int screenshotToolScreenMargin: 96
@@ -134,14 +105,6 @@ QtObject {
     readonly property int screenshotToolActionIconSlotSize: 44
     readonly property int screenshotToolActionIconSize: size28
     readonly property int screenshotToolCursorRowHeight: size24
-    readonly property string screenshotToolBackgroundColor: "#f0181825"
-    readonly property string screenshotToolSwitchActiveKnobColor: "#11111b"
-    readonly property string screenshotToolActionSelectedColor: "#313244"
-    readonly property string screenshotToolActionHoverColor: "#89b4fa"
-    readonly property string screenshotToolBorderColor: "#45475a"
-    readonly property string screenshotToolAccentColor: "#cba6f7"
-    readonly property string screenshotToolTextColor: "#cdd6f4"
-    readonly property string screenshotToolMutedTextColor: "#a6adc8"
     readonly property int notificationBadgeSize: space6
     readonly property int notificationBadgeRadius: radius3
     readonly property int notificationBadgeTopMargin: space6
@@ -185,7 +148,6 @@ QtObject {
     readonly property int notificationCardSpacing: space8
     readonly property int notificationCardPadding: space8
     readonly property int notificationCardBorderWidth: borderThin
-    readonly property string notificationCardBorderColor: "#6c6f85"
     readonly property int notificationCardIconSlotSize: size32
     readonly property int notificationCardIconSize: size24
     readonly property int notificationCardCloseButtonSize: size24
@@ -194,7 +156,6 @@ QtObject {
     readonly property int notificationCardActionButtonRadius: radiusFull
     readonly property int notificationCardActionButtonMinWidth: 68
     readonly property int notificationCardActionButtonHorizontalPadding: space16
-    readonly property string notificationCardActionButtonColor: "#11111b"
     readonly property int notificationCardLabelFontSize: fontSizeXs
     readonly property int notificationCardTitleFontSize: fontSizeLg
     readonly property int notificationCardBodyFontSize: fontSizeMd

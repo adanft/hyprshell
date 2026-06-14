@@ -26,7 +26,7 @@ PopupWindow {
     implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height : theme.notificationCenterFallbackScreenHeight) * theme.notificationCenterHeightRatio)
     visible: false
     grabFocus: true
-    color: "transparent"
+    color: popup.palette.transparent
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.notificationCenterScreenMargin, barWindow.width - width - theme.notificationCenterScreenMargin)
     anchor.rect.y: theme.notificationCenterTopOffset

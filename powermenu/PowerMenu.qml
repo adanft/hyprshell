@@ -19,23 +19,23 @@ Scope {
     readonly property var actions: [{
         "icon": "",
         "command": ["loginctl", "lock-session"],
-        "accent": theme.powerMenuLockColor
+        "accent": theme.colors.peach
     }, {
         "icon": "",
         "command": ["systemctl", "suspend"],
-        "accent": theme.powerMenuSuspendColor
+        "accent": theme.colors.blue
     }, {
         "icon": "",
         "command": ["hyprctl", "dispatch", "hl.dsp.exit()"],
-        "accent": theme.powerMenuLogoutColor
+        "accent": theme.colors.mauve
     }, {
         "icon": "",
         "command": ["systemctl", "reboot"],
-        "accent": theme.powerMenuRebootColor
+        "accent": theme.colors.green
     }, {
         "icon": "",
         "command": ["systemctl", "poweroff"],
-        "accent": theme.powerMenuPoweroffColor
+        "accent": theme.colors.red
     }]
 
     function open() {
@@ -101,7 +101,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: "transparent"
+        color: powerMenu.theme.colors.transparent
         surfaceFormat.opaque: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -115,7 +115,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: powerMenu.theme.overlayScrimColor
+            color: powerMenu.theme.colors.baseScrim
             focus: true
             Keys.onEscapePressed: powerMenu.confirming ? powerMenu.cancelConfirm() : powerMenu.close()
             Keys.onLeftPressed: powerMenu.moveSelection(-1)
@@ -171,7 +171,7 @@ Scope {
 
             ActionButton {
                 icon: ""
-                accent: powerMenu.theme.powerMenuConfirmColor
+                accent: powerMenu.theme.colors.green
                 selected: powerMenu.confirmSelectedIndex === 0
                 onHovered: powerMenu.confirmSelectedIndex = 0
                 onActivated: powerMenu.runCommand(powerMenu.pendingCommand)
@@ -179,7 +179,7 @@ Scope {
 
             ActionButton {
                 icon: ""
-                accent: powerMenu.theme.powerMenuCancelColor
+                accent: powerMenu.theme.colors.red
                 selected: powerMenu.confirmSelectedIndex === 1
                 onHovered: powerMenu.confirmSelectedIndex = 1
                 onActivated: powerMenu.cancelConfirm()

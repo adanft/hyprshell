@@ -121,7 +121,7 @@ Item {
 
         visible: root.menuOpen && root.currentTrayItem && root.currentTrayItem.hasMenu
         screen: root.barWindow.screen
-        color: "transparent"
+        color: root.palette.transparent
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "qs-statusbar-tray-menu"
@@ -171,7 +171,7 @@ Item {
                     width: parent.width
                     height: root.theme.trayMenuItemHeight
                     radius: root.theme.trayMenuItemRadius
-                    color: backArea.containsMouse ? root.palette.surface1 : "transparent"
+                    color: backArea.containsMouse ? root.palette.surface1 : root.palette.transparent
 
                     Row {
                         anchors.left: parent.left
@@ -221,7 +221,7 @@ Item {
                         width: menuColumn.width
                         height: separator ? root.theme.trayMenuSeparatorHeight : root.theme.trayMenuItemHeight
                         radius: separator ? 0 : root.theme.trayMenuItemRadius
-                        color: separator ? root.palette.surface1 : entryMouseArea.containsMouse ? root.palette.surface1 : "transparent"
+                        color: separator ? root.palette.surface1 : entryMouseArea.containsMouse ? root.palette.surface1 : root.palette.transparent
 
                         MouseArea {
                             id: entryMouseArea
@@ -264,7 +264,7 @@ Item {
                                 radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 : root.theme.trayMenuCheckRadius
                                 border.width: root.theme.trayMenuBorderWidth
                                 border.color: root.palette.overlay1
-                                color: "transparent"
+                                color: root.palette.transparent
 
                                 Text {
                                     anchors.centerIn: parent

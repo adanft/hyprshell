@@ -43,7 +43,7 @@ Item {
             width: windowTitle.width
             height: root.theme.height
             palette: root.palette
-            backgroundColor: "transparent"
+            backgroundColor: root.palette.transparent
 
             WindowTitle {
                 id: windowTitle
@@ -91,7 +91,7 @@ Item {
                 width: root.theme.iconSize
                 height: root.theme.height
                 palette: root.palette
-                backgroundColor: "transparent"
+                backgroundColor: root.palette.transparent
 
                 PowerProfile {
                     palette: root.palette
@@ -118,7 +118,7 @@ Item {
             height: root.theme.height
             visible: tray.hasItems
             palette: root.palette
-            backgroundColor: "transparent"
+            backgroundColor: root.palette.transparent
 
             Tray {
                 id: tray

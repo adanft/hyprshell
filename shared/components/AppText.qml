@@ -6,8 +6,8 @@ Text {
     theme: AppTheme {
     }
 
-    font.family: theme.textFontFamily
-    font.pixelSize: theme.fontSize
-    font.styleName: theme.fontStyleSemibold
+    font.family: theme.typography.textFontFamily
+    font.pixelSize: theme.typography.sizeLg
+    font.styleName: theme.typography.styleSemibold
     verticalAlignment: Text.AlignVCenter
 }

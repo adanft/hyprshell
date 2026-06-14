@@ -15,7 +15,7 @@ Scope {
     property bool quitOnClose: false
     property bool includeCursor: false
     property int selectedActionIndex: 0
-    readonly property int contentWidth: theme.screenshotToolActionWidth * 4 + theme.space12 * 3
+    readonly property int contentWidth: theme.sizing.screenshotToolActionWidth * 4 + theme.spacing.screenshotToolActionRowSpacing * 3
     readonly property string captureSuccessCommand: "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
     function open() {
@@ -130,11 +130,11 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - tool.theme.screenshotToolScreenMargin, tool.contentWidth + tool.theme.screenshotToolPadding * 2)
-                height: Math.min(parent.height - tool.theme.screenshotToolScreenMargin, content.implicitHeight + tool.theme.screenshotToolPadding * 2)
-                radius: tool.theme.screenshotToolRadius
+                width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin, tool.contentWidth + tool.theme.spacing.screenshotToolPadding * 2)
+                height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin, content.implicitHeight + tool.theme.spacing.screenshotToolPadding * 2)
+                radius: tool.theme.shape.screenshotToolRadius
                 color: tool.theme.colors.mantlePanel
-                border.width: tool.theme.screenshotToolBorderWidth
+                border.width: tool.theme.shape.screenshotToolBorderWidth
                 border.color: tool.theme.colors.surface1
 
                 MouseArea {
@@ -146,44 +146,44 @@ Scope {
                     id: content
 
                     anchors.fill: parent
-                    anchors.margins: tool.theme.screenshotToolPadding
-                    spacing: tool.theme.screenshotToolSectionSpacing
+                    anchors.margins: tool.theme.spacing.screenshotToolPadding
+                    spacing: tool.theme.spacing.screenshotToolSectionSpacing
 
                     Row {
                         id: cursorRow
 
                         width: parent.width
-                        height: tool.theme.screenshotToolCursorRowHeight
+                        height: tool.theme.sizing.screenshotToolCursorRowHeight
 
                         Shared.AppText {
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - cursorSwitch.width
                             text: "Cursor"
                             color: tool.theme.colors.text
-                            font.pixelSize: tool.theme.fontSizeMd
-                            font.styleName: tool.theme.fontStyleSemibold
+                            font.pixelSize: tool.theme.typography.sizeMd
+                            font.styleName: tool.theme.typography.styleSemibold
                         }
 
                         Rectangle {
                             id: cursorSwitch
 
                             anchors.verticalCenter: parent.verticalCenter
-                            width: tool.theme.notificationCenterDndSwitchWidth
-                            height: tool.theme.notificationCenterDndSwitchHeight
+                            width: tool.theme.sizing.screenshotToolCursorSwitchWidth
+                            height: tool.theme.sizing.screenshotToolCursorSwitchHeight
                             radius: height / 2
                             color: tool.includeCursor ? tool.theme.colors.mauve : tool.theme.colors.surface0
 
                             Rectangle {
-                                width: tool.theme.notificationCenterDndKnobSize
-                                height: tool.theme.notificationCenterDndKnobSize
+                                width: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
+                                height: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
                                 radius: width / 2
                                 anchors.verticalCenter: parent.verticalCenter
-                                x: tool.includeCursor ? parent.width - width - tool.theme.notificationCenterDndKnobMargin : tool.theme.notificationCenterDndKnobMargin
+                                x: tool.includeCursor ? parent.width - width - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin : tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
                                 color: tool.includeCursor ? tool.theme.colors.crust : tool.theme.colors.subtext0
 
                                 Behavior on x {
                                     NumberAnimation {
-                                        duration: tool.theme.notificationCenterDndAnimationMs
+                                        duration: 120
                                         easing.type: Easing.OutCubic
                                     }
 
@@ -206,8 +206,8 @@ Scope {
                         id: actionRow
 
                         width: parent.width
-                        height: tool.theme.screenshotToolActionHeight
-                        spacing: tool.theme.space12
+                        height: tool.theme.sizing.screenshotToolActionHeight
+                        spacing: tool.theme.spacing.screenshotToolActionRowSpacing
 
                         ScreenshotAction {
                             icon: "󰍹"

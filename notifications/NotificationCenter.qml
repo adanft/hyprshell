@@ -19,37 +19,38 @@ PopupWindow {
     required property var palette
     required property var services
     required property var barWindow
-    readonly property int contentPadding: theme.notificationCenterPadding
-    readonly property int cardWidth: theme.notificationCenterCardWidth
+    readonly property int contentPadding: theme.spacing.notificationCenterPadding
+    readonly property int cardWidth: theme.sizing.notificationCenterCardWidth
+    readonly property real heightRatio: 0.75
 
     implicitWidth: cardWidth + contentPadding * 2
-    implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height : theme.notificationCenterFallbackScreenHeight) * theme.notificationCenterHeightRatio)
+    implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height : theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
     visible: false
     grabFocus: true
     color: popup.palette.transparent
     anchor.window: barWindow
-    anchor.rect.x: Math.max(theme.notificationCenterScreenMargin, barWindow.width - width - theme.notificationCenterScreenMargin)
-    anchor.rect.y: theme.notificationCenterTopOffset
+    anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - theme.spacing.notificationCenterScreenMargin)
+    anchor.rect.y: theme.sizing.notificationCenterTopOffset
     onVisibleChanged: popup.services.setNotificationCenterOpen(visible)
 
     Rectangle {
         anchors.fill: parent
-        radius: popup.theme.notificationCenterRadius
+        radius: popup.theme.shape.notificationCenterRadius
         color: popup.palette.base
         border.color: popup.palette.surface1
-        border.width: popup.theme.notificationCenterBorderWidth
+        border.width: popup.theme.shape.notificationCenterBorderWidth
 
         Column {
             anchors.fill: parent
             anchors.margins: popup.contentPadding
-            spacing: popup.theme.notificationCenterSectionSpacing
+            spacing: popup.theme.spacing.notificationCenterSectionSpacing
 
             Row {
                 id: headerRow
 
                 width: parent.width
-                height: popup.theme.notificationCenterHeaderHeight
-                spacing: popup.theme.notificationCenterHeaderSpacing
+                height: popup.theme.sizing.notificationCenterHeaderHeight
+                spacing: popup.theme.spacing.notificationCenterHeaderSpacing
 
                 AppText {
                     id: headerTitle
@@ -57,7 +58,7 @@ PopupWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Notifications"
                     color: popup.palette.text
-                    font.family: popup.theme.textFontFamily
+                    font.family: popup.theme.typography.textFontFamily
                 }
 
                 AppText {
@@ -66,8 +67,8 @@ PopupWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     text: popup.icons.notificationsEmpty
                     color: popup.palette.mauve
-                    font.family: popup.theme.iconFontFamily
-                    font.pixelSize: popup.theme.notificationCenterHeaderIconFontSize
+                    font.family: popup.theme.typography.iconFontFamily
+                    font.pixelSize: popup.theme.typography.sizeLg
                 }
 
                 AppText {
@@ -76,13 +77,13 @@ PopupWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     text: popup.services.notificationCount
                     color: popup.palette.text
-                    font.family: popup.theme.textFontFamily
-                    font.pixelSize: popup.theme.notificationCenterTextFontSize
+                    font.family: popup.theme.typography.textFontFamily
+                    font.pixelSize: popup.theme.typography.sizeMd
                 }
 
                 Item {
                     width: Math.max(0, parent.width - headerTitle.implicitWidth - headerIcon.implicitWidth - headerCount.implicitWidth - clearButton.width - parent.spacing * 4)
-                    height: popup.theme.notificationCenterSpacerHeight
+                    height: popup.theme.sizing.notificationCenterSpacerHeight
                 }
 
                 Item {
@@ -90,7 +91,7 @@ PopupWindow {
 
                     anchors.verticalCenter: parent.verticalCenter
                     width: clearContent.implicitWidth
-                    height: popup.theme.notificationCenterClearButtonHeight
+                    height: popup.theme.sizing.notificationCenterClearButtonHeight
                     visible: popup.services.hasNotifications
 
                     Row {
@@ -98,21 +99,21 @@ PopupWindow {
 
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: popup.theme.notificationCenterClearButtonSpacing
+                        spacing: popup.theme.spacing.notificationCenterClearButtonSpacing
 
                         AppText {
                             text: "Clear"
                             color: clearMouse.containsMouse ? popup.palette.blue : popup.palette.subtext1
-                            font.family: popup.theme.textFontFamily
-                            font.pixelSize: popup.theme.notificationCenterTextFontSize
-                            font.styleName: popup.theme.fontStyleMedium
+                            font.family: popup.theme.typography.textFontFamily
+                            font.pixelSize: popup.theme.typography.sizeMd
+                            font.styleName: popup.theme.typography.styleMedium
                         }
 
                         AppText {
                             text: popup.icons.notificationsClear
                             color: clearMouse.containsMouse ? popup.palette.blue : popup.palette.subtext1
-                            font.family: popup.theme.iconFontFamily
-                            font.pixelSize: popup.theme.notificationCenterTextFontSize
+                            font.family: popup.theme.typography.iconFontFamily
+                            font.pixelSize: popup.theme.typography.sizeMd
                         }
 
                     }
@@ -134,38 +135,38 @@ PopupWindow {
                 id: dndRow
 
                 width: parent.width
-                height: popup.theme.notificationCenterDndRowHeight
+                height: popup.theme.sizing.notificationCenterDndRowHeight
 
                 AppText {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - dndSwitch.width
                     text: "Do Not Disturb"
                     color: popup.palette.text
-                    font.family: popup.theme.textFontFamily
-                    font.pixelSize: popup.theme.notificationCenterTextFontSize
+                    font.family: popup.theme.typography.textFontFamily
+                    font.pixelSize: popup.theme.typography.sizeMd
                 }
 
                 Rectangle {
                     id: dndSwitch
 
                     anchors.verticalCenter: parent.verticalCenter
-                    width: popup.theme.notificationCenterDndSwitchWidth
-                    height: popup.theme.notificationCenterDndSwitchHeight
+                    width: popup.theme.sizing.notificationCenterDndSwitchWidth
+                    height: popup.theme.sizing.notificationCenterDndSwitchHeight
                     radius: height / 2
                     color: popup.services.notificationDnd ? popup.palette.mauve : popup.palette.surface1
                     border.width: 0
 
                     Rectangle {
-                        width: popup.theme.notificationCenterDndKnobSize
-                        height: popup.theme.notificationCenterDndKnobSize
+                        width: popup.theme.sizing.notificationCenterDndKnobSize
+                        height: popup.theme.sizing.notificationCenterDndKnobSize
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
-                        x: popup.services.notificationDnd ? parent.width - width - popup.theme.notificationCenterDndKnobMargin : popup.theme.notificationCenterDndKnobMargin
+                        x: popup.services.notificationDnd ? parent.width - width - popup.theme.spacing.notificationCenterDndKnobMargin : popup.theme.spacing.notificationCenterDndKnobMargin
                         color: popup.services.notificationDnd ? popup.palette.base : popup.palette.overlay1
 
                         Behavior on x {
                             NumberAnimation {
-                                duration: popup.theme.notificationCenterDndAnimationMs
+                                duration: 120
                                 easing.type: Easing.OutCubic
                             }
 
@@ -190,23 +191,23 @@ PopupWindow {
 
                 Column {
                     anchors.centerIn: parent
-                    spacing: popup.theme.notificationCenterSectionSpacing
+                    spacing: popup.theme.spacing.notificationCenterSectionSpacing
                     visible: !popup.services.hasNotifications
 
                     AppText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: popup.icons.notificationsEmpty
                         color: popup.palette.overlay1
-                        font.family: popup.theme.iconFontFamily
-                        font.pixelSize: popup.theme.notificationCenterEmptyIconFontSize
+                        font.family: popup.theme.typography.iconFontFamily
+                        font.pixelSize: popup.theme.typography.displayIconFontSize
                     }
 
                     AppText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "No Notifications"
                         color: popup.palette.overlay1
-                        font.family: popup.theme.textFontFamily
-                        font.pixelSize: popup.theme.notificationCenterEmptyTextFontSize
+                        font.family: popup.theme.typography.textFontFamily
+                        font.pixelSize: popup.theme.typography.sizeLg
                     }
 
                 }
@@ -222,7 +223,7 @@ PopupWindow {
                         id: notificationList
 
                         width: parent.width
-                        spacing: popup.theme.notificationCenterListSpacing
+                        spacing: popup.theme.spacing.notificationCenterListSpacing
 
                         Repeater {
                             model: popup.visible && popup.services.hasNotifications ? popup.services.notifications : []
@@ -233,7 +234,7 @@ PopupWindow {
                                 width: notificationList.width
                                 palette: popup.palette
                                 notificationData: modelData
-                                cornerRadius: popup.theme.notificationCenterCardRadius
+                                cornerRadius: popup.theme.shape.notificationCenterCardRadius
                                 useRenderedHeightForLayout: true
                                 timeText: popup.services.notificationTimeText(modelData)
                                 onCloseRequested: popup.services.dismissNotificationHistoryEntry(modelData)

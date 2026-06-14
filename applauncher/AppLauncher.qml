@@ -175,11 +175,11 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - launcher.theme.appLauncherScreenMargin, launcher.theme.appLauncherMaxWidth)
-                height: Math.min(parent.height - launcher.theme.appLauncherScreenMargin, launcher.theme.appLauncherMaxHeight)
-                radius: launcher.theme.appLauncherRadius
+                width: Math.min(parent.width - launcher.theme.spacing.appLauncherScreenMargin, launcher.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - launcher.theme.spacing.appLauncherScreenMargin, launcher.theme.sizing.appLauncherMaxHeight)
+                radius: launcher.theme.shape.appLauncherRadius
                 color: launcher.theme.colors.mantlePanel
-                border.width: launcher.theme.appLauncherBorderWidth
+                border.width: launcher.theme.shape.appLauncherBorderWidth
                 border.color: launcher.theme.colors.surface1
 
                 MouseArea {
@@ -190,59 +190,59 @@ Scope {
                 Column {
                     id: content
 
-                    readonly property int columns: Math.min(4, Math.max(1, Math.floor(width / launcher.theme.appLauncherGridCellWidth)))
-                    readonly property int gridWidth: columns * launcher.theme.appLauncherGridCellWidth
+                    readonly property int columns: Math.min(4, Math.max(1, Math.floor(width / launcher.theme.sizing.appLauncherGridCellWidth)))
+                    readonly property int gridWidth: columns * launcher.theme.sizing.appLauncherGridCellWidth
 
                     anchors.fill: parent
-                    anchors.margins: launcher.theme.appLauncherPadding
-                    spacing: launcher.theme.appLauncherSectionSpacing
+                    anchors.margins: launcher.theme.spacing.appLauncherPadding
+                    spacing: launcher.theme.spacing.appLauncherSectionSpacing
 
                     Rectangle {
                         width: content.gridWidth
-                        height: launcher.theme.appLauncherSearchHeight
+                        height: launcher.theme.sizing.appLauncherSearchHeight
                         anchors.horizontalCenter: parent.horizontalCenter
-                        radius: launcher.theme.appLauncherSearchRadius
+                        radius: launcher.theme.shape.appLauncherSearchRadius
                         color: launcher.theme.colors.surface0
-                        border.width: launcher.theme.appLauncherSearchBorderWidth
+                        border.width: launcher.theme.shape.appLauncherSearchBorderWidth
                         border.color: searchInput.activeFocus ? launcher.theme.colors.mauve : launcher.theme.colors.surface1
 
                         Shared.AppText {
                             anchors.left: parent.left
-                            anchors.leftMargin: launcher.theme.appLauncherSearchHorizontalPadding
+                            anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
                             anchors.verticalCenter: parent.verticalCenter
-                            width: launcher.theme.appLauncherSearchIconSlotWidth
+                            width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
                             text: ""
                             color: searchInput.activeFocus ? launcher.theme.colors.mauve : launcher.theme.colors.overlay1
-                            font.family: launcher.theme.iconFontFamily
-                            font.pixelSize: launcher.theme.appLauncherSearchIconSize
-                            font.styleName: launcher.theme.fontStyleMedium
+                            font.family: launcher.theme.typography.iconFontFamily
+                            font.pixelSize: launcher.theme.typography.sizeLg
+                            font.styleName: launcher.theme.typography.styleMedium
                             horizontalAlignment: Text.AlignLeft
                         }
 
                         Shared.AppText {
                             anchors.left: parent.left
-                            anchors.leftMargin: launcher.theme.appLauncherSearchHorizontalPadding + launcher.theme.appLauncherSearchIconSlotWidth
+                            anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
                             anchors.verticalCenter: parent.verticalCenter
                             visible: searchInput.text.length === 0
                             text: "Search Apps"
                             color: launcher.theme.colors.overlay1
-                            font.pixelSize: launcher.theme.appLauncherSearchFontSize
-                            font.styleName: launcher.theme.fontStyleMedium
+                            font.pixelSize: launcher.theme.typography.sizeLg
+                            font.styleName: launcher.theme.typography.styleMedium
                         }
 
                         TextInput {
                             id: searchInput
 
                             anchors.fill: parent
-                            anchors.leftMargin: launcher.theme.appLauncherSearchHorizontalPadding + launcher.theme.appLauncherSearchIconSlotWidth
-                            anchors.rightMargin: launcher.theme.appLauncherSearchHorizontalPadding
+                            anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                            anchors.rightMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
                             clip: true
                             color: launcher.theme.colors.text
                             selectionColor: launcher.theme.colors.mauve
                             selectedTextColor: launcher.theme.colors.crust
-                            font.family: launcher.theme.textFontFamily
-                            font.pixelSize: launcher.theme.appLauncherSearchFontSize
-                            font.styleName: launcher.theme.fontStyleMedium
+                            font.family: launcher.theme.typography.textFontFamily
+                            font.pixelSize: launcher.theme.typography.sizeLg
+                            font.styleName: launcher.theme.typography.styleMedium
                             verticalAlignment: TextInput.AlignVCenter
                             text: launcher.searchText
                             onTextChanged: launcher.searchText = text
@@ -273,21 +273,21 @@ Scope {
                         readonly property int columns: content.columns
 
                         width: columns * cellWidth
-                        height: parent.height - launcher.theme.appLauncherSearchHeight - parent.spacing
+                        height: parent.height - launcher.theme.sizing.appLauncherSearchHeight - parent.spacing
                         anchors.horizontalCenter: parent.horizontalCenter
                         clip: true
-                        cellWidth: launcher.theme.appLauncherGridCellWidth
-                        cellHeight: launcher.theme.appLauncherGridCellHeight
+                        cellWidth: launcher.theme.sizing.appLauncherGridCellWidth
+                        cellHeight: launcher.theme.sizing.appLauncherGridCellHeight
                         model: launcher.filteredApps
                         currentIndex: launcher.selectedIndex
 
                         Shared.AppText {
                             anchors.centerIn: parent
                             visible: launcher.filteredApps.length === 0
-                            width: parent.width - launcher.theme.appLauncherEmptyTextHorizontalMargin
+                            width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
                             text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
                             color: launcher.theme.colors.subtext0
-                            font.pixelSize: launcher.theme.appLauncherEmptyFontSize
+                            font.pixelSize: launcher.theme.typography.sizeLg
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.WordWrap
                         }

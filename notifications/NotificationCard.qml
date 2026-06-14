@@ -17,7 +17,7 @@ Item {
     required property var palette
     property var notificationData: null
     property string timeText: "now"
-    property int cornerRadius: theme.notificationCardRadius
+    property int cornerRadius: theme.shape.notificationCardRadius
     property bool expanded: false
     property bool collapsedTextMode: true
     property bool useRenderedHeightForLayout: false
@@ -26,25 +26,27 @@ Item {
     readonly property bool cardHovered: cardHoverHandler.hovered
     property real renderedLayoutHeight: layoutHeight
     property real allocatedLayoutHeight: layoutHeight
-    readonly property string textFont: theme.textFontFamily
-    readonly property string iconFont: theme.iconFontFamily
-    readonly property int spacing: theme.notificationCardSpacing
-    readonly property int cardPadding: theme.notificationCardPadding
-    readonly property int borderWidth: theme.notificationCardBorderWidth
-    readonly property int iconSlotSize: theme.notificationCardIconSlotSize
-    readonly property int iconSize: theme.notificationCardIconSize
-    readonly property int closeButtonSize: theme.notificationCardCloseButtonSize
-    readonly property int actionButtonHeight: theme.notificationCardActionButtonHeight
-    readonly property int actionButtonRadius: theme.notificationCardActionButtonRadius
-    readonly property int actionButtonMinWidth: theme.notificationCardActionButtonMinWidth
-    readonly property int actionButtonHorizontalPadding: theme.notificationCardActionButtonHorizontalPadding
-    readonly property int labelFontSize: theme.notificationCardLabelFontSize
-    readonly property int titleFontSize: theme.notificationCardTitleFontSize
-    readonly property int bodyFontSize: theme.notificationCardBodyFontSize
-    readonly property int closeIconFontSize: theme.notificationCardCloseIconFontSize
-    readonly property int collapsedBodyLines: theme.notificationCardCollapsedBodyLines
-    readonly property real bodyLineHeight: theme.notificationCardBodyLineHeight
-    readonly property int resizeAnimationMs: theme.notificationCardResizeAnimationMs
+    readonly property string textFont: theme.typography.textFontFamily
+    readonly property string iconFont: theme.typography.iconFontFamily
+    readonly property int spacing: theme.spacing.notificationCardSpacing
+    readonly property int cardPadding: theme.spacing.notificationCardPadding
+    readonly property int borderWidth: theme.shape.notificationCardBorderWidth
+    readonly property int iconSlotSize: theme.sizing.notificationCardIconSlotSize
+    readonly property int iconSize: theme.sizing.notificationCardIconSize
+    readonly property int closeButtonSize: theme.sizing.notificationCardCloseButtonSize
+    readonly property int actionButtonHeight: theme.sizing.notificationCardActionButtonHeight
+    readonly property int actionButtonRadius: theme.shape.notificationCardActionButtonRadius
+    readonly property int actionButtonMinWidth: theme.sizing.notificationCardActionButtonMinWidth
+    readonly property int actionButtonHorizontalPadding: theme.spacing.notificationCardActionButtonHorizontalPadding
+    readonly property int labelFontSize: theme.typography.sizeXs
+    readonly property int titleFontSize: theme.typography.sizeLg
+    readonly property int bodyFontSize: theme.typography.sizeMd
+    readonly property int closeIconFontSize: theme.typography.sizeMd
+    readonly property int collapsedBodyLines: 2
+    readonly property real bodyLineHeight: 1.35
+    readonly property int resizeAnimationMs: 220
+    readonly property int allocationFinalizeDelayMs: 32
+    readonly property real geometryEpsilon: 0.5
     readonly property real contentInset: cardPadding + cardRect.border.width
     readonly property int actionCount: countInvokableActions()
     readonly property bool hasActions: actionCount > 0
@@ -166,12 +168,12 @@ Item {
         }
         const currentRendered = Math.max(0, Number(renderedLayoutHeight));
         const nextAllocation = Math.max(target, currentRendered, allocatedLayoutHeight);
-        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= theme.notificationCardGeometryEpsilon;
+        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= geometryEpsilon;
         if (allocationChanged) {
             allocatedLayoutHeight = nextAllocation;
             slotHeightChanged();
         }
-        if (Math.abs(target - renderedLayoutHeight) < theme.notificationCardGeometryEpsilon) {
+        if (Math.abs(target - renderedLayoutHeight) < geometryEpsilon) {
             finishLayoutHeightAnimation();
             return ;
         }
@@ -184,7 +186,7 @@ Item {
         if (isNaN(target))
             return ;
 
-        if (Math.abs(renderedLayoutHeight - target) >= theme.notificationCardGeometryEpsilon)
+        if (Math.abs(renderedLayoutHeight - target) >= geometryEpsilon)
             renderedLayoutHeight = target;
 
         allocatedLayoutHeight = target;
@@ -223,7 +225,7 @@ Item {
     Timer {
         id: allocationFinalizeTimer
 
-        interval: card.resizeAnimationMs + card.theme.notificationCardAllocationFinalizeDelayMs
+        interval: card.resizeAnimationMs + card.allocationFinalizeDelayMs
         repeat: false
         onTriggered: card.finishLayoutHeightAnimation()
     }
@@ -355,7 +357,7 @@ Item {
                         color: card.palette.mauve
                         font.family: card.textFont
                         font.pixelSize: card.titleFontSize
-                        font.styleName: card.theme.fontStyleSemibold
+                        font.styleName: card.theme.typography.styleSemibold
                         elide: Text.ElideRight
                     }
 
@@ -443,8 +445,8 @@ Item {
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
                                     color: actionMouse.containsMouse ? card.palette.blue : card.palette.subtext1
                                     font.family: card.textFont
-                                    font.pixelSize: card.theme.fontSizeSm
-                                    font.styleName: card.theme.fontStyleMedium
+                                    font.pixelSize: card.theme.typography.sizeSm
+                                    font.styleName: card.theme.typography.styleMedium
                                     elide: Text.ElideRight
                                 }
 
@@ -477,7 +479,7 @@ Item {
                         anchors.top: parent.top
                         width: card.closeButtonSize
                         height: card.closeButtonSize
-                        radius: card.theme.notificationCardCloseButtonRadius
+                        radius: card.theme.shape.notificationCardCloseButtonRadius
                         color: closeMouse.containsMouse ? card.palette.surface1 : card.palette.transparent
 
                         Text {

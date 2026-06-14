@@ -16,19 +16,19 @@ Rectangle {
     signal activated()
     signal hovered()
 
-    width: theme.powerMenuActionSize
-    height: theme.powerMenuActionSize
-    radius: theme.powerMenuActionRadius
+    width: theme.sizing.powerMenuActionSize
+    height: theme.sizing.powerMenuActionSize
+    radius: theme.shape.powerMenuActionRadius
     color: active ? theme.colors.crust : theme.colors.mantle
-    border.width: theme.powerMenuActionBorderWidth
+    border.width: theme.shape.powerMenuActionBorderWidth
     border.color: active ? accent : theme.colors.base
 
     Text {
         anchors.centerIn: parent
         text: icon
         color: active ? accent : theme.colors.base
-        font.family: theme.iconFontFamily
-        font.pixelSize: theme.powerMenuActionIconFontSize
+        font.family: theme.typography.iconFontFamily
+        font.pixelSize: theme.typography.heroIconFontSize
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

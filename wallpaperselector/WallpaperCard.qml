@@ -21,9 +21,9 @@ Rectangle {
     signal activated()
     signal hovered()
 
-    width: theme.wallpaperCardWidth
-    height: theme.wallpaperCardHeight
-    radius: theme.wallpaperCardRadius
+    width: theme.sizing.wallpaperCardWidth
+    height: theme.sizing.wallpaperCardHeight
+    radius: theme.shape.wallpaperCardRadius
     color: theme.colors.mantle
 
     Image {
@@ -59,17 +59,17 @@ Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: card.theme.colors.transparent
-        border.width: card.active ? card.theme.wallpaperCardBorderWidth : 0
+        border.width: card.active ? card.theme.shape.wallpaperCardBorderWidth : 0
         border.color: card.selected ? card.theme.colors.pink : mouseArea.containsMouse ? card.theme.colors.mauve : card.theme.colors.surface0
     }
 
     Rectangle {
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.margins: card.theme.wallpaperCardSelectedBadgeMargin
-        width: card.theme.wallpaperCardSelectedBadgeSize
-        height: card.theme.wallpaperCardSelectedBadgeSize
-        radius: card.theme.wallpaperCardSelectedBadgeRadius
+        anchors.margins: card.theme.spacing.wallpaperCardSelectedBadgeMargin
+        width: card.theme.sizing.wallpaperCardSelectedBadgeSize
+        height: card.theme.sizing.wallpaperCardSelectedBadgeSize
+        radius: card.theme.shape.wallpaperCardSelectedBadgeRadius
         visible: card.selected
         color: card.theme.colors.pink
 
@@ -77,8 +77,8 @@ Rectangle {
             anchors.centerIn: parent
             text: card.icons.wallpaperSelectedCheck
             color: card.theme.colors.crust
-            font.pixelSize: card.theme.wallpaperCardSelectedBadgeIconFontSize
-            font.styleName: card.theme.fontStyleBold
+            font.pixelSize: card.theme.typography.sizeXl
+            font.styleName: card.theme.typography.styleBold
         }
 
     }

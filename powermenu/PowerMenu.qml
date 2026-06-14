@@ -141,7 +141,7 @@ Scope {
         id: powerButtons
 
         Row {
-            spacing: powerMenu.theme.powerMenuActionSpacing
+            spacing: powerMenu.theme.spacing.powerMenuActionSpacing
 
             Repeater {
                 model: powerMenu.actions
@@ -167,7 +167,7 @@ Scope {
         id: confirmButtons
 
         Row {
-            spacing: powerMenu.theme.powerMenuActionSpacing
+            spacing: powerMenu.theme.spacing.powerMenuActionSpacing
 
             ActionButton {
                 icon: ""

@@ -13,6 +13,7 @@ Scope {
     id: service
 
     readonly property var theme: AppTheme {}
+    readonly property int networkRefreshMs: 2000
     readonly property var networkDevices: Networking.devices?.values ?? []
     readonly property var lanDevice: networkDevices.find(device => device.type === DeviceType.Wired) ?? null
     readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null
@@ -51,7 +52,7 @@ Scope {
     readonly property bool hasNotifications: notificationCount > 0
     readonly property var notifications: notificationHistory
     readonly property int minVisibleNotifications: 1
-    readonly property int notificationPopupEstimatedHeight: 96
+    readonly property int notificationPopupEstimatedHeight: theme.sizing.notificationPopupEstimatedHeight
     readonly property int maxNotificationHistory: 100
     readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/statusbar-notifications.json`
     readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
@@ -201,7 +202,7 @@ Scope {
     }
 
     Timer {
-        interval: service.theme.networkRefreshMs
+        interval: service.networkRefreshMs
         running: service.lanThroughputEnabled
         repeat: true
         onTriggered: {
@@ -573,8 +574,9 @@ Scope {
 
     function setNotificationPopupAvailableHeight(height) {
         const availableHeight = Math.max(0, height || 0)
-        const slotHeight = notificationPopupEstimatedHeight + 6
-        const capacity = Math.max(minVisibleNotifications, Math.floor((availableHeight + 6) / slotHeight))
+        const popupSpacing = theme.spacing.notificationPopupSpacing
+        const slotHeight = notificationPopupEstimatedHeight + popupSpacing
+        const capacity = Math.max(minVisibleNotifications, Math.floor((availableHeight + popupSpacing) / slotHeight))
 
         if (notificationPopupCapacity === capacity)
             return

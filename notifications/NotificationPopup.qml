@@ -14,10 +14,10 @@ Item {
     property bool active: true
     property bool exiting: false
     property bool animateY: true
-    property real enterOffset: width + theme.notificationPopupEnterOffsetMargin
+    property real enterOffset: width + theme.spacing.notificationPopupEnterOffsetMargin
     property int autoCloseRemainingMs: 0
-    readonly property int enterAnimationMs: theme.notificationPopupEnterAnimationMs
-    readonly property int moveAnimationMs: theme.notificationPopupMoveAnimationMs
+    readonly property int enterAnimationMs: 260
+    readonly property int moveAnimationMs: 220
     readonly property real layoutHeight: notificationCard.layoutHeight
     readonly property real renderedLayoutHeight: notificationCard.renderedLayoutHeight
     readonly property real allocatedLayoutHeight: notificationCard.allocatedLayoutHeight
@@ -30,7 +30,7 @@ Item {
         exiting = false;
         exitAnimation.stop();
         enterAnimation.stop();
-        enterOffset = width + theme.notificationPopupEnterOffsetMargin;
+        enterOffset = width + theme.spacing.notificationPopupEnterOffsetMargin;
         enterAnimation.start();
     }
 
@@ -85,7 +85,7 @@ Item {
 
         target: popup
         property: "enterOffset"
-        to: popup.width + popup.theme.notificationPopupEnterOffsetMargin
+        to: popup.width + popup.theme.spacing.notificationPopupEnterOffsetMargin
         duration: popup.enterAnimationMs
         easing.type: Easing.Linear
         onFinished: popup.exitFinished()
@@ -94,7 +94,7 @@ Item {
     Timer {
         id: autoCloseTimer
 
-        interval: popup.theme.notificationPopupAutoCloseTickMs
+        interval: 250
         repeat: true
         running: popup.active && popup.visible && !popup.exiting && !notificationCard.cardHovered && autoCloseRemainingMs > 0
         onTriggered: {
@@ -112,7 +112,7 @@ Item {
         width: parent.width
         palette: popup.palette
         notificationData: popup.popupData
-        cornerRadius: popup.theme.notificationCardRadius
+        cornerRadius: popup.theme.shape.notificationCardRadius
         timeText: popup.popupData ? popup.services.notificationTimeText(popup.popupData) : ""
         onLayoutChanged: popup.layoutChanged()
         onSlotHeightChanged: popup.slotHeightChanged()

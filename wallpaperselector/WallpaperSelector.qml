@@ -65,11 +65,11 @@ Scope {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - selector.theme.wallpaperSelectorScreenMargin, selector.theme.wallpaperSelectorMaxWidth)
-                height: Math.min(parent.height - selector.theme.wallpaperSelectorScreenMargin, selector.theme.wallpaperSelectorMaxHeight)
-                radius: selector.theme.wallpaperSelectorRadius
+                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.wallpaperSelectorMaxWidth)
+                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.wallpaperSelectorMaxHeight)
+                radius: selector.theme.shape.wallpaperSelectorRadius
                 color: selector.theme.colors.mantlePanel
-                border.width: selector.theme.wallpaperSelectorBorderWidth
+                border.width: selector.theme.shape.wallpaperSelectorBorderWidth
                 border.color: selector.theme.colors.surface1
 
                 MouseArea {
@@ -80,15 +80,15 @@ Scope {
                 GridView {
                     id: grid
 
-                    readonly property int minCellWidth: selector.theme.wallpaperSelectorGridMinCellWidth
+                    readonly property int minCellWidth: selector.theme.sizing.wallpaperSelectorGridMinCellWidth
                     readonly property int columns: Math.max(1, Math.floor(width / minCellWidth))
 
                     anchors.fill: parent
-                    anchors.margins: selector.theme.wallpaperSelectorGridMargin
+                    anchors.margins: selector.theme.spacing.wallpaperSelectorGridMargin
                     clip: true
 
                     cellWidth: width / columns
-                    cellHeight: selector.theme.wallpaperSelectorGridCellHeight
+                    cellHeight: selector.theme.sizing.wallpaperSelectorGridCellHeight
                     model: wallpaperFolderModel
                     currentIndex: selector.selectedIndex
 
@@ -113,10 +113,10 @@ Scope {
                     Text {
                         anchors.centerIn: parent
                         visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
-                        width: parent.width - selector.theme.wallpaperSelectorEmptyTextHorizontalMargin
+                        width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
                         text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
                         color: selector.theme.colors.subtext0
-                        font.pixelSize: selector.theme.wallpaperSelectorEmptyFontSize
+                        font.pixelSize: selector.theme.typography.sizeLg
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
                     }

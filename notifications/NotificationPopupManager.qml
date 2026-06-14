@@ -12,11 +12,11 @@ PopupWindow {
     required property var palette
     required property var services
     required property var barWindow
-    readonly property int popupWidth: theme.notificationPopupWidth
-    readonly property int topMargin: theme.notificationPopupTopMargin
-    readonly property int rightMargin: theme.notificationPopupRightMargin
-    readonly property int bottomMargin: theme.notificationPopupBottomMargin
-    readonly property int spacing: theme.notificationPopupSpacing
+    readonly property int popupWidth: theme.sizing.notificationPopupWidth
+    readonly property int topMargin: theme.spacing.notificationPopupTopMargin
+    readonly property int rightMargin: theme.spacing.notificationPopupRightMargin
+    readonly property int bottomMargin: theme.spacing.notificationPopupBottomMargin
+    readonly property int spacing: theme.spacing.notificationPopupSpacing
     property var popupItems: []
     property real stackHeight: 0
     readonly property string screenName: barWindow.screen ? barWindow.screen.name : ""
@@ -191,7 +191,7 @@ PopupWindow {
     visible: isFocusedScreen && stackHeight > 0
     color: root.palette.transparent
     anchor.window: barWindow
-    anchor.rect.x: Math.max(theme.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
+    anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin
     Component.onCompleted: {
         updatePopupCapacity();

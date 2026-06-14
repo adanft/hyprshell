@@ -16,27 +16,27 @@ Rectangle {
     signal activated()
     signal hovered()
 
-    width: theme.appLauncherCardWidth
-    height: theme.appLauncherCardHeight
-    radius: theme.appLauncherCardRadius
+    width: theme.sizing.appLauncherCardWidth
+    height: theme.sizing.appLauncherCardHeight
+    radius: theme.shape.appLauncherCardRadius
     color: active ? theme.colors.surface0 : theme.colors.crustTransparent
-    border.width: active ? theme.appLauncherCardBorderWidth : 0
+    border.width: active ? theme.shape.appLauncherCardBorderWidth : 0
     border.color: theme.colors.mauve
 
     Column {
         anchors.fill: parent
-        anchors.margins: card.theme.appLauncherCardPadding
-        spacing: card.theme.appLauncherCardSpacing
+        anchors.margins: card.theme.spacing.appLauncherCardPadding
+        spacing: card.theme.spacing.appLauncherCardSpacing
 
         Item {
             width: parent.width
-            height: card.theme.appLauncherIconSlotSize
+            height: card.theme.sizing.appLauncherIconSlotSize
 
             IconImage {
                 anchors.centerIn: parent
-                width: card.theme.appLauncherIconSize
-                height: card.theme.appLauncherIconSize
-                implicitSize: card.theme.appLauncherIconSize
+                width: card.theme.sizing.appLauncherIconSize
+                height: card.theme.sizing.appLauncherIconSize
+                implicitSize: card.theme.sizing.appLauncherIconSize
                 source: card.iconSource
             }
 
@@ -46,8 +46,8 @@ Rectangle {
             width: parent.width
             text: card.app ? (card.app.name || "Unnamed") : "Unnamed"
             color: card.theme.colors.text
-            font.pixelSize: card.theme.appLauncherCardLabelFontSize
-            font.styleName: card.theme.fontStyleMedium
+            font.pixelSize: card.theme.typography.sizeLg
+            font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             maximumLineCount: 1

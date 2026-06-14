@@ -44,15 +44,15 @@ Item {
     }
 
     Rectangle {
-        width: root.appTheme.notificationBadgeSize
-        height: root.appTheme.notificationBadgeSize
-        radius: root.appTheme.notificationBadgeRadius
+        width: root.appTheme.sizing.notificationBadgeSize
+        height: root.appTheme.sizing.notificationBadgeSize
+        radius: root.appTheme.shape.notificationBadgeRadius
         color: root.palette.red
         visible: root.services.hasNotifications
         anchors.top: parent.top
-        anchors.topMargin: root.appTheme.notificationBadgeTopMargin
+        anchors.topMargin: root.appTheme.spacing.notificationBadgeTopMargin
         anchors.right: parent.right
-        anchors.rightMargin: root.appTheme.notificationBadgeRightMargin
+        anchors.rightMargin: root.appTheme.spacing.notificationBadgeRightMargin
     }
 
     MouseArea {

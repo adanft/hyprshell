@@ -17,26 +17,26 @@ Rectangle {
     signal activated()
     signal hovered()
 
-    width: theme.screenshotToolActionWidth
-    height: theme.screenshotToolActionHeight
-    radius: theme.screenshotToolActionRadius
+    width: theme.sizing.screenshotToolActionWidth
+    height: theme.sizing.screenshotToolActionHeight
+    radius: theme.shape.screenshotToolActionRadius
     opacity: enabled ? 1 : 0.45
     color: active ? theme.colors.surface0 : theme.colors.crustTransparent
-    border.width: active ? theme.appLauncherCardBorderWidth : 0
+    border.width: active ? theme.shape.screenshotToolActionBorderWidth : 0
     border.color: theme.colors.mauve
 
     Column {
         anchors.fill: parent
-        anchors.margins: action.theme.screenshotToolActionPadding
-        spacing: action.theme.screenshotToolActionSpacing
+        anchors.margins: action.theme.spacing.screenshotToolActionPadding
+        spacing: action.theme.spacing.screenshotToolActionSpacing
 
         Shared.AppText {
             width: parent.width
-            height: action.theme.screenshotToolActionIconSlotSize
+            height: action.theme.sizing.screenshotToolActionIconSlotSize
             text: action.icon
             color: action.selected ? action.theme.colors.mauve : action.theme.colors.blue
-            font.family: action.theme.iconFontFamily
-            font.pixelSize: action.theme.screenshotToolActionIconSize
+            font.family: action.theme.typography.iconFontFamily
+            font.pixelSize: action.theme.typography.actionIconFontSize
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
@@ -45,8 +45,8 @@ Rectangle {
             width: parent.width
             text: action.title
             color: action.theme.colors.text
-            font.pixelSize: action.theme.fontSizeSm
-            font.styleName: action.theme.fontStyleMedium
+            font.pixelSize: action.theme.typography.sizeSm
+            font.styleName: action.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             maximumLineCount: 1

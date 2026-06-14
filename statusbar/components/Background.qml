@@ -8,9 +8,9 @@ Rectangle {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     default property alias content: contentRow.data
-    property color backgroundColor: palette.base
+    property color backgroundColor: colors.background
     property int padding: 0
     property int contentSpacing: 0
 

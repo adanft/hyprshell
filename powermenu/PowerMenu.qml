@@ -19,23 +19,23 @@ Scope {
     readonly property var actions: [{
         "icon": "",
         "command": ["loginctl", "lock-session"],
-        "accent": theme.colors.peach
+        "primary": theme.colors.powerLock
     }, {
         "icon": "",
         "command": ["systemctl", "suspend"],
-        "accent": theme.colors.blue
+        "primary": theme.colors.info
     }, {
         "icon": "",
         "command": ["hyprctl", "dispatch", "hl.dsp.exit()"],
-        "accent": theme.colors.mauve
+        "primary": theme.colors.primary
     }, {
         "icon": "",
         "command": ["systemctl", "reboot"],
-        "accent": theme.colors.green
+        "primary": theme.colors.success
     }, {
         "icon": "",
         "command": ["systemctl", "poweroff"],
-        "accent": theme.colors.red
+        "primary": theme.colors.danger
     }]
 
     function open() {
@@ -115,7 +115,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: powerMenu.theme.colors.baseScrim
+            color: powerMenu.theme.colors.scrim
             focus: true
             Keys.onEscapePressed: powerMenu.confirming ? powerMenu.cancelConfirm() : powerMenu.close()
             Keys.onLeftPressed: powerMenu.moveSelection(-1)
@@ -151,7 +151,7 @@ Scope {
                     required property int index
 
                     icon: modelData.icon
-                    accent: modelData.accent
+                    primary: modelData.primary
                     selected: powerMenu.selectedIndex === index
                     onHovered: powerMenu.selectedIndex = index
                     onActivated: powerMenu.confirmCommand(modelData.command)
@@ -171,7 +171,7 @@ Scope {
 
             ActionButton {
                 icon: ""
-                accent: powerMenu.theme.colors.green
+                primary: powerMenu.theme.colors.success
                 selected: powerMenu.confirmSelectedIndex === 0
                 onHovered: powerMenu.confirmSelectedIndex = 0
                 onActivated: powerMenu.runCommand(powerMenu.pendingCommand)
@@ -179,7 +179,7 @@ Scope {
 
             ActionButton {
                 icon: ""
-                accent: powerMenu.theme.colors.red
+                primary: powerMenu.theme.colors.danger
                 selected: powerMenu.confirmSelectedIndex === 1
                 onHovered: powerMenu.confirmSelectedIndex = 1
                 onActivated: powerMenu.cancelConfirm()

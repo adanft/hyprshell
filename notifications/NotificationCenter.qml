@@ -16,7 +16,7 @@ PopupWindow {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     required property var barWindow
     readonly property int contentPadding: theme.spacing.notificationCenterPadding
@@ -27,7 +27,7 @@ PopupWindow {
     implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height : theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
     visible: false
     grabFocus: true
-    color: popup.palette.transparent
+    color: popup.colors.transparent
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - theme.spacing.notificationCenterScreenMargin)
     anchor.rect.y: theme.sizing.notificationCenterTopOffset
@@ -36,8 +36,8 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: popup.theme.shape.notificationCenterRadius
-        color: popup.palette.base
-        border.color: popup.palette.surface1
+        color: popup.colors.background
+        border.color: popup.colors.border
         border.width: popup.theme.shape.notificationCenterBorderWidth
 
         Column {
@@ -57,7 +57,7 @@ PopupWindow {
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Notifications"
-                    color: popup.palette.text
+                    color: popup.colors.text
                     font.family: popup.theme.typography.textFontFamily
                 }
 
@@ -66,7 +66,7 @@ PopupWindow {
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: popup.icons.notificationsEmpty
-                    color: popup.palette.mauve
+                    color: popup.colors.notification
                     font.family: popup.theme.typography.iconFontFamily
                     font.pixelSize: popup.theme.typography.sizeLg
                 }
@@ -76,7 +76,7 @@ PopupWindow {
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: popup.services.notificationCount
-                    color: popup.palette.text
+                    color: popup.colors.text
                     font.family: popup.theme.typography.textFontFamily
                     font.pixelSize: popup.theme.typography.sizeMd
                 }
@@ -103,7 +103,7 @@ PopupWindow {
 
                         AppText {
                             text: "Clear"
-                            color: clearMouse.containsMouse ? popup.palette.blue : popup.palette.subtext1
+                            color: clearMouse.containsMouse ? popup.colors.link : popup.colors.textMuted
                             font.family: popup.theme.typography.textFontFamily
                             font.pixelSize: popup.theme.typography.sizeMd
                             font.styleName: popup.theme.typography.styleMedium
@@ -111,7 +111,7 @@ PopupWindow {
 
                         AppText {
                             text: popup.icons.notificationsClear
-                            color: clearMouse.containsMouse ? popup.palette.blue : popup.palette.subtext1
+                            color: clearMouse.containsMouse ? popup.colors.link : popup.colors.textMuted
                             font.family: popup.theme.typography.iconFontFamily
                             font.pixelSize: popup.theme.typography.sizeMd
                         }
@@ -141,7 +141,7 @@ PopupWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - dndSwitch.width
                     text: "Do Not Disturb"
-                    color: popup.palette.text
+                    color: popup.colors.text
                     font.family: popup.theme.typography.textFontFamily
                     font.pixelSize: popup.theme.typography.sizeMd
                 }
@@ -153,7 +153,7 @@ PopupWindow {
                     width: popup.theme.sizing.notificationCenterDndSwitchWidth
                     height: popup.theme.sizing.notificationCenterDndSwitchHeight
                     radius: height / 2
-                    color: popup.services.notificationDnd ? popup.palette.mauve : popup.palette.surface1
+                    color: popup.services.notificationDnd ? popup.colors.primary : popup.colors.surfaceHover
                     border.width: 0
 
                     Rectangle {
@@ -162,7 +162,7 @@ PopupWindow {
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
                         x: popup.services.notificationDnd ? parent.width - width - popup.theme.spacing.notificationCenterDndKnobMargin : popup.theme.spacing.notificationCenterDndKnobMargin
-                        color: popup.services.notificationDnd ? popup.palette.base : popup.palette.overlay1
+                        color: popup.services.notificationDnd ? popup.colors.background : popup.colors.textSubtle
 
                         Behavior on x {
                             NumberAnimation {
@@ -197,7 +197,7 @@ PopupWindow {
                     AppText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: popup.icons.notificationsEmpty
-                        color: popup.palette.overlay1
+                        color: popup.colors.textSubtle
                         font.family: popup.theme.typography.iconFontFamily
                         font.pixelSize: popup.theme.typography.displayIconFontSize
                     }
@@ -205,7 +205,7 @@ PopupWindow {
                     AppText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "No Notifications"
-                        color: popup.palette.overlay1
+                        color: popup.colors.textSubtle
                         font.family: popup.theme.typography.textFontFamily
                         font.pixelSize: popup.theme.typography.sizeLg
                     }
@@ -232,7 +232,7 @@ PopupWindow {
                                 required property var modelData
 
                                 width: notificationList.width
-                                palette: popup.palette
+                                colors: popup.colors
                                 notificationData: modelData
                                 cornerRadius: popup.theme.shape.notificationCenterCardRadius
                                 useRenderedHeightForLayout: true

@@ -8,7 +8,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     property var popupData: null
     property bool active: true
@@ -110,7 +110,7 @@ Item {
 
         x: popup.enterOffset
         width: parent.width
-        palette: popup.palette
+        colors: popup.colors
         notificationData: popup.popupData
         cornerRadius: popup.theme.shape.notificationCardRadius
         timeText: popup.popupData ? popup.services.notificationTimeText(popup.popupData) : ""

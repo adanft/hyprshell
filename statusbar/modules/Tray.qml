@@ -16,7 +16,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var barWindow
     readonly property bool hasItems: trayItems.count > 0
 
@@ -94,7 +94,7 @@ Item {
     TrayMenu {
         id: trayMenu
 
-        palette: root.palette
+        colors: root.colors
         barWindow: root.barWindow
     }
 

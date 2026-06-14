@@ -24,7 +24,7 @@ Rectangle {
     width: theme.sizing.wallpaperCardWidth
     height: theme.sizing.wallpaperCardHeight
     radius: theme.shape.wallpaperCardRadius
-    color: theme.colors.mantle
+    color: theme.colors.surface
 
     Image {
         anchors.fill: parent
@@ -50,7 +50,7 @@ Rectangle {
 
         anchors.fill: parent
         radius: card.radius
-        color: card.theme.colors.black
+        color: card.theme.colors.mask
         visible: false
         layer.enabled: true
     }
@@ -60,7 +60,7 @@ Rectangle {
         radius: parent.radius
         color: card.theme.colors.transparent
         border.width: card.active ? card.theme.shape.wallpaperCardBorderWidth : 0
-        border.color: card.selected ? card.theme.colors.pink : mouseArea.containsMouse ? card.theme.colors.mauve : card.theme.colors.surface0
+        border.color: card.selected ? card.theme.colors.wallpaperSelected : mouseArea.containsMouse ? card.theme.colors.focus : card.theme.colors.surfaceActive
     }
 
     Rectangle {
@@ -71,12 +71,12 @@ Rectangle {
         height: card.theme.sizing.wallpaperCardSelectedBadgeSize
         radius: card.theme.shape.wallpaperCardSelectedBadgeRadius
         visible: card.selected
-        color: card.theme.colors.pink
+        color: card.theme.colors.wallpaperSelected
 
         Text {
             anchors.centerIn: parent
             text: card.icons.wallpaperSelectedCheck
-            color: card.theme.colors.crust
+            color: card.theme.colors.textInverse
             font.pixelSize: card.theme.typography.sizeXl
             font.styleName: card.theme.typography.styleBold
         }

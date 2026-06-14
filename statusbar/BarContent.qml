@@ -3,7 +3,7 @@ import QtQuick
 Item {
     id: root
 
-    required property var palette
+    required property var colors
     required property var services
     required property var barWindow
 
@@ -11,7 +11,7 @@ Item {
 
     BarLayout {
         anchors.fill: parent
-        palette: root.palette
+        colors: root.colors
         services: root.services
         barWindow: root.barWindow
         onOpenNotificationCenterRequested: root.openNotificationCenterRequested()

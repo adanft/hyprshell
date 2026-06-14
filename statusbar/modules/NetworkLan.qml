@@ -14,7 +14,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
 
     function formatRate(bytes) {
@@ -47,27 +47,27 @@ Item {
 
         BarText {
             text: root.services.lanUp ? root.icons.networkLanConnected : root.icons.networkLanDisconnected
-            color: root.palette.blue
+            color: root.colors.network
         }
 
         BarText {
             text: root.icons.networkDownload
-            color: root.palette.blue
+            color: root.colors.network
         }
 
         BarText {
             text: root.services.lanUp ? root.formatRate(root.services.lanRxRate) : "0 B/s"
-            color: root.palette.blue
+            color: root.colors.network
         }
 
         BarText {
             text: root.icons.networkUpload
-            color: root.palette.blue
+            color: root.colors.network
         }
 
         BarText {
             text: root.services.lanUp ? root.formatRate(root.services.lanTxRate) : "0 B/s"
-            color: root.palette.blue
+            color: root.colors.network
         }
 
     }

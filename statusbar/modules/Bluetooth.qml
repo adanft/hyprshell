@@ -14,7 +14,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
 
     function icon() {
@@ -40,12 +40,12 @@ Item {
 
         BarText {
             text: root.icon()
-            color: root.palette.pink
+            color: root.colors.bluetooth
         }
 
         BarText {
             text: root.services.bluetoothConnectedCount
-            color: root.palette.pink
+            color: root.colors.bluetooth
         }
 
     }

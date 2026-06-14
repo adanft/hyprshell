@@ -8,7 +8,7 @@ Row {
 
     readonly property var icons: Icons {}
     readonly property var theme: AppTheme {}
-    required property var palette
+    required property var colors
 
     readonly property var activeToplevel: {
         const toplevel = Hyprland.activeToplevel
@@ -22,7 +22,7 @@ Row {
     BarText {
         height: parent.height
         text: root.activeToplevel ? root.icons.window : ""
-        color: root.palette.blue
+        color: root.colors.info
         font.family: root.theme.typography.iconFontFamily
         font.pixelSize: root.theme.typography.sizeXl
     }
@@ -31,7 +31,7 @@ Row {
         width: parent.width - x
         height: parent.height
         text: root.activeToplevel?.title ?? ""
-        color: root.palette.subtext1
+        color: root.colors.textMuted
         font.family: root.theme.typography.textFontFamily
         elide: Text.ElideRight
     }

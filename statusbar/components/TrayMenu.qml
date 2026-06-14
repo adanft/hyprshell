@@ -15,7 +15,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var barWindow
     property var currentTrayItem: null
     property bool menuOpen: false
@@ -121,7 +121,7 @@ Item {
 
         visible: root.menuOpen && root.currentTrayItem && root.currentTrayItem.hasMenu
         screen: root.barWindow.screen
-        color: root.palette.transparent
+        color: root.colors.transparent
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "qs-statusbar-tray-menu"
@@ -149,8 +149,8 @@ Item {
             x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX - width / 2))
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8, root.menuAnchorY))
             radius: root.theme.shape.radius12
-            color: root.palette.base
-            border.color: root.palette.surface1
+            color: root.colors.background
+            border.color: root.colors.border
             border.width: root.theme.shape.borderThin
 
             MouseArea {
@@ -170,7 +170,7 @@ Item {
                     width: parent.width
                     height: root.theme.sizing.statusBarTrayMenuItemHeight
                     radius: root.theme.shape.radius8
-                    color: backArea.containsMouse ? root.palette.surface1 : root.palette.transparent
+                    color: backArea.containsMouse ? root.colors.surfaceHover : root.colors.transparent
 
                     Row {
                         anchors.left: parent.left
@@ -181,7 +181,7 @@ Item {
                         BarText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.icons.trayBack
-                            color: root.palette.text
+                            color: root.colors.text
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.sizeLg
                         }
@@ -189,7 +189,7 @@ Item {
                         BarText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Back"
-                            color: root.palette.text
+                            color: root.colors.text
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.sizeLg
                             font.styleName: root.theme.typography.styleRegular
@@ -221,7 +221,7 @@ Item {
                         width: menuColumn.width
                         height: separator ? root.theme.shape.borderThin : root.theme.sizing.statusBarTrayMenuItemHeight
                         radius: separator ? 0 : root.theme.shape.radius8
-                        color: separator ? root.palette.surface1 : entryMouseArea.containsMouse ? root.palette.surface1 : root.palette.transparent
+                        color: separator ? root.colors.border : entryMouseArea.containsMouse ? root.colors.surfaceHover : root.colors.transparent
 
                         MouseArea {
                             id: entryMouseArea
@@ -263,14 +263,14 @@ Item {
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType !== undefined && menuEntryRoot.modelData.buttonType !== 0
                                 radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 : root.theme.shape.radius3
                                 border.width: root.theme.shape.borderThin
-                                border.color: root.palette.overlay1
-                                color: root.palette.transparent
+                                border.color: root.colors.borderStrong
+                                color: root.colors.transparent
 
                                 Text {
                                     anchors.centerIn: parent
                                     visible: menuEntryRoot.modelData && menuEntryRoot.modelData.checkState === 2
                                     text: root.icons.trayCheck
-                                    color: root.palette.blue
+                                    color: root.colors.info
                                     font.pixelSize: root.theme.typography.sizeSm
                                 }
 
@@ -289,7 +289,7 @@ Item {
                                 width: Math.max(root.theme.sizing.statusBarTrayMenuTextMinWidth, parent.width - root.theme.sizing.statusBarTrayMenuTextRightReserve)
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: menuEntryRoot.modelData ? (menuEntryRoot.modelData.text || "") : ""
-                                color: menuEntryRoot.enabledEntry ? root.palette.text : root.palette.overlay1
+                                color: menuEntryRoot.enabledEntry ? root.colors.text : root.colors.textSubtle
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
                                 font.styleName: root.theme.typography.styleRegular
@@ -300,7 +300,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.hasChildren
                                 text: root.icons.traySubmenu
-                                color: root.palette.subtext1
+                                color: root.colors.textMuted
                                 font.family: root.theme.typography.textFontFamily
                             }
 

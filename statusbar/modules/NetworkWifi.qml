@@ -14,7 +14,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     readonly property bool connected: services.wifiUp && services.wifiSignal > 0
 
@@ -31,13 +31,13 @@ Item {
 
         BarText {
             text: root.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected
-            color: root.palette.red
+            color: root.connected ? root.colors.wifiConnected : root.colors.wifiDisconnected
         }
 
         BarText {
             visible: root.connected
             text: `${root.services.wifiSignal}%`
-            color: root.palette.red
+            color: root.colors.wifiConnected
         }
 
     }

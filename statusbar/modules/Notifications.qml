@@ -13,7 +13,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
 
     signal openRequested()
@@ -35,14 +35,14 @@ Item {
 
         anchors.centerIn: parent
         text: root.iconText()
-        color: root.palette.yellow
+        color: root.colors.notification
     }
 
     Rectangle {
         width: root.theme.sizing.notificationBadgeSize
         height: root.theme.sizing.notificationBadgeSize
         radius: root.theme.shape.notificationBadgeRadius
-        color: root.palette.red
+        color: root.colors.notificationBadge
         visible: root.services.hasNotifications
         anchors.top: parent.top
         anchors.topMargin: root.theme.spacing.notificationBadgeTopMargin

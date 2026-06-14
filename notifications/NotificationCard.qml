@@ -14,7 +14,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     property var notificationData: null
     property string timeText: "now"
     property int cornerRadius: theme.shape.notificationCardRadius
@@ -66,15 +66,15 @@ Item {
     }
     readonly property color urgencyTimeColor: {
         if (!notificationData)
-            return card.palette.overlay1;
+            return card.colors.textSubtle;
 
         switch (notificationData.urgency) {
         case NotificationUrgency.Critical:
-            return card.palette.red;
+            return card.colors.critical;
         case NotificationUrgency.Normal:
-            return card.palette.blue;
+            return card.colors.info;
         default:
-            return card.palette.overlay1;
+            return card.colors.textSubtle;
         }
     }
     readonly property string iconSource: {
@@ -236,8 +236,8 @@ Item {
         width: parent.width
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
-        color: card.palette.base
-        border.color: card.palette.overlay0
+        color: card.colors.background
+        border.color: card.colors.borderStrong
         border.width: card.borderWidth
         clip: true
 
@@ -303,7 +303,7 @@ Item {
                         width: card.iconSize
                         height: card.iconSize
                         text: card.icons.notificationsEmpty
-                        color: card.palette.mauve
+                        color: card.colors.notification
                         font.family: card.iconFont
                         font.pixelSize: card.iconSize
                         horizontalAlignment: Text.AlignHCenter
@@ -324,7 +324,7 @@ Item {
                         Text {
                             width: Math.min(implicitWidth, parent.width - timeSeparator.implicitWidth - timeLabel.implicitWidth - parent.spacing * 2)
                             text: card.notificationData ? (card.notificationData.appName || "App") : "App"
-                            color: card.palette.overlay1
+                            color: card.colors.textSubtle
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
                             elide: Text.ElideRight
@@ -334,7 +334,7 @@ Item {
                             id: timeSeparator
 
                             text: timeLabel.text.length > 0 ? "•" : ""
-                            color: card.palette.overlay1
+                            color: card.colors.textSubtle
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
                         }
@@ -354,7 +354,7 @@ Item {
                     Text {
                         width: parent.width
                         text: card.notificationData ? (card.notificationData.summary || "Notification") : "Notification"
-                        color: card.palette.mauve
+                        color: card.colors.primary
                         font.family: card.textFont
                         font.pixelSize: card.titleFontSize
                         font.styleName: card.theme.typography.styleSemibold
@@ -378,8 +378,8 @@ Item {
                             width: parent.width
                             text: card.bodyHtml
                             textFormat: Text.StyledText
-                            color: card.palette.subtext1
-                            linkColor: card.palette.blue
+                            color: card.colors.textMuted
+                            linkColor: card.colors.link
                             font.family: card.textFont
                             font.pixelSize: card.bodyFontSize
                             wrapMode: Text.WordWrap
@@ -435,7 +435,7 @@ Item {
                                 width: Math.max(actionText.implicitWidth + card.actionButtonHorizontalPadding, card.actionButtonMinWidth)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
-                                color: card.palette.crust
+                                color: card.colors.surfaceInverse
                                 border.width: 0
 
                                 Text {
@@ -443,7 +443,7 @@ Item {
 
                                     anchors.centerIn: parent
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
-                                    color: actionMouse.containsMouse ? card.palette.blue : card.palette.subtext1
+                                    color: actionMouse.containsMouse ? card.colors.link : card.colors.textMuted
                                     font.family: card.textFont
                                     font.pixelSize: card.theme.typography.sizeSm
                                     font.styleName: card.theme.typography.styleMedium
@@ -480,12 +480,12 @@ Item {
                         width: card.closeButtonSize
                         height: card.closeButtonSize
                         radius: card.theme.shape.notificationCardCloseButtonRadius
-                        color: closeMouse.containsMouse ? card.palette.surface1 : card.palette.transparent
+                        color: closeMouse.containsMouse ? card.colors.surfaceHover : card.colors.transparent
 
                         Text {
                             anchors.fill: parent
                             text: card.icons.close
-                            color: card.palette.overlay1
+                            color: card.colors.textSubtle
                             font.family: card.iconFont
                             font.pixelSize: card.closeIconFontSize
                             horizontalAlignment: Text.AlignHCenter

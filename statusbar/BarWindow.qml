@@ -10,14 +10,14 @@ PanelWindow {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
 
     signal openNotificationCenterRequested()
 
     implicitHeight: theme.sizing.statusBarOuterHeight
     exclusiveZone: theme.sizing.statusBarOuterHeight
-    color: window.palette.transparent
+    color: window.colors.transparent
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "qs-statusbar"
 
@@ -33,7 +33,7 @@ PanelWindow {
         anchors.leftMargin: window.theme.spacing.space6
         anchors.rightMargin: window.theme.spacing.space6
         anchors.bottomMargin: 0
-        palette: window.palette
+        colors: window.colors
         services: window.services
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()

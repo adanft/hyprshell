@@ -19,9 +19,9 @@ Rectangle {
     width: theme.sizing.appLauncherCardWidth
     height: theme.sizing.appLauncherCardHeight
     radius: theme.shape.appLauncherCardRadius
-    color: active ? theme.colors.surface0 : theme.colors.crustTransparent
+    color: active ? theme.colors.surfaceActive : theme.colors.surfaceTransparent
     border.width: active ? theme.shape.appLauncherCardBorderWidth : 0
-    border.color: theme.colors.mauve
+    border.color: theme.colors.focus
 
     Column {
         anchors.fill: parent

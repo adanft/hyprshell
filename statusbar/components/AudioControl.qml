@@ -12,12 +12,12 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     property bool source: false
     readonly property int volume: source ? services.sourceVolume : services.sinkVolume
     readonly property bool muted: source ? services.sourceMuted : services.sinkMuted
-    readonly property color textColor: source ? palette.flamingo : palette.lavender
+    readonly property color textColor: source ? colors.audioInput : colors.audioOutput
 
     function iconText() {
         if (muted)

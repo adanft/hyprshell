@@ -13,7 +13,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     readonly property string profile: services.powerProfile
 
@@ -22,7 +22,7 @@ Item {
 
     BarText {
         anchors.centerIn: parent
-        color: root.profile === "performance" ? root.palette.red : root.profile === "power-saver" ? root.palette.green : root.palette.blue
+        color: root.profile === "performance" ? root.colors.powerPerformance : root.profile === "power-saver" ? root.colors.powerSaver : root.colors.powerBalanced
         text: root.profile === "performance" ? root.icons.powerPerformance : root.profile === "power-saver" ? root.icons.powerSaver : root.icons.powerBalanced
         font.pixelSize: root.theme.typography.sizeXl
     }

@@ -9,7 +9,7 @@ PopupWindow {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     required property var barWindow
     readonly property int popupWidth: theme.sizing.notificationPopupWidth
@@ -33,7 +33,7 @@ PopupWindow {
 
     function createPopupItem(popupData) {
         const item = popupComponent.createObject(popupLayer, {
-            "palette": root.palette,
+            "colors": root.colors,
             "services": root.services,
             "popupData": popupData,
             "active": root.isFocusedScreen,
@@ -189,7 +189,7 @@ PopupWindow {
     implicitWidth: popupWidth
     implicitHeight: Math.max(1, stackHeight)
     visible: isFocusedScreen && stackHeight > 0
-    color: root.palette.transparent
+    color: root.colors.transparent
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin

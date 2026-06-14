@@ -9,7 +9,7 @@ ShellRoot {
     id: shell
 
     Theme.Colors {
-        id: colors
+        id: themeColors
     }
 
     Services.Services {
@@ -23,7 +23,7 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-            palette: colors
+            colors: themeColors
             services: serviceState
         }
 

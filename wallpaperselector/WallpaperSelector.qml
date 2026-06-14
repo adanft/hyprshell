@@ -46,7 +46,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: selector.theme.colors.baseScrim
+            color: selector.theme.colors.scrim
             focus: true
 
             Keys.onEscapePressed: selector.close()
@@ -68,9 +68,9 @@ Scope {
                 width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.wallpaperSelectorMaxWidth)
                 height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.wallpaperSelectorMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
-                color: selector.theme.colors.mantlePanel
+                color: selector.theme.colors.panel
                 border.width: selector.theme.shape.wallpaperSelectorBorderWidth
-                border.color: selector.theme.colors.surface1
+                border.color: selector.theme.colors.border
 
                 MouseArea {
                     anchors.fill: parent
@@ -115,7 +115,7 @@ Scope {
                         visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
                         width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
                         text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
-                        color: selector.theme.colors.subtext0
+                        color: selector.theme.colors.textMuted
                         font.pixelSize: selector.theme.typography.sizeLg
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap

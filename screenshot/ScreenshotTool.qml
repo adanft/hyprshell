@@ -110,7 +110,7 @@ Scope {
             id: overlay
 
             anchors.fill: parent
-            color: tool.theme.colors.baseScrim
+            color: tool.theme.colors.scrim
             focus: true
             Keys.onEscapePressed: tool.close()
             Keys.onLeftPressed: tool.moveSelection(-1)
@@ -133,9 +133,9 @@ Scope {
                 width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin, tool.contentWidth + tool.theme.spacing.screenshotToolPadding * 2)
                 height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin, content.implicitHeight + tool.theme.spacing.screenshotToolPadding * 2)
                 radius: tool.theme.shape.screenshotToolRadius
-                color: tool.theme.colors.mantlePanel
+                color: tool.theme.colors.panel
                 border.width: tool.theme.shape.screenshotToolBorderWidth
-                border.color: tool.theme.colors.surface1
+                border.color: tool.theme.colors.border
 
                 MouseArea {
                     anchors.fill: parent
@@ -171,7 +171,7 @@ Scope {
                             width: tool.theme.sizing.screenshotToolCursorSwitchWidth
                             height: tool.theme.sizing.screenshotToolCursorSwitchHeight
                             radius: height / 2
-                            color: tool.includeCursor ? tool.theme.colors.mauve : tool.theme.colors.surface0
+                            color: tool.includeCursor ? tool.theme.colors.primary : tool.theme.colors.surfaceActive
 
                             Rectangle {
                                 width: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
@@ -179,7 +179,7 @@ Scope {
                                 radius: width / 2
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: tool.includeCursor ? parent.width - width - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin : tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
-                                color: tool.includeCursor ? tool.theme.colors.crust : tool.theme.colors.subtext0
+                                color: tool.includeCursor ? tool.theme.colors.primaryText : tool.theme.colors.textMuted
 
                                 Behavior on x {
                                     NumberAnimation {

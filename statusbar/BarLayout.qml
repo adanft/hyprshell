@@ -10,7 +10,7 @@ Item {
     theme: AppTheme {
     }
 
-    required property var palette
+    required property var colors
     required property var services
     required property var barWindow
 
@@ -26,13 +26,13 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            palette: root.palette
+            colors: root.colors
             padding: root.theme.spacing.space16
 
             Workspaces {
                 id: workspaces
 
-                palette: root.palette
+                colors: root.colors
             }
 
         }
@@ -43,13 +43,13 @@ Item {
         Background {
             width: windowTitle.width
             height: root.theme.sizing.statusBarHeight
-            palette: root.palette
-            backgroundColor: root.palette.transparent
+            colors: root.colors
+            backgroundColor: root.colors.transparent
 
             WindowTitle {
                 id: windowTitle
 
-                palette: root.palette
+                colors: root.colors
             }
 
         }
@@ -68,13 +68,13 @@ Item {
             height: root.theme.sizing.statusBarHeight
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            palette: root.palette
+            colors: root.colors
             padding: root.theme.spacing.space12
 
             Time {
                 id: timeWidget
 
-                palette: root.palette
+                colors: root.colors
                 services: root.services
             }
 
@@ -91,11 +91,11 @@ Item {
             Background {
                 width: root.theme.sizing.statusBarIconSize
                 height: root.theme.sizing.statusBarHeight
-                palette: root.palette
-                backgroundColor: root.palette.transparent
+                colors: root.colors
+                backgroundColor: root.colors.transparent
 
                 PowerProfile {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
@@ -118,13 +118,13 @@ Item {
             width: tray.implicitWidth
             height: root.theme.sizing.statusBarHeight
             visible: tray.hasItems
-            palette: root.palette
-            backgroundColor: root.palette.transparent
+            colors: root.colors
+            backgroundColor: root.colors.transparent
 
             Tray {
                 id: tray
 
-                palette: root.palette
+                colors: root.colors
                 barWindow: root.barWindow
             }
 
@@ -136,7 +136,7 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            palette: root.palette
+            colors: root.colors
             padding: root.theme.spacing.space12 + root.theme.spacing.space6
 
             Row {
@@ -145,42 +145,42 @@ Item {
                 spacing: root.theme.spacing.space6 * 2
 
                 NetworkLan {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 NetworkWifi {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 Bluetooth {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 Sound {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 Backlight {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 Battery {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 Microphone {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                 }
 
                 Notifications {
-                    palette: root.palette
+                    colors: root.colors
                     services: root.services
                     onOpenRequested: root.openNotificationCenterRequested()
                 }
@@ -195,13 +195,13 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            palette: root.palette
+            colors: root.colors
             padding: root.theme.spacing.space12
 
             Date {
                 id: dateModule
 
-                palette: root.palette
+                colors: root.colors
                 services: root.services
             }
 

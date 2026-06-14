@@ -16,7 +16,7 @@ ShellRoot {
     id: shell
 
     Theme.Colors {
-        id: colors
+        id: themeColors
     }
     Services.Services {
         id: serviceState
@@ -92,7 +92,7 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-            palette: colors
+            colors: themeColors
             services: serviceState
 
             onOpenNotificationCenterRequested: notificationCenter.visible = !notificationCenter.visible
@@ -100,13 +100,13 @@ ShellRoot {
             Notifications.NotificationCenter {
                 id: notificationCenter
 
-                palette: colors
+                colors: themeColors
                 services: serviceState
                 barWindow: barWindow
             }
 
             Notifications.NotificationPopupManager {
-                palette: colors
+                colors: themeColors
                 services: serviceState
                 barWindow: barWindow
             }

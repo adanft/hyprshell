@@ -9,7 +9,7 @@ Item {
 
     readonly property var icons: Icons {}
     readonly property var theme: AppTheme {}
-    required property var palette
+    required property var colors
 
     readonly property var workspaces: [1, 2, 3, 4, 5, 6, 7, 8, 9]
     readonly property int activeWorkspaceId: Hyprland.focusedWorkspace?.id ?? 1
@@ -89,13 +89,13 @@ Item {
 
     function workspaceColor(urgent, active, onOtherMonitor, hovered, empty) {
         if (urgent)
-            return palette.red
+            return colors.workspaceUrgent
         if (active)
-            return palette.mauve
+            return colors.workspaceActive
         if (onOtherMonitor)
-            return palette.blue
+            return colors.workspaceRemote
         if (hovered)
-            return palette.teal
-        return empty ? palette.surface1 : palette.overlay1
+            return colors.workspaceHover
+        return empty ? colors.workspaceEmpty : colors.workspaceOccupied
     }
 }

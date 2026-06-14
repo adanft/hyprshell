@@ -21,9 +21,9 @@ Rectangle {
     height: theme.sizing.screenshotToolActionHeight
     radius: theme.shape.screenshotToolActionRadius
     opacity: enabled ? 1 : 0.45
-    color: active ? theme.colors.surface0 : theme.colors.crustTransparent
+    color: active ? theme.colors.surfaceActive : theme.colors.surfaceTransparent
     border.width: active ? theme.shape.screenshotToolActionBorderWidth : 0
-    border.color: theme.colors.mauve
+    border.color: theme.colors.focus
 
     Column {
         anchors.fill: parent
@@ -34,7 +34,7 @@ Rectangle {
             width: parent.width
             height: action.theme.sizing.screenshotToolActionIconSlotSize
             text: action.icon
-            color: action.selected ? action.theme.colors.mauve : action.theme.colors.blue
+            color: action.selected ? action.theme.colors.primary : action.theme.colors.info
             font.family: action.theme.typography.iconFontFamily
             font.pixelSize: action.theme.typography.actionIconFontSize
             horizontalAlignment: Text.AlignHCenter

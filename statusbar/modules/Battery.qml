@@ -8,7 +8,7 @@ Item {
     readonly property var icons: Icons {}
     readonly property var theme: AppTheme {}
 
-    required property var palette
+    required property var colors
     required property var services
 
     readonly property int level: services.batteryLevel
@@ -28,10 +28,10 @@ Item {
     }
     readonly property color textColor: {
         if (services.batteryEmpty || services.batteryCritical)
-            return palette.red
+            return colors.critical
         if (services.batteryPendingCharge || services.batteryPendingDischarge || services.batteryLow)
-            return palette.yellow
-        return palette.green
+            return colors.warning
+        return colors.success
     }
 
     visible: services.batteryAvailable

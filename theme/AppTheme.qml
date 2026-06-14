@@ -121,6 +121,27 @@ QtObject {
     readonly property string wallpaperCardInactiveBorderColor: "#313244"
     readonly property string wallpaperCardSelectedBadgeColor: "#f5c2e7"
     readonly property string wallpaperCardSelectedBadgeIconColor: "#11111b"
+    readonly property int screenshotToolRadius: radius24
+    readonly property int screenshotToolBorderWidth: borderMedium
+    readonly property int screenshotToolScreenMargin: 96
+    readonly property int screenshotToolPadding: space24
+    readonly property int screenshotToolSectionSpacing: space16
+    readonly property int screenshotToolActionWidth: 84
+    readonly property int screenshotToolActionHeight: 84
+    readonly property int screenshotToolActionRadius: radius12
+    readonly property int screenshotToolActionPadding: space8
+    readonly property int screenshotToolActionSpacing: space4
+    readonly property int screenshotToolActionIconSlotSize: 44
+    readonly property int screenshotToolActionIconSize: size28
+    readonly property int screenshotToolCursorRowHeight: size24
+    readonly property string screenshotToolBackgroundColor: "#f0181825"
+    readonly property string screenshotToolSwitchActiveKnobColor: "#11111b"
+    readonly property string screenshotToolActionSelectedColor: "#313244"
+    readonly property string screenshotToolActionHoverColor: "#89b4fa"
+    readonly property string screenshotToolBorderColor: "#45475a"
+    readonly property string screenshotToolAccentColor: "#cba6f7"
+    readonly property string screenshotToolTextColor: "#cdd6f4"
+    readonly property string screenshotToolMutedTextColor: "#a6adc8"
     readonly property int notificationBadgeSize: space6
     readonly property int notificationBadgeRadius: radius3
     readonly property int notificationBadgeTopMargin: space6

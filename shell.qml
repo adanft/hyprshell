@@ -6,6 +6,7 @@ import Quickshell.Io
 import "applauncher" as Applauncher
 import "notifications" as Notifications
 import "powermenu" as Powermenu
+import "screenshot" as Screenshot
 import "services" as Services
 import "statusbar" as Statusbar
 import "theme" as Theme
@@ -29,6 +30,9 @@ ShellRoot {
     }
     Wallpaperselector.WallpaperSelector {
         id: wallpaperSelector
+    }
+    Screenshot.ScreenshotTool {
+        id: screenshotTool
     }
 
     IpcHandler {
@@ -64,6 +68,18 @@ ShellRoot {
 
         function toggle(): void {
             shell.toggleWallpaperSelector();
+        }
+    }
+
+    IpcHandler {
+        target: "screenshot"
+
+        function open(): void {
+            shell.openScreenshotTool();
+        }
+
+        function toggle(): void {
+            shell.toggleScreenshotTool();
         }
     }
 
@@ -119,5 +135,13 @@ ShellRoot {
 
     function toggleWallpaperSelector() {
         wallpaperSelector.toggle();
+    }
+
+    function openScreenshotTool() {
+        screenshotTool.open();
+    }
+
+    function toggleScreenshotTool() {
+        screenshotTool.toggle();
     }
 }

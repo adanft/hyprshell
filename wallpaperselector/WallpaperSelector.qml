@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Wayland
@@ -37,13 +38,18 @@ Scope {
             Rectangle {
                 id: preview
 
+                readonly property int preferredHeight: Math.round(width * 9 / 16)
+                readonly property int minimumGridHeight: selector.theme.sizing.wallpaperCardHeight + selector.theme.spacing.space12
+
                 width: parent.width
-                height: (parent.height - parent.spacing) / 2
+                height: Math.min(preferredHeight, Math.max(0, parent.height - parent.spacing - minimumGridHeight))
                 radius: selector.theme.shape.wallpaperCardRadius
                 color: selector.theme.colors.background
                 clip: true
 
                 Image {
+                    id: previewImage
+
                     anchors.fill: parent
                     source: selector.selectedWallpaperPath
                     asynchronous: true
@@ -51,6 +57,24 @@ Scope {
                     fillMode: Image.PreserveAspectCrop
                     smooth: true
                     visible: source.toString().length > 0
+                    layer.enabled: true
+
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: previewMask
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1
+                    }
+                }
+
+                Rectangle {
+                    id: previewMask
+
+                    anchors.fill: parent
+                    radius: preview.radius
+                    color: selector.theme.colors.mask
+                    visible: false
+                    layer.enabled: true
                 }
 
                 Text {
@@ -65,15 +89,18 @@ Scope {
                 }
             }
 
-            ListView {
+            GridView {
                 id: wallpaperList
 
+                readonly property int columns: 2
+
                 width: parent.width
-                height: (parent.height - parent.spacing) / 2
+                height: Math.max(0, parent.height - preview.height - parent.spacing)
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                orientation: ListView.Horizontal
-                spacing: selector.theme.spacing.space12
+                flow: GridView.FlowLeftToRight
+                cellWidth: width / columns
+                cellHeight: Math.round((cellWidth - selector.theme.spacing.space12) * 9 / 16) + selector.theme.spacing.space12
                 model: wallpaperFolderModel
                 currentIndex: selector.selectedIndex
 
@@ -83,11 +110,13 @@ Scope {
 
                     readonly property string wallpaperPath: String(filePath || "").replace(/^file:\/\//, "")
 
-                    width: selector.theme.sizing.wallpaperSelectorGridMinCellWidth
-                    height: wallpaperList.height
+                    width: wallpaperList.cellWidth
+                    height: wallpaperList.cellHeight
 
                     WallpaperCard {
                         anchors.centerIn: parent
+                        width: parent.width - selector.theme.spacing.space12
+                        height: Math.round(width * 9 / 16)
                         path: wallpaperPath
                         selected: selector.selectedIndex === index
                         onActivated: selector.setWallpaper(wallpaperPath)
@@ -127,8 +156,8 @@ Scope {
             Keys.onEscapePressed: selector.close()
             Keys.onLeftPressed: selector.moveSelection(-1)
             Keys.onRightPressed: selector.moveSelection(1)
-            Keys.onUpPressed: selector.moveSelection(-1)
-            Keys.onDownPressed: selector.moveSelection(1)
+            Keys.onUpPressed: selector.moveSelection(-2)
+            Keys.onDownPressed: selector.moveSelection(2)
             Keys.onReturnPressed: selector.applySelection()
             Keys.onEnterPressed: selector.applySelection()
 
@@ -202,7 +231,7 @@ Scope {
             return
 
         selector.selectedIndex = Math.max(0, Math.min(count - 1, selector.selectedIndex + direction))
-        contentItem?.wallpaperListView?.positionViewAtIndex(selector.selectedIndex, ListView.Contain)
+        contentItem?.wallpaperListView?.positionViewAtIndex(selector.selectedIndex, GridView.Contain)
     }
 
     function applySelection() {

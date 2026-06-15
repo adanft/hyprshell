@@ -9,14 +9,9 @@ Rectangle {
     theme: AppTheme {
     }
 
-    readonly property var
-    icons: Icons {
-    }
-
     required property string path
     property bool selected: false
     readonly property bool hovered: mouseArea.containsMouse
-    readonly property bool active: selected || hovered
     readonly property int previewScale: 2
 
     signal activated()
@@ -59,28 +54,16 @@ Rectangle {
         anchors.fill: parent
         radius: parent.radius
         color: card.theme.colors.transparent
-        border.width: card.active ? card.theme.shape.wallpaperCardBorderWidth : 0
-        border.color: card.selected ? card.theme.colors.wallpaperSelected : card.theme.colors.focus
+        border.width: card.theme.shape.appLauncherCardBorderWidth
+        border.color: card.selected ? card.theme.colors.focus : card.theme.colors.border
     }
 
     Rectangle {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: card.theme.spacing.wallpaperCardSelectedBadgeMargin
-        width: card.theme.sizing.wallpaperCardSelectedBadgeSize
-        height: card.theme.sizing.wallpaperCardSelectedBadgeSize
-        radius: card.theme.shape.wallpaperCardSelectedBadgeRadius
-        visible: card.selected
-        color: card.theme.colors.wallpaperSelected
-
-        Text {
-            anchors.centerIn: parent
-            text: card.icons.wallpaperSelectedCheck
-            color: card.theme.colors.textInverse
-            font.pixelSize: card.theme.typography.sizeXl
-            font.styleName: card.theme.typography.styleBold
-        }
-
+        anchors.fill: parent
+        anchors.margins: card.theme.shape.appLauncherCardBorderWidth
+        radius: parent.radius
+        visible: card.hovered
+        color: Qt.rgba(card.theme.colors.background.r, card.theme.colors.background.g, card.theme.colors.background.b, 0.5)
     }
 
     MouseArea {

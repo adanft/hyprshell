@@ -1,57 +1,67 @@
 import QtQuick
 
 QtObject {
-    readonly property color transparent: "transparent"
-    readonly property color mask: "black"
-    readonly property color scrim: "#bf1e1e2e"
+    id: colors
 
-    readonly property color background: "#1e1e2e"
-    readonly property color panel: "#f0181825"
-    readonly property color surface: "#181825"
-    readonly property color surfaceTransparent: "#0011111b"
-    readonly property color surfaceHover: "#45475a"
-    readonly property color surfaceActive: "#313244"
-    readonly property color surfaceInverse: "#11111b"
-    readonly property color border: "#45475a"
-    readonly property color borderStrong: "#7f849c"
+    readonly property var availableThemes: StockThemes.availableThemes
+    readonly property var themeData: StockThemes.themeData
+    readonly property string currentTheme: StockThemes.currentTheme
 
-    readonly property color text: "#cdd6f4"
-    readonly property color textMuted: "#bac2de"
-    readonly property color textSubtle: "#7f849c"
-    readonly property color textInverse: "#11111b"
+    readonly property color transparent: themeData.transparent
+    readonly property color mask: themeData.mask
+    readonly property color scrim: themeData.scrim
 
-    readonly property color primary: "#cba6f7"
-    readonly property color primaryText: "#11111b"
-    readonly property color secondary: "#94e2d5"
-    readonly property color focus: "#cba6f7"
-    readonly property color selection: "#cba6f7"
-    readonly property color selectionText: "#11111b"
+    readonly property color background: themeData.background
+    readonly property color panel: themeData.panel
+    readonly property color surface: themeData.surface
+    readonly property color surfaceTransparent: themeData.surfaceTransparent
+    readonly property color surfaceHover: themeData.surfaceHover
+    readonly property color surfaceActive: themeData.surfaceActive
+    readonly property color surfaceInverse: themeData.surfaceInverse
+    readonly property color border: themeData.border
+    readonly property color borderStrong: themeData.borderStrong
 
-    readonly property color info: "#89b4fa"
-    readonly property color link: "#89b4fa"
-    readonly property color success: "#a6e3a1"
-    readonly property color warning: "#f9e2af"
-    readonly property color danger: "#f38ba8"
-    readonly property color critical: "#f38ba8"
+    readonly property color text: themeData.text
+    readonly property color textMuted: themeData.textMuted
+    readonly property color textSubtle: themeData.textSubtle
+    readonly property color textInverse: themeData.textInverse
 
-    readonly property color notification: "#f9e2af"
-    readonly property color notificationBadge: "#f38ba8"
-    readonly property color bluetooth: "#f5c2e7"
-    readonly property color network: "#89b4fa"
-    readonly property color wifiConnected: "#89b4fa"
-    readonly property color wifiDisconnected: "#f38ba8"
-    readonly property color backlight: "#f9e2af"
-    readonly property color workspaceActive: "#cba6f7"
-    readonly property color workspaceUrgent: "#f38ba8"
-    readonly property color workspaceRemote: "#89b4fa"
-    readonly property color workspaceHover: "#94e2d5"
-    readonly property color workspaceOccupied: "#7f849c"
-    readonly property color workspaceEmpty: "#45475a"
-    readonly property color powerPerformance: "#f38ba8"
-    readonly property color powerSaver: "#a6e3a1"
-    readonly property color powerBalanced: "#89b4fa"
-    readonly property color powerLock: "#fab387"
-    readonly property color audioOutput: "#b4befe"
-    readonly property color audioInput: "#f2cdcd"
-    readonly property color wallpaperSelected: "#f5c2e7"
+    readonly property color primary: themeData.primary
+    readonly property color primaryText: themeData.primaryText
+    readonly property color secondary: themeData.secondary
+    readonly property color focus: themeData.focus
+    readonly property color selection: themeData.selection
+    readonly property color selectionText: themeData.selectionText
+
+    readonly property color info: themeData.info
+    readonly property color link: themeData.link
+    readonly property color success: themeData.success
+    readonly property color warning: themeData.warning
+    readonly property color danger: themeData.danger
+    readonly property color critical: themeData.critical
+
+    readonly property color notification: themeData.notification
+    readonly property color notificationBadge: themeData.notificationBadge
+    readonly property color bluetooth: themeData.bluetooth
+    readonly property color network: themeData.network
+    readonly property color wifiConnected: themeData.wifiConnected
+    readonly property color wifiDisconnected: themeData.wifiDisconnected
+    readonly property color backlight: themeData.backlight
+    readonly property color workspaceActive: themeData.workspaceActive
+    readonly property color workspaceUrgent: themeData.workspaceUrgent
+    readonly property color workspaceRemote: themeData.workspaceRemote
+    readonly property color workspaceHover: themeData.workspaceHover
+    readonly property color workspaceOccupied: themeData.workspaceOccupied
+    readonly property color workspaceEmpty: themeData.workspaceEmpty
+    readonly property color powerPerformance: themeData.powerPerformance
+    readonly property color powerSaver: themeData.powerSaver
+    readonly property color powerBalanced: themeData.powerBalanced
+    readonly property color powerLock: themeData.powerLock
+    readonly property color audioOutput: themeData.audioOutput
+    readonly property color audioInput: themeData.audioInput
+    readonly property color wallpaperSelected: themeData.wallpaperSelected
+
+    function setTheme(name) {
+        return StockThemes.setTheme(name)
+    }
 }

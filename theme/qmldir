@@ -1,0 +1,8 @@
+singleton StockThemes 1.0 StockThemes.qml
+AppTheme 1.0 AppTheme.qml
+Colors 1.0 Colors.qml
+Icons 1.0 Icons.qml
+Shape 1.0 Shape.qml
+Spacing 1.0 Spacing.qml
+Sizing 1.0 Sizing.qml
+Typography 1.0 Typography.qml

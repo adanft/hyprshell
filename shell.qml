@@ -10,6 +10,7 @@ import "screenshot" as Screenshot
 import "services" as Services
 import "statusbar" as Statusbar
 import "theme" as Theme
+import "themeselector" as Themeselector
 import "wallpaperselector" as Wallpaperselector
 
 ShellRoot {
@@ -30,6 +31,9 @@ ShellRoot {
     }
     Wallpaperselector.WallpaperSelector {
         id: wallpaperSelector
+    }
+    Themeselector.ThemeSelector {
+        id: themeSelector
     }
     Screenshot.ScreenshotTool {
         id: screenshotTool
@@ -80,6 +84,22 @@ ShellRoot {
 
         function toggle(): void {
             shell.toggleScreenshotTool();
+        }
+    }
+
+    IpcHandler {
+        target: "themeselector"
+
+        function open(): void {
+            shell.openThemeSelector();
+        }
+
+        function toggle(): void {
+            shell.toggleThemeSelector();
+        }
+
+        function set(name: string): void {
+            themeSelector.selectTheme(name);
         }
     }
 
@@ -143,5 +163,13 @@ ShellRoot {
 
     function toggleScreenshotTool() {
         screenshotTool.toggle();
+    }
+
+    function openThemeSelector() {
+        themeSelector.open();
+    }
+
+    function toggleThemeSelector() {
+        themeSelector.toggle();
     }
 }

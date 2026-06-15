@@ -17,6 +17,7 @@ Scope {
     property int selectedIndex: 0
     property var apps: []
     readonly property var filteredApps: filterApps(searchText)
+    readonly property var contentItem: contentLoader.item
 
     function open() {
         refreshApplications();
@@ -24,7 +25,7 @@ Scope {
         selectedIndex = 0;
         panel.visible = true;
         Qt.callLater(() => {
-            return searchInput.forceActiveFocus();
+            return contentItem?.searchField?.forceActiveFocus();
         });
     }
 
@@ -84,7 +85,7 @@ Scope {
             return ;
 
         selectedIndex = Math.max(0, Math.min(count - 1, selectedIndex + direction));
-        grid.positionViewAtIndex(selectedIndex, GridView.Contain);
+        contentItem?.appGrid?.positionViewAtIndex(selectedIndex, GridView.Contain);
     }
 
     function launchSelection() {
@@ -128,9 +129,141 @@ Scope {
     Component.onCompleted: refreshApplications()
     onSearchTextChanged: {
         selectedIndex = 0;
-        grid.positionViewAtBeginning();
+        contentItem?.appGrid?.positionViewAtBeginning();
     }
     onFilteredAppsChanged: clampSelection()
+
+    Component {
+        id: launcherContent
+
+        Column {
+            id: content
+
+            property alias searchField: searchInput
+            property alias appGrid: grid
+            readonly property int columns: Math.min(4, Math.max(1, Math.floor(width / launcher.theme.sizing.appLauncherGridCellWidth)))
+            readonly property int gridWidth: columns * launcher.theme.sizing.appLauncherGridCellWidth
+
+            anchors.fill: parent
+            anchors.margins: launcher.theme.spacing.appLauncherPadding
+            spacing: launcher.theme.spacing.appLauncherSectionSpacing
+
+            Rectangle {
+                width: content.gridWidth
+                height: launcher.theme.sizing.appLauncherSearchHeight
+                anchors.horizontalCenter: parent.horizontalCenter
+                radius: launcher.theme.shape.appLauncherSearchRadius
+                color: launcher.theme.colors.surfaceActive
+                border.width: launcher.theme.shape.appLauncherSearchBorderWidth
+                border.color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.border
+
+                Shared.AppText {
+                    anchors.left: parent.left
+                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                    text: ""
+                    color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.textSubtle
+                    font.family: launcher.theme.typography.iconFontFamily
+                    font.pixelSize: launcher.theme.typography.sizeLg
+                    font.styleName: launcher.theme.typography.styleMedium
+                    horizontalAlignment: Text.AlignLeft
+                }
+
+                Shared.AppText {
+                    anchors.left: parent.left
+                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: searchInput.text.length === 0
+                    text: "Search Apps"
+                    color: launcher.theme.colors.textSubtle
+                    font.pixelSize: launcher.theme.typography.sizeLg
+                    font.styleName: launcher.theme.typography.styleMedium
+                }
+
+                TextInput {
+                    id: searchInput
+
+                    anchors.fill: parent
+                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                    anchors.rightMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                    clip: true
+                    color: launcher.theme.colors.text
+                    selectionColor: launcher.theme.colors.selection
+                    selectedTextColor: launcher.theme.colors.selectionText
+                    font.family: launcher.theme.typography.textFontFamily
+                    font.pixelSize: launcher.theme.typography.sizeLg
+                    font.styleName: launcher.theme.typography.styleMedium
+                    verticalAlignment: TextInput.AlignVCenter
+                    text: launcher.searchText
+                    onTextChanged: launcher.searchText = text
+                    Keys.onEscapePressed: launcher.close()
+                    Keys.onLeftPressed: (event) => {
+                        if (cursorPosition === 0)
+                            launcher.moveSelection(-1);
+                        else
+                            event.accepted = false;
+                    }
+                    Keys.onRightPressed: (event) => {
+                        if (cursorPosition === text.length)
+                            launcher.moveSelection(1);
+                        else
+                            event.accepted = false;
+                    }
+                    Keys.onUpPressed: launcher.moveSelection(-grid.columns)
+                    Keys.onDownPressed: launcher.moveSelection(grid.columns)
+                    Keys.onReturnPressed: launcher.launchSelection()
+                    Keys.onEnterPressed: launcher.launchSelection()
+                }
+
+            }
+
+            GridView {
+                id: grid
+
+                readonly property int columns: content.columns
+
+                width: columns * cellWidth
+                height: parent.height - launcher.theme.sizing.appLauncherSearchHeight - parent.spacing
+                anchors.horizontalCenter: parent.horizontalCenter
+                clip: true
+                cellWidth: launcher.theme.sizing.appLauncherGridCellWidth
+                cellHeight: launcher.theme.sizing.appLauncherGridCellHeight
+                model: launcher.filteredApps
+                currentIndex: launcher.selectedIndex
+
+                Shared.AppText {
+                    anchors.centerIn: parent
+                    visible: launcher.filteredApps.length === 0
+                    width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
+                    text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
+                    color: launcher.theme.colors.textMuted
+                    font.pixelSize: launcher.theme.typography.sizeLg
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                }
+
+                delegate: Item {
+                    required property var modelData
+                    required property int index
+
+                    width: grid.cellWidth
+                    height: grid.cellHeight
+
+                    AppLauncherCard {
+                        anchors.centerIn: parent
+                        app: modelData
+                        theme: launcher.theme
+                        selected: launcher.selectedIndex === index
+                        onActivated: launcher.launchApp(modelData)
+                    }
+
+                }
+
+            }
+
+        }
+    }
 
     PanelWindow {
         id: panel
@@ -160,8 +293,8 @@ Scope {
             Keys.onEscapePressed: launcher.close()
             Keys.onLeftPressed: launcher.moveSelection(-1)
             Keys.onRightPressed: launcher.moveSelection(1)
-            Keys.onUpPressed: launcher.moveSelection(-grid.columns)
-            Keys.onDownPressed: launcher.moveSelection(grid.columns)
+            Keys.onUpPressed: launcher.moveSelection(-(launcher.contentItem?.appGrid?.columns ?? 1))
+            Keys.onDownPressed: launcher.moveSelection(launcher.contentItem?.appGrid?.columns ?? 1)
             Keys.onReturnPressed: launcher.launchSelection()
             Keys.onEnterPressed: launcher.launchSelection()
 
@@ -187,131 +320,12 @@ Scope {
                     acceptedButtons: Qt.AllButtons
                 }
 
-                Column {
-                    id: content
-
-                    readonly property int columns: Math.min(4, Math.max(1, Math.floor(width / launcher.theme.sizing.appLauncherGridCellWidth)))
-                    readonly property int gridWidth: columns * launcher.theme.sizing.appLauncherGridCellWidth
+                Loader {
+                    id: contentLoader
 
                     anchors.fill: parent
-                    anchors.margins: launcher.theme.spacing.appLauncherPadding
-                    spacing: launcher.theme.spacing.appLauncherSectionSpacing
-
-                    Rectangle {
-                        width: content.gridWidth
-                        height: launcher.theme.sizing.appLauncherSearchHeight
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        radius: launcher.theme.shape.appLauncherSearchRadius
-                        color: launcher.theme.colors.surfaceActive
-                        border.width: launcher.theme.shape.appLauncherSearchBorderWidth
-                        border.color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.border
-
-                        Shared.AppText {
-                            anchors.left: parent.left
-                            anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
-                            text: ""
-                            color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.textSubtle
-                            font.family: launcher.theme.typography.iconFontFamily
-                            font.pixelSize: launcher.theme.typography.sizeLg
-                            font.styleName: launcher.theme.typography.styleMedium
-                            horizontalAlignment: Text.AlignLeft
-                        }
-
-                        Shared.AppText {
-                            anchors.left: parent.left
-                            anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: searchInput.text.length === 0
-                            text: "Search Apps"
-                            color: launcher.theme.colors.textSubtle
-                            font.pixelSize: launcher.theme.typography.sizeLg
-                            font.styleName: launcher.theme.typography.styleMedium
-                        }
-
-                        TextInput {
-                            id: searchInput
-
-                            anchors.fill: parent
-                            anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
-                            anchors.rightMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
-                            clip: true
-                            color: launcher.theme.colors.text
-                            selectionColor: launcher.theme.colors.selection
-                            selectedTextColor: launcher.theme.colors.selectionText
-                            font.family: launcher.theme.typography.textFontFamily
-                            font.pixelSize: launcher.theme.typography.sizeLg
-                            font.styleName: launcher.theme.typography.styleMedium
-                            verticalAlignment: TextInput.AlignVCenter
-                            text: launcher.searchText
-                            onTextChanged: launcher.searchText = text
-                            Keys.onEscapePressed: launcher.close()
-                            Keys.onLeftPressed: (event) => {
-                                if (cursorPosition === 0)
-                                    launcher.moveSelection(-1);
-                                else
-                                    event.accepted = false;
-                            }
-                            Keys.onRightPressed: (event) => {
-                                if (cursorPosition === text.length)
-                                    launcher.moveSelection(1);
-                                else
-                                    event.accepted = false;
-                            }
-                            Keys.onUpPressed: launcher.moveSelection(-grid.columns)
-                            Keys.onDownPressed: launcher.moveSelection(grid.columns)
-                            Keys.onReturnPressed: launcher.launchSelection()
-                            Keys.onEnterPressed: launcher.launchSelection()
-                        }
-
-                    }
-
-                    GridView {
-                        id: grid
-
-                        readonly property int columns: content.columns
-
-                        width: columns * cellWidth
-                        height: parent.height - launcher.theme.sizing.appLauncherSearchHeight - parent.spacing
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        clip: true
-                        cellWidth: launcher.theme.sizing.appLauncherGridCellWidth
-                        cellHeight: launcher.theme.sizing.appLauncherGridCellHeight
-                        model: launcher.filteredApps
-                        currentIndex: launcher.selectedIndex
-
-                        Shared.AppText {
-                            anchors.centerIn: parent
-                            visible: launcher.filteredApps.length === 0
-                            width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
-                            text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
-                            color: launcher.theme.colors.textMuted
-                            font.pixelSize: launcher.theme.typography.sizeLg
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                        }
-
-                        delegate: Item {
-                            required property var modelData
-                            required property int index
-
-                            width: grid.cellWidth
-                            height: grid.cellHeight
-
-                            AppLauncherCard {
-                                anchors.centerIn: parent
-                                app: modelData
-                                theme: launcher.theme
-                                selected: launcher.selectedIndex === index
-                                onHovered: launcher.selectedIndex = index
-                                onActivated: launcher.launchApp(modelData)
-                            }
-
-                        }
-
-                    }
-
+                    active: panel.visible
+                    sourceComponent: launcherContent
                 }
 
             }

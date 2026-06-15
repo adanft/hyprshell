@@ -21,6 +21,81 @@ Scope {
     ]
 
     property int selectedIndex: 0
+    readonly property var contentItem: contentLoader.item
+    readonly property string selectedWallpaperPath: wallpaperFolderModel.count > selectedIndex ? String(wallpaperFolderModel.get(selectedIndex, "filePath") || "").replace(/^file:\/\//, "") : ""
+
+    Component {
+        id: selectorContent
+
+        Column {
+            property alias wallpaperListView: wallpaperList
+
+            anchors.fill: parent
+            anchors.margins: selector.theme.spacing.wallpaperSelectorGridMargin
+            spacing: selector.theme.spacing.appLauncherSectionSpacing
+
+            Rectangle {
+                id: preview
+
+                width: parent.width
+                height: (parent.height - parent.spacing) / 2
+                radius: selector.theme.shape.wallpaperCardRadius
+                color: selector.theme.colors.background
+                clip: true
+
+                Image {
+                    anchors.fill: parent
+                    source: selector.selectedWallpaperPath
+                    asynchronous: true
+                    cache: true
+                    fillMode: Image.PreserveAspectCrop
+                    smooth: true
+                    visible: source.toString().length > 0
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
+                    width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
+                    text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
+                    color: selector.theme.colors.textMuted
+                    font.pixelSize: selector.theme.typography.sizeLg
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                }
+            }
+
+            ListView {
+                id: wallpaperList
+
+                width: parent.width
+                height: (parent.height - parent.spacing) / 2
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                orientation: ListView.Horizontal
+                spacing: selector.theme.spacing.space12
+                model: wallpaperFolderModel
+                currentIndex: selector.selectedIndex
+
+                delegate: Item {
+                    required property string filePath
+                    required property int index
+
+                    readonly property string wallpaperPath: String(filePath || "").replace(/^file:\/\//, "")
+
+                    width: selector.theme.sizing.wallpaperSelectorGridMinCellWidth
+                    height: wallpaperList.height
+
+                    WallpaperCard {
+                        anchors.centerIn: parent
+                        path: wallpaperPath
+                        selected: selector.selectedIndex === index
+                        onActivated: selector.setWallpaper(wallpaperPath)
+                    }
+                }
+            }
+        }
+    }
 
     PanelWindow {
         id: panel
@@ -52,8 +127,8 @@ Scope {
             Keys.onEscapePressed: selector.close()
             Keys.onLeftPressed: selector.moveSelection(-1)
             Keys.onRightPressed: selector.moveSelection(1)
-            Keys.onUpPressed: selector.moveSelection(-grid.columns)
-            Keys.onDownPressed: selector.moveSelection(grid.columns)
+            Keys.onUpPressed: selector.moveSelection(-1)
+            Keys.onDownPressed: selector.moveSelection(1)
             Keys.onReturnPressed: selector.applySelection()
             Keys.onEnterPressed: selector.applySelection()
 
@@ -65,8 +140,8 @@ Scope {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.wallpaperSelectorMaxWidth)
-                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.wallpaperSelectorMaxHeight)
+                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
                 color: selector.theme.colors.panel
                 border.width: selector.theme.shape.wallpaperSelectorBorderWidth
@@ -77,49 +152,12 @@ Scope {
                     acceptedButtons: Qt.AllButtons
                 }
 
-                GridView {
-                    id: grid
-
-                    readonly property int minCellWidth: selector.theme.sizing.wallpaperSelectorGridMinCellWidth
-                    readonly property int columns: Math.max(1, Math.floor(width / minCellWidth))
+                Loader {
+                    id: contentLoader
 
                     anchors.fill: parent
-                    anchors.margins: selector.theme.spacing.wallpaperSelectorGridMargin
-                    clip: true
-
-                    cellWidth: width / columns
-                    cellHeight: selector.theme.sizing.wallpaperSelectorGridCellHeight
-                    model: wallpaperFolderModel
-                    currentIndex: selector.selectedIndex
-
-                    delegate: Item {
-                        required property string filePath
-                        required property int index
-
-                        readonly property string wallpaperPath: String(filePath || "").replace(/^file:\/\//, "")
-
-                        width: grid.cellWidth
-                        height: grid.cellHeight
-
-                        WallpaperCard {
-                            anchors.centerIn: parent
-                            path: wallpaperPath
-                            selected: selector.selectedIndex === index
-                            onHovered: selector.selectedIndex = index
-                            onActivated: selector.setWallpaper(wallpaperPath)
-                        }
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-                        visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
-                        width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
-                        text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
-                        color: selector.theme.colors.textMuted
-                        font.pixelSize: selector.theme.typography.sizeLg
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                    }
+                    active: panel.visible
+                    sourceComponent: selectorContent
                 }
             }
         }
@@ -164,13 +202,13 @@ Scope {
             return
 
         selector.selectedIndex = Math.max(0, Math.min(count - 1, selector.selectedIndex + direction))
-        grid.positionViewAtIndex(selector.selectedIndex, GridView.Contain)
+        contentItem?.wallpaperListView?.positionViewAtIndex(selector.selectedIndex, ListView.Contain)
     }
 
     function applySelection() {
-        const entry = wallpaperFolderModel.get(selector.selectedIndex, "filePath")
-        if (entry)
-            selector.setWallpaper(String(entry).replace(/^file:\/\//, ""))
+        const path = selectedWallpaperPath
+        if (path.length > 0)
+            selector.setWallpaper(path)
     }
 
     function clampSelection() {

@@ -23,10 +23,7 @@ QtObject {
 
     readonly property int powerMenuActionSize: 136
 
-    readonly property int wallpaperSelectorMaxWidth: 980
-    readonly property int wallpaperSelectorMaxHeight: 680
     readonly property int wallpaperSelectorGridMinCellWidth: 236
-    readonly property int wallpaperSelectorGridCellHeight: 170
     readonly property int wallpaperCardWidth: 220
     readonly property int wallpaperCardHeight: 150
     readonly property int wallpaperCardSelectedBadgeSize: size32

@@ -15,11 +15,11 @@ Rectangle {
 
     required property string path
     property bool selected: false
-    readonly property bool active: selected || mouseArea.containsMouse
+    readonly property bool hovered: mouseArea.containsMouse
+    readonly property bool active: selected || hovered
     readonly property int previewScale: 2
 
     signal activated()
-    signal hovered()
 
     width: theme.sizing.wallpaperCardWidth
     height: theme.sizing.wallpaperCardHeight
@@ -60,7 +60,7 @@ Rectangle {
         radius: parent.radius
         color: card.theme.colors.transparent
         border.width: card.active ? card.theme.shape.wallpaperCardBorderWidth : 0
-        border.color: card.selected ? card.theme.colors.wallpaperSelected : mouseArea.containsMouse ? card.theme.colors.focus : card.theme.colors.surfaceActive
+        border.color: card.selected ? card.theme.colors.wallpaperSelected : card.theme.colors.focus
     }
 
     Rectangle {
@@ -89,7 +89,6 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onEntered: card.hovered()
         onClicked: card.activated()
     }
 

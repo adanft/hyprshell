@@ -6,58 +6,57 @@ Rectangle {
     id: card
 
     readonly property var theme: AppTheme {}
-    readonly property var icons: Icons {}
     required property var themeData
     property bool selected: false
     property bool activeTheme: false
     readonly property bool pointerHovered: mouseArea.containsMouse
-    readonly property var previewColors: themeData.previewColors || [themeData.primary, themeData.secondary, themeData.info, themeData.success, themeData.warning, themeData.danger]
+    readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors.slice(0, 3) : []
+    readonly property int paletteDotSize: 40
 
     signal activated()
+    signal hovered()
+    signal unhovered()
+
     radius: theme.shape.appLauncherCardRadius
     color: themeData && themeData.background ? themeData.background : theme.colors.surface
-    border.width: pointerHovered || selected ? theme.shape.appLauncherCardBorderWidth : 0
-    border.color: theme.colors.focus
+    border.width: theme.shape.appLauncherCardBorderWidth
+    border.color: selected ? theme.colors.focus : theme.colors.border
 
-    Column {
-        anchors.fill: parent
+    Shared.AppText {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: card.theme.spacing.appLauncherCardPadding
+        text: card.themeData.displayName
+        color: card.themeData && card.themeData.text ? card.themeData.text : card.theme.colors.text
+        font.pixelSize: card.theme.typography.sizeLg
+        font.styleName: card.theme.typography.styleMedium
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+        maximumLineCount: 1
+    }
+
+    Row {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
         anchors.margins: card.theme.spacing.space16
-        spacing: card.theme.spacing.space12
+        height: card.paletteDotSize
 
-        Rectangle {
-            width: parent.width
-            height: parent.height - swatches.height - parent.spacing
-            radius: card.theme.shape.radius12
-            color: card.themeData && card.themeData.surface ? card.themeData.surface : card.theme.colors.surfaceActive
+        Repeater {
+            model: card.previewColors
 
-            Shared.AppText {
-                anchors.centerIn: parent
-                width: parent.width - card.theme.spacing.space24
-                text: card.themeData.displayName
-                color: card.themeData && card.themeData.text ? card.themeData.text : card.theme.colors.text
-                font.pixelSize: card.theme.typography.sizeLg
-                font.styleName: card.theme.typography.styleBold
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-            }
-        }
+            Item {
+                required property color modelData
 
-        Row {
-            id: swatches
-
-            width: parent.width
-            height: card.theme.sizing.statusBarOuterHeight
-            spacing: card.theme.spacing.space8
-
-            Repeater {
-                model: card.previewColors
+                width: parent.width / Math.max(1, card.previewColors.length)
+                height: parent.height
 
                 Rectangle {
-                    required property color modelData
-
-                    width: (swatches.width - swatches.spacing * (card.previewColors.length - 1)) / card.previewColors.length
-                    height: swatches.height
-                    radius: height / 2
+                    anchors.centerIn: parent
+                    width: card.paletteDotSize
+                    height: width
+                    radius: width / 2
                     color: modelData
                 }
             }
@@ -65,22 +64,22 @@ Rectangle {
     }
 
     Rectangle {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: card.theme.spacing.wallpaperCardSelectedBadgeMargin
-        width: card.theme.sizing.wallpaperCardSelectedBadgeSize
-        height: card.theme.sizing.wallpaperCardSelectedBadgeSize
-        radius: card.theme.shape.wallpaperCardSelectedBadgeRadius
-        visible: card.activeTheme
-        color: card.themeData && card.themeData.primary ? card.themeData.primary : card.theme.colors.primary
+        anchors.fill: parent
+        anchors.margins: card.border.width
+        radius: parent.radius
+        visible: card.pointerHovered
+        color: Qt.rgba(card.theme.colors.background.r, card.theme.colors.background.g, card.theme.colors.background.b, 0.5)
+    }
 
-        Text {
-            anchors.centerIn: parent
-            text: card.icons.wallpaperSelectedCheck
-            color: card.themeData && card.themeData.primaryText ? card.themeData.primaryText : card.theme.colors.primaryText
-            font.pixelSize: card.theme.typography.sizeXl
-            font.styleName: card.theme.typography.styleBold
-        }
+    Rectangle {
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: card.theme.spacing.space8
+        width: card.theme.spacing.space4
+        height: parent.height - card.theme.spacing.space24
+        radius: width / 2
+        visible: card.activeTheme
+        color: card.theme.colors.focus
     }
 
     MouseArea {
@@ -89,6 +88,8 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        onEntered: card.hovered()
+        onExited: card.unhovered()
         onClicked: card.activated()
     }
 }

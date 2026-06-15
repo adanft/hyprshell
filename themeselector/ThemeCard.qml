@@ -9,18 +9,19 @@ Rectangle {
     required property var themeData
     property bool selected: false
     property bool activeTheme: false
-    readonly property bool pointerHovered: mouseArea.containsMouse
+    readonly property bool hovered: mouseArea.containsMouse
+    readonly property bool active: selected || hovered
     readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors.slice(0, 3) : []
     readonly property int paletteDotSize: 40
 
     signal activated()
-    signal hovered()
-    signal unhovered()
+    signal pointerEntered()
+    signal pointerExited()
 
     radius: theme.shape.appLauncherCardRadius
-    color: themeData && themeData.background ? themeData.background : theme.colors.surface
-    border.width: theme.shape.appLauncherCardBorderWidth
-    border.color: selected ? theme.colors.focus : theme.colors.border
+    color: active ? theme.colors.surfaceActive : theme.colors.background
+    border.width: selected ? theme.shape.appLauncherCardBorderWidth : 0
+    border.color: theme.colors.focus
 
     Shared.AppText {
         anchors.top: parent.top
@@ -28,7 +29,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.margins: card.theme.spacing.appLauncherCardPadding
         text: card.themeData.displayName
-        color: card.themeData && card.themeData.text ? card.themeData.text : card.theme.colors.text
+        color: card.theme.colors.text
         font.pixelSize: card.theme.typography.sizeLg
         font.styleName: card.theme.typography.styleMedium
         horizontalAlignment: Text.AlignHCenter
@@ -64,17 +65,20 @@ Rectangle {
     }
 
     Rectangle {
-        anchors.fill: parent
-        anchors.margins: card.border.width
-        radius: parent.radius
-        visible: card.pointerHovered
-        color: Qt.rgba(card.theme.colors.background.r, card.theme.colors.background.g, card.theme.colors.background.b, 0.5)
-    }
-
-    Rectangle {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: card.theme.spacing.space8
+        width: card.theme.spacing.space4
+        height: parent.height - card.theme.spacing.space24
+        radius: width / 2
+        visible: card.activeTheme
+        color: card.theme.colors.focus
+    }
+
+    Rectangle {
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.rightMargin: card.theme.spacing.space8
         width: card.theme.spacing.space4
         height: parent.height - card.theme.spacing.space24
         radius: width / 2
@@ -88,8 +92,8 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onEntered: card.hovered()
-        onExited: card.unhovered()
+        onEntered: card.pointerEntered()
+        onExited: card.pointerExited()
         onClicked: card.activated()
     }
 }

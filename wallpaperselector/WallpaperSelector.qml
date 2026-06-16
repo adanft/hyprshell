@@ -23,7 +23,8 @@ Scope {
 
     property int selectedIndex: 0
     readonly property var contentItem: contentLoader.item
-    readonly property string selectedWallpaperPath: wallpaperFolderModel.count > selectedIndex ? String(wallpaperFolderModel.get(selectedIndex, "filePath") || "").replace(/^file:\/\//, "") : ""
+    readonly property string selectedWallpaperPath: wallpaperFolderModel.count > selectedIndex ? fileUrlToPath(wallpaperFolderModel.get(selectedIndex, "filePath")) : ""
+    readonly property string previewWallpaperSource: pathToFileUrl(AppSettings.currentWallpaper)
 
     Component {
         id: selectorContent
@@ -51,7 +52,7 @@ Scope {
                     id: previewImage
 
                     anchors.fill: parent
-                    source: selector.selectedWallpaperPath
+                    source: selector.previewWallpaperSource
                     asynchronous: true
                     cache: true
                     fillMode: Image.PreserveAspectCrop
@@ -108,7 +109,7 @@ Scope {
                     required property string filePath
                     required property int index
 
-                    readonly property string wallpaperPath: String(filePath || "").replace(/^file:\/\//, "")
+                    readonly property string wallpaperPath: selector.fileUrlToPath(filePath)
 
                     width: wallpaperList.cellWidth
                     height: wallpaperList.cellHeight
@@ -244,10 +245,20 @@ Scope {
         selector.selectedIndex = Math.min(selector.selectedIndex, Math.max(0, wallpaperFolderModel.count - 1))
     }
 
+    function fileUrlToPath(url) {
+        return decodeURIComponent(String(url || "").replace(/^file:\/\//, ""))
+    }
+
+    function pathToFileUrl(path) {
+        const value = String(path || "")
+        return value.length > 0 ? "file://" + value.split('/').map(segment => encodeURIComponent(segment)).join('/') : ""
+    }
+
     function setWallpaper(path) {
         if (!path || path.length === 0)
             return
 
+        AppSettings.setCurrentWallpaper(path)
         Quickshell.execDetached(["awww", "img", path, ...selector.transitionArgs])
         selector.close()
     }

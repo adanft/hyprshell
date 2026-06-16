@@ -8,11 +8,9 @@ QtObject {
     id: stockThemes
 
     property var themes: fallbackThemes
-    property string currentTheme: defaultName()
+    readonly property string currentTheme: normalizeName(AppSettings.currentTheme)
 
     readonly property string sourceFile: `${Quickshell.shellDir}/theme/themes.json`
-    readonly property string configDir: Quickshell.env("XDG_CONFIG_HOME") || `${Quickshell.env("HOME")}/.config`
-    readonly property string configFile: `${configDir}/qscomponents/theme.json`
     readonly property var availableThemes: list()
     readonly property var themeData: theme(currentTheme)
     readonly property var fallbackThemes: ({
@@ -70,8 +68,6 @@ QtObject {
         }
     })
 
-    onThemesChanged: loadThemeConfig()
-
     readonly property var sourceView: FileView {
         path: stockThemes.sourceFile
         printErrors: false
@@ -79,22 +75,6 @@ QtObject {
         onLoaded: stockThemes.load()
         onLoadFailed: stockThemes.themes = stockThemes.fallbackThemes
         onFileChanged: reload()
-    }
-
-    readonly property var themeConfigFile: FileView {
-        id: themeConfigFile
-
-        path: stockThemes.configFile
-        printErrors: false
-        watchChanges: true
-        onLoaded: stockThemes.loadThemeConfig()
-        onFileChanged: reload()
-
-        JsonAdapter {
-            id: themeConfig
-
-            property string currentTheme: ""
-        }
     }
 
     function defaultName() {
@@ -129,29 +109,7 @@ QtObject {
 
     function setTheme(name) {
         const nextTheme = normalizeName(name)
-        if (nextTheme === currentTheme)
-            return false
-
-        currentTheme = nextTheme
-        persistTheme()
-        return true
-    }
-
-    function loadThemeConfig() {
-        currentTheme = normalizeName(themeConfig.currentTheme)
-    }
-
-    function persistTheme() {
-        themeConfig.currentTheme = currentTheme
-        Quickshell.execDetached([
-            "sh",
-            "-c",
-            "mkdir -p \"$1\" && printf '{\\n    \"currentTheme\": \"%s\"\\n}\\n' \"$2\" > \"$3\"",
-            "sh",
-            `${configDir}/qscomponents`,
-            currentTheme,
-            configFile
-        ])
+        return AppSettings.setCurrentTheme(nextTheme)
     }
 
     function load() {

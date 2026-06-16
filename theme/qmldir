@@ -1,3 +1,4 @@
+singleton AppSettings 1.0 AppSettings.qml
 singleton StockThemes 1.0 StockThemes.qml
 AppTheme 1.0 AppTheme.qml
 Colors 1.0 Colors.qml

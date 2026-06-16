@@ -1,6 +1,5 @@
 import "../components"
 import QtQuick
-import Quickshell
 import "../../theme"
 
 Item {
@@ -16,8 +15,13 @@ Item {
 
     required property var colors
     required property var services
+    readonly property bool networkAvailable: services.activeNetworkInterface.length > 0
+    readonly property color throughputColor: networkAvailable ? colors.network : colors.wifiDisconnected
 
     function formatRate(bytes) {
+        if (bytes === undefined || bytes === null || isNaN(bytes))
+            return "0 B/s";
+
         if (bytes < 1024)
             return `${Math.round(bytes)} B/s`;
 
@@ -32,11 +36,11 @@ Item {
     width: implicitWidth
     height: implicitHeight
     Component.onCompleted: {
-        services.lanThroughputEnabled = true;
+        services.networkThroughputEnabled = true;
         services.refreshNetwork();
     }
     Component.onDestruction: {
-        services.lanThroughputEnabled = false;
+        services.networkThroughputEnabled = false;
     }
 
     Row {
@@ -46,36 +50,21 @@ Item {
         spacing: root.theme.spacing.space6
 
         BarText {
-            text: root.services.lanUp ? root.icons.networkLanConnected : root.icons.networkLanDisconnected
-            color: root.colors.network
+            text: root.icons.networkThroughput
+            color: root.throughputColor
         }
 
         BarText {
-            text: root.icons.networkDownload
-            color: root.colors.network
+            text: root.formatRate(root.services.activeNetworkTxRate)
+            color: root.throughputColor
         }
 
         BarText {
-            text: root.services.lanUp ? root.formatRate(root.services.lanRxRate) : "0 B/s"
-            color: root.colors.network
+            text: root.formatRate(root.services.activeNetworkRxRate)
+            color: root.throughputColor
         }
 
-        BarText {
-            text: root.icons.networkUpload
-            color: root.colors.network
-        }
 
-        BarText {
-            text: root.services.lanUp ? root.formatRate(root.services.lanTxRate) : "0 B/s"
-            color: root.colors.network
-        }
-
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Quickshell.execDetached(["alacritty", "--class", "floating", "-e", "nmtui"])
     }
 
 }

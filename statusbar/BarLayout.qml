@@ -144,7 +144,7 @@ Item {
 
                 spacing: root.theme.spacing.space6 * 2
 
-                NetworkLan {
+                NetworkThroughput {
                     colors: root.colors
                     services: root.services
                 }

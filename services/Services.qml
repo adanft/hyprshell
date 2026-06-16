@@ -79,20 +79,21 @@ Scope {
     readonly property bool sinkMuted: sink?.audio?.muted ?? false
     readonly property int sourceVolume: Math.round((source?.audio?.volume ?? 0) * 100)
     readonly property bool sourceMuted: source?.audio?.muted ?? false
-    property real previousLanRx: 0
-    property real previousLanTx: 0
-    property real lanRxRate: 0
-    property real lanTxRate: 0
-    property bool lanThroughputEnabled: false
+    property real previousNetworkRx: 0
+    property real previousNetworkTx: 0
+    property real activeNetworkRxRate: 0
+    property real activeNetworkTxRate: 0
+    property bool networkThroughputEnabled: false
     readonly property bool lanUp: lanDevice?.connected ?? false
     readonly property bool wifiUp: wifiDevice?.connected ?? false
+    readonly property string activeNetworkInterface: lanUp ? lanInterface : (wifiUp ? wifiInterface : "")
     readonly property var connectedWifiNetwork: {
         const networks = wifiDevice?.networks?.values ?? []
         return networks.find(network => network.connected) ?? null
     }
     readonly property int wifiSignal: Math.round((connectedWifiNetwork?.signalStrength ?? 0) * 100)
     property bool notificationDnd: false
-    property string previousLanInterface: ""
+    property string previousNetworkInterface: ""
     property real previousNetworkSampleMs: 0
     property string brightnessDevice: ""
     property bool brightnessAvailable: false
@@ -117,15 +118,15 @@ Scope {
     }
 
     FileView {
-        id: lanRxBytes
-        path: `/sys/class/net/${service.lanInterface}/statistics/rx_bytes`
+        id: networkRxBytes
+        path: `/sys/class/net/${service.activeNetworkInterface}/statistics/rx_bytes`
         blockLoading: true
         printErrors: false
     }
 
     FileView {
-        id: lanTxBytes
-        path: `/sys/class/net/${service.lanInterface}/statistics/tx_bytes`
+        id: networkTxBytes
+        path: `/sys/class/net/${service.activeNetworkInterface}/statistics/tx_bytes`
         blockLoading: true
         printErrors: false
     }
@@ -203,7 +204,7 @@ Scope {
 
     Timer {
         interval: service.networkRefreshMs
-        running: service.lanThroughputEnabled
+        running: service.networkThroughputEnabled
         repeat: true
         onTriggered: {
             service.refreshNetwork()
@@ -346,41 +347,43 @@ Scope {
     }
 
     function refreshNetwork() {
-        if (!lanThroughputEnabled || !lanInterface || !lanUp) {
-            lanRxRate = 0
-            lanTxRate = 0
-            previousLanRx = 0
-            previousLanTx = 0
-            previousLanInterface = ""
+        if (!networkThroughputEnabled || !activeNetworkInterface) {
+            activeNetworkRxRate = 0
+            activeNetworkTxRate = 0
+            previousNetworkRx = 0
+            previousNetworkTx = 0
+            previousNetworkInterface = ""
             previousNetworkSampleMs = 0
             return
         }
 
-        if (previousLanInterface !== lanInterface) {
-            previousLanInterface = lanInterface
-            previousLanRx = 0
-            previousLanTx = 0
+        if (previousNetworkInterface !== activeNetworkInterface) {
+            previousNetworkInterface = activeNetworkInterface
+            previousNetworkRx = 0
+            previousNetworkTx = 0
+            activeNetworkRxRate = 0
+            activeNetworkTxRate = 0
             previousNetworkSampleMs = 0
         }
 
-        lanRxBytes.reload()
-        lanTxBytes.reload()
+        networkRxBytes.reload()
+        networkTxBytes.reload()
 
         const now = Date.now()
-        const rx = Number(lanRxBytes.text().trim())
-        const tx = Number(lanTxBytes.text().trim())
+        const rx = Number(networkRxBytes.text().trim())
+        const tx = Number(networkTxBytes.text().trim())
         const elapsedSeconds = previousNetworkSampleMs > 0 ? (now - previousNetworkSampleMs) / 1000 : 0
 
         if (!Number.isFinite(rx) || !Number.isFinite(tx)) {
-            lanRxRate = 0
-            lanTxRate = 0
-        } else if (previousLanRx > 0 && previousLanTx > 0 && Number.isFinite(elapsedSeconds) && elapsedSeconds > 0) {
-            lanRxRate = Math.max(0, (rx - previousLanRx) / elapsedSeconds)
-            lanTxRate = Math.max(0, (tx - previousLanTx) / elapsedSeconds)
+            activeNetworkRxRate = 0
+            activeNetworkTxRate = 0
+        } else if (previousNetworkRx > 0 && previousNetworkTx > 0 && Number.isFinite(elapsedSeconds) && elapsedSeconds > 0) {
+            activeNetworkRxRate = Math.max(0, (rx - previousNetworkRx) / elapsedSeconds)
+            activeNetworkTxRate = Math.max(0, (tx - previousNetworkTx) / elapsedSeconds)
         }
 
-        previousLanRx = Number.isFinite(rx) ? rx : 0
-        previousLanTx = Number.isFinite(tx) ? tx : 0
+        previousNetworkRx = Number.isFinite(rx) ? rx : 0
+        previousNetworkTx = Number.isFinite(tx) ? tx : 0
         previousNetworkSampleMs = now
     }
 

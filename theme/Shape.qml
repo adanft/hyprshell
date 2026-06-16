@@ -11,7 +11,6 @@ QtObject {
 
     readonly property int borderThin: 1
     readonly property int borderMedium: 2
-    readonly property int borderSelection: 4
     readonly property int borderEmphasis: 6
 
     readonly property int appLauncherRadius: radius16
@@ -27,8 +26,6 @@ QtObject {
     readonly property int wallpaperSelectorRadius: radius24
     readonly property int wallpaperSelectorBorderWidth: borderMedium
     readonly property int wallpaperCardRadius: radius24
-    readonly property int wallpaperCardBorderWidth: borderSelection
-    readonly property int wallpaperCardSelectedBadgeRadius: radius16
 
     readonly property int screenshotToolRadius: radius24
     readonly property int screenshotToolBorderWidth: borderMedium

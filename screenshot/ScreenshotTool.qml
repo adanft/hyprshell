@@ -15,7 +15,6 @@ Scope {
     property bool quitOnClose: false
     property bool includeCursor: false
     property int selectedActionIndex: 0
-    readonly property int contentWidth: theme.sizing.screenshotToolActionWidth * 4 + theme.spacing.screenshotToolActionRowSpacing * 3
     readonly property string captureSuccessCommand: "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
     function open() {
@@ -64,24 +63,193 @@ Scope {
         return `file="$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png"; ${grimCommand} "$file" && ${captureSuccessCommand}`;
     }
 
+    function actionIcon(index) {
+        switch (index) {
+        case 0:
+            return "󰍹";
+        case 1:
+            return "󰹑";
+        case 2:
+            return "󰖲";
+        case 3:
+            return "󰆞";
+        default:
+            return "󰍹";
+        }
+    }
+
+    function actionTitle(index) {
+        switch (index) {
+        case 0:
+            return "All";
+        case 1:
+            return "Monitor";
+        case 2:
+            return "Window";
+        case 3:
+            return "Area";
+        default:
+            return "All";
+        }
+    }
+
+    function actionDescription(index) {
+        switch (index) {
+        case 0:
+            return "Capture the full desktop";
+        case 1:
+            return "Capture the current monitor";
+        case 2:
+            return "Capture the active window";
+        case 3:
+            return "Select an area to capture";
+        default:
+            return "Capture the full desktop";
+        }
+    }
+
+    function actionMode(index) {
+        switch (index) {
+        case 0:
+            return "all";
+        case 1:
+            return "monitor";
+        case 2:
+            return "window";
+        case 3:
+            return "area";
+        default:
+            return "all";
+        }
+    }
+
     function moveSelection(direction) {
         selectedActionIndex = Math.max(0, Math.min(3, selectedActionIndex + direction));
     }
 
     function activateSelection() {
-        switch (selectedActionIndex) {
-        case 0:
-            capture("all");
-            break;
-        case 1:
-            capture("monitor");
-            break;
-        case 2:
-            capture("window");
-            break;
-        case 3:
-            capture("area");
-            break;
+        capture(actionMode(selectedActionIndex));
+    }
+
+    Component {
+        id: screenshotContent
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: tool.theme.spacing.screenshotToolPadding
+            spacing: tool.theme.spacing.screenshotToolSectionSpacing
+
+            Rectangle {
+                width: parent.width
+                height: (parent.height - parent.spacing) / 2
+                radius: tool.theme.shape.screenshotToolActionRadius
+                color: tool.theme.colors.background
+
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - tool.theme.spacing.screenshotToolPadding * 2
+                    spacing: tool.theme.spacing.space8
+
+                    Shared.AppText {
+                        width: parent.width
+                        text: tool.actionIcon(tool.selectedActionIndex)
+                        color: tool.theme.colors.primary
+                        font.family: tool.theme.typography.iconFontFamily
+                        font.pixelSize: tool.theme.typography.actionIconFontSize * 2
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Shared.AppText {
+                        width: parent.width
+                        text: tool.actionTitle(tool.selectedActionIndex)
+                        color: tool.theme.colors.text
+                        font.pixelSize: tool.theme.typography.sizeXl
+                        font.styleName: tool.theme.typography.styleSemibold
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Shared.AppText {
+                        width: parent.width
+                        text: tool.actionDescription(tool.selectedActionIndex)
+                        color: tool.theme.colors.textMuted
+                        font.pixelSize: tool.theme.typography.sizeMd
+                        font.styleName: tool.theme.typography.styleMedium
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                    }
+                }
+
+                Row {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: tool.theme.spacing.screenshotToolPadding
+                    spacing: tool.theme.spacing.space8
+
+                    Shared.AppText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Cursor"
+                        color: tool.theme.colors.text
+                        font.pixelSize: tool.theme.typography.sizeMd
+                        font.styleName: tool.theme.typography.styleSemibold
+                    }
+
+                    Rectangle {
+                        id: cursorSwitch
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: tool.theme.sizing.screenshotToolCursorSwitchWidth
+                        height: tool.theme.sizing.screenshotToolCursorSwitchHeight
+                        radius: height / 2
+                        color: tool.includeCursor ? tool.theme.colors.primary : tool.theme.colors.surfaceActive
+
+                        Rectangle {
+                            width: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
+                            height: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
+                            radius: width / 2
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: tool.includeCursor ? parent.width - width - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin : tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
+                            color: tool.includeCursor ? tool.theme.colors.primaryText : tool.theme.colors.textMuted
+
+                            Behavior on x {
+                                NumberAnimation {
+                                    duration: 120
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: tool.includeCursor = !tool.includeCursor
+                        }
+                    }
+                }
+            }
+
+            Item {
+                width: parent.width
+                height: (parent.height - parent.spacing) / 2
+
+                Row {
+                    anchors.centerIn: parent
+                    spacing: tool.theme.spacing.screenshotToolActionRowSpacing
+
+                    Repeater {
+                        model: 4
+
+                        ScreenshotAction {
+                            required property int index
+
+                            icon: tool.actionIcon(index)
+                            title: tool.actionTitle(index)
+                            selected: tool.selectedActionIndex === index
+                            onActivated: tool.capture(tool.actionMode(index))
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -130,8 +298,8 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin, tool.contentWidth + tool.theme.spacing.screenshotToolPadding * 2)
-                height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin, content.implicitHeight + tool.theme.spacing.screenshotToolPadding * 2)
+                width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin, tool.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin, tool.theme.sizing.appLauncherMaxHeight)
                 radius: tool.theme.shape.screenshotToolRadius
                 color: tool.theme.colors.panel
                 border.width: tool.theme.shape.screenshotToolBorderWidth
@@ -142,107 +310,12 @@ Scope {
                     acceptedButtons: Qt.AllButtons
                 }
 
-                Column {
-                    id: content
+                Loader {
+                    id: contentLoader
 
                     anchors.fill: parent
-                    anchors.margins: tool.theme.spacing.screenshotToolPadding
-                    spacing: tool.theme.spacing.screenshotToolSectionSpacing
-
-                    Row {
-                        id: cursorRow
-
-                        width: parent.width
-                        height: tool.theme.sizing.screenshotToolCursorRowHeight
-
-                        Shared.AppText {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - cursorSwitch.width
-                            text: "Cursor"
-                            color: tool.theme.colors.text
-                            font.pixelSize: tool.theme.typography.sizeMd
-                            font.styleName: tool.theme.typography.styleSemibold
-                        }
-
-                        Rectangle {
-                            id: cursorSwitch
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: tool.theme.sizing.screenshotToolCursorSwitchWidth
-                            height: tool.theme.sizing.screenshotToolCursorSwitchHeight
-                            radius: height / 2
-                            color: tool.includeCursor ? tool.theme.colors.primary : tool.theme.colors.surfaceActive
-
-                            Rectangle {
-                                width: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
-                                height: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
-                                radius: width / 2
-                                anchors.verticalCenter: parent.verticalCenter
-                                x: tool.includeCursor ? parent.width - width - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin : tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
-                                color: tool.includeCursor ? tool.theme.colors.primaryText : tool.theme.colors.textMuted
-
-                                Behavior on x {
-                                    NumberAnimation {
-                                        duration: 120
-                                        easing.type: Easing.OutCubic
-                                    }
-
-                                }
-
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: tool.includeCursor = !tool.includeCursor
-                            }
-
-                        }
-
-                    }
-
-                    Row {
-                        id: actionRow
-
-                        width: parent.width
-                        height: tool.theme.sizing.screenshotToolActionHeight
-                        spacing: tool.theme.spacing.screenshotToolActionRowSpacing
-
-                        ScreenshotAction {
-                            icon: "󰍹"
-                            title: "All"
-                            selected: tool.selectedActionIndex === 0
-                            onHovered: tool.selectedActionIndex = 0
-                            onActivated: tool.capture("all")
-                        }
-
-                        ScreenshotAction {
-                            icon: "󰹑"
-                            title: "Monitor"
-                            selected: tool.selectedActionIndex === 1
-                            onHovered: tool.selectedActionIndex = 1
-                            onActivated: tool.capture("monitor")
-                        }
-
-                        ScreenshotAction {
-                            icon: "󰖲"
-                            title: "Window"
-                            selected: tool.selectedActionIndex === 2
-                            onHovered: tool.selectedActionIndex = 2
-                            onActivated: tool.capture("window")
-                        }
-
-                        ScreenshotAction {
-                            icon: "󰆞"
-                            title: "Area"
-                            selected: tool.selectedActionIndex === 3
-                            onHovered: tool.selectedActionIndex = 3
-                            onActivated: tool.capture("area")
-                        }
-
-                    }
-
+                    active: panel.visible
+                    sourceComponent: screenshotContent
                 }
 
             }

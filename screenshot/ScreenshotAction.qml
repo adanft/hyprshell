@@ -12,17 +12,17 @@ Rectangle {
     required property string icon
     required property string title
     property bool selected: false
-    readonly property bool active: selected || mouseArea.containsMouse
+    readonly property bool hovered: mouseArea.containsMouse
+    readonly property bool active: selected || hovered
 
     signal activated()
-    signal hovered()
 
     width: theme.sizing.screenshotToolActionWidth
     height: theme.sizing.screenshotToolActionHeight
     radius: theme.shape.screenshotToolActionRadius
     opacity: enabled ? 1 : 0.45
     color: active ? theme.colors.surfaceActive : theme.colors.surfaceTransparent
-    border.width: active ? theme.shape.screenshotToolActionBorderWidth : 0
+    border.width: selected ? theme.shape.screenshotToolActionBorderWidth : 0
     border.color: theme.colors.focus
 
     Column {
@@ -61,7 +61,6 @@ Rectangle {
         hoverEnabled: true
         enabled: action.enabled
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onEntered: action.hovered()
         onClicked: action.activated()
     }
 

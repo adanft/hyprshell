@@ -23,15 +23,12 @@ QtObject {
 
     readonly property int powerMenuActionSize: 136
 
-    readonly property int wallpaperSelectorGridMinCellWidth: 236
     readonly property int wallpaperCardWidth: 220
     readonly property int wallpaperCardHeight: 150
-    readonly property int wallpaperCardSelectedBadgeSize: size32
 
     readonly property int screenshotToolActionWidth: 84
     readonly property int screenshotToolActionHeight: 84
     readonly property int screenshotToolActionIconSlotSize: 44
-    readonly property int screenshotToolCursorRowHeight: size24
     readonly property int screenshotToolCursorSwitchWidth: size34
     readonly property int screenshotToolCursorSwitchHeight: size16
     readonly property int screenshotToolCursorSwitchKnobSize: size14

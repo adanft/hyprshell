@@ -36,7 +36,7 @@ Rectangle {
             text: action.icon
             color: action.selected ? action.theme.colors.primary : action.theme.colors.info
             font.family: action.theme.typography.iconFontFamily
-            font.pixelSize: action.theme.typography.actionIconFontSize
+            font.pixelSize: action.theme.sizing.screenshotToolActionIconSize
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
@@ -45,7 +45,7 @@ Rectangle {
             width: parent.width
             text: action.title
             color: action.theme.colors.text
-            font.pixelSize: action.theme.typography.sizeSm
+            font.pixelSize: action.theme.typography.sizeLg
             font.styleName: action.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

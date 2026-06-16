@@ -26,9 +26,10 @@ QtObject {
     readonly property int wallpaperCardWidth: 220
     readonly property int wallpaperCardHeight: 150
 
-    readonly property int screenshotToolActionWidth: 84
-    readonly property int screenshotToolActionHeight: 84
-    readonly property int screenshotToolActionIconSlotSize: 44
+    readonly property int screenshotToolActionWidth: appLauncherCardWidth
+    readonly property int screenshotToolActionHeight: appLauncherCardHeight
+    readonly property int screenshotToolActionIconSlotSize: appLauncherIconSlotSize
+    readonly property int screenshotToolActionIconSize: 36
     readonly property int screenshotToolCursorSwitchWidth: size34
     readonly property int screenshotToolCursorSwitchHeight: size16
     readonly property int screenshotToolCursorSwitchKnobSize: size14

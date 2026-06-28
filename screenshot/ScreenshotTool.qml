@@ -19,6 +19,7 @@ Scope {
     readonly property string captureSuccessCommand: "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
     function open() {
+        selectedActionIndex = 0;
         panel.visible = true;
         Qt.callLater(() => {
             return overlay.forceActiveFocus();

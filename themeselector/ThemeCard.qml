@@ -11,8 +11,8 @@ Rectangle {
     property bool activeTheme: false
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
-    readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors.slice(0, 3) : []
-    readonly property int paletteDotSize: 40
+    readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors.slice(0, 4) : []
+    readonly property int paletteDotSize: 28
 
     signal activated()
     signal pointerEntered()
@@ -23,24 +23,12 @@ Rectangle {
     border.width: selected ? theme.shape.appLauncherCardBorderWidth : 0
     border.color: theme.colors.focus
 
-    Shared.AppText {
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.margins: card.theme.spacing.appLauncherCardPadding
-        text: card.themeData.displayName
-        color: card.theme.colors.text
-        font.pixelSize: card.theme.typography.sizeLg
-        font.styleName: card.theme.typography.styleMedium
-        horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
-        maximumLineCount: 1
-    }
-
     Row {
+        id: paletteRow
+
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.top: parent.top
         anchors.margins: card.theme.spacing.space16
         height: card.paletteDotSize
 
@@ -53,37 +41,47 @@ Rectangle {
                 width: parent.width / Math.max(1, card.previewColors.length)
                 height: parent.height
 
-                Rectangle {
+                Shared.AppText {
                     anchors.centerIn: parent
-                    width: card.paletteDotSize
-                    height: width
-                    radius: width / 2
+                    text: ""
                     color: modelData
+                    font.family: card.theme.typography.iconFontFamily
+                    font.pixelSize: card.theme.typography.actionIconFontSize
                 }
             }
         }
     }
 
-    Rectangle {
+    Shared.AppText {
+        id: themeName
+
         anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: card.theme.spacing.space8
-        width: card.theme.spacing.space4
-        height: parent.height - card.theme.spacing.space24
-        radius: width / 2
-        visible: card.activeTheme
-        color: card.theme.colors.focus
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: card.theme.spacing.appLauncherCardPadding
+        text: card.themeData.displayName
+        color: card.theme.colors.text
+        font.pixelSize: card.theme.typography.sizeMd
+        font.styleName: card.theme.typography.styleMedium
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+        maximumLineCount: 1
     }
 
-    Rectangle {
+    Item {
+        anchors.left: parent.left
         anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.rightMargin: card.theme.spacing.space8
-        width: card.theme.spacing.space4
-        height: parent.height - card.theme.spacing.space24
-        radius: width / 2
-        visible: card.activeTheme
-        color: card.theme.colors.focus
+        anchors.top: paletteRow.bottom
+        anchors.bottom: themeName.top
+
+        Shared.AppText {
+            anchors.centerIn: parent
+            visible: card.activeTheme
+            text: ""
+            color: card.theme.colors.focus
+            font.family: card.theme.typography.iconFontFamily
+            font.pixelSize: card.theme.typography.actionIconFontSize
+        }
     }
 
     MouseArea {

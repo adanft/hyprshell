@@ -1,4 +1,3 @@
-import "../shared/components" as Shared
 import "../theme"
 import QtQuick
 import Quickshell
@@ -9,20 +8,16 @@ Scope {
 
     readonly property var theme: AppTheme {}
     readonly property var themes: StockThemes.availableThemes
-    readonly property var filteredThemes: filterThemes(searchText)
     property alias visible: panel.visible
     property bool quitOnClose: false
-    property string searchText: ""
     property int selectedIndex: 0
     property int previewIndex: 0
     readonly property var contentItem: contentLoader.item
 
     function open() {
-        searchText = ""
         selectedIndex = 0
         previewIndex = 0
         panel.visible = true
-        Qt.callLater(() => contentItem?.searchField?.forceActiveFocus())
     }
 
     function close() {
@@ -41,21 +36,22 @@ Scope {
     }
 
     function selectIndex(index) {
-        const count = filteredThemes.length
+        const count = themes.length
         if (count === 0)
             return
 
         selectedIndex = Math.max(0, Math.min(count - 1, index))
         previewIndex = selectedIndex
-        contentItem?.themeListView?.positionViewAtIndex(selectedIndex, ListView.Contain)
+        if (contentItem && contentItem.themeGridView)
+            contentItem.themeGridView.positionViewAtIndex(selectedIndex, GridView.Contain)
     }
 
     function previewThemeData() {
-        return filteredThemes[previewIndex]
+        return themes[previewIndex]
     }
 
     function applySelection() {
-        const selectedTheme = filteredThemes[selectedIndex]
+        const selectedTheme = themes[selectedIndex]
         if (!selectedTheme)
             return
 
@@ -72,30 +68,14 @@ Scope {
         theme.colors.setTheme(name)
     }
 
-    function filterThemes(query) {
-        const normalizedQuery = normalizeText(query)
-        if (normalizedQuery.length === 0)
-            return themes
-
-        return themes.filter(themeData => searchableText(themeData).includes(normalizedQuery))
-    }
-
-    function searchableText(themeData) {
-        return [themeData ? themeData.name : "", themeData ? themeData.displayName : ""].map(normalizeText).join(" ")
-    }
-
-    function normalizeText(value) {
-        return String(value || "").toLowerCase()
-    }
-
-    function handleNavigationKey(event, allowHomeEnd, allowSpace) {
-        if (allowHomeEnd && event.key === Qt.Key_Home) {
+    function handleNavigationKey(event) {
+        if (event.key === Qt.Key_Home) {
             selectIndex(0)
             event.accepted = true
-        } else if (allowHomeEnd && event.key === Qt.Key_End) {
-            selectIndex(filteredThemes.length - 1)
+        } else if (event.key === Qt.Key_End) {
+            selectIndex(themes.length - 1)
             event.accepted = true
-        } else if (allowSpace && event.key === Qt.Key_Space) {
+        } else if (event.key === Qt.Key_Space) {
             applySelection()
             event.accepted = true
         } else {
@@ -103,220 +83,149 @@ Scope {
         }
     }
 
-    onSearchTextChanged: {
-        selectedIndex = 0
-        previewIndex = 0
-        contentItem?.themeListView?.positionViewAtBeginning()
-    }
-
-    onFilteredThemesChanged: {
-        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, filteredThemes.length - 1)))
-        previewIndex = Math.max(0, Math.min(previewIndex, Math.max(0, filteredThemes.length - 1)))
+    onThemesChanged: {
+        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, themes.length - 1)))
+        previewIndex = Math.max(0, Math.min(previewIndex, Math.max(0, themes.length - 1)))
     }
 
     Component {
         id: selectorContent
 
         Column {
-            property alias searchField: searchInput
-            property alias themeListView: themeList
+            property alias themeGridView: themeGrid
 
             anchors.fill: parent
-            anchors.margins: selector.theme.spacing.appLauncherPadding
+            anchors.margins: selector.theme.spacing.wallpaperSelectorGridMargin
             spacing: selector.theme.spacing.appLauncherSectionSpacing
 
             Rectangle {
+                id: preview
+
+                readonly property var themeData: selector.previewThemeData()
+                readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors : []
+                readonly property int preferredHeight: Math.round(width * 9 / 16)
+                readonly property int minimumGridHeight: selector.theme.sizing.wallpaperCardHeight + selector.theme.spacing.space12
+
                 width: parent.width
-                height: selector.theme.sizing.appLauncherSearchHeight
-                radius: selector.theme.shape.appLauncherSearchRadius
-                color: selector.theme.colors.surfaceActive
-                border.width: selector.theme.shape.appLauncherSearchBorderWidth
-                border.color: searchInput.activeFocus ? selector.theme.colors.focus : selector.theme.colors.border
+                height: Math.min(preferredHeight, Math.max(0, parent.height - parent.spacing - minimumGridHeight))
+                radius: selector.theme.shape.wallpaperCardRadius
+                color: themeData && themeData.background ? themeData.background : selector.theme.colors.background
+                clip: true
 
-                Shared.AppText {
-                    anchors.left: parent.left
-                    anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: selector.theme.sizing.appLauncherSearchIconSlotWidth
-                    text: ""
-                    color: searchInput.activeFocus ? selector.theme.colors.focus : selector.theme.colors.textSubtle
-                    font.family: selector.theme.typography.iconFontFamily
-                    font.pixelSize: selector.theme.typography.sizeLg
-                    font.styleName: selector.theme.typography.styleMedium
-                    horizontalAlignment: Text.AlignLeft
-                }
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - selector.theme.spacing.space24 * 2
+                    spacing: selector.theme.spacing.space24
 
-                Shared.AppText {
-                    anchors.left: parent.left
-                    anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding + selector.theme.sizing.appLauncherSearchIconSlotWidth
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: searchInput.text.length === 0
-                    text: "Search Themes"
-                    color: selector.theme.colors.textSubtle
-                    font.pixelSize: selector.theme.typography.sizeLg
-                    font.styleName: selector.theme.typography.styleMedium
-                }
+                    Rectangle {
+                        id: sceneBar
 
-                TextInput {
-                    id: searchInput
+                        width: Math.min(parent.width, selector.theme.sizing.appLauncherGridCellWidth * 2)
+                        height: selector.theme.sizing.statusBarHeight
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        radius: height / 2
+                        color: preview.themeData && preview.themeData.surface ? preview.themeData.surface : selector.theme.colors.surface
+                        border.width: selector.theme.shape.borderThin
+                        border.color: preview.themeData && preview.themeData.border ? preview.themeData.border : selector.theme.colors.border
 
-                    anchors.fill: parent
-                    anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding + selector.theme.sizing.appLauncherSearchIconSlotWidth
-                    anchors.rightMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
-                    clip: true
-                    color: selector.theme.colors.text
-                    selectionColor: selector.theme.colors.selection
-                    selectedTextColor: selector.theme.colors.selectionText
-                    font.family: selector.theme.typography.textFontFamily
-                    font.pixelSize: selector.theme.typography.sizeLg
-                    font.styleName: selector.theme.typography.styleMedium
-                    verticalAlignment: TextInput.AlignVCenter
-                    text: selector.searchText
-                    onTextChanged: selector.searchText = text
-                    Keys.onEscapePressed: selector.close()
-                    Keys.onLeftPressed: (event) => {
-                        if (cursorPosition === 0)
-                            selector.moveSelection(-1)
-                        else
-                            event.accepted = false
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: selector.theme.spacing.space12
+
+                            Repeater {
+                                model: preview.previewColors.slice(0, 3)
+
+                                Text {
+                                    required property color modelData
+
+                                    text: ""
+                                    color: modelData
+                                    font.family: selector.theme.typography.iconFontFamily
+                                    font.pixelSize: selector.theme.typography.sizeLg
+                                }
+                            }
+                        }
                     }
-                    Keys.onRightPressed: (event) => {
-                        if (cursorPosition === text.length)
-                            selector.moveSelection(1)
-                        else
-                            event.accepted = false
+
+                    Text {
+                        width: parent.width
+                        text: preview.themeData ? preview.themeData.displayName : "Theme"
+                        color: preview.themeData && preview.themeData.text ? preview.themeData.text : selector.theme.colors.text
+                        font.family: selector.theme.typography.textFontFamily
+                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.styleName: selector.theme.typography.styleSemibold
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
                     }
-                    Keys.onUpPressed: selector.moveSelection(-1)
-                    Keys.onDownPressed: selector.moveSelection(1)
-                    Keys.onReturnPressed: selector.applySelection()
-                    Keys.onEnterPressed: selector.applySelection()
-                    Keys.onPressed: (event) => selector.handleNavigationKey(event, text.length === 0, false)
+
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: selector.theme.spacing.space24
+
+                        Repeater {
+                            model: preview.previewColors.slice(0, 3)
+
+                            Text {
+                                required property color modelData
+
+                                text: ""
+                                color: modelData
+                                font.family: selector.theme.typography.iconFontFamily
+                                font.pixelSize: selector.theme.typography.actionIconFontSize
+                            }
+                        }
+                    }
+
                 }
             }
 
-            Row {
+            GridView {
+                id: themeGrid
+
+                readonly property int columns: 2
+
                 width: parent.width
-                height: parent.height - selector.theme.sizing.appLauncherSearchHeight - parent.spacing
-                spacing: selector.theme.spacing.appLauncherSectionSpacing
+                height: Math.max(0, parent.height - preview.height - parent.spacing)
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                flow: GridView.FlowLeftToRight
+                cellWidth: width / columns
+                cellHeight: Math.round((cellWidth - selector.theme.spacing.space12) * 9 / 16) + selector.theme.spacing.space12
+                model: selector.themes
+                currentIndex: selector.selectedIndex
+                highlightFollowsCurrentItem: false
 
-                Item {
-                    width: parent.width - themeList.width - parent.spacing
-                    height: parent.height
-
-                    Rectangle {
-                        id: preview
-
-                        readonly property var themeData: selector.previewThemeData()
-                        readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors : []
-
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width
-                        height: Math.min(parent.height, Math.round(width * 16 / 9))
-                        visible: preview.themeData !== undefined
-                        clip: true
-                        radius: selector.theme.shape.appLauncherCardRadius
-                        color: themeData && themeData.background ? themeData.background : selector.theme.colors.surface
-
-                        Column {
-                            anchors.fill: parent
-                            anchors.margins: selector.theme.spacing.space16
-                            spacing: selector.theme.spacing.space16
-
-                            Item {
-                                width: parent.width
-                                height: (parent.height - parent.spacing) / 2
-
-                                Rectangle {
-                                    anchors.centerIn: parent
-                                    width: parent.width
-                                    height: parent.height
-                                    radius: selector.theme.shape.radius12
-                                    color: preview.themeData && preview.themeData.surface ? preview.themeData.surface : selector.theme.colors.surfaceActive
-                                }
-                            }
-
-                            Item {
-                                id: paletteContainer
-
-                                width: parent.width
-                                height: (parent.height - parent.spacing) / 2
-
-                                readonly property int paletteColumns: 3
-                                readonly property int paletteRows: Math.ceil(preview.previewColors.length / paletteColumns)
-                                readonly property int paletteDotSize: 40
-
-                                Grid {
-                                    id: palette
-
-                                    anchors.centerIn: parent
-                                    width: paletteContainer.paletteColumns * paletteContainer.paletteDotSize + (paletteContainer.paletteColumns - 1) * spacing
-                                    height: paletteContainer.paletteRows * paletteContainer.paletteDotSize + Math.max(0, paletteContainer.paletteRows - 1) * spacing
-                                    columns: paletteContainer.paletteColumns
-                                    spacing: selector.theme.spacing.space12
-
-                                    Repeater {
-                                        model: preview.previewColors
-
-                                        Rectangle {
-                                            required property color modelData
-
-                                            width: paletteContainer.paletteDotSize
-                                            height: width
-                                            radius: width / 2
-                                            color: modelData
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                Text {
+                    anchors.centerIn: parent
+                    visible: selector.themes.length === 0
+                    width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
+                    text: "No themes found"
+                    color: selector.theme.colors.textMuted
+                    font.pixelSize: selector.theme.typography.sizeLg
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
 
-                ListView {
-                    id: themeList
+                delegate: Item {
+                    required property var modelData
+                    required property int index
 
-                    width: selector.theme.sizing.appLauncherGridCellWidth * 2
-                    height: parent.height
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
-                    orientation: ListView.Vertical
-                    spacing: selector.theme.spacing.space6
-                    model: selector.filteredThemes
-                    currentIndex: selector.selectedIndex
-                    highlightFollowsCurrentItem: false
+                    width: themeGrid.cellWidth
+                    height: themeGrid.cellHeight
 
-                    Shared.AppText {
+                    ThemeCard {
                         anchors.centerIn: parent
-                        visible: selector.filteredThemes.length === 0
-                        width: parent.width
-                        text: "No themes found"
-                        color: selector.theme.colors.textMuted
-                        font.pixelSize: selector.theme.typography.sizeLg
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                    }
-
-                    delegate: Item {
-                        required property var modelData
-                        required property int index
-
-                        width: themeList.width
-                        height: selector.theme.sizing.appLauncherGridCellHeight
-
-                        ThemeCard {
-                            anchors.centerIn: parent
-                            width: selector.theme.sizing.appLauncherCardWidth * 2
-                            height: selector.theme.sizing.appLauncherCardHeight
-                            themeData: modelData
-                            selected: selector.selectedIndex === index
-                            activeTheme: selector.theme.colors.currentTheme === modelData.name
-                            onPointerEntered: selector.previewIndex = index
-                            onPointerExited: {
-                                if (selector.previewIndex === index)
-                                    selector.previewIndex = selector.selectedIndex
-                            }
-                            onActivated: selector.activateIndex(index)
+                        width: parent.width - selector.theme.spacing.space12
+                        height: Math.round(width * 9 / 16)
+                        themeData: modelData
+                        selected: selector.selectedIndex === index
+                        activeTheme: selector.theme.colors.currentTheme === modelData.name
+                        onPointerEntered: selector.previewIndex = index
+                        onPointerExited: {
+                            if (selector.previewIndex === index)
+                                selector.previewIndex = selector.selectedIndex
                         }
+                        onActivated: selector.activateIndex(index)
                     }
                 }
             }
@@ -334,6 +243,7 @@ Scope {
         mask: null
         color: selector.theme.colors.transparent
         surfaceFormat.opaque: false
+
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -348,14 +258,15 @@ Scope {
             anchors.fill: parent
             color: selector.theme.colors.scrim
             focus: true
+
             Keys.onEscapePressed: selector.close()
             Keys.onLeftPressed: selector.moveSelection(-1)
             Keys.onRightPressed: selector.moveSelection(1)
-            Keys.onUpPressed: selector.moveSelection(-1)
-            Keys.onDownPressed: selector.moveSelection(1)
+            Keys.onUpPressed: selector.moveSelection(-2)
+            Keys.onDownPressed: selector.moveSelection(2)
             Keys.onReturnPressed: selector.applySelection()
             Keys.onEnterPressed: selector.applySelection()
-            Keys.onPressed: (event) => selector.handleNavigationKey(event, true, true)
+            Keys.onPressed: (event) => selector.handleNavigationKey(event)
 
             MouseArea {
                 anchors.fill: parent
@@ -365,11 +276,11 @@ Scope {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - selector.theme.spacing.appLauncherScreenMargin, selector.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - selector.theme.spacing.appLauncherScreenMargin, selector.theme.sizing.appLauncherMaxHeight)
-                radius: selector.theme.shape.appLauncherRadius
+                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxHeight)
+                radius: selector.theme.shape.wallpaperSelectorRadius
                 color: selector.theme.colors.panel
-                border.width: selector.theme.shape.appLauncherBorderWidth
+                border.width: selector.theme.shape.wallpaperSelectorBorderWidth
                 border.color: selector.theme.colors.border
 
                 MouseArea {

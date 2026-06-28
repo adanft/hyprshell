@@ -211,6 +211,7 @@ Scope {
     }
 
     function open() {
+        selectedIndex = 0
         clampSelection()
         panel.visible = true
     }

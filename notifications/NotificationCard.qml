@@ -285,6 +285,9 @@ Item {
                         height: card.iconSize
                         source: card.iconSource
                         visible: card.iconSource.length > 0 && card.iconSourceIsImageFile
+                        asynchronous: true
+                        cache: true
+                        sourceSize: Qt.size(card.iconSize, card.iconSize)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }

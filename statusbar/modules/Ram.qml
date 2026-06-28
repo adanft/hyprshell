@@ -1,0 +1,50 @@
+import "../components"
+import QtQuick
+import "../../theme"
+
+Item {
+    id: root
+
+    readonly property var icons: Icons {
+    }
+
+    readonly property var theme: AppTheme {
+    }
+
+    required property var colors
+    required property var services
+    readonly property color moduleColor: colors.network
+
+    implicitWidth: content.implicitWidth
+    implicitHeight: theme.sizing.statusBarHeight
+    width: implicitWidth
+    height: implicitHeight
+
+    Component.onCompleted: {
+        services.memoryUsageEnabled = true
+        services.refreshSystemStats()
+    }
+
+    Component.onDestruction: {
+        services.memoryUsageEnabled = false
+    }
+
+    Row {
+        id: content
+
+        anchors.centerIn: parent
+        spacing: root.theme.spacing.space6
+
+        BarText {
+            text: root.icons.memory
+            color: root.moduleColor
+        }
+
+        BarText {
+            text: `${Math.round(root.services.memoryUsage)}%`
+            color: root.moduleColor
+        }
+
+    }
+
+}

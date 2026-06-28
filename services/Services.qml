@@ -14,6 +14,7 @@ Scope {
 
     readonly property var theme: AppTheme {}
     readonly property int networkRefreshMs: 2000
+    readonly property int systemStatsRefreshMs: 2000
     readonly property var networkDevices: Networking.devices?.values ?? []
     readonly property var lanDevice: networkDevices.find(device => device.type === DeviceType.Wired) ?? null
     readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null
@@ -84,6 +85,11 @@ Scope {
     property real activeNetworkRxRate: 0
     property real activeNetworkTxRate: 0
     property bool networkThroughputEnabled: false
+    property bool cpuUsageEnabled: false
+    property bool memoryUsageEnabled: false
+    property int cpuUsage: 0
+    property int memoryUsage: 0
+    property var previousCpuStats: null
     readonly property bool lanUp: lanDevice?.connected ?? false
     readonly property bool wifiUp: wifiDevice?.connected ?? false
     readonly property string activeNetworkInterface: lanUp ? lanInterface : (wifiUp ? wifiInterface : "")
@@ -127,6 +133,20 @@ Scope {
     FileView {
         id: networkTxBytes
         path: `/sys/class/net/${service.activeNetworkInterface}/statistics/tx_bytes`
+        blockLoading: true
+        printErrors: false
+    }
+
+    FileView {
+        id: cpuStatFile
+        path: "/proc/stat"
+        blockLoading: true
+        printErrors: false
+    }
+
+    FileView {
+        id: memoryInfoFile
+        path: "/proc/meminfo"
         blockLoading: true
         printErrors: false
     }
@@ -212,10 +232,24 @@ Scope {
     }
 
     Timer {
+        interval: service.systemStatsRefreshMs
+        running: service.cpuUsageEnabled || service.memoryUsageEnabled
+        repeat: true
+        onTriggered: service.refreshSystemStats()
+    }
+
+    Timer {
         interval: 30000
         running: notificationCenterOpen || notificationHistory.length > 0 || visibleNotifications.length > 0 || notificationQueue.length > 0
         repeat: true
         onTriggered: notificationTimeUpdateTick = !notificationTimeUpdateTick
+    }
+
+    Timer {
+        id: notificationHistorySaveTimer
+        interval: 500
+        repeat: false
+        onTriggered: service.saveNotificationHistory()
     }
 
     Process {
@@ -233,7 +267,13 @@ Scope {
     Component.onCompleted: {
         updateClock()
         refreshNetwork()
+        refreshSystemStats()
         detectBrightness()
+    }
+
+    Component.onDestruction: {
+        if (notificationHistorySaveTimer.running)
+            saveNotificationHistory()
     }
 
     function updateClock() {
@@ -344,6 +384,59 @@ Scope {
 
     function changeBrightness(delta) {
         setBrightness(brightnessLevel + delta)
+    }
+
+    function refreshSystemStats() {
+        if (cpuUsageEnabled) {
+            cpuStatFile.reload()
+            updateCpuUsage(cpuStatFile.text())
+        }
+
+        if (memoryUsageEnabled) {
+            memoryInfoFile.reload()
+            updateMemoryUsage(memoryInfoFile.text())
+        }
+    }
+
+    function updateCpuUsage(text) {
+        const line = String(text || "").split("\n")[0]
+        if (!line.startsWith("cpu "))
+            return
+
+        const parts = line.trim().split(/\s+/)
+        let total = 0
+        for (let i = 1; i < parts.length; i++)
+            total += Number(parts[i]) || 0
+
+        const idle = (Number(parts[4]) || 0) + (Number(parts[5]) || 0)
+        const previous = previousCpuStats
+        previousCpuStats = { total: total, idle: idle }
+
+        if (!previous)
+            return
+
+        const totalDelta = total - previous.total
+        const idleDelta = idle - previous.idle
+        if (totalDelta <= 0)
+            return
+
+        cpuUsage = Math.max(0, Math.min(100, Math.round(((totalDelta - idleDelta) * 100) / totalDelta)))
+    }
+
+    function updateMemoryUsage(text) {
+        const lines = String(text || "").split("\n")
+        let total = 0
+        let available = 0
+
+        for (const line of lines) {
+            if (line.startsWith("MemTotal:"))
+                total = Number(line.trim().split(/\s+/)[1]) || 0
+            else if (line.startsWith("MemAvailable:"))
+                available = Number(line.trim().split(/\s+/)[1]) || 0
+        }
+
+        if (total > 0)
+            memoryUsage = Math.max(0, Math.min(100, Math.round(((total - available) * 100) / total)))
     }
 
     function refreshNetwork() {
@@ -500,7 +593,7 @@ Scope {
             history = history.slice(0, maxNotificationHistory)
 
         notificationHistory = history
-        saveNotificationHistory()
+        scheduleNotificationHistorySave()
     }
 
     function createNotificationHistoryEntry(notification, policy) {
@@ -524,7 +617,12 @@ Scope {
         }
     }
 
+    function scheduleNotificationHistorySave() {
+        notificationHistorySaveTimer.restart()
+    }
+
     function saveNotificationHistory() {
+        notificationHistorySaveTimer.stop()
         notificationHistoryAdapter.notifications = notificationHistory.map(item => ({
             id: item.id,
             summary: item.summary || "Notification",

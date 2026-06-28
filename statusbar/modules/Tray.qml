@@ -52,7 +52,7 @@ Item {
         id: iconRow
 
         anchors.centerIn: parent
-        spacing: root.theme.spacing.space12
+        spacing: root.theme.spacing.space6
 
         Repeater {
             id: trayItems
@@ -71,11 +71,11 @@ Item {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                     onClicked: (mouse) => {
                         if (mouse.button === Qt.RightButton && modelData.hasMenu)
-                            trayMenu.open(modelData, parent);
+                            trayMenu.open(modelData, parent, mouse.x, mouse.y);
                         else if (mouse.button === Qt.MiddleButton)
                             modelData.secondaryActivate();
                         else if (modelData.onlyMenu && modelData.hasMenu)
-                            trayMenu.open(modelData, parent);
+                            trayMenu.open(modelData, parent, mouse.x, mouse.y);
                         else
                             modelData.activate();
                     }

@@ -24,18 +24,27 @@ Item {
     property int openRetryCount: 0
     readonly property int maxOpenRetries: 2
 
-    function open(trayItem, anchorItem) {
+    function open(trayItem, anchorItem, localX, localY) {
         close();
-        const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height);
-        const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
-        const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
         currentTrayItem = trayItem;
-        menuAnchorX = globalPosition.x - screenX;
-        menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
-        finishOpen(anchorItem);
+        setMenuAnchor(anchorItem, localX, localY);
+        finishOpen(anchorItem, localX, localY);
     }
 
-    function finishOpen(anchorItem) {
+    function setMenuAnchor(anchorItem, localX, localY) {
+        if (!anchorItem)
+            return ;
+
+        const anchorX = localX === undefined ? anchorItem.width / 2 : localX;
+        const anchorY = localY === undefined ? anchorItem.height : localY;
+        const globalPosition = anchorItem.mapToGlobal(anchorX, anchorY);
+        const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
+        const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
+        menuAnchorX = globalPosition.x - screenX;
+        menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
+    }
+
+    function finishOpen(anchorItem, localX, localY) {
         if (!currentTrayItem)
             return ;
 
@@ -46,21 +55,17 @@ Item {
             }
             const retryTrayItem = currentTrayItem;
             const retryAnchorItem = anchorItem;
+            const retryLocalX = localX;
+            const retryLocalY = localY;
             openRetryCount += 1;
             Qt.callLater(function() {
                 if (root.currentTrayItem === retryTrayItem)
-                    root.finishOpen(retryAnchorItem);
+                    root.finishOpen(retryAnchorItem, retryLocalX, retryLocalY);
 
             });
             return ;
         }
-        if (anchorItem) {
-            const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height);
-            const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
-            const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
-            menuAnchorX = globalPosition.x - screenX;
-            menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
-        }
+        setMenuAnchor(anchorItem, localX, localY);
         menuOpen = true;
     }
 
@@ -146,7 +151,7 @@ Item {
 
             width: root.theme.sizing.statusBarTrayMenuWidth
             height: desiredHeight
-            x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX - width / 2))
+            x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX))
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8, root.menuAnchorY))
             radius: root.theme.shape.radius12
             color: root.colors.background

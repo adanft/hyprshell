@@ -41,15 +41,19 @@ Item {
         }
 
         Background {
-            width: windowTitle.width
+            id: trayBackground
+
+            width: tray.implicitWidth
             height: root.theme.sizing.statusBarHeight
+            visible: tray.hasItems
             colors: root.colors
             backgroundColor: root.colors.transparent
 
-            WindowTitle {
-                id: windowTitle
+            Tray {
+                id: tray
 
                 colors: root.colors
+                barWindow: root.barWindow
             }
 
         }
@@ -76,6 +80,35 @@ Item {
 
                 colors: root.colors
                 services: root.services
+            }
+
+        }
+
+        Row {
+            anchors.right: timeBackground.left
+            anchors.verticalCenter: timeBackground.verticalCenter
+            spacing: 0
+
+            Background {
+                width: implicitWidth
+                height: root.theme.sizing.statusBarHeight
+                colors: root.colors
+                padding: root.theme.spacing.space12 + root.theme.spacing.space6
+                contentSpacing: root.theme.spacing.space6 * 2
+
+                Processor {
+                    colors: root.colors
+                    services: root.services
+                }
+
+                Ram {
+                    colors: root.colors
+                    services: root.services
+                }
+
+            }
+
+            Spacer {
             }
 
         }
@@ -111,27 +144,6 @@ Item {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
-
-        Background {
-            id: trayBackground
-
-            width: tray.implicitWidth
-            height: root.theme.sizing.statusBarHeight
-            visible: tray.hasItems
-            colors: root.colors
-            backgroundColor: root.colors.transparent
-
-            Tray {
-                id: tray
-
-                colors: root.colors
-                barWindow: root.barWindow
-            }
-
-        }
-
-        Spacer {
-        }
 
         Background {
             width: implicitWidth

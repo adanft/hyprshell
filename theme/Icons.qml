@@ -6,6 +6,8 @@ QtObject {
     readonly property string date: "󰨳"
     readonly property string window: "󰰤"
     readonly property string networkThroughput: ""
+    readonly property string processor: ""
+    readonly property string memory: ""
     readonly property string wifiConnected: "󰤨"
     readonly property string wifiDisconnected: "󰤭"
     readonly property string bluetoothOff: "󰂲"

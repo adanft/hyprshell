@@ -16,6 +16,7 @@ Scope {
     property string searchText: ""
     property int selectedIndex: 0
     property var apps: []
+    property var appSearchKeys: []
     readonly property var filteredApps: filterApps(searchText)
     readonly property var contentItem: contentLoader.item
 
@@ -42,14 +43,17 @@ Scope {
 
     function refreshApplications() {
         if (typeof DesktopEntries === "undefined") {
+            appSearchKeys = [];
             apps = [];
             return ;
         }
-        apps = (DesktopEntries.applications.values || []).filter((app) => {
+        const refreshedApps = (DesktopEntries.applications.values || []).filter((app) => {
             return app && !app.hidden && !app.noDisplay;
         }).sort((a, b) => {
             return appName(a).localeCompare(appName(b));
         });
+        appSearchKeys = refreshedApps.map(searchableText);
+        apps = refreshedApps;
         clampSelection();
     }
 
@@ -58,8 +62,8 @@ Scope {
         if (normalizedQuery.length === 0)
             return apps;
 
-        return apps.filter((app) => {
-            return searchableText(app).includes(normalizedQuery);
+        return apps.filter((app, index) => {
+            return (appSearchKeys[index] || searchableText(app)).includes(normalizedQuery);
         });
     }
 

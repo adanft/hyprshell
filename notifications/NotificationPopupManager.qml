@@ -19,6 +19,8 @@ PopupWindow {
     readonly property int spacing: theme.spacing.notificationPopupSpacing
     property var popupItems: []
     property real stackHeight: 0
+    property bool popupRepositionScheduled: false
+    property bool popupRepositionWithoutYAnimation: false
     readonly property string screenName: barWindow.screen ? barWindow.screen.name : ""
     readonly property bool isFocusedScreen: screenName === services.focusedNotificationScreenName
 
@@ -145,15 +147,45 @@ PopupWindow {
     }
 
     function handlePopupLayoutChanged() {
-        repositionPopups();
+        scheduleRepositionPopups(false);
     }
 
     function repositionPopupsWithoutYAnimation() {
-        setPopupYAnimationEnabled(false);
-        repositionPopups();
+        scheduleRepositionPopups(true);
+    }
+
+    function scheduleRepositionPopups(withoutYAnimation) {
+        if (withoutYAnimation) {
+            popupRepositionWithoutYAnimation = true;
+            popupYAnimationRestoreTimer.stop();
+            setPopupYAnimationEnabled(false);
+        }
+
+        if (popupRepositionScheduled)
+            return;
+
+        popupRepositionScheduled = true;
         Qt.callLater(() => {
-            return setPopupYAnimationEnabled(true);
+            const restoreYAnimation = popupRepositionWithoutYAnimation;
+            popupRepositionScheduled = false;
+            popupRepositionWithoutYAnimation = false;
+            if (restoreYAnimation)
+                setPopupYAnimationEnabled(false);
+            repositionPopups();
+            if (restoreYAnimation)
+                schedulePopupYAnimationRestore();
         });
+    }
+
+    function schedulePopupYAnimationRestore() {
+        popupYAnimationRestoreTimer.restart();
+    }
+
+    Timer {
+        id: popupYAnimationRestoreTimer
+        interval: 0
+        repeat: false
+        onTriggered: root.setPopupYAnimationEnabled(true)
     }
 
     function setPopupYAnimationEnabled(enabled) {

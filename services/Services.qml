@@ -136,6 +136,8 @@ Scope {
     property string brightnessDevice: ""
     property bool brightnessAvailable: false
     property int brightnessLevel: 0
+    property int pendingBrightnessLevel: -1
+    readonly property int brightnessWriteDebounceMs: 100
     readonly property string brightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/brightness` : ""
     readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/max_brightness` : ""
 
@@ -190,9 +192,9 @@ Scope {
         blockLoading: true
         watchChanges: true
         printErrors: false
-        onLoaded: service.updateBrightnessFromFiles()
-        onLoadFailed: service.brightnessAvailable = false
-        onFileChanged: reload()
+        onLoaded: service.updateBrightnessFromFiles(false)
+        onLoadFailed: service.clearBrightnessState()
+        onFileChanged: service.updateBrightnessFromFiles(true)
     }
 
     FileView {
@@ -202,9 +204,9 @@ Scope {
         blockLoading: true
         watchChanges: true
         printErrors: false
-        onLoaded: service.updateBrightnessFromFiles()
-        onLoadFailed: service.brightnessAvailable = false
-        onFileChanged: reload()
+        onLoaded: service.updateBrightnessFromFiles(false)
+        onLoadFailed: service.clearBrightnessState()
+        onFileChanged: service.updateBrightnessFromFiles(true)
     }
 
     PwObjectTracker {
@@ -294,6 +296,14 @@ Scope {
 
     Process {
         id: brightnessWriteProcess
+        onExited: service.scheduleBrightnessWrite()
+    }
+
+    Timer {
+        id: brightnessWriteDebounceTimer
+        interval: service.brightnessWriteDebounceMs
+        repeat: false
+        onTriggered: service.flushBrightnessWrite()
     }
 
     Component.onCompleted: {
@@ -418,7 +428,7 @@ Scope {
     function detectBrightnessDevice(output) {
         const fields = String(output || "").trim().split(",")
         if (fields.length === 0 || fields[0].length === 0) {
-            brightnessAvailable = false
+            clearBrightnessState()
             return
         }
 
@@ -430,14 +440,33 @@ Scope {
         Qt.callLater(updateBrightnessFromFiles)
     }
 
-    function updateBrightnessFromFiles() {
-        if (brightnessDevice.length === 0 || !brightnessValueFile.loaded || !maxBrightnessValueFile.loaded)
+    function clearBrightnessState() {
+        brightnessWriteDebounceTimer.stop()
+        pendingBrightnessLevel = -1
+        brightnessAvailable = false
+        brightnessLevel = 0
+    }
+
+    function updateBrightnessFromFiles(reloadFiles) {
+        if (brightnessDevice.length === 0) {
+            clearBrightnessState()
+            return
+        }
+
+        if (!brightnessValueFile.loaded || !maxBrightnessValueFile.loaded)
             return
 
-        const current = Number(String(brightnessValueFile.text()).trim())
-        const maximum = Number(String(maxBrightnessValueFile.text()).trim())
+        const currentText = safeFileViewText(brightnessValueFile, "brightness", reloadFiles)
+        const maximumText = safeFileViewText(maxBrightnessValueFile, "max brightness", reloadFiles)
+        if (currentText === null || maximumText === null) {
+            clearBrightnessState()
+            return
+        }
+
+        const current = Number(currentText.trim())
+        const maximum = Number(maximumText.trim())
         if (!Number.isFinite(current) || !Number.isFinite(maximum) || maximum <= 0) {
-            brightnessAvailable = false
+            clearBrightnessState()
             return
         }
 
@@ -447,10 +476,25 @@ Scope {
 
     function setBrightness(percent) {
         const next = Math.max(0, Math.min(100, Math.round(percent)))
-        if (next === brightnessLevel)
+        if (next === brightnessLevel && (pendingBrightnessLevel < 0 || pendingBrightnessLevel === next))
             return
 
         brightnessLevel = next
+        pendingBrightnessLevel = next
+        scheduleBrightnessWrite()
+    }
+
+    function scheduleBrightnessWrite() {
+        if (pendingBrightnessLevel >= 0)
+            brightnessWriteDebounceTimer.restart()
+    }
+
+    function flushBrightnessWrite() {
+        if (pendingBrightnessLevel < 0 || brightnessWriteProcess.running)
+            return
+
+        const next = pendingBrightnessLevel
+        pendingBrightnessLevel = -1
         brightnessWriteProcess.exec(["brightnessctl", "set", `${next}%`])
     }
 
@@ -458,22 +502,56 @@ Scope {
         setBrightness(brightnessLevel + delta)
     }
 
+    function safeFileViewText(fileView, label, reloadFile) {
+        try {
+            if (!fileView)
+                return null
+            if (reloadFile)
+                fileView.reload()
+            return String(fileView.text() || "")
+        } catch (error) {
+            console.warn(`Failed to read ${label}: ${error}`)
+            return null
+        }
+    }
+
+    function resetNetworkSample(clearInterface) {
+        activeNetworkRxRate = 0
+        activeNetworkTxRate = 0
+        previousNetworkRx = 0
+        previousNetworkTx = 0
+        previousNetworkSampleMs = 0
+        if (clearInterface)
+            previousNetworkInterface = ""
+    }
+
     function refreshSystemStats() {
         if (cpuUsageEnabled) {
-            cpuStatFile.reload()
-            updateCpuUsage(cpuStatFile.text())
+            const cpuText = safeFileViewText(cpuStatFile, "CPU stats", true)
+            if (cpuText === null) {
+                previousCpuStats = null
+                cpuUsage = 0
+            } else {
+                updateCpuUsage(cpuText)
+            }
         }
 
         if (memoryUsageEnabled) {
-            memoryInfoFile.reload()
-            updateMemoryUsage(memoryInfoFile.text())
+            const memoryText = safeFileViewText(memoryInfoFile, "memory stats", true)
+            if (memoryText === null)
+                memoryUsage = 0
+            else
+                updateMemoryUsage(memoryText)
         }
     }
 
     function updateCpuUsage(text) {
         const line = String(text || "").split("\n")[0]
-        if (!line.startsWith("cpu "))
+        if (!line.startsWith("cpu ")) {
+            previousCpuStats = null
+            cpuUsage = 0
             return
+        }
 
         const parts = line.trim().split(/\s+/)
         let total = 0
@@ -509,46 +587,43 @@ Scope {
 
         if (total > 0)
             memoryUsage = Math.max(0, Math.min(100, Math.round(((total - available) * 100) / total)))
+        else
+            memoryUsage = 0
     }
 
     function refreshNetwork() {
         if (!networkThroughputEnabled || !activeNetworkInterface) {
-            activeNetworkRxRate = 0
-            activeNetworkTxRate = 0
-            previousNetworkRx = 0
-            previousNetworkTx = 0
-            previousNetworkInterface = ""
-            previousNetworkSampleMs = 0
+            resetNetworkSample(true)
             return
         }
 
         if (previousNetworkInterface !== activeNetworkInterface) {
             previousNetworkInterface = activeNetworkInterface
-            previousNetworkRx = 0
-            previousNetworkTx = 0
-            activeNetworkRxRate = 0
-            activeNetworkTxRate = 0
-            previousNetworkSampleMs = 0
+            resetNetworkSample(false)
         }
 
-        networkRxBytes.reload()
-        networkTxBytes.reload()
+        const rxText = safeFileViewText(networkRxBytes, "network RX bytes", true)
+        const txText = safeFileViewText(networkTxBytes, "network TX bytes", true)
+        if (rxText === null || txText === null) {
+            resetNetworkSample(false)
+            return
+        }
 
         const now = Date.now()
-        const rx = Number(networkRxBytes.text().trim())
-        const tx = Number(networkTxBytes.text().trim())
+        const rx = Number(rxText.trim())
+        const tx = Number(txText.trim())
         const elapsedSeconds = previousNetworkSampleMs > 0 ? (now - previousNetworkSampleMs) / 1000 : 0
 
         if (!Number.isFinite(rx) || !Number.isFinite(tx)) {
-            activeNetworkRxRate = 0
-            activeNetworkTxRate = 0
+            resetNetworkSample(false)
+            return
         } else if (previousNetworkRx > 0 && previousNetworkTx > 0 && Number.isFinite(elapsedSeconds) && elapsedSeconds > 0) {
             activeNetworkRxRate = Math.max(0, (rx - previousNetworkRx) / elapsedSeconds)
             activeNetworkTxRate = Math.max(0, (tx - previousNetworkTx) / elapsedSeconds)
         }
 
-        previousNetworkRx = Number.isFinite(rx) ? rx : 0
-        previousNetworkTx = Number.isFinite(tx) ? tx : 0
+        previousNetworkRx = rx
+        previousNetworkTx = tx
         previousNetworkSampleMs = now
     }
 

@@ -20,14 +20,9 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    Component.onCompleted: {
-        services.cpuUsageEnabled = true
-        services.refreshSystemStats()
-    }
+    Component.onCompleted: services.enableCpuUsage()
 
-    Component.onDestruction: {
-        services.cpuUsageEnabled = false
-    }
+    Component.onDestruction: services.disableCpuUsage()
 
     Row {
         id: content

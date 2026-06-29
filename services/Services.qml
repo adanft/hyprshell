@@ -57,6 +57,35 @@ Scope {
     readonly property int maxNotificationHistory: 100
     readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/statusbar-notifications.json`
     readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
+    readonly property var statusWorkspaceIds: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    readonly property int statusActiveWorkspaceId: Hyprland.focusedWorkspace?.id ?? 1
+    readonly property var statusOtherMonitorWorkspaceIds: {
+        const visible = {}
+        for (const monitor of Hyprland.monitors.values) {
+            const workspaceId = monitor.activeWorkspace?.id ?? -1
+            if (workspaceId > 0 && workspaceId !== service.statusActiveWorkspaceId)
+                visible[workspaceId] = true
+        }
+        return visible
+    }
+    readonly property var statusOccupiedWorkspaceIds: {
+        const occupied = {}
+        for (const workspace of Hyprland.workspaces.values)
+            occupied[workspace.id] = workspace.toplevels.values.length > 0
+        return occupied
+    }
+    readonly property var statusUrgentWorkspaceIds: {
+        const urgent = {}
+        for (const workspace of Hyprland.workspaces.values) {
+            if (workspace.urgent)
+                urgent[workspace.id] = true
+        }
+        for (const toplevel of Hyprland.toplevels.values) {
+            if (toplevel.urgent && toplevel.workspace)
+                urgent[toplevel.workspace.id] = true
+        }
+        return urgent
+    }
     readonly property int maxPopupIngressPerSecond: 6
     readonly property int maxNotificationQueueSize: 32
     property int notificationTimeoutLow: 5000
@@ -84,9 +113,12 @@ Scope {
     property real previousNetworkTx: 0
     property real activeNetworkRxRate: 0
     property real activeNetworkTxRate: 0
-    property bool networkThroughputEnabled: false
-    property bool cpuUsageEnabled: false
-    property bool memoryUsageEnabled: false
+    property int networkThroughputSubscriberCount: 0
+    property int cpuUsageSubscriberCount: 0
+    property int memoryUsageSubscriberCount: 0
+    readonly property bool networkThroughputEnabled: networkThroughputSubscriberCount > 0
+    readonly property bool cpuUsageEnabled: cpuUsageSubscriberCount > 0
+    readonly property bool memoryUsageEnabled: memoryUsageSubscriberCount > 0
     property int cpuUsage: 0
     property int memoryUsage: 0
     property var previousCpuStats: null
@@ -274,6 +306,46 @@ Scope {
     Component.onDestruction: {
         if (notificationHistorySaveTimer.running)
             saveNotificationHistory()
+    }
+
+    function enableNetworkThroughput() {
+        networkThroughputSubscriberCount++
+        refreshNetwork()
+    }
+
+    function disableNetworkThroughput() {
+        networkThroughputSubscriberCount = Math.max(0, networkThroughputSubscriberCount - 1)
+        if (!networkThroughputEnabled)
+            refreshNetwork()
+    }
+
+    function enableCpuUsage() {
+        cpuUsageSubscriberCount++
+        refreshSystemStats()
+    }
+
+    function disableCpuUsage() {
+        cpuUsageSubscriberCount = Math.max(0, cpuUsageSubscriberCount - 1)
+        if (!cpuUsageEnabled)
+            previousCpuStats = null
+    }
+
+    function enableMemoryUsage() {
+        memoryUsageSubscriberCount++
+        refreshSystemStats()
+    }
+
+    function disableMemoryUsage() {
+        memoryUsageSubscriberCount = Math.max(0, memoryUsageSubscriberCount - 1)
+    }
+
+    function focusWorkspace(workspaceId) {
+        if (Hyprland.usingLua === true) {
+            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${workspaceId} })`)
+            return
+        }
+
+        Hyprland.dispatch(`workspace ${workspaceId}`)
     }
 
     function updateClock() {

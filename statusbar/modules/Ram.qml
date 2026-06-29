@@ -20,14 +20,9 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    Component.onCompleted: {
-        services.memoryUsageEnabled = true
-        services.refreshSystemStats()
-    }
+    Component.onCompleted: services.enableMemoryUsage()
 
-    Component.onDestruction: {
-        services.memoryUsageEnabled = false
-    }
+    Component.onDestruction: services.disableMemoryUsage()
 
     Row {
         id: content

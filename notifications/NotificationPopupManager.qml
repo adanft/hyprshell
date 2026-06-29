@@ -56,7 +56,25 @@ PopupWindow {
         return item;
     }
 
+    function clearPopupItems() {
+        for (const item of popupItems) {
+            if (item) {
+                if (item.popupData && item.autoCloseTimerInitialized && typeof item.autoCloseRemainingMs === "number")
+                    item.popupData.autoCloseRemainingMs = item.autoCloseRemainingMs;
+
+                item.destroy();
+            }
+        }
+        popupItems = [];
+        stackHeight = 0;
+    }
+
     function syncPopups() {
+        if (!root.isFocusedScreen) {
+            clearPopupItems();
+            return;
+        }
+
         const visiblePopups = root.services.visibleNotifications || [];
         const nextItems = [];
         const enteringItems = [];
@@ -64,10 +82,8 @@ PopupWindow {
             let item = itemFor(popupData);
             if (!item) {
                 item = createPopupItem(popupData);
-                if (item && root.isFocusedScreen)
+                if (item)
                     enteringItems.push(item);
-                else if (item)
-                    item.enterOffset = 0;
             }
             if (item)
                 nextItems.push(item);
@@ -75,7 +91,7 @@ PopupWindow {
         }
         for (const item of nextItems) {
             if (item)
-                item.active = root.isFocusedScreen;
+                item.active = true;
 
         }
         for (const item of popupItems) {
@@ -183,8 +199,11 @@ PopupWindow {
     }
 
     onIsFocusedScreenChanged: {
-        updatePopupActivity();
         updatePopupCapacity();
+        if (isFocusedScreen)
+            syncPopups();
+        else
+            clearPopupItems();
     }
     implicitWidth: popupWidth
     implicitHeight: Math.max(1, stackHeight)

@@ -35,13 +35,8 @@ Item {
     implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
     height: implicitHeight
-    Component.onCompleted: {
-        services.networkThroughputEnabled = true;
-        services.refreshNetwork();
-    }
-    Component.onDestruction: {
-        services.networkThroughputEnabled = false;
-    }
+    Component.onCompleted: services.enableNetworkThroughput()
+    Component.onDestruction: services.disableNetworkThroughput()
 
     Row {
         id: content

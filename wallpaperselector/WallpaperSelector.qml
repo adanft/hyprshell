@@ -57,6 +57,7 @@ Scope {
                     cache: true
                     fillMode: Image.PreserveAspectCrop
                     smooth: true
+                    sourceSize: Qt.size(width * 2, height * 2)
                     visible: source.toString().length > 0
                     layer.enabled: true
 

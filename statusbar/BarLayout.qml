@@ -33,6 +33,7 @@ Item {
                 id: workspaces
 
                 colors: root.colors
+                services: root.services
             }
 
         }

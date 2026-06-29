@@ -16,6 +16,7 @@ Item {
     property bool animateY: true
     property real enterOffset: width + theme.spacing.notificationPopupEnterOffsetMargin
     property int autoCloseRemainingMs: 0
+    property bool autoCloseTimerInitialized: false
     readonly property int enterAnimationMs: 260
     readonly property int moveAnimationMs: 220
     readonly property real layoutHeight: notificationCard.layoutHeight
@@ -47,11 +48,19 @@ Item {
 
     function resetAutoCloseTimer() {
         autoCloseTimer.stop();
+        autoCloseTimerInitialized = false;
         if (!popup.popupData || !popup.services || typeof popup.services.notificationPopupTimeout !== "function") {
             autoCloseRemainingMs = 0;
             return ;
         }
+        if (typeof popup.popupData.autoCloseRemainingMs === "number") {
+            autoCloseRemainingMs = Math.max(0, popup.popupData.autoCloseRemainingMs);
+            autoCloseTimerInitialized = true;
+            return ;
+        }
+
         autoCloseRemainingMs = popup.services.notificationPopupTimeout(popup.popupData.urgency);
+        autoCloseTimerInitialized = true;
     }
 
     implicitWidth: width
@@ -59,6 +68,7 @@ Item {
     height: allocatedLayoutHeight
     visible: popupData !== null
     onPopupDataChanged: {
+        autoCloseTimerInitialized = false;
         Qt.callLater(popup.resetAutoCloseTimer);
     }
     Component.onCompleted: {

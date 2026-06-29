@@ -25,7 +25,7 @@ Rectangle {
         anchors.fill: parent
         source: card.path
         asynchronous: true
-        cache: true
+        cache: false
         fillMode: Image.PreserveAspectCrop
         smooth: true
         sourceSize: Qt.size(card.width * card.previewScale, card.height * card.previewScale)

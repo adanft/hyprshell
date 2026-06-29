@@ -130,6 +130,7 @@ Scope {
 
             Loader {
                 anchors.centerIn: parent
+                active: panel.visible
                 sourceComponent: powerMenu.confirming ? confirmButtons : powerButtons
             }
 

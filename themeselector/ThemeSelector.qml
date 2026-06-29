@@ -15,8 +15,10 @@ Scope {
     readonly property var contentItem: contentLoader.item
 
     function open() {
-        selectedIndex = 0
-        previewIndex = 0
+        if (selectedIndex !== 0)
+            selectedIndex = 0
+        if (previewIndex !== 0)
+            previewIndex = 0
         panel.visible = true
     }
 
@@ -40,10 +42,20 @@ Scope {
         if (count === 0)
             return
 
-        selectedIndex = Math.max(0, Math.min(count - 1, index))
-        previewIndex = selectedIndex
-        if (contentItem && contentItem.themeGridView)
-            contentItem.themeGridView.positionViewAtIndex(selectedIndex, GridView.Contain)
+        const nextIndex = Math.max(0, Math.min(count - 1, index))
+        const selectionChanged = selectedIndex !== nextIndex
+
+        if (selectionChanged)
+            selectedIndex = nextIndex
+        setPreviewIndex(nextIndex)
+
+        if (selectionChanged && contentItem && contentItem.themeGridView)
+            contentItem.themeGridView.positionViewAtIndex(nextIndex, GridView.Contain)
+    }
+
+    function setPreviewIndex(index) {
+        if (previewIndex !== index)
+            previewIndex = index
     }
 
     function previewThemeData() {
@@ -84,8 +96,14 @@ Scope {
     }
 
     onThemesChanged: {
-        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, themes.length - 1)))
-        previewIndex = Math.max(0, Math.min(previewIndex, Math.max(0, themes.length - 1)))
+        const maxIndex = Math.max(0, themes.length - 1)
+        const nextSelectedIndex = Math.max(0, Math.min(selectedIndex, maxIndex))
+        const nextPreviewIndex = Math.max(0, Math.min(previewIndex, maxIndex))
+
+        if (selectedIndex !== nextSelectedIndex)
+            selectedIndex = nextSelectedIndex
+        if (previewIndex !== nextPreviewIndex)
+            previewIndex = nextPreviewIndex
     }
 
     Component {
@@ -220,10 +238,10 @@ Scope {
                         themeData: modelData
                         selected: selector.selectedIndex === index
                         activeTheme: selector.theme.colors.currentTheme === modelData.name
-                        onPointerEntered: selector.previewIndex = index
+                        onPointerEntered: selector.setPreviewIndex(index)
                         onPointerExited: {
                             if (selector.previewIndex === index)
-                                selector.previewIndex = selector.selectedIndex
+                                selector.setPreviewIndex(selector.selectedIndex)
                         }
                         onActivated: selector.activateIndex(index)
                     }

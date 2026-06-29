@@ -15,13 +15,19 @@ QtObject {
 
     Component.onCompleted: ensureConfigDir()
 
+    readonly property var settingsReloadTimer: Timer {
+        interval: 100
+        repeat: false
+        onTriggered: settingsFileView.reload()
+    }
+
     readonly property var settingsFileView: FileView {
         path: appSettings.configFile
         printErrors: false
         watchChanges: true
         atomicWrites: true
         onLoaded: appSettings.load()
-        onFileChanged: reload()
+        onFileChanged: appSettings.scheduleReload()
 
         JsonAdapter {
             id: settingsConfig
@@ -49,15 +55,28 @@ QtObject {
         return true
     }
 
+    function scheduleReload() {
+        settingsReloadTimer.restart()
+    }
+
     function load() {
-        currentTheme = settingsConfig.currentTheme
-        currentWallpaper = settingsConfig.currentWallpaper
+        const nextTheme = settingsConfig.currentTheme
+        const nextWallpaper = settingsConfig.currentWallpaper
+
+        if (currentTheme !== nextTheme)
+            currentTheme = nextTheme
+        if (currentWallpaper !== nextWallpaper)
+            currentWallpaper = nextWallpaper
     }
 
     function persist() {
+        if (settingsConfig.currentTheme === currentTheme && settingsConfig.currentWallpaper === currentWallpaper)
+            return false
+
         settingsConfig.currentTheme = currentTheme
         settingsConfig.currentWallpaper = currentWallpaper
         settingsFileView.writeAdapter()
+        return true
     }
 
     function ensureConfigDir() {

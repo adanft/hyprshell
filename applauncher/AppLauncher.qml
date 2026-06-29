@@ -17,12 +17,17 @@ Scope {
     property int selectedIndex: 0
     property var apps: []
     property var appSearchKeys: []
-    readonly property var filteredApps: filterApps(searchText)
+    property var filteredApps: []
+    property string appliedSearchText: ""
+    readonly property int searchFilterDebounceMs: 60
     readonly property var contentItem: contentLoader.item
 
     function open() {
         refreshApplications();
-        searchText = "";
+        if (searchText !== "")
+            searchText = "";
+
+        applySearchFilter(false);
         selectedIndex = 0;
         panel.visible = true;
         Qt.callLater(() => {
@@ -45,6 +50,7 @@ Scope {
         if (typeof DesktopEntries === "undefined") {
             appSearchKeys = [];
             apps = [];
+            applySearchFilter(false);
             return ;
         }
         const refreshedApps = (DesktopEntries.applications.values || []).filter((app) => {
@@ -54,7 +60,27 @@ Scope {
         });
         appSearchKeys = refreshedApps.map(searchableText);
         apps = refreshedApps;
-        clampSelection();
+        applySearchFilter(false);
+    }
+
+    function scheduleSearchFilter() {
+        searchFilterTimer.restart();
+    }
+
+    function applySearchFilter(resetView) {
+        searchFilterTimer.stop();
+
+        const queryChanged = searchText !== appliedSearchText;
+        filteredApps = filterApps(searchText);
+        appliedSearchText = searchText;
+
+        if (queryChanged) {
+            selectedIndex = 0;
+            if (resetView)
+                contentItem?.appGrid?.positionViewAtBeginning();
+        } else {
+            clampSelection();
+        }
     }
 
     function filterApps(query) {
@@ -93,6 +119,9 @@ Scope {
     }
 
     function launchSelection() {
+        if (searchFilterTimer.running)
+            applySearchFilter(false);
+
         const app = filteredApps[selectedIndex];
         if (app)
             launchApp(app);
@@ -130,11 +159,15 @@ Scope {
         return [];
     }
 
-    Component.onCompleted: refreshApplications()
-    onSearchTextChanged: {
-        selectedIndex = 0;
-        contentItem?.appGrid?.positionViewAtBeginning();
+    Timer {
+        id: searchFilterTimer
+        interval: launcher.searchFilterDebounceMs
+        repeat: false
+        onTriggered: launcher.applySearchFilter(true)
     }
+
+    Component.onCompleted: refreshApplications()
+    onSearchTextChanged: scheduleSearchFilter()
     onFilteredAppsChanged: clampSelection()
 
     Component {

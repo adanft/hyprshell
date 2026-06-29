@@ -207,8 +207,15 @@ Scope {
         sortField: FolderListModel.Name
         folder: selector.visible ? selector.wallpapersFolderUrl : ""
 
-        onCountChanged: selector.clampSelection()
-        onStatusChanged: selector.clampSelection()
+        onCountChanged: selector.scheduleClampSelection()
+        onStatusChanged: selector.scheduleClampSelection()
+    }
+
+    Timer {
+        id: clampSelectionTimer
+        interval: 0
+        repeat: false
+        onTriggered: selector.clampSelection()
     }
 
     function open() {
@@ -243,8 +250,15 @@ Scope {
             selector.setWallpaper(path)
     }
 
+    function scheduleClampSelection() {
+        if (!clampSelectionTimer.running)
+            clampSelectionTimer.start()
+    }
+
     function clampSelection() {
-        selector.selectedIndex = Math.min(selector.selectedIndex, Math.max(0, wallpaperFolderModel.count - 1))
+        const nextIndex = Math.min(selector.selectedIndex, Math.max(0, wallpaperFolderModel.count - 1))
+        if (selector.selectedIndex !== nextIndex)
+            selector.selectedIndex = nextIndex
     }
 
     function fileUrlToPath(url) {

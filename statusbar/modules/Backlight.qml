@@ -28,12 +28,12 @@ Item {
 
         BarText {
             text: root.icons.backlightLevels[root.iconIndex]
-            color: root.colors.backlight
+            color: root.colors.text
         }
 
         BarText {
             text: `${root.level}%`
-            color: root.colors.backlight
+            color: root.colors.text
         }
     }
 

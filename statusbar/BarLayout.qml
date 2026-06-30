@@ -42,6 +42,28 @@ Item {
         }
 
         Background {
+            width: implicitWidth
+            height: root.theme.sizing.statusBarHeight
+            colors: root.colors
+            padding: root.theme.spacing.space12 + root.theme.spacing.space6
+            contentSpacing: root.theme.spacing.space6 * 2
+
+            Processor {
+                colors: root.colors
+                services: root.services
+            }
+
+            Ram {
+                colors: root.colors
+                services: root.services
+            }
+
+        }
+
+        Spacer {
+        }
+
+        Background {
             id: trayBackground
 
             width: tray.implicitWidth
@@ -81,35 +103,6 @@ Item {
 
                 colors: root.colors
                 services: root.services
-            }
-
-        }
-
-        Row {
-            anchors.right: timeBackground.left
-            anchors.verticalCenter: timeBackground.verticalCenter
-            spacing: 0
-
-            Background {
-                width: implicitWidth
-                height: root.theme.sizing.statusBarHeight
-                colors: root.colors
-                padding: root.theme.spacing.space12 + root.theme.spacing.space6
-                contentSpacing: root.theme.spacing.space6 * 2
-
-                Processor {
-                    colors: root.colors
-                    services: root.services
-                }
-
-                Ram {
-                    colors: root.colors
-                    services: root.services
-                }
-
-            }
-
-            Spacer {
             }
 
         }

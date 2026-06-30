@@ -19,7 +19,7 @@ Scope {
     readonly property var actions: [{
         "icon": "",
         "command": ["loginctl", "lock-session"],
-        "primary": theme.colors.powerLock
+        "primary": theme.colors.warning
     }, {
         "icon": "",
         "command": ["systemctl", "suspend"],

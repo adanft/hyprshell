@@ -16,7 +16,9 @@ Item {
     required property var colors
     required property var services
     readonly property bool networkAvailable: services.activeNetworkInterface.length > 0
-    readonly property color throughputColor: networkAvailable ? colors.network : colors.wifiDisconnected
+    readonly property color neutralColor: colors.text
+    readonly property color txColor: networkAvailable ? colors.danger : colors.text
+    readonly property color rxColor: networkAvailable ? colors.info : colors.text
 
     function formatRate(bytes) {
         if (bytes === undefined || bytes === null || isNaN(bytes))
@@ -46,17 +48,17 @@ Item {
 
         BarText {
             text: root.icons.networkThroughput
-            color: root.throughputColor
+            color: root.neutralColor
         }
 
         BarText {
             text: root.formatRate(root.services.activeNetworkTxRate)
-            color: root.throughputColor
+            color: root.txColor
         }
 
         BarText {
             text: root.formatRate(root.services.activeNetworkRxRate)
-            color: root.throughputColor
+            color: root.rxColor
         }
 
 

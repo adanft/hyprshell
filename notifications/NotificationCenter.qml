@@ -66,7 +66,7 @@ PopupWindow {
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: popup.icons.notificationsEmpty
-                    color: popup.colors.notification
+                    color: popup.colors.text
                     font.family: popup.theme.typography.iconFontFamily
                     font.pixelSize: popup.theme.typography.sizeLg
                 }

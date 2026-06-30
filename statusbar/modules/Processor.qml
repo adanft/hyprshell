@@ -13,7 +13,13 @@ Item {
 
     required property var colors
     required property var services
-    readonly property color moduleColor: colors.bluetooth
+    readonly property color moduleColor: {
+        if (services.cpuUsage > 80)
+            return colors.danger
+        if (services.cpuUsage > 60)
+            return colors.warning
+        return colors.text
+    }
 
     implicitWidth: content.implicitWidth
     implicitHeight: theme.sizing.statusBarHeight

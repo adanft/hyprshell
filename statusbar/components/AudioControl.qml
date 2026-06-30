@@ -17,7 +17,7 @@ Item {
     property bool source: false
     readonly property int volume: source ? services.sourceVolume : services.sinkVolume
     readonly property bool muted: source ? services.sourceMuted : services.sinkMuted
-    readonly property color textColor: source ? colors.audioInput : colors.audioOutput
+    readonly property color textColor: colors.text
 
     function iconText() {
         if (muted)

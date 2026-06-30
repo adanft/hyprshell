@@ -17,6 +17,7 @@ Item {
     required property var colors
     required property var services
     readonly property bool connected: services.wifiUp && services.wifiSignal > 0
+    readonly property color moduleColor: connected ? colors.primary : colors.text
 
     implicitWidth: content.implicitWidth
     implicitHeight: theme.sizing.statusBarHeight
@@ -31,13 +32,13 @@ Item {
 
         BarText {
             text: root.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected
-            color: root.connected ? root.colors.wifiConnected : root.colors.wifiDisconnected
+            color: root.moduleColor
         }
 
         BarText {
             visible: root.connected
             text: `${root.services.wifiSignal}%`
-            color: root.colors.wifiConnected
+            color: root.moduleColor
         }
 
     }

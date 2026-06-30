@@ -29,9 +29,11 @@ Item {
     readonly property color textColor: {
         if (services.batteryEmpty || services.batteryCritical)
             return colors.critical
-        if (services.batteryPendingCharge || services.batteryPendingDischarge || services.batteryLow)
-            return colors.warning
-        return colors.success
+        if (services.batteryLow || services.batteryPendingDischarge)
+            return colors.danger
+        if (services.batteryCharging || services.batteryPendingCharge || services.batteryFull)
+            return colors.primary
+        return colors.text
     }
 
     visible: services.batteryAvailable

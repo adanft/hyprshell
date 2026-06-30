@@ -24,7 +24,7 @@ QtObject {
     readonly property color text: themeData.text
     readonly property color textMuted: themeData.textMuted
     readonly property color textSubtle: themeData.textSubtle
-    readonly property color textInverse: themeData.textInverse
+    readonly property color textInactive: border
 
     readonly property color primary: themeData.primary
     readonly property color primaryText: themeData.primaryText
@@ -40,26 +40,6 @@ QtObject {
     readonly property color danger: themeData.danger
     readonly property color critical: themeData.critical
 
-    readonly property color notification: themeData.notification
-    readonly property color notificationBadge: themeData.notificationBadge
-    readonly property color bluetooth: themeData.bluetooth
-    readonly property color network: themeData.network
-    readonly property color wifiConnected: themeData.wifiConnected
-    readonly property color wifiDisconnected: themeData.wifiDisconnected
-    readonly property color backlight: themeData.backlight
-    readonly property color workspaceActive: themeData.workspaceActive
-    readonly property color workspaceUrgent: themeData.workspaceUrgent
-    readonly property color workspaceRemote: themeData.workspaceRemote
-    readonly property color workspaceHover: themeData.workspaceHover
-    readonly property color workspaceOccupied: themeData.workspaceOccupied
-    readonly property color workspaceEmpty: themeData.workspaceEmpty
-    readonly property color powerPerformance: themeData.powerPerformance
-    readonly property color powerSaver: themeData.powerSaver
-    readonly property color powerBalanced: themeData.powerBalanced
-    readonly property color powerLock: themeData.powerLock
-    readonly property color audioOutput: themeData.audioOutput
-    readonly property color audioInput: themeData.audioInput
-    readonly property color wallpaperSelected: themeData.wallpaperSelected
 
     function setTheme(name) {
         return StockThemes.setTheme(name)

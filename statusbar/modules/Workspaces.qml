@@ -53,13 +53,13 @@ Item {
 
     function workspaceColor(urgent, active, onOtherMonitor, hovered, empty) {
         if (urgent)
-            return colors.workspaceUrgent
+            return colors.danger
         if (active)
-            return colors.workspaceActive
+            return colors.primary
         if (onOtherMonitor)
-            return colors.workspaceRemote
+            return colors.info
         if (hovered)
-            return colors.workspaceHover
-        return empty ? colors.workspaceEmpty : colors.workspaceOccupied
+            return colors.secondary
+        return empty ? colors.textInactive : colors.textMuted
     }
 }

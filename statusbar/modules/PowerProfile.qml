@@ -22,7 +22,7 @@ Item {
 
     BarText {
         anchors.centerIn: parent
-        color: root.profile === "performance" ? root.colors.powerPerformance : root.profile === "power-saver" ? root.colors.powerSaver : root.colors.powerBalanced
+        color: root.profile === "performance" ? root.colors.danger : root.profile === "power-saver" ? root.colors.success : root.colors.info
         text: root.profile === "performance" ? root.icons.powerPerformance : root.profile === "power-saver" ? root.icons.powerSaver : root.icons.powerBalanced
         font.pixelSize: root.theme.typography.sizeXl
     }

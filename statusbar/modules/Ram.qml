@@ -13,7 +13,13 @@ Item {
 
     required property var colors
     required property var services
-    readonly property color moduleColor: colors.network
+    readonly property color moduleColor: {
+        if (services.memoryUsage > 90)
+            return colors.danger
+        if (services.memoryUsage > 75)
+            return colors.warning
+        return colors.text
+    }
 
     implicitWidth: content.implicitWidth
     implicitHeight: theme.sizing.statusBarHeight

@@ -15,6 +15,7 @@ Item {
 
     required property var colors
     required property var services
+    readonly property color moduleColor: services.notificationDnd ? colors.primary : colors.text
 
     signal openRequested()
 
@@ -35,14 +36,14 @@ Item {
 
         anchors.centerIn: parent
         text: root.iconText()
-        color: root.colors.notification
+        color: root.moduleColor
     }
 
     Rectangle {
         width: root.theme.sizing.notificationBadgeSize
         height: root.theme.sizing.notificationBadgeSize
         radius: root.theme.shape.notificationBadgeRadius
-        color: root.colors.notificationBadge
+        color: root.colors.danger
         visible: root.services.hasNotifications
         anchors.top: parent.top
         anchors.topMargin: root.theme.spacing.notificationBadgeTopMargin

@@ -306,7 +306,7 @@ Item {
                         width: card.iconSize
                         height: card.iconSize
                         text: card.icons.notificationsEmpty
-                        color: card.colors.notification
+                        color: card.colors.text
                         font.family: card.iconFont
                         font.pixelSize: card.iconSize
                         horizontalAlignment: Text.AlignHCenter

@@ -16,6 +16,7 @@ Item {
 
     required property var colors
     required property var services
+    readonly property color moduleColor: services.bluetoothConnectedCount > 0 ? colors.primary : colors.text
 
     function icon() {
         if (!services.bluetoothPowered)
@@ -40,12 +41,12 @@ Item {
 
         BarText {
             text: root.icon()
-            color: root.colors.bluetooth
+            color: root.moduleColor
         }
 
         BarText {
             text: root.services.bluetoothConnectedCount
-            color: root.colors.bluetooth
+            color: root.moduleColor
         }
 
     }

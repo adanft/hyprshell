@@ -31,6 +31,7 @@ QtObject {
             text: "#cdd6f4",
             textMuted: "#bac2de",
             textSubtle: "#7f849c",
+            textInactive: "#45475a",
             primary: "#cba6f7",
             primaryText: "#11111b",
             secondary: "#94e2d5",

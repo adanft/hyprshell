@@ -24,7 +24,7 @@ QtObject {
     readonly property color text: themeData.text
     readonly property color textMuted: themeData.textMuted
     readonly property color textSubtle: themeData.textSubtle
-    readonly property color textInactive: border
+    readonly property color textInactive: themeData.textInactive
 
     readonly property color primary: themeData.primary
     readonly property color primaryText: themeData.primaryText

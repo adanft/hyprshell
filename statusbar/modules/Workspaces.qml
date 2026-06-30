@@ -60,6 +60,6 @@ Item {
             return colors.info
         if (hovered)
             return colors.secondary
-        return empty ? colors.textInactive : colors.textMuted
+        return empty ? colors.textInactive : colors.textSubtle
     }
 }

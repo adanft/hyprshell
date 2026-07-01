@@ -16,10 +16,13 @@ Scope {
     property bool quitOnClose: false
     property bool includeCursor: false
     property int selectedActionIndex: 0
+    property int delaySeconds: 0
+    readonly property int maximumDelaySeconds: 60
     readonly property string captureSuccessCommand: "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
     function open() {
         selectedActionIndex = 0;
+        delaySeconds = 0;
         panel.visible = true;
         Qt.callLater(() => {
             return overlay.forceActiveFocus();
@@ -37,8 +40,14 @@ Scope {
         panel.visible ? close() : open();
     }
 
+    function normalizedDelaySeconds() {
+        return Math.max(0, Math.min(maximumDelaySeconds, Number(delaySeconds) || 0));
+    }
+
     function capture(mode) {
         const grimCursorArg = includeCursor ? "-c " : "";
+        const delay = normalizedDelaySeconds();
+        const initialDelay = mode === "area" ? 0.2 : delay + 0.2;
         let command = "";
         switch (mode) {
         case "monitor":
@@ -48,7 +57,7 @@ Scope {
             command = `id=$(hyprctl activewindow -j | jq -r 'select(.stableId != null) | .stableId') && if [ -n "$id" ]; then sleep 0.5; ${captureCommand(`grim ${grimCursorArg}-T "$id"`)}; fi`;
             break;
         case "area":
-            command = `geometry=$(slurp) && if [ -n "$geometry" ]; then ${captureCommand(`grim ${grimCursorArg}-g "$geometry"`)}; fi`;
+            command = `geometry=$(slurp) && if [ -n "$geometry" ]; then sleep ${delay}; ${captureCommand(`grim ${grimCursorArg}-g "$geometry"`)}; fi`;
             break;
         case "all":
         default:
@@ -57,7 +66,7 @@ Scope {
         }
         close();
         Qt.callLater(() => {
-            Quickshell.execDetached(["sh", "-c", `mkdir -p "$HOME/Pictures/Screenshots" && sleep 0.2 && ${command}`]);
+            Quickshell.execDetached(["sh", "-c", `mkdir -p "$HOME/Pictures/Screenshots" && sleep ${initialDelay} && ${command}`]);
         });
     }
 
@@ -130,18 +139,30 @@ Scope {
             id: content
 
             readonly property int cursorRowHeight: Math.max(cursorLabel.implicitHeight, cursorSwitch.height)
+            readonly property int timerRowHeight: Math.max(timerLabel.implicitHeight, timerInputWrapper.height)
             readonly property int actionRowHeight: tool.theme.sizing.screenshotToolActionHeight
             readonly property int minimumVerticalSpacing: tool.theme.spacing.screenshotToolSectionSpacing
 
+            function focusTimer() {
+                timerInput.forceActiveFocus();
+                timerInput.selectAll();
+            }
+
+            function setTimer(value) {
+                timerInput.text = String(value);
+                timerInput.forceActiveFocus();
+                timerInput.cursorPosition = timerInput.text.length;
+            }
+
             anchors.fill: parent
             anchors.margins: tool.theme.spacing.screenshotToolPadding
-            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - preview.height - cursorRowHeight - actionRowHeight) / 2))
+            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - preview.height - cursorRowHeight - timerRowHeight - actionRowHeight) / 3))
 
             Rectangle {
                 id: preview
 
                 readonly property int preferredHeight: Math.round(width * 9 / 16)
-                readonly property int minimumControlsHeight: content.cursorRowHeight + content.actionRowHeight + content.minimumVerticalSpacing * 2
+                readonly property int minimumControlsHeight: content.cursorRowHeight + content.timerRowHeight + content.actionRowHeight + content.minimumVerticalSpacing * 3
 
                 width: parent.width
                 height: Math.min(preferredHeight, Math.max(0, parent.height - minimumControlsHeight))
@@ -233,6 +254,92 @@ Scope {
                 }
             }
 
+            Item {
+                id: timerRow
+
+                width: parent.width
+                height: content.timerRowHeight
+
+                Shared.AppText {
+                    id: timerLabel
+
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Timer"
+                    color: tool.theme.colors.text
+                    font.pixelSize: tool.theme.typography.sizeMd
+                    font.styleName: tool.theme.typography.styleSemibold
+                }
+
+                Rectangle {
+                    id: timerInputWrapper
+
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: tool.theme.sizing.screenshotToolTimerInputWidth
+                    height: tool.theme.sizing.screenshotToolTimerInputHeight
+                    radius: tool.theme.shape.screenshotToolTimerInputRadius
+                    color: tool.theme.colors.surfaceActive
+                    border.width: tool.theme.shape.screenshotToolTimerInputBorderWidth
+                    border.color: timerInput.activeFocus ? tool.theme.colors.focus : tool.theme.colors.border
+
+                    Shared.AppText {
+                        anchors.fill: parent
+                        visible: timerInput.text.length === 0
+                        text: "0"
+                        color: tool.theme.colors.textSubtle
+                        font.pixelSize: tool.theme.typography.sizeLg
+                        font.styleName: tool.theme.typography.styleMedium
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    TextInput {
+                        id: timerInput
+
+                        anchors.fill: parent
+                        anchors.leftMargin: tool.theme.spacing.screenshotToolTimerInputHorizontalPadding
+                        anchors.rightMargin: tool.theme.spacing.screenshotToolTimerInputHorizontalPadding
+                        clip: true
+                        color: tool.theme.colors.text
+                        selectionColor: tool.theme.colors.selection
+                        selectedTextColor: tool.theme.colors.selectionText
+                        font.family: tool.theme.typography.textFontFamily
+                        font.pixelSize: tool.theme.typography.sizeLg
+                        font.styleName: tool.theme.typography.styleMedium
+                        horizontalAlignment: TextInput.AlignHCenter
+                        verticalAlignment: TextInput.AlignVCenter
+                        inputMethodHints: Qt.ImhDigitsOnly
+                        validator: IntValidator {
+                            bottom: 0
+                            top: tool.maximumDelaySeconds
+                        }
+                        onTextChanged: tool.delaySeconds = acceptableInput && text.length > 0 ? Number(text) : 0
+                        onActiveFocusChanged: {
+                            if (activeFocus)
+                                selectAll();
+                        }
+                        Keys.onEscapePressed: tool.close()
+                        Keys.onLeftPressed: (event) => {
+                            if (cursorPosition === 0)
+                                tool.moveSelection(-1);
+                            else
+                                event.accepted = false;
+                        }
+                        Keys.onRightPressed: (event) => {
+                            if (cursorPosition === text.length)
+                                tool.moveSelection(1);
+                            else
+                                event.accepted = false;
+                        }
+                        Keys.onUpPressed: tool.includeCursor = !tool.includeCursor
+                        Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
+                        Keys.onReturnPressed: tool.activateSelection()
+                        Keys.onEnterPressed: tool.activateSelection()
+                    }
+                }
+            }
+
             Row {
                 id: actionRow
 
@@ -287,6 +394,16 @@ Scope {
             Keys.onRightPressed: tool.moveSelection(1)
             Keys.onUpPressed: tool.includeCursor = !tool.includeCursor
             Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
+            Keys.onTabPressed: {
+                if (contentLoader.item)
+                    contentLoader.item.focusTimer();
+            }
+            Keys.onPressed: (event) => {
+                if (event.text >= "0" && event.text <= "9" && contentLoader.item) {
+                    contentLoader.item.setTimer(event.text);
+                    event.accepted = true;
+                }
+            }
             Keys.onReturnPressed: tool.activateSelection()
             Keys.onEnterPressed: tool.activateSelection()
 

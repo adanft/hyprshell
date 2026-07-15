@@ -22,6 +22,40 @@ PopupWindow {
     readonly property int contentPadding: theme.spacing.notificationCenterPadding
     readonly property int cardWidth: theme.sizing.notificationCenterCardWidth
     readonly property real heightRatio: 0.75
+    property var expandedNotificationIds: ({})
+
+    function notificationExpansionKey(notification) {
+        return notification && notification.id !== undefined ? `notification:${notification.id}` : "";
+    }
+
+    function isNotificationExpanded(notification) {
+        const key = notificationExpansionKey(notification);
+        return key.length > 0 && expandedNotificationIds[key] === true;
+    }
+
+    function setNotificationExpanded(notification, expanded) {
+        const key = notificationExpansionKey(notification);
+        if (key.length === 0)
+            return ;
+
+        const nextExpandedIds = Object.assign({}, expandedNotificationIds);
+        if (expanded)
+            nextExpandedIds[key] = true;
+        else
+            delete nextExpandedIds[key];
+        expandedNotificationIds = nextExpandedIds;
+    }
+
+    function pruneExpandedNotifications() {
+        const activeIds = {};
+        const notifications = services.notifications || [];
+        for (const notification of notifications) {
+            const key = notificationExpansionKey(notification);
+            if (key.length > 0 && expandedNotificationIds[key] === true)
+                activeIds[key] = true;
+        }
+        expandedNotificationIds = activeIds;
+    }
 
     implicitWidth: cardWidth + contentPadding * 2
     implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height : theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
@@ -212,41 +246,36 @@ PopupWindow {
 
                 }
 
-                Flickable {
+                ListView {
+                    id: notificationList
+
                     anchors.fill: parent
                     visible: popup.services.hasNotifications
-                    contentWidth: width
-                    contentHeight: notificationList.implicitHeight
                     clip: true
+                    orientation: ListView.Vertical
+                    spacing: popup.theme.spacing.notificationCenterListSpacing
+                    cacheBuffer: Math.max(0, height * 2)
+                    reuseItems: false
+                    model: popup.visible && popup.services.hasNotifications ? popup.services.notifications : []
+                    onModelChanged: popup.pruneExpandedNotifications()
 
-                    Column {
-                        id: notificationList
+                    delegate: NotificationCard {
+                        required property var modelData
 
-                        width: parent.width
-                        spacing: popup.theme.spacing.notificationCenterListSpacing
-
-                        Repeater {
-                            model: popup.visible && popup.services.hasNotifications ? popup.services.notifications : []
-
-                            NotificationCard {
-                                required property var modelData
-
-                                width: notificationList.width
-                                colors: popup.colors
-                                notificationData: modelData
-                                cornerRadius: popup.theme.shape.notificationCenterCardRadius
-                                useRenderedHeightForLayout: true
-                                timeText: popup.services.notificationTimeText(modelData)
-                                onCloseRequested: popup.services.dismissNotificationHistoryEntry(modelData)
-                                onActionInvoked: (action) => {
-                                    if (action && action.invoke)
-                                        action.invoke();
-
-                                }
-                            }
+                        width: notificationList.width
+                        colors: popup.colors
+                        initialExpanded: popup.isNotificationExpanded(modelData)
+                        notificationData: modelData
+                        cornerRadius: popup.theme.shape.notificationCenterCardRadius
+                        useRenderedHeightForLayout: true
+                        timeText: popup.services.notificationTimeText(modelData)
+                        onExpandedChanged: popup.setNotificationExpanded(modelData, expanded)
+                        onCloseRequested: popup.services.dismissNotificationHistoryEntry(modelData)
+                        onActionInvoked: (action) => {
+                            if (action && action.invoke)
+                                action.invoke();
 
                         }
-
                     }
 
                 }

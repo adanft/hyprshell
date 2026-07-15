@@ -19,6 +19,7 @@ Item {
     property var notificationData: null
     property string timeText: "now"
     property int cornerRadius: theme.shape.notificationCardRadius
+    property bool initialExpanded: false
     property bool expanded: false
     property bool collapsedTextMode: true
     property bool useRenderedHeightForLayout: false
@@ -198,7 +199,7 @@ Item {
     height: implicitHeight
     visible: notificationData !== null
     onNotificationDataChanged: {
-        expanded = false;
+        expanded = initialExpanded;
         collapsedTextMode = true;
         renderedHeightAnimation.stop();
         Qt.callLater(() => {

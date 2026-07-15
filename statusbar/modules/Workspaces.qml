@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell.Hyprland
 import "../components"
 import "../../theme"
 
@@ -7,7 +8,13 @@ Item {
 
     readonly property var icons: Icons {}
     readonly property var theme: AppTheme {}
+    readonly property var monitor: Hyprland.monitorFor(screen)
+    readonly property var focusedMonitor: Hyprland.focusedMonitor
+    readonly property bool monitorFocused: !!monitor && !!focusedMonitor
+        && (monitor === focusedMonitor
+            || (monitor.name.length > 0 && monitor.name === focusedMonitor.name))
     required property var colors
+    required property var screen
     required property var services
 
     implicitWidth: row.implicitWidth
@@ -18,20 +25,19 @@ Item {
         anchors.centerIn: parent
 
         Repeater {
-            model: root.services.statusWorkspaceIds
+            model: root.services.statusWorkspaceIdsForMonitor(root.monitor)
 
             BarText {
                 required property int modelData
 
-                readonly property bool active: root.services.statusActiveWorkspaceId === modelData
-                readonly property bool onOtherMonitor: root.services.statusOtherMonitorWorkspaceIds[modelData] ?? false
+                readonly property bool active: root.monitor?.activeWorkspace?.id === modelData
                 readonly property bool urgent: root.services.statusUrgentWorkspaceIds[modelData] ?? false
                 readonly property bool empty: !(root.services.statusOccupiedWorkspaceIds[modelData] ?? false)
                 readonly property bool hovered: mouseArea.containsMouse
 
                 width: root.theme.sizing.statusBarWorkspaceSlotSize
                 text: root.icons.workspaceDot
-                color: root.workspaceColor(urgent, active, onOtherMonitor, hovered, empty)
+                color: root.workspaceColor(urgent, active, root.monitorFocused, hovered, empty)
                 font.family: root.theme.typography.iconFontFamily
                 horizontalAlignment: Text.AlignHCenter
 
@@ -51,13 +57,11 @@ Item {
         root.services.focusWorkspace(workspaceId)
     }
 
-    function workspaceColor(urgent, active, onOtherMonitor, hovered, empty) {
+    function workspaceColor(urgent, active, monitorFocused, hovered, empty) {
         if (urgent)
             return colors.danger
         if (active)
-            return colors.primary
-        if (onOtherMonitor)
-            return colors.info
+            return monitorFocused ? colors.primary : colors.info
         if (hovered)
             return colors.secondary
         return empty ? colors.textInactive : colors.textSubtle

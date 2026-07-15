@@ -34,6 +34,7 @@ Item {
 
                 colors: root.colors
                 services: root.services
+                screen: root.barWindow.screen
             }
 
         }

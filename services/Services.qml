@@ -58,16 +58,6 @@ Scope {
     readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/statusbar-notifications.json`
     readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
     readonly property var statusWorkspaceIds: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    readonly property int statusActiveWorkspaceId: Hyprland.focusedWorkspace?.id ?? 1
-    readonly property var statusOtherMonitorWorkspaceIds: {
-        const visible = {}
-        for (const monitor of Hyprland.monitors.values) {
-            const workspaceId = monitor.activeWorkspace?.id ?? -1
-            if (workspaceId > 0 && workspaceId !== service.statusActiveWorkspaceId)
-                visible[workspaceId] = true
-        }
-        return visible
-    }
     readonly property var statusOccupiedWorkspaceIds: {
         const occupied = {}
         for (const workspace of Hyprland.workspaces.values)
@@ -356,6 +346,21 @@ Scope {
         }
 
         Hyprland.dispatch(`workspace ${workspaceId}`)
+    }
+
+    function statusWorkspaceIdsForMonitor(monitor) {
+        if (!monitor)
+            return []
+
+        return statusWorkspaceIds.filter(workspaceId => {
+            const workspace = Hyprland.workspaces.values.find(candidate => candidate.id === workspaceId)
+            const assignedMonitor = workspace?.monitor
+            if (!assignedMonitor)
+                return false
+
+            return assignedMonitor === monitor
+                || (assignedMonitor.name.length > 0 && assignedMonitor.name === monitor.name)
+        })
     }
 
     function updateClock() {

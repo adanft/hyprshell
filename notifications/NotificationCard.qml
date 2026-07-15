@@ -1,5 +1,6 @@
 import "../theme"
 import QtQuick
+import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
 
@@ -77,17 +78,14 @@ Item {
             return card.colors.textSubtle;
         }
     }
-    readonly property string iconSource: {
+    readonly property string fallbackIconName: "application-x-executable"
+    readonly property string fallbackIconSource: {
         if (!notificationData)
-            return "";
-
-        const image = notificationData.image || "";
-        if (image.length > 0)
-            return image;
+            return Quickshell.iconPath(fallbackIconName);
 
         const appIcon = notificationData.appIcon || notificationData.desktopEntry || "";
         if (appIcon.length === 0)
-            return "";
+            return Quickshell.iconPath(fallbackIconName);
 
         if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
             return appIcon;
@@ -98,9 +96,10 @@ Item {
         if (appIcon.includes("/"))
             return appIcon;
 
-        return `image://icon/${appIcon}`;
+        return Quickshell.iconPath(appIcon, fallbackIconName);
     }
-    readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://")
+    readonly property string iconSource: notificationData?.image || fallbackIconSource
+    readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://") || iconSource.startsWith("image://")
 
     signal layoutChanged()
     signal slotHeightChanged()
@@ -280,11 +279,13 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
 
                     Image {
+                        id: notificationImage
+
                         anchors.centerIn: parent
                         width: card.iconSize
                         height: card.iconSize
                         source: card.iconSource
-                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile
+                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile && status !== Image.Error
                         asynchronous: true
                         cache: true
                         sourceSize: Qt.size(card.iconSize, card.iconSize)
@@ -297,8 +298,8 @@ Item {
                         width: card.iconSize
                         height: card.iconSize
                         implicitSize: card.iconSize
-                        source: card.iconSource
-                        visible: card.iconSource.length > 0 && !card.iconSourceIsImageFile
+                        source: card.iconSourceIsImageFile ? card.fallbackIconSource : card.iconSource
+                        visible: card.fallbackIconSource.length > 0 && (!card.iconSourceIsImageFile || notificationImage.status === Image.Error)
                     }
 
                     Text {

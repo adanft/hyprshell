@@ -8,7 +8,6 @@ Item {
     readonly property string cacheRoot: (Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME") || ""}/.cache`) + "/qsrice/wallpapers"
     readonly property int maxJobs: 1
     property bool cacheReady: false
-    property int cacheRevision: 0
     property var pending: []
     property var requested: ({})
     property var known: ({})
@@ -60,7 +59,6 @@ Item {
     }
 
     function sourceFor(path) {
-        cache.cacheRevision
         return known[path] ? fileUrl(known[path]) : fileUrl(path)
     }
 
@@ -139,7 +137,6 @@ Item {
             return
         jobTerminal = true
         known[path] = destinationPath
-        cacheRevision++
         thumbnailReady(path, fileUrl(destinationPath))
         activeJobs--
         currentPath = ""

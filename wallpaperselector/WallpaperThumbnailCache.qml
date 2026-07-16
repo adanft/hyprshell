@@ -11,6 +11,7 @@ Item {
     property var pending: []
     property var requested: ({})
     property var known: ({})
+    property var cleaning: ({})
     property int activeJobs: 0
     property string currentPath: ""
     property string currentDestination: ""
@@ -66,9 +67,14 @@ Item {
         if (!path)
             return
         const identity = token === undefined ? "resident" : String(token)
-        if (requested[path] === identity || pending.some(item => item.path === path) || currentPath === path)
+        if (requested[path] === identity)
             return
         requested[path] = identity
+        const queued = pending.findIndex(item => item.path === path)
+        if (queued >= 0) {
+            pending[queued] = { path: path, token: token }
+            return
+        }
         pending.push({ path: path, token: token })
         pump()
     }
@@ -87,7 +93,10 @@ Item {
     function pump() {
         if (!cacheReady || activeJobs >= maxJobs || pending.length === 0)
             return
-        const item = pending.shift()
+        const next = pending.findIndex(item => !cleaning[item.path] && item.path !== currentPath)
+        if (next < 0)
+            return
+        const item = pending.splice(next, 1)[0]
         activeJobs++
         currentPath = item.path
         jobTerminal = false
@@ -158,8 +167,11 @@ Item {
         currentPath = ""
         currentTemporary = ""
         currentDestination = ""
+        cleaning[path] = true
+        pump()
         const old = cleanupComponent.createObject(cache)
         old.onExited.connect(function() {
+            delete cleaning[path]
             old.destroy()
             cache.pump()
         })

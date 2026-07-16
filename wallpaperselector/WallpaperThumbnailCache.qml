@@ -69,8 +69,19 @@ Item {
         if (requested[path] === identity || pending.some(item => item.path === path) || currentPath === path)
             return
         requested[path] = identity
-        pending.push({ path: path })
+        pending.push({ path: path, token: token })
         pump()
+    }
+
+    function statToken(token) {
+        const match = /^(-?\d+):(\d+)$/.exec(String(token))
+        if (!match)
+            return ""
+        const mtime = Number(match[1])
+        const size = Number(match[2])
+        if (!Number.isSafeInteger(mtime) || !Number.isSafeInteger(size))
+            return ""
+        return `${Math.floor(mtime / 1000)}:${size}`
     }
 
     function pump() {
@@ -81,6 +92,11 @@ Item {
         currentPath = item.path
         jobTerminal = false
         statHandled = false
+        const token = statToken(item.token)
+        if (token) {
+            statFinished(token)
+            return
+        }
         const stat = statComponent.createObject(cache, { sourcePath: item.path })
         stat.exec(["stat", "-c", "%Y:%s", "--", item.path])
     }

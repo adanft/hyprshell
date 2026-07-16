@@ -246,15 +246,22 @@ Scope {
                     readonly property string freshnessToken: `${Number(fileModified)}:${Number(fileSize)}`
                     readonly property string wallpaperPath: selector.fileUrlToPath(filePath)
 
-                    readonly property real distance: Math.abs(index - wallpaperList.focusIndex())
-                    readonly property bool isSelected: index === wallpaperList.transitionToIndex && !wallpaperList.transitionRunning
                     readonly property bool cardActive: Math.abs(index - wallpaperList.viewportIndex) <= selector.residencyRadius
-                        || index === wallpaperList.transitionFromIndex
-                        || index === wallpaperList.transitionToIndex
+                    // Only resident delegates need transition-dependent geometry.
+                    readonly property real distance: cardActive ? Math.abs(index - wallpaperList.focusIndex()) : 0
+                    readonly property bool isSelected: cardActive
+                        && index === wallpaperList.transitionToIndex
+                        && !wallpaperList.transitionRunning
                     readonly property real depth: Math.min(distance, selector.residencyRadius)
-                    readonly property real finalWidth: wallpaperList.sideWidth + (wallpaperList.selectedWidth - wallpaperList.sideWidth) * wallpaperList.weight(index)
-                    readonly property real finalX: wallpaperList.centeringMargin + index * wallpaperList.stride
-                        + ((wallpaperList.selectedWidth - wallpaperList.sideWidth) * wallpaperList.expansionBefore(index))
+                    readonly property real finalWidth: cardActive
+                        ? wallpaperList.sideWidth
+                            + (wallpaperList.selectedWidth - wallpaperList.sideWidth) * wallpaperList.weight(index)
+                        : wallpaperList.sideWidth
+                    readonly property real finalX: cardActive
+                        ? wallpaperList.centeringMargin + index * wallpaperList.stride
+                            + ((wallpaperList.selectedWidth - wallpaperList.sideWidth)
+                                * wallpaperList.expansionBefore(index))
+                        : wallpaperList.centeringMargin + index * wallpaperList.stride
 
                     x: finalX
                     width: finalWidth

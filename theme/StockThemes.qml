@@ -74,6 +74,9 @@ QtObject {
             previewColors: themes[name].previewColors,
             background: themes[name].background,
             surface: themes[name].surface,
+            surfaceActive: themes[name].surfaceActive,
+            border: themes[name].border,
+            focus: themes[name].focus,
             text: themes[name].text
         }))
     }

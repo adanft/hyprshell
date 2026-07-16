@@ -5,82 +5,71 @@ import QtQuick
 Rectangle {
     id: card
 
+    readonly property var icons: Icons {}
     readonly property var theme: AppTheme {}
     required property var themeData
     property bool selected: false
-    property bool activeTheme: false
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
-    readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors.slice(0, 4) : []
+    readonly property color previewBackground: themeData && themeData.background ? themeData.background : theme.colors.background
+    readonly property color previewSurface: themeData && themeData.surface ? themeData.surface : previewBackground
+    readonly property color previewSurfaceActive: themeData && themeData.surfaceActive ? themeData.surfaceActive : previewSurface
+    readonly property color previewText: themeData && themeData.text ? themeData.text : theme.colors.text
+    readonly property color previewBorder: themeData && themeData.border ? themeData.border : theme.colors.border
+    readonly property color previewFocus: themeData && themeData.focus ? themeData.focus : theme.colors.focus
+    readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4
+        ? themeData.previewColors.slice(0, 4)
+        : [previewText, previewBorder, previewSurface, previewBackground]
     readonly property int paletteDotSize: 28
+    readonly property int nameLineHeight: theme.typography.sizeMd + theme.spacing.space4
+
+    implicitHeight: theme.spacing.appLauncherCardPadding * 2
+        + paletteDotSize
+        + theme.spacing.appLauncherCardSpacing
+        + nameLineHeight
 
     signal activated()
-    signal pointerEntered()
-    signal pointerExited()
 
     radius: theme.shape.appLauncherCardRadius
-    color: active ? theme.colors.surfaceActive : theme.colors.background
+    color: active ? previewSurfaceActive : previewBackground
     border.width: selected ? theme.shape.appLauncherCardBorderWidth : 0
-    border.color: theme.colors.focus
+    border.color: previewFocus
 
-    Row {
-        id: paletteRow
+    Column {
+        anchors.centerIn: parent
+        spacing: card.theme.spacing.appLauncherCardSpacing
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: card.theme.spacing.space16
-        height: card.paletteDotSize
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: card.theme.spacing.appLauncherCardSpacing
 
-        Repeater {
-            model: card.previewColors
-
-            Item {
-                required property color modelData
-
-                width: parent.width / Math.max(1, card.previewColors.length)
-                height: parent.height
+            Repeater {
+                model: 4
 
                 Shared.AppText {
-                    anchors.centerIn: parent
-                    text: ""
-                    color: modelData
+                    required property int index
+
+                    width: card.paletteDotSize
+                    height: card.paletteDotSize
+                    text: card.icons.workspaceDot
+                    color: card.previewColors[index]
                     font.family: card.theme.typography.iconFontFamily
                     font.pixelSize: card.theme.typography.actionIconFontSize
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
         }
-    }
-
-    Shared.AppText {
-        id: themeName
-
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: card.theme.spacing.appLauncherCardPadding
-        text: card.themeData.displayName
-        color: card.theme.colors.text
-        font.pixelSize: card.theme.typography.sizeMd
-        font.styleName: card.theme.typography.styleMedium
-        horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
-        maximumLineCount: 1
-    }
-
-    Item {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: paletteRow.bottom
-        anchors.bottom: themeName.top
 
         Shared.AppText {
-            anchors.centerIn: parent
-            visible: card.activeTheme
-            text: ""
-            color: card.theme.colors.focus
-            font.family: card.theme.typography.iconFontFamily
-            font.pixelSize: card.theme.typography.actionIconFontSize
+            width: card.width - card.theme.spacing.appLauncherCardPadding * 2
+            height: card.nameLineHeight
+            text: card.themeData.displayName
+            color: card.previewText
+            font.pixelSize: card.theme.typography.sizeMd
+            font.styleName: card.theme.typography.styleMedium
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            maximumLineCount: 1
         }
     }
 
@@ -90,8 +79,6 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onEntered: card.pointerEntered()
-        onExited: card.pointerExited()
         onClicked: card.activated()
     }
 }

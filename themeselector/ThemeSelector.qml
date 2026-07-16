@@ -11,14 +11,19 @@ Scope {
     property alias visible: panel.visible
     property bool quitOnClose: false
     property int selectedIndex: 0
-    property int previewIndex: 0
     readonly property var contentItem: contentLoader.item
+
+    function themeCardHeight() {
+        const nameLineHeight = theme.typography.sizeMd + theme.spacing.space4
+        return theme.spacing.appLauncherCardPadding * 2
+            + theme.typography.actionIconFontSize
+            + theme.spacing.appLauncherCardSpacing
+            + nameLineHeight
+    }
 
     function open() {
         if (selectedIndex !== 0)
             selectedIndex = 0
-        if (previewIndex !== 0)
-            previewIndex = 0
         panel.visible = true
     }
 
@@ -47,19 +52,16 @@ Scope {
 
         if (selectionChanged)
             selectedIndex = nextIndex
-        setPreviewIndex(nextIndex)
-
         if (selectionChanged && contentItem && contentItem.themeGridView)
             contentItem.themeGridView.positionViewAtIndex(nextIndex, GridView.Contain)
     }
 
-    function setPreviewIndex(index) {
-        if (previewIndex !== index)
-            previewIndex = index
-    }
-
-    function previewThemeData() {
-        return themes[previewIndex]
+    function currentThemeData() {
+        for (const themeData of themes) {
+            if (themeData.name === theme.colors.currentTheme)
+                return themeData
+        }
+        return themes[0]
     }
 
     function applySelection() {
@@ -98,12 +100,9 @@ Scope {
     onThemesChanged: {
         const maxIndex = Math.max(0, themes.length - 1)
         const nextSelectedIndex = Math.max(0, Math.min(selectedIndex, maxIndex))
-        const nextPreviewIndex = Math.max(0, Math.min(previewIndex, maxIndex))
 
         if (selectedIndex !== nextSelectedIndex)
             selectedIndex = nextSelectedIndex
-        if (previewIndex !== nextPreviewIndex)
-            previewIndex = nextPreviewIndex
     }
 
     Component {
@@ -119,10 +118,11 @@ Scope {
             Rectangle {
                 id: preview
 
-                readonly property var themeData: selector.previewThemeData()
+                readonly property var themeData: selector.currentThemeData()
                 readonly property var previewColors: themeData && themeData.previewColors ? themeData.previewColors : []
                 readonly property int preferredHeight: Math.round(width * 9 / 16)
-                readonly property int minimumGridHeight: selector.theme.sizing.wallpaperCardHeight + selector.theme.spacing.space12
+                readonly property int minimumGridHeight: selector.themeCardHeight() + selector.theme.spacing.space12
+                readonly property int semanticBorderWidth: selector.theme.shape.wallpaperSelectorBorderWidth
 
                 width: parent.width
                 height: Math.min(preferredHeight, Math.max(0, parent.height - parent.spacing - minimumGridHeight))
@@ -130,70 +130,228 @@ Scope {
                 color: themeData && themeData.background ? themeData.background : selector.theme.colors.background
                 clip: true
 
-                Column {
-                    anchors.centerIn: parent
-                    width: parent.width - selector.theme.spacing.space24 * 2
-                    spacing: selector.theme.spacing.space24
+                Item {
+                    id: applicationFrame
+
+                    readonly property real scaleFactor: Math.max(0.65, Math.min(1, width / 400, height / 208))
+                    readonly property color frameBackground: preview.themeData && preview.themeData.background ? preview.themeData.background : "#181825"
+                    readonly property color frameSurface: preview.themeData && preview.themeData.surface ? preview.themeData.surface : frameBackground
+                    readonly property color frameText: preview.themeData && preview.themeData.text ? preview.themeData.text : "#cdd6f4"
+                    readonly property color accent: preview.themeData && preview.themeData.primary ? preview.themeData.primary : frameText
+                    readonly property color secondaryAccent: preview.themeData && preview.themeData.secondary ? preview.themeData.secondary : accent
+
+                    anchors.fill: parent
+                    anchors.margins: preview.semanticBorderWidth
 
                     Rectangle {
-                        id: sceneBar
+                        id: titleBar
 
-                        width: Math.min(parent.width, selector.theme.sizing.appLauncherGridCellWidth * 2)
-                        height: selector.theme.sizing.statusBarHeight
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        radius: height / 2
-                        color: preview.themeData && preview.themeData.surface ? preview.themeData.surface : selector.theme.colors.surface
-                        border.width: selector.theme.shape.borderThin
-                        border.color: preview.themeData && preview.themeData.border ? preview.themeData.border : selector.theme.colors.border
+                        width: parent.width
+                        height: Math.max(24, Math.round(parent.height * 0.16))
+                        radius: Math.max(0, preview.radius - preview.semanticBorderWidth)
+                        color: applicationFrame.frameSurface
+
+                        Rectangle {
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            height: parent.radius
+                            color: parent.color
+                        }
 
                         Row {
-                            anchors.centerIn: parent
-                            spacing: selector.theme.spacing.space12
+                            anchors.left: parent.left
+                            anchors.leftMargin: Math.round(12 * applicationFrame.scaleFactor)
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: Math.max(4, Math.round(6 * applicationFrame.scaleFactor))
 
                             Repeater {
                                 model: preview.previewColors.slice(0, 3)
 
-                                Text {
+                                Rectangle {
                                     required property color modelData
 
-                                    text: ""
+                                    width: Math.max(9, Math.round(12 * applicationFrame.scaleFactor))
+                                    height: width
+                                    radius: width / 2
                                     color: modelData
-                                    font.family: selector.theme.typography.iconFontFamily
-                                    font.pixelSize: selector.theme.typography.sizeLg
+                                }
+                            }
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            width: parent.width * 0.48
+                            text: preview.themeData ? preview.themeData.displayName : "Theme"
+                            color: applicationFrame.frameText
+                            opacity: 0.72
+                            font.family: selector.theme.typography.textFontFamily
+                            font.pixelSize: selector.theme.typography.sizeMd
+                            font.styleName: selector.theme.typography.styleMedium
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    Item {
+                        anchors.top: titleBar.bottom
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+
+                        Rectangle {
+                            id: navigationRail
+
+                            width: Math.max(30, Math.round(parent.width * 0.11))
+                            height: parent.height
+                            radius: Math.max(0, preview.radius - preview.semanticBorderWidth)
+                            color: applicationFrame.frameSurface
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                width: parent.radius
+                                color: parent.color
+                            }
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+                                anchors.left: parent.left
+                                height: parent.radius
+                                color: parent.color
+                            }
+
+                            Column {
+                                anchors.top: parent.top
+                                anchors.topMargin: Math.round(8 * applicationFrame.scaleFactor)
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: Math.max(3, Math.round(5 * applicationFrame.scaleFactor))
+
+                                Repeater {
+                                    model: ["", "", "", ""]
+
+                                    Rectangle {
+                                        required property string modelData
+                                        required property int index
+
+                                        width: Math.max(22, Math.round(navigationRail.width * 0.72))
+                                        height: width
+                                        radius: Math.max(selector.theme.shape.radius3, Math.round(6 * applicationFrame.scaleFactor))
+                                        color: index === 0 ? applicationFrame.accent : "transparent"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData
+                                            color: index === 0 ? applicationFrame.frameBackground : applicationFrame.frameText
+                                            opacity: index === 0 ? 1 : 0.48
+                                            font.family: selector.theme.typography.iconFontFamily
+                                            font.pixelSize: Math.max(9, Math.round(selector.theme.typography.sizeMd * applicationFrame.scaleFactor))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Item {
+                            id: editorPane
+
+                            anchors.top: parent.top
+                            anchors.right: sidePanel.left
+                            anchors.bottom: parent.bottom
+                            anchors.left: navigationRail.right
+
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: Math.max(8, Math.round(14 * applicationFrame.scaleFactor))
+                                spacing: Math.max(5, Math.round(8 * applicationFrame.scaleFactor))
+
+                                Repeater {
+                                    model: [
+                                        { indent: 0.00, width: 0.72, color: applicationFrame.accent },
+                                        { indent: 0.08, width: 0.86, color: applicationFrame.frameText },
+                                        { indent: 0.15, width: 0.58, color: applicationFrame.secondaryAccent },
+                                        { indent: 0.15, width: 0.76, color: preview.previewColors[2] || applicationFrame.accent },
+                                        { indent: 0.08, width: 0.64, color: applicationFrame.frameText },
+                                        { indent: 0.00, width: 0.46, color: preview.previewColors[3] || applicationFrame.secondaryAccent }
+                                    ]
+
+                                    Item {
+                                        required property var modelData
+
+                                        width: parent.width
+                                        height: Math.max(5, Math.round(7 * applicationFrame.scaleFactor))
+
+                                        Rectangle {
+                                            x: parent.width * modelData.indent
+                                            width: Math.min(parent.width - x, parent.width * modelData.width)
+                                            height: parent.height
+                                            radius: height / 2
+                                            color: modelData.color
+                                            opacity: modelData.color === applicationFrame.frameText ? 0.34 : 0.82
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            id: sidePanel
+
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            width: Math.max(68, parent.width * 0.24)
+                            radius: Math.max(0, preview.radius - preview.semanticBorderWidth)
+                            color: applicationFrame.frameSurface
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                width: parent.radius
+                                color: parent.color
+                            }
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+                                anchors.left: parent.left
+                                height: parent.radius
+                                color: parent.color
+                            }
+
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: Math.max(7, Math.round(11 * applicationFrame.scaleFactor))
+                                spacing: Math.max(6, Math.round(9 * applicationFrame.scaleFactor))
+
+                                Repeater {
+                                    model: [0.82, 0.58, 0.72, 0.46, 0.66]
+
+                                    Rectangle {
+                                        required property real modelData
+
+                                        width: parent.width * modelData
+                                        height: Math.max(5, Math.round(7 * applicationFrame.scaleFactor))
+                                        radius: height / 2
+                                        color: applicationFrame.frameText
+                                        opacity: 0.16
+                                    }
                                 }
                             }
                         }
                     }
+                }
 
-                    Text {
-                        width: parent.width
-                        text: preview.themeData ? preview.themeData.displayName : "Theme"
-                        color: preview.themeData && preview.themeData.text ? preview.themeData.text : selector.theme.colors.text
-                        font.family: selector.theme.typography.textFontFamily
-                        font.pixelSize: selector.theme.typography.sizeLg
-                        font.styleName: selector.theme.typography.styleSemibold
-                        horizontalAlignment: Text.AlignHCenter
-                        elide: Text.ElideRight
-                    }
-
-                    Row {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: selector.theme.spacing.space24
-
-                        Repeater {
-                            model: preview.previewColors.slice(0, 3)
-
-                            Text {
-                                required property color modelData
-
-                                text: ""
-                                color: modelData
-                                font.family: selector.theme.typography.iconFontFamily
-                                font.pixelSize: selector.theme.typography.actionIconFontSize
-                            }
-                        }
-                    }
-
+                Rectangle {
+                    anchors.fill: parent
+                    z: 1
+                    radius: preview.radius
+                    color: "transparent"
+                    border.width: preview.semanticBorderWidth
+                    border.color: preview.themeData && preview.themeData.border ? preview.themeData.border : selector.theme.colors.border
                 }
             }
 
@@ -201,6 +359,7 @@ Scope {
                 id: themeGrid
 
                 readonly property int columns: 2
+                readonly property int cardHeight: selector.themeCardHeight()
 
                 width: parent.width
                 height: Math.max(0, parent.height - preview.height - parent.spacing)
@@ -208,7 +367,7 @@ Scope {
                 boundsBehavior: Flickable.StopAtBounds
                 flow: GridView.FlowLeftToRight
                 cellWidth: width / columns
-                cellHeight: Math.round((cellWidth - selector.theme.spacing.space12) * 9 / 16) + selector.theme.spacing.space12
+                cellHeight: cardHeight + selector.theme.spacing.space12
                 model: selector.themes
                 currentIndex: selector.selectedIndex
                 highlightFollowsCurrentItem: false
@@ -234,15 +393,9 @@ Scope {
                     ThemeCard {
                         anchors.centerIn: parent
                         width: parent.width - selector.theme.spacing.space12
-                        height: Math.round(width * 9 / 16)
+                        height: themeGrid.cardHeight
                         themeData: modelData
                         selected: selector.selectedIndex === index
-                        activeTheme: selector.theme.colors.currentTheme === modelData.name
-                        onPointerEntered: selector.setPreviewIndex(index)
-                        onPointerExited: {
-                            if (selector.previewIndex === index)
-                                selector.setPreviewIndex(selector.selectedIndex)
-                        }
                         onActivated: selector.activateIndex(index)
                     }
                 }

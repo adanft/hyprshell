@@ -29,10 +29,10 @@ Item {
                 mkdir.destroy()
                 return
             }
-            cache.cacheReady = true
             const cleanup = cleanupComponent.createObject(cache)
             cleanup.onExited.connect(function() {
                 cleanup.destroy()
+                cache.cacheReady = true
                 cache.pump()
             })
             cleanup.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f",

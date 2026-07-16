@@ -14,6 +14,7 @@ Item {
     property var cleaning: ({})
     property int activeJobs: 0
     property string currentPath: ""
+    property string currentIdentity: ""
     property string currentDestination: ""
     property string currentTemporary: ""
     property bool jobTerminal: false
@@ -99,6 +100,7 @@ Item {
         const item = pending.splice(next, 1)[0]
         activeJobs++
         currentPath = item.path
+        currentIdentity = item.token === undefined ? "resident" : String(item.token)
         jobTerminal = false
         statHandled = false
         const token = statToken(item.token)
@@ -165,6 +167,7 @@ Item {
         thumbnailReady(path, fileUrl(destinationPath))
         activeJobs--
         currentPath = ""
+        currentIdentity = ""
         currentTemporary = ""
         currentDestination = ""
         cleaning[path] = true
@@ -182,11 +185,16 @@ Item {
         if (jobTerminal)
             return
         jobTerminal = true
+        const failedPath = currentPath
+        const failedIdentity = currentIdentity
         const temporary = currentTemporary
         activeJobs--
         currentPath = ""
+        currentIdentity = ""
         currentTemporary = ""
         currentDestination = ""
+        if (requested[failedPath] === failedIdentity)
+            delete requested[failedPath]
         if (!temporary) {
             pump()
             return

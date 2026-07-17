@@ -9,6 +9,8 @@ QtObject {
 
     property var themes: fallbackThemes
     readonly property string currentTheme: normalizeName(AppSettings.currentTheme)
+    property var pendingHyprlandTheme: null
+    property bool hyprlandSyncBusy: false
 
     readonly property string sourceFile: `${Quickshell.shellDir}/theme/themes.json`
     readonly property var availableThemes: list()
@@ -57,6 +59,9 @@ QtObject {
         onFileChanged: reload()
     }
 
+    Component.onCompleted: syncHyprlandTheme(themeData)
+    onCurrentThemeChanged: syncHyprlandTheme(themeData)
+
     function defaultName() {
         return "catppuccin"
     }
@@ -92,8 +97,36 @@ QtObject {
 
     function setTheme(name) {
         const nextTheme = normalizeName(name)
-        return AppSettings.setCurrentTheme(nextTheme)
+        const changed = AppSettings.setCurrentTheme(nextTheme)
+        GhosttyTheme.sync(theme(nextTheme))
+        syncHyprlandTheme(theme(nextTheme))
+        return changed
     }
+
+    function syncHyprlandTheme(nextTheme) {
+        pendingHyprlandTheme = nextTheme
+        if (hyprlandSyncBusy)
+            return
+
+        hyprlandSyncBusy = true
+        const process = hyprlandProcessComponent.createObject(stockThemes)
+        process.onExited.connect(function(exitCode) {
+            if (exitCode !== 0)
+                console.warn(`Failed to apply Hyprland theme (exit ${exitCode})`)
+            process.destroy()
+            hyprlandSyncBusy = false
+            if (pendingHyprlandTheme !== nextTheme)
+                syncHyprlandTheme(pendingHyprlandTheme)
+        })
+        process.exec([
+            `${Quickshell.env("HOME")}/.config/hypr/scripts/apply_hyprland_theme.sh`,
+            nextTheme.focus,
+            nextTheme.borderStrong,
+            nextTheme.background
+        ])
+    }
+
+    readonly property Component hyprlandProcessComponent: Component { Process {} }
 
     function load() {
         try {
@@ -102,9 +135,11 @@ QtObject {
                 throw new Error("themes.json must include catppuccin")
 
             themes = parsedThemes
+            syncHyprlandTheme(themeData)
         } catch (error) {
             console.warn(`Failed to load stock themes from ${sourceFile}: ${error}`)
             themes = fallbackThemes
+            syncHyprlandTheme(themeData)
         }
     }
 }

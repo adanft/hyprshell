@@ -7,47 +7,45 @@ const transform = {}
 vm.createContext(transform)
 vm.runInContext(source, transform)
 
-const theme = {
-    surfaceInverse: "#010203", danger: "#110000", success: "#002200", warning: "#333300",
-    info: "#000044", primary: "#550055", secondary: "#006666", textMuted: "#777777",
-    borderStrong: "#888888", critical: "#990000", link: "#0000aa", focus: "#bb00bb",
-    text: "#cccccc", background: "#102030", primaryText: "#dddddd",
-    selection: "#80ffffff", selectionText: "#eeeeee"
-}
-const colors = transform.colorsForTheme(theme)
-assert.equal(colors["selection-background"], "#889098", "alpha selection is composited over background")
-
-function fixture(eol = "\n", finalNewline = true) {
-    const lines = []
-    for (let index = 15; index >= 0; index--)
-        lines.push(`  palette\t= ${index} = #ABCDEF  # palette ${index}`)
-    for (const key of ["foreground", "background", "selection-foreground", "cursor-text", "cursor-color", "selection-background"])
-        lines.push(`${key} = #123456`)
-    lines.push("font-family = Keep This #ABCDEF")
-    return lines.join(eol) + (finalNewline ? eol : "")
-}
-
-for (const input of [fixture(), fixture("\r\n"), fixture("\n", false)]) {
-    const output = transform.transform(input, colors)
-    const stripColors = text => text.replace(/#[0-9a-fA-F]{6}/g, "#COLOR")
-    assert.equal(stripColors(output), stripColors(input), "all non-color bytes are preserved")
-    assert.equal(output.includes("#ABCDEF  # palette 15"), false)
-    assert.equal(output.includes("font-family = Keep This #ABCDEF"), true)
-}
-
-const valid = fixture()
-assert.throws(() => transform.transform(valid.replace(/^.*palette.*0.*\n/m, ""), colors), /22|palette:0/)
-assert.throws(() => transform.transform(valid.replace(/(.*palette.*0.*\n)/, "$1$1"), colors), /22|palette:0/)
-assert.throws(() => transform.transform(valid.replace("palette\t= 0 = #ABCDEF", "palette = 0 = nope"), colors), /22|palette:0/)
-assert.throws(() => transform.transform(valid.replace("background = #123456", "background = #12345g"), colors), /22|background/)
-
 const themes = JSON.parse(fs.readFileSync(`${__dirname}/themes.json`, "utf8"))
-assert.equal(Object.keys(themes).length, 12)
-for (const [name, data] of Object.entries(themes)) {
-    const mapping = transform.colorsForTheme(data)
-    assert.equal(Object.keys(mapping).length, 22, `${name} has 22 Ghostty colors`)
-    for (const color of Object.values(mapping))
-        assert.match(color, /^#[0-9a-f]{6}$/, `${name} emits opaque lowercase colors`)
+assert.deepEqual(Object.keys(themes).sort(), [
+    "aura", "aurora-x", "ayu-dark", "catppuccin", "hack-the-box", "rose-pine"
+])
+
+assert.deepEqual(Object.fromEntries(Object.keys(themes).map(id => [id, transform.nativeThemeForId(id)])), {
+    "catppuccin": "Catppuccin Mocha",
+    "rose-pine": "Rose Pine",
+    "ayu-dark": "Ayu",
+    "aura": "Aura",
+    "hack-the-box": "Everblush",
+    "aurora-x": "TokyoNight Night"
+})
+assert.throws(() => transform.nativeThemeForId("unknown"), /no native Ghostty theme mapping/)
+assert.throws(() => transform.nativeThemeForId("__proto__"), /no native Ghostty theme mapping/)
+assert.throws(() => transform.nativeThemeForId("constructor"), /no native Ghostty theme mapping/)
+
+function apply(input, themeId = "catppuccin") {
+    return transform.transform(input, themeId)
 }
 
-console.log("GhosttyThemeTransform: all fixtures and 12 themes passed")
+for (const [input, expected] of [
+    ["", "# qscomponents managed theme\ntheme = Catppuccin Mocha"],
+    ["font-family = Keep This\n", "font-family = Keep This\n# qscomponents managed theme\ntheme = Catppuccin Mocha\n"],
+    ["font-family = Keep This\r\n", "font-family = Keep This\r\n# qscomponents managed theme\r\ntheme = Catppuccin Mocha\r\n"],
+    ["font-family = Keep This", "font-family = Keep This\n# qscomponents managed theme\ntheme = Catppuccin Mocha"]
+])
+    assert.equal(apply(input), expected, "inserts a managed native theme while preserving newline style")
+
+const managed = "theme = User Theme\n# qscomponents managed theme\ntheme = Old Theme\nforeground = #abcdef\n"
+const updated = apply(managed, "rose-pine")
+assert.equal(updated, "theme = User Theme\n# qscomponents managed theme\ntheme = Rose Pine\nforeground = #abcdef\n")
+assert.equal(apply(updated, "rose-pine"), updated, "managed theme updates are idempotent")
+assert.equal((updated.match(/^theme = /gm) || []).length, 2, "only the marker-owned theme line is changed")
+assert.throws(() => apply("# qscomponents managed theme\nfont-family = Mono\n"), /not followed by a theme assignment/)
+assert.throws(() => apply("# qscomponents managed theme\ntheme = One\n# qscomponents managed theme\ntheme = Two\n"), /multiple qscomponents/)
+assert.equal(apply("theme = User Theme\n"), "theme = User Theme\n# qscomponents managed theme\ntheme = Catppuccin Mocha\n")
+const existingColors = "foreground = #abcdef\npalette = 0 = not-a-color\nselection-background = custom-value\n"
+assert.equal(apply(existingColors), existingColors + "# qscomponents managed theme\ntheme = Catppuccin Mocha\n",
+    "existing color assignments are preserved without parsing or migration")
+
+console.log("GhosttyThemeTransform: native mapping and managed assignment for 6 themes passed")

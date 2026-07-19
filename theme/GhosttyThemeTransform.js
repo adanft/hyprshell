@@ -1,107 +1,64 @@
-var dynamicKeys = [
-    "background", "foreground", "cursor-color", "cursor-text",
-    "selection-background", "selection-foreground"
-]
+var managedMarker = "# qscomponents managed theme"
 
-var semanticMapping = [
-    "surfaceInverse", "danger", "success", "warning", "info", "primary",
-    "secondary", "textMuted", "borderStrong", "critical", "success", "warning",
-    "link", "focus", "secondary", "text"
-]
+var nativeThemes = {
+    "catppuccin": "Catppuccin Mocha",
+    "rose-pine": "Rose Pine",
+    "ayu-dark": "Ayu",
+    "aura": "Aura",
+    "hack-the-box": "Everblush",
+    "aurora-x": "TokyoNight Night"
+}
 
-function parseColor(value) {
-    var text = String(value || "").toLowerCase()
-    if (text === "transparent")
-        return { a: 0, r: 0, g: 0, b: 0 }
-    if (text === "black")
-        return { a: 255, r: 0, g: 0, b: 0 }
+function nativeThemeForId(themeId) {
+    if (!Object.prototype.hasOwnProperty.call(nativeThemes, themeId))
+        throw new Error("no native Ghostty theme mapping for " + themeId)
+    var nativeTheme = nativeThemes[themeId]
+    return nativeTheme
+}
 
-    var hex = text.charAt(0) === "#" ? text.slice(1) : ""
-    if ((hex.length === 6 || hex.length === 8) && !/[^0-9a-f]/.test(hex)) {
-        var offset = hex.length === 8 ? 2 : 0
-        return {
-            a: offset ? parseInt(hex.slice(0, 2), 16) : 255,
-            r: parseInt(hex.slice(offset, offset + 2), 16),
-            g: parseInt(hex.slice(offset + 2, offset + 4), 16),
-            b: parseInt(hex.slice(offset + 4, offset + 6), 16)
-        }
+function splitConfig(text) {
+    var eol = text.indexOf("\r\n") >= 0 ? "\r\n" : "\n"
+    var hasFinalNewline = text.endsWith(eol)
+    var lines = text === "" ? [] : text.split(eol)
+    if (hasFinalNewline)
+        lines.pop()
+    return { eol: eol, hasFinalNewline: hasFinalNewline, lines: lines }
+}
+
+function joinConfig(config) {
+    return config.lines.join(config.eol) + (config.hasFinalNewline ? config.eol : "")
+}
+
+function appendManagedTheme(config, nativeTheme) {
+    config.lines.push(managedMarker, "theme = " + nativeTheme)
+    return joinConfig(config)
+}
+
+function updateManagedTheme(config, nativeTheme) {
+    var markerIndexes = []
+    for (var index = 0; index < config.lines.length; index++) {
+        if (config.lines[index].trim() === managedMarker)
+            markerIndexes.push(index)
     }
-    throw new Error("invalid color: " + value)
+
+    if (markerIndexes.length === 0)
+        return false
+    if (markerIndexes.length !== 1)
+        throw new Error("multiple qscomponents managed Ghostty theme markers")
+
+    var themeLineIndex = markerIndexes[0] + 1
+    if (themeLineIndex >= config.lines.length || !/^[\t ]*theme[\t ]*=[\t ]*[^#\r\n]+[\t ]*$/.test(config.lines[themeLineIndex]))
+        throw new Error("qscomponents managed Ghostty theme marker is not followed by a theme assignment")
+
+    config.lines[themeLineIndex] = "theme = " + nativeTheme
+    return true
 }
 
-function hexByte(value) {
-    return Math.max(0, Math.min(255, value)).toString(16).padStart(2, "0")
-}
+function transform(text, themeId) {
+    var nativeTheme = nativeThemeForId(themeId)
+    var config = splitConfig(text)
+    if (updateManagedTheme(config, nativeTheme))
+        return joinConfig(config)
 
-function opaqueHex(color) {
-    if (!color || color.a !== 255)
-        throw new Error("color is not opaque")
-    return "#" + hexByte(color.r) + hexByte(color.g) + hexByte(color.b)
-}
-
-function composite(foreground, background) {
-    if (background.a !== 255)
-        throw new Error("selection background requires an opaque theme background")
-    var alpha = foreground.a / 255
-    return {
-        a: 255,
-        r: Math.round(foreground.r * alpha + background.r * (1 - alpha)),
-        g: Math.round(foreground.g * alpha + background.g * (1 - alpha)),
-        b: Math.round(foreground.b * alpha + background.b * (1 - alpha))
-    }
-}
-
-function colorsForTheme(theme) {
-    if (!theme)
-        throw new Error("theme data is unavailable")
-
-    var colors = {}
-    for (var index = 0; index < semanticMapping.length; index++)
-        colors["palette:" + index] = opaqueHex(parseColor(theme[semanticMapping[index]]))
-
-    colors.background = opaqueHex(parseColor(theme.background))
-    colors.foreground = opaqueHex(parseColor(theme.text))
-    colors["cursor-color"] = opaqueHex(parseColor(theme.focus))
-    colors["cursor-text"] = opaqueHex(parseColor(theme.primaryText))
-    var selection = parseColor(theme.selection)
-    colors["selection-background"] = opaqueHex(selection.a === 255 ? selection : composite(selection, parseColor(theme.background)))
-    colors["selection-foreground"] = opaqueHex(parseColor(theme.selectionText))
-    return colors
-}
-
-function transform(text, colors) {
-    var counts = {}
-    var assignment = /^([\t ]*)(palette|background|foreground|cursor-color|cursor-text|selection-background|selection-foreground)([\t ]*=[\t ]*)(?:(\d+)([\t ]*=[\t ]*))?(#[0-9a-fA-F]{6})([\t ]*(?:#[^\r\n]*)?)(\r?)$/gm
-    var candidate = /^[\t ]*(palette|background|foreground|cursor-color|cursor-text|selection-background|selection-foreground)[\t ]*=/gm
-    var candidateCount = 0
-    while (candidate.exec(text) !== null)
-        candidateCount++
-
-    var output = text.replace(assignment, function(full, indent, key, separator, paletteIndex, paletteSeparator, oldColor, suffix, carriageReturn) {
-        var target
-        if (key === "palette") {
-            if (paletteIndex === undefined || Number(paletteIndex) < 0 || Number(paletteIndex) > 15)
-                throw new Error("invalid palette assignment")
-            target = "palette:" + Number(paletteIndex)
-        } else {
-            if (paletteIndex !== undefined)
-                throw new Error("invalid " + key + " assignment")
-            target = key
-        }
-        counts[target] = (counts[target] || 0) + 1
-        return indent + key + separator + (paletteIndex === undefined ? "" : paletteIndex + paletteSeparator) + colors[target] + suffix + carriageReturn
-    })
-
-    var targets = []
-    for (var index = 0; index < 16; index++)
-        targets.push("palette:" + index)
-    targets = targets.concat(dynamicKeys)
-    if (candidateCount !== targets.length)
-        throw new Error("expected exactly 22 target assignments")
-    for (var targetIndex = 0; targetIndex < targets.length; targetIndex++) {
-        var target = targets[targetIndex]
-        if (counts[target] !== 1)
-            throw new Error("missing, duplicate, or malformed assignment: " + target)
-    }
-    return output
+    return appendManagedTheme(config, nativeTheme)
 }

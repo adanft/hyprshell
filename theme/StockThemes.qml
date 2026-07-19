@@ -11,13 +11,14 @@ QtObject {
     readonly property string currentTheme: normalizeName(AppSettings.currentTheme)
     property var pendingHyprlandTheme: null
     property bool hyprlandSyncBusy: false
+    property bool externalThemeSyncReady: false
 
     readonly property string sourceFile: `${Quickshell.shellDir}/theme/themes.json`
     readonly property var availableThemes: list()
     readonly property var themeData: theme(currentTheme)
     readonly property var fallbackThemes: ({
         "catppuccin": {
-            displayName: "Catppuccin Mocha",
+            displayName: "Catppuccin",
             transparent: "transparent",
             mask: "black",
             scrim: "#bf1e1e2e",
@@ -59,8 +60,18 @@ QtObject {
         onFileChanged: reload()
     }
 
-    Component.onCompleted: syncHyprlandTheme(themeData)
-    onCurrentThemeChanged: syncHyprlandTheme(themeData)
+    Component.onCompleted: {
+        externalThemeSyncReady = true
+        scheduleExternalThemeSync()
+    }
+    onCurrentThemeChanged: scheduleExternalThemeSync()
+    onThemesChanged: scheduleExternalThemeSync()
+
+    readonly property var externalThemeSyncTimer: Timer {
+        interval: 0
+        repeat: false
+        onTriggered: stockThemes.syncExternalTheme(stockThemes.currentTheme)
+    }
 
     function defaultName() {
         return "catppuccin"
@@ -98,9 +109,21 @@ QtObject {
     function setTheme(name) {
         const nextTheme = normalizeName(name)
         const changed = AppSettings.setCurrentTheme(nextTheme)
-        GhosttyTheme.sync(theme(nextTheme))
-        syncHyprlandTheme(theme(nextTheme))
+        if (!changed)
+            scheduleExternalThemeSync()
         return changed
+    }
+
+    function scheduleExternalThemeSync() {
+        if (externalThemeSyncReady)
+            externalThemeSyncTimer.restart()
+    }
+
+    function syncExternalTheme(themeId) {
+        const normalizedTheme = normalizeName(themeId)
+        const nextTheme = theme(normalizedTheme)
+        GhosttyTheme.sync(normalizedTheme)
+        syncHyprlandTheme(nextTheme)
     }
 
     function syncHyprlandTheme(nextTheme) {
@@ -135,11 +158,9 @@ QtObject {
                 throw new Error("themes.json must include catppuccin")
 
             themes = parsedThemes
-            syncHyprlandTheme(themeData)
         } catch (error) {
             console.warn(`Failed to load stock themes from ${sourceFile}: ${error}`)
             themes = fallbackThemes
-            syncHyprlandTheme(themeData)
         }
     }
 }

@@ -11,12 +11,14 @@ QtObject {
     readonly property string configFile: `${Quickshell.env("XDG_CONFIG_HOME") || `${Quickshell.env("HOME")}/.config`}/ghostty/config.ghostty`
     property var pendingTheme: null
     property bool busy: false
+    property int lastLoadError: FileViewError.Success
 
     readonly property var configView: FileView {
         path: ghosttyTheme.configFile
         printErrors: false
         blockLoading: true
         atomicWrites: true
+        onLoadFailed: error => ghosttyTheme.lastLoadError = error
         onSaved: {
             ghosttyTheme.reload()
             ghosttyTheme.finish()
@@ -27,8 +29,8 @@ QtObject {
         }
     }
 
-    function sync(theme) {
-        pendingTheme = theme
+    function sync(themeId) {
+        pendingTheme = themeId
         if (!busy)
             processNext()
     }
@@ -42,13 +44,33 @@ QtObject {
         busy = true
         const theme = pendingTheme
         pendingTheme = null
+        ensureConfigDir(theme)
+    }
+
+    function ensureConfigDir(theme) {
+        const configDirectory = configFile.substring(0, configFile.lastIndexOf("/"))
+        const mkdir = mkdirComponent.createObject(ghosttyTheme)
+        mkdir.onExited.connect(function(exitCode) {
+            mkdir.destroy()
+            if (exitCode !== 0) {
+                console.warn(`Failed to create Ghostty config directory: ${configDirectory}`)
+                finish()
+                return
+            }
+            synchronize(theme)
+        })
+        mkdir.exec(["mkdir", "-p", "--", configDirectory])
+    }
+
+    function synchronize(theme) {
         try {
+            lastLoadError = FileViewError.Success
             configView.reload()
-            if (!configView.waitForJob())
+            const loaded = configView.waitForJob()
+            if (!loaded && lastLoadError !== FileViewError.FileNotFound)
                 throw new Error("config file could not be loaded")
-            const colors = GhosttyTransform.colorsForTheme(theme)
-            const currentText = configView.text()
-            const nextText = GhosttyTransform.transform(currentText, colors)
+            const currentText = loaded ? configView.text() : ""
+            const nextText = GhosttyTransform.transform(currentText, theme)
             if (nextText === currentText) {
                 reload()
                 finish()
@@ -78,4 +100,5 @@ QtObject {
     }
 
     readonly property Component reloadProcessComponent: Component { Process {} }
+    readonly property Component mkdirComponent: Component { Process {} }
 }

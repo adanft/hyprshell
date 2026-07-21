@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "../theme"
+import "components"
 
 PanelWindow {
     id: window
@@ -37,6 +38,14 @@ PanelWindow {
         services: window.services
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()
+        onOpenNetworkMenuRequested: anchorItem => networkMenu.toggle(anchorItem)
+    }
+
+    NetworkMenu {
+        id: networkMenu
+        colors: window.colors
+        services: window.services
+        barWindow: window
     }
 
 }

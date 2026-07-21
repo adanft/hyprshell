@@ -15,6 +15,7 @@ Item {
     required property var barWindow
 
     signal openNotificationCenterRequested()
+    signal openNetworkMenuRequested(var anchorItem)
 
     Row {
         id: leftAnchor
@@ -154,11 +155,13 @@ Item {
                 NetworkThroughput {
                     colors: root.colors
                     services: root.services
+                    onOpenRequested: anchorItem => root.openNetworkMenuRequested(anchorItem)
                 }
 
                 NetworkWifi {
                     colors: root.colors
                     services: root.services
+                    onOpenRequested: anchorItem => root.openNetworkMenuRequested(anchorItem)
                 }
 
                 Bluetooth {

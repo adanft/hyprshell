@@ -16,6 +16,7 @@ Item {
 
     required property var colors
     required property var services
+    signal openRequested(var anchorItem)
     readonly property bool connected: services.wifiUp && services.wifiSignal > 0
     readonly property color moduleColor: connected ? colors.primary : colors.text
 
@@ -46,7 +47,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: Quickshell.execDetached(["alacritty", "--class", "floating", "-e", "nmtui"])
+        onClicked: root.openRequested(root)
     }
 
 }

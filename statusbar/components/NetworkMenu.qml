@@ -356,19 +356,14 @@ Item {
                                             width: parent.width - root.quickControlIconWidth - parent.spacing
                                             height: 32
                                             anchors.verticalCenter: parent.verticalCenter
-                                            value: root.services.quickBrightness?.authoritativePercent ?? 0
-                                            available: root.services.quickBrightness?.authoritativePercent !== null
-                                                && root.services.quickBrightness?.authoritativePercent !== undefined
-                                                && root.services.quickBrightness?.availability !== "unavailable"
+                                            value: root.services.brightnessLevel
+                                            available: root.services.brightnessAvailable
                                             trackColor: root.colors.background
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
                                             handleBorderColor: root.colors.primary
-                                            unavailableText: root.services.quickBrightness?.errorText || "Brightness unavailable"
-                                            onLiveValueRequested: value => {
-                                                root.quickControlRequestSequence += 1;
-                                                root.services.requestBrightness(value, root.quickControlRequestSequence);
-                                            }
+                                            unavailableText: "Brightness unavailable"
+                                            onLiveValueRequested: value => root.services.setBrightness(value)
                                         }
                                     }
                                 }

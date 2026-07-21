@@ -90,10 +90,45 @@ Item {
 
         anchors.fill: parent
 
-        Background {
-            id: timeBackground
+            Row {
+                anchors.right: timeBackground.left
+                anchors.verticalCenter: timeBackground.verticalCenter
+                spacing: 0
 
-            width: implicitWidth
+                Background {
+                    id: networkMenuButton
+                    width: root.theme.sizing.statusBarIconSize
+                    height: root.theme.sizing.statusBarHeight
+                    colors: root.colors
+                    backgroundColor: root.colors.transparent
+
+                    Item {
+                        width: root.theme.sizing.statusBarIconSize
+                        height: root.theme.sizing.statusBarIconSize
+
+                        BarText {
+                            anchors.centerIn: parent
+                            text: ""
+                            color: root.colors.primary
+                            font.pixelSize: 24
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.openNetworkMenuRequested(networkMenuButton)
+                        }
+                    }
+                }
+
+                Spacer {
+                }
+            }
+
+            Background {
+                id: timeBackground
+
+                width: implicitWidth
             height: root.theme.sizing.statusBarHeight
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
@@ -155,13 +190,11 @@ Item {
                 NetworkThroughput {
                     colors: root.colors
                     services: root.services
-                    onOpenRequested: anchorItem => root.openNetworkMenuRequested(anchorItem)
                 }
 
                 NetworkWifi {
                     colors: root.colors
                     services: root.services
-                    onOpenRequested: anchorItem => root.openNetworkMenuRequested(anchorItem)
                 }
 
                 Bluetooth {

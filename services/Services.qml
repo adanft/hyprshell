@@ -13,6 +13,8 @@ Scope {
     id: service
 
     readonly property var theme: AppTheme {}
+    readonly property string activeUserAvatarSource: activeUserAvatar.source
+    readonly property string activeUserAvatarState: activeUserAvatar.state
     readonly property int networkRefreshMs: 2000
     readonly property int systemStatsRefreshMs: 2000
     readonly property var networkDevices: Networking.devices?.values ?? []
@@ -130,6 +132,10 @@ Scope {
     readonly property int brightnessWriteDebounceMs: 100
     readonly property string brightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/brightness` : ""
     readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/max_brightness` : ""
+
+    ActiveUserAvatar {
+        id: activeUserAvatar
+    }
 
     FileView {
         id: notificationHistoryFileView
@@ -311,6 +317,10 @@ Scope {
     function enableNetworkThroughput() {
         networkThroughputSubscriberCount++
         refreshNetwork()
+    }
+
+    function refreshActiveUserAvatar() {
+        activeUserAvatar.refresh()
     }
 
     function disableNetworkThroughput() {

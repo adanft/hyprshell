@@ -25,6 +25,8 @@ Item {
     readonly property int userTextReserve: 76
     readonly property int lanStatusReserve: 90
     readonly property int networkTextReserve: 78
+    readonly property int quickControlHeight: 54
+    readonly property int quickControlIconWidth: 22
 
     required property var colors
     required property var services
@@ -36,6 +38,17 @@ Item {
     property var pendingNetwork: null
     property string connectionError: ""
     property real uptimeSeconds: 0
+    property int quickControlRequestSequence: 0
+    function volumeIcon() {
+        if (root.services.quickVolume?.muted)
+            return root.icons.volumeMuted;
+        const percent = root.services.quickVolume?.authoritativePercent;
+        if (percent === null || percent === undefined || percent < 34)
+            return root.icons.volumeLow;
+        if (percent < 67)
+            return root.icons.volumeMedium;
+        return root.icons.volumeHigh;
+    }
 
     function refreshUptime() {
         uptimeFile.reload();
@@ -263,8 +276,107 @@ Item {
                         }
                     }
 
-                    Rectangle {
-                        id: lanCard
+                        Item {
+                            id: quickControlsRow
+                            width: parent.width
+                            height: root.quickControlHeight
+
+                            Row {
+                                anchors.fill: parent
+                                spacing: root.theme.spacing.space8
+
+                                Rectangle {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    radius: root.theme.shape.radius12
+                                    color: root.colors.surface
+                                    border.color: root.colors.border
+                                    border.width: root.theme.shape.borderThin
+
+                                    Row {
+                                        anchors.fill: parent
+                                        anchors.margins: root.theme.spacing.space12
+                                        spacing: root.theme.spacing.space8
+
+                                        BarText {
+                                            width: root.quickControlIconWidth
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            horizontalAlignment: Text.AlignHCenter
+                                            text: root.volumeIcon()
+                                            color: volumeSlider.enabled ? root.colors.text : root.colors.textMuted
+                                            font.pixelSize: 20
+                                        }
+
+                                        QuickControlSlider {
+                                            id: volumeSlider
+                                            width: parent.width - root.quickControlIconWidth - parent.spacing
+                                            height: 32
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            value: root.services.quickVolume?.authoritativePercent ?? 0
+                                            available: root.services.quickVolume?.authoritativePercent !== null
+                                                && root.services.quickVolume?.authoritativePercent !== undefined
+                                                && root.services.quickVolume?.availability !== "unavailable"
+                                            trackColor: root.colors.background
+                                            fillColor: root.colors.primary
+                                            handleColor: root.colors.text
+                                            handleBorderColor: root.colors.primary
+                                            unavailableText: root.services.quickVolume?.errorText || "Volume unavailable"
+                                            onLiveValueRequested: value => {
+                                                root.quickControlRequestSequence += 1;
+                                                root.services.requestSinkVolume(value, root.quickControlRequestSequence);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Rectangle {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    radius: root.theme.shape.radius12
+                                    color: root.colors.surface
+                                    border.color: root.colors.border
+                                    border.width: root.theme.shape.borderThin
+
+                                    Row {
+                                        anchors.fill: parent
+                                        anchors.margins: root.theme.spacing.space12
+                                        spacing: root.theme.spacing.space8
+
+                                        BarText {
+                                            width: root.quickControlIconWidth
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            horizontalAlignment: Text.AlignHCenter
+                                            text: "󰌵"
+                                            color: brightnessSlider.enabled ? root.colors.text : root.colors.textMuted
+                                            font.pixelSize: 20
+                                        }
+
+                                        QuickControlSlider {
+                                            id: brightnessSlider
+                                            width: parent.width - root.quickControlIconWidth - parent.spacing
+                                            height: 32
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            value: root.services.quickBrightness?.authoritativePercent ?? 0
+                                            available: root.services.quickBrightness?.authoritativePercent !== null
+                                                && root.services.quickBrightness?.authoritativePercent !== undefined
+                                                && root.services.quickBrightness?.availability !== "unavailable"
+                                            trackColor: root.colors.background
+                                            fillColor: root.colors.primary
+                                            handleColor: root.colors.text
+                                            handleBorderColor: root.colors.primary
+                                            unavailableText: root.services.quickBrightness?.errorText || "Brightness unavailable"
+                                            onLiveValueRequested: value => {
+                                                root.quickControlRequestSequence += 1;
+                                                root.services.requestBrightness(value, root.quickControlRequestSequence);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            id: lanCard
                         width: parent.width
                         height: lanColumn.implicitHeight + root.theme.spacing.space24
                         radius: root.theme.shape.radius12

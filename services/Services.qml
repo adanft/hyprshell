@@ -8,6 +8,7 @@ import Quickshell.Services.Notifications
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import "../theme"
+import "QuickControlState.js" as QuickControlState
 
 Scope {
     id: service
@@ -132,6 +133,15 @@ Scope {
     readonly property int brightnessWriteDebounceMs: 100
     readonly property string brightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/brightness` : ""
     readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/max_brightness` : ""
+    // Deployment composition may supply this once. An absent or invalid value is intentionally unavailable.
+    property string brightnessDevicePath: ""
+    readonly property bool quickBrightnessPathValid: QuickControlState.validBrightnessDevicePath(brightnessDevicePath)
+    readonly property string quickBrightnessPath: quickBrightnessPathValid ? `${brightnessDevicePath}/brightness` : ""
+    readonly property string quickMaxBrightnessPath: quickBrightnessPathValid ? `${brightnessDevicePath}/max_brightness` : ""
+    property var quickVolume: QuickControlState.unavailableCapability("Volume unavailable")
+    property var quickBrightness: QuickControlState.unavailableCapability("Brightness unavailable")
+    property int quickBrightnessMaximum: 0
+    property int quickBrightnessRequestId: 0
 
     ActiveUserAvatar {
         id: activeUserAvatar
@@ -205,8 +215,55 @@ Scope {
         onFileChanged: service.updateBrightnessFromFiles(true)
     }
 
+    FileView {
+        id: quickBrightnessValueFile
+
+        path: service.quickBrightnessPath
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        atomicWrites: false
+        onLoaded: service.refreshQuickBrightness(false)
+        onLoadFailed: service.failQuickBrightnessRead("Brightness unavailable")
+        onFileChanged: service.refreshQuickBrightness(true)
+        onSaved: service.refreshQuickBrightness(true)
+        onSaveFailed: service.failQuickBrightnessRequest("write_failed", "Brightness adjustment failed")
+    }
+
+    FileView {
+        id: quickMaxBrightnessValueFile
+
+        path: service.quickMaxBrightnessPath
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        onLoaded: service.refreshQuickBrightness(false)
+        onLoadFailed: service.failQuickBrightnessRead("Brightness unavailable")
+        onFileChanged: service.refreshQuickBrightness(true)
+    }
+
     PwObjectTracker {
         objects: [service.sink, service.source]
+    }
+
+    Connections {
+        target: service.sink?.audio ?? null
+
+        function onVolumeChanged() {
+            service.refreshQuickVolume()
+        }
+
+        function onMutedChanged() {
+            service.refreshQuickVolume()
+        }
+    }
+
+    onSinkChanged: refreshQuickVolume()
+    onBrightnessDevicePathChanged: {
+        quickBrightness = QuickControlState.unavailableCapability("Brightness unavailable")
+        quickBrightnessMaximum = 0
+        if (quickBrightnessPathValid)
+            Qt.callLater(refreshQuickBrightness, true)
     }
 
     NotificationServer {
@@ -302,11 +359,31 @@ Scope {
         onTriggered: service.flushBrightnessWrite()
     }
 
+    Timer {
+        id: quickVolumeConfirmationTimer
+        interval: 1500
+        repeat: false
+        onTriggered: {
+            if (quickVolume.activeRequestId !== null)
+                quickVolume = QuickControlState.failRequest(quickVolume, quickVolume.activeRequestId, "reconciliation_timeout", "Volume adjustment failed")
+        }
+    }
+
+    Timer {
+        id: quickBrightnessConfirmationTimer
+        interval: 1500
+        repeat: false
+        onTriggered: service.failQuickBrightnessRequest("reconciliation_timeout", "Brightness adjustment failed")
+    }
+
     Component.onCompleted: {
         updateClock()
         refreshNetwork()
         refreshSystemStats()
         detectBrightness()
+        refreshQuickVolume()
+        if (quickBrightnessPathValid)
+            refreshQuickBrightness(true)
     }
 
     Component.onDestruction: {
@@ -402,6 +479,122 @@ Scope {
 
         node.audio.volume = nextVolume / 100
         node.audio.muted = false
+    }
+
+    function refreshQuickVolume() {
+        if (!sink?.audio || !Number.isFinite(Number(sink.audio.volume))) {
+            quickVolume = QuickControlState.unavailableCapability("Volume unavailable")
+            return
+        }
+
+        const percent = QuickControlState.clampPercent(Number(sink.audio.volume) * 100)
+        if (quickVolume.activeRequestId !== null && percent !== quickVolume.draftPercent)
+            return
+
+        const reconciled = quickVolume.activeRequestId !== null
+            ? QuickControlState.confirmRequest(quickVolume, quickVolume.activeRequestId, percent).state
+            : QuickControlState.syncConfirmed(quickVolume, percent).state
+        if (quickVolume.activeRequestId !== null)
+            quickVolumeConfirmationTimer.stop()
+        quickVolume = Object.assign({}, reconciled, { muted: Boolean(sink.audio.muted) })
+    }
+
+    function requestSinkVolume(percent, requestId) {
+        const normalized = QuickControlState.clampPercent(percent)
+        if (normalized === null || !Number.isSafeInteger(requestId) || requestId < 1 || !sink?.audio) {
+            quickVolume = QuickControlState.unavailableCapability("Volume unavailable")
+            return
+        }
+
+        quickVolume = Object.assign({}, quickVolume, {
+            availability: "pending_confirmation",
+            draftPercent: normalized,
+            activeRequestId: requestId,
+            errorCode: null,
+            errorText: null
+        })
+        try {
+            sink.audio.volume = normalized / 100
+            quickVolumeConfirmationTimer.restart()
+        } catch (error) {
+            quickVolume = QuickControlState.failRequest(quickVolume, requestId, "write_failed", "Volume adjustment failed")
+        }
+    }
+
+    function refreshQuickBrightness(reloadFiles) {
+        if (!quickBrightnessPathValid) {
+            quickBrightness = QuickControlState.unavailableCapability("Brightness unavailable")
+            quickBrightnessMaximum = 0
+            return
+        }
+        if (!quickBrightnessValueFile.loaded || !quickMaxBrightnessValueFile.loaded)
+            return
+
+        const currentText = safeFileViewText(quickBrightnessValueFile, "quick brightness", reloadFiles)
+        const maximumText = safeFileViewText(quickMaxBrightnessValueFile, "quick max brightness", reloadFiles)
+        const readback = currentText === null || maximumText === null
+            ? null
+            : QuickControlState.normalizedReadback(currentText, maximumText)
+        if (!readback) {
+            failQuickBrightnessRead("Brightness unavailable")
+            return
+        }
+
+        quickBrightnessMaximum = readback.rawMaximum
+        if (quickBrightness.activeRequestId !== null && readback.percent !== quickBrightness.draftPercent)
+            return
+
+        if (quickBrightness.activeRequestId !== null)
+            quickBrightness = QuickControlState.confirmRequest(quickBrightness, quickBrightness.activeRequestId, readback.percent).state
+        else
+            quickBrightness = QuickControlState.syncConfirmed(quickBrightness, readback.percent).state
+        quickBrightnessConfirmationTimer.stop()
+    }
+
+    function failQuickBrightnessRead(message) {
+        if (quickBrightness.lastKnownPercent !== null) {
+            quickBrightness = Object.assign({}, quickBrightness, {
+                availability: "failed",
+                authoritativePercent: quickBrightness.lastKnownPercent,
+                errorCode: "invalid_native_value",
+                errorText: message
+            })
+        } else {
+            quickBrightness = QuickControlState.unavailableCapability(message)
+        }
+    }
+
+    function requestBrightness(percent, requestId) {
+        const raw = QuickControlState.rawForPercent(percent, quickBrightnessMaximum)
+        if (!quickBrightnessPathValid || raw === null || !Number.isSafeInteger(requestId) || requestId < 1
+                || quickBrightness.availability === "unavailable")
+            return
+
+        const expectedPercent = Math.round((raw * 100) / quickBrightnessMaximum)
+        quickBrightnessRequestId = requestId
+        quickBrightness = Object.assign({}, quickBrightness, {
+            availability: "pending_confirmation",
+            draftPercent: expectedPercent,
+            activeRequestId: requestId,
+            errorCode: null,
+            errorText: null
+        })
+        try {
+            quickBrightnessValueFile.setText(String(raw))
+            quickBrightnessConfirmationTimer.restart()
+        } catch (error) {
+            failQuickBrightnessRequest("write_failed", "Brightness adjustment failed")
+        }
+    }
+
+    function failQuickBrightnessRequest(code, message) {
+        quickBrightnessConfirmationTimer.stop()
+        quickBrightness = QuickControlState.failRequest(
+            quickBrightness,
+            quickBrightnessRequestId,
+            code,
+            message
+        )
     }
 
     function computeBatteryLevel() {

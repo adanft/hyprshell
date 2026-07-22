@@ -33,7 +33,9 @@ function networkStatus(network) {
 }
 
 function canForgetNetwork(network) {
-	return Boolean(network && network.known && !network.connected && !network.stateChanging);
+	return Boolean(
+		network && network.known && !network.connected && !network.stateChanging,
+	);
 }
 
 function networkSignalText(network) {
@@ -84,9 +86,10 @@ function bluetoothSummary(available, powered, connectedCount) {
 function bluetoothDeviceStatus(device) {
 	if (!device) return "Unavailable";
 	if (device.pairing) return "Pairing…";
-	if (device.connected) return device.batteryAvailable
-		? "Connected · " + Math.round(device.battery * 100) + "%"
-		: "Connected";
+	if (device.connected)
+		return device.batteryAvailable
+			? "Connected · " + Math.round(device.battery * 100) + "%"
+			: "Connected";
 	if (device.paired) return "Paired";
 	return "Available";
 }

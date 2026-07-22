@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls as Controls
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
@@ -180,8 +181,11 @@ Item {
         Rectangle {
             id: menuContainer
 
-            width: root.menuWidth
-            height: Math.min(menuWindow.height - root.theme.spacing.space16, Math.max(360, menuColumn.implicitHeight + root.theme.spacing.space24))
+            width: Math.max(0, Math.min(root.menuWidth, menuWindow.width - root.theme.spacing.space16))
+            height: Math.max(0, Math.min(
+                menuWindow.height - root.theme.spacing.space16,
+                Math.max(360, menuColumn.implicitHeight + root.theme.spacing.space24)
+            ))
             x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX - width / 2))
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8, root.menuAnchorY))
             radius: root.theme.shape.radius16
@@ -195,11 +199,19 @@ Item {
             }
 
             Flickable {
+                id: menuFlickable
                 anchors.fill: parent
                 anchors.margins: root.theme.spacing.space12
                 contentWidth: width
                 contentHeight: menuColumn.implicitHeight
+                boundsBehavior: Flickable.StopAtBounds
                 clip: true
+
+                Controls.ScrollBar.vertical: Controls.ScrollBar {
+                    policy: menuFlickable.contentHeight > menuFlickable.height
+                        ? Controls.ScrollBar.AlwaysOn
+                        : Controls.ScrollBar.AlwaysOff
+                }
 
                 Column {
                     id: menuColumn
@@ -365,7 +377,7 @@ Item {
                                             width: root.quickControlIconWidth
                                             anchors.verticalCenter: parent.verticalCenter
                                             horizontalAlignment: Text.AlignHCenter
-                                            text: "󰌵"
+                                            text: root.icons.brightnessControl
                                             color: brightnessSlider.enabled ? root.colors.text : root.colors.textMuted
                                             font.pixelSize: 20
                                         }
@@ -403,7 +415,7 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: "󰈀"
+                                    icon: root.icons.ethernet
                                     title: "Ethernet"
                                     subtitle: root.services.lanUp
                                         ? "Connected"

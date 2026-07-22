@@ -85,4 +85,28 @@ TestCase {
         compare(bodySpy.count, 1);
         compare(toggleSpy.count, 0);
     }
+
+    function test_detailUnavailableSuppressesBodyAction() {
+        const card = createCard({ detailAvailable: false });
+
+        card.requestBodyAction();
+        compare(bodySpy.count, 0);
+        compare(toggleSpy.count, 0);
+    }
+
+    function test_accessibleLabelsTrackState() {
+        const card = createCard({
+            title: "Wi-Fi",
+            subtitle: "Connected",
+            active: true,
+            expanded: false
+        });
+
+        compare(card.actionAccessibleName, "Toggle Wi-Fi");
+        compare(card.detailAccessibleName, "Show Wi-Fi details");
+        compare(card.stateDescription, "Connected");
+
+        card.expanded = true;
+        compare(card.detailAccessibleName, "Hide Wi-Fi details");
+    }
 }

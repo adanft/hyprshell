@@ -11,19 +11,24 @@ Rectangle {
     property bool active: false
     property bool available: true
     property bool busy: false
+    property bool detailAvailable: true
     property bool expanded: false
     property int iconSize: 38
+    property string actionAccessibleName: "Toggle " + title
+    property string detailAccessibleName: (expanded ? "Hide " : "Show ") + title + " details"
+    property string stateDescription: subtitle
 
     signal bodyClicked()
     signal toggled()
 
     radius: theme.shape.radius12
     color: bodyArea.containsMouse ? colors.surfaceHover : colors.surface
-    border.color: expanded ? colors.primary : colors.border
-    border.width: expanded ? theme.shape.borderMedium : theme.shape.borderThin
+    border.color: expanded || bodyArea.activeFocus ? colors.primary : colors.border
+    border.width: expanded || bodyArea.activeFocus ? theme.shape.borderMedium : theme.shape.borderThin
 
     function requestBodyAction() {
-        bodyClicked();
+        if (detailAvailable)
+            bodyClicked();
     }
 
     function requestToggleAction() {
@@ -46,6 +51,23 @@ Rectangle {
             color: card.active ? card.colors.primary : card.colors.surfaceHover
             border.color: card.active ? card.colors.primary : card.colors.border
             opacity: card.available ? 1 : 0.45
+            activeFocusOnTab: card.available && !card.busy
+            Accessible.role: Accessible.Button
+            Accessible.name: card.actionAccessibleName
+            Accessible.description: card.stateDescription
+            Accessible.checkable: true
+            Accessible.checked: card.active
+            Keys.onReturnPressed: card.requestToggleAction()
+            Keys.onEnterPressed: card.requestToggleAction()
+            Keys.onSpacePressed: card.requestToggleAction()
+
+            Rectangle {
+                anchors.fill: parent
+                radius: parent.radius
+                color: "transparent"
+                border.color: card.colors.primary
+                border.width: parent.activeFocus ? 2 : 0
+            }
 
             Text {
                 anchors.centerIn: parent
@@ -94,8 +116,16 @@ Rectangle {
         objectName: "bodyArea"
         anchors.fill: parent
         anchors.leftMargin: card.theme.spacing.space8 * 2 + card.iconSize
+        enabled: card.detailAvailable
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        activeFocusOnTab: card.detailAvailable
+        Accessible.role: Accessible.Button
+        Accessible.name: card.detailAccessibleName
+        Accessible.description: card.stateDescription
+        Keys.onReturnPressed: card.requestBodyAction()
+        Keys.onEnterPressed: card.requestBodyAction()
+        Keys.onSpacePressed: card.requestBodyAction()
         onClicked: card.requestBodyAction()
     }
 }

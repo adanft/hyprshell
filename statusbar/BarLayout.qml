@@ -108,7 +108,7 @@ Item {
 
                         BarText {
                             anchors.centerIn: parent
-                            text: ""
+                            text: "󰰮"
                             color: root.colors.primary
                             font.pixelSize: 24
                         }

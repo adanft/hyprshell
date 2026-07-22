@@ -60,7 +60,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: root.theme.shape.radius6
+        radius: root.theme.shape.radius8
         color: "transparent"
         border.color: root.colors.primary
         border.width: input.activeFocus ? 2 : 0

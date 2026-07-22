@@ -82,6 +82,13 @@ assert.equal(menu.bluetoothSummary(false, false, 0), "Unavailable");
 assert.equal(menu.bluetoothSummary(true, false, 0), "Off");
 assert.equal(menu.bluetoothSummary(true, true, 0), "Enabled");
 assert.equal(menu.bluetoothSummary(true, true, 2), "2 connected");
+assert.equal(menu.audioSourceLabel({ nickname: "Studio Mic", description: "Fallback", name: "node" }), "Studio Mic");
+assert.equal(menu.audioSourceLabel({ nickname: "", description: "USB microphone", name: "node" }), "USB microphone");
+assert.equal(menu.audioSourceLabel(null), "Unknown input");
+const activeSource = { audio: { muted: false } };
+assert.equal(menu.audioSourceStatus(activeSource, activeSource), "Active input");
+assert.equal(menu.audioSourceStatus({ audio: { muted: true } }, activeSource), "Muted");
+assert.equal(menu.audioSourceStatus({ audio: { muted: false } }, activeSource), "Available");
 
 console.log(
 	"NetworkMenu: identity, uptime, network state, and control actions passed",

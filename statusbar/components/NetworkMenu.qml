@@ -525,37 +525,113 @@ Item {
                         Item {
                             visible: root.expandedNetworkSection === "microphone"
                             width: parent.width
-                            height: root.quickControlHeight
+                            height: microphoneColumn.implicitHeight + root.theme.spacing.space8
 
-                            Row {
-                                anchors.fill: parent
+                            Column {
+                                id: microphoneColumn
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 anchors.leftMargin: root.theme.spacing.space12
                                 anchors.rightMargin: root.theme.spacing.space12
-                                spacing: root.theme.spacing.space8
+                                spacing: root.theme.spacing.space6
 
-                                BarText {
-                                    width: root.quickControlIconWidth
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    horizontalAlignment: Text.AlignHCenter
-                                    text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
-                                    color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
-                                    font.pixelSize: 20
+                                Row {
+                                    width: parent.width
+                                    height: root.quickControlHeight
+                                    spacing: root.theme.spacing.space8
+
+                                    BarText {
+                                        width: root.quickControlIconWidth
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        horizontalAlignment: Text.AlignHCenter
+                                        text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                        color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
+                                        font.pixelSize: 20
+                                    }
+
+                                    QuickControlSlider {
+                                        id: microphoneSlider
+                                        width: parent.width - root.quickControlIconWidth - parent.spacing
+                                        height: 32
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        value: root.services.sourceVolume
+                                        available: root.services.source?.audio !== null
+                                            && root.services.source?.audio !== undefined
+                                        trackColor: root.colors.background
+                                        fillColor: root.colors.primary
+                                        handleColor: root.colors.text
+                                        handleBorderColor: root.colors.primary
+                                        unavailableText: "Microphone unavailable"
+                                        onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                    }
                                 }
 
-                                QuickControlSlider {
-                                    id: microphoneSlider
-                                    width: parent.width - root.quickControlIconWidth - parent.spacing
-                                    height: 32
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    value: root.services.sourceVolume
-                                    available: root.services.source?.audio !== null
-                                        && root.services.source?.audio !== undefined
-                                    trackColor: root.colors.background
-                                    fillColor: root.colors.primary
-                                    handleColor: root.colors.text
-                                    handleBorderColor: root.colors.primary
-                                    unavailableText: "Microphone unavailable"
-                                    onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                BarText {
+                                    visible: root.services.audioSources.length > 0
+                                    text: "Input devices"
+                                    color: root.colors.text
+                                    font.weight: Font.Medium
+                                }
+
+                                Repeater {
+                                    model: root.services.audioSources
+
+                                    Rectangle {
+                                        id: sourceRow
+                                        required property var modelData
+                                        width: microphoneColumn.width
+                                        height: root.detailRowHeight
+                                        radius: root.theme.shape.radius8
+                                        color: modelData === root.services.source
+                                            ? root.colors.surfaceHover
+                                            : (sourceMouse.containsMouse ? root.colors.surface : root.colors.transparent)
+                                        border.width: 0
+
+                                        Column {
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.leftMargin: root.theme.spacing.space8
+                                            anchors.rightMargin: root.theme.spacing.space8
+                                            spacing: root.theme.spacing.space2
+
+                                            BarText {
+                                                width: parent.width
+                                                text: NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)
+                                                color: root.colors.text
+                                                font.weight: sourceRow.modelData === root.services.source ? Font.Medium : Font.Normal
+                                                elide: Text.ElideRight
+                                            }
+
+                                            BarText {
+                                                text: NetworkMenuLogic.audioSourceStatus(sourceRow.modelData, root.services.source)
+                                                color: sourceRow.modelData === root.services.source ? root.colors.primary : root.colors.textSubtle
+                                                font.pixelSize: root.theme.typography.sizeSm
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: sourceMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            enabled: sourceRow.modelData !== root.services.source
+                                            activeFocusOnTab: enabled
+                                            Accessible.role: Accessible.Button
+                                            Accessible.name: `Use ${NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)} as microphone`
+                                            onClicked: root.services.selectAudioSource(sourceRow.modelData)
+                                            Keys.onSpacePressed: root.services.selectAudioSource(sourceRow.modelData)
+                                            Keys.onReturnPressed: root.services.selectAudioSource(sourceRow.modelData)
+                                            Keys.onEnterPressed: root.services.selectAudioSource(sourceRow.modelData)
+                                        }
+                                    }
+                                }
+
+                                BarText {
+                                    visible: root.services.audioSources.length === 0
+                                    text: "No microphone inputs"
+                                    color: root.colors.textMuted
                                 }
                             }
                         }

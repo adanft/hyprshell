@@ -76,3 +76,13 @@ function bluetoothSummary(available, powered, connectedCount) {
 	var count = Math.max(0, Number(connectedCount) || 0);
 	return count > 0 ? count + " connected" : "Enabled";
 }
+
+function audioSourceLabel(node) {
+	if (!node) return "Unknown input";
+	return node.nickname || node.description || node.name || "Unknown input";
+}
+
+function audioSourceStatus(node, activeNode) {
+	if (node === activeNode) return "Active input";
+	return node && node.audio && node.audio.muted ? "Muted" : "Available";
+}

@@ -4,6 +4,7 @@ singleton GhosttyTheme 1.0 GhosttyTheme.qml
 AppTheme 1.0 AppTheme.qml
 Colors 1.0 Colors.qml
 Icons 1.0 Icons.qml
+Motion 1.0 Motion.qml
 Shape 1.0 Shape.qml
 Spacing 1.0 Spacing.qml
 Sizing 1.0 Sizing.qml

@@ -44,10 +44,10 @@ Item {
     readonly property int titleFontSize: theme.typography.sizeLg
     readonly property int bodyFontSize: theme.typography.sizeMd
     readonly property int closeIconFontSize: theme.typography.sizeMd
-    readonly property int collapsedBodyLines: 2
-    readonly property real bodyLineHeight: 1.35
-    readonly property int resizeAnimationMs: 220
-    readonly property int allocationFinalizeDelayMs: 32
+    readonly property int collapsedBodyLines: theme.sizing.notificationCardCollapsedBodyLines
+    readonly property real bodyLineHeight: theme.typography.notificationBodyLineHeight
+    readonly property int resizeAnimationMs: theme.motion.durationNormal
+    readonly property int allocationFinalizeDelayMs: theme.motion.layoutFinalizeDelay
     readonly property real geometryEpsilon: 0.5
     readonly property real contentInset: cardPadding + cardRect.border.width
     readonly property int actionCount: countInvokableActions()
@@ -338,7 +338,7 @@ Item {
                         Text {
                             id: timeSeparator
 
-                            text: timeLabel.text.length > 0 ? "•" : ""
+                            text: timeLabel.text.length > 0 ? card.icons.textSeparatorBullet : ""
                             color: card.colors.textSubtle
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize

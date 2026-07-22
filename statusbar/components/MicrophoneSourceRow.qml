@@ -16,7 +16,7 @@ Rectangle {
             selectRequested(source);
     }
 
-    height: 48
+    height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
     color: colors.surface
     border.width: 0
@@ -64,7 +64,7 @@ Rectangle {
         color: actionInput.containsMouse || actionInput.activeFocus
             ? root.colors.surfaceHover
             : root.colors.transparent
-        opacity: root.active ? 0.6 : 1
+        opacity: root.active ? root.theme.motion.opacityInactive : 1
 
         Text {
             id: actionLabel

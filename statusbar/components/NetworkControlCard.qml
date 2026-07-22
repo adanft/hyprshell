@@ -13,7 +13,7 @@ Rectangle {
     property bool busy: false
     property bool detailAvailable: true
     property bool expanded: false
-    property int iconSize: 38
+    readonly property int iconSize: theme.sizing.statusBarNetworkControlIconSize
     property string actionAccessibleName: "Toggle " + title
     property string detailAccessibleName: (expanded ? "Hide " : "Show ") + title + " details"
     property string stateDescription: subtitle
@@ -49,7 +49,7 @@ Rectangle {
             radius: card.theme.shape.radius12
             color: card.active ? card.colors.primary : card.colors.surfaceHover
             border.color: card.active ? card.colors.primary : card.colors.border
-            opacity: card.available ? 1 : 0.45
+            opacity: card.available ? 1 : card.theme.motion.opacityDisabled
             activeFocusOnTab: card.available && !card.busy
             Accessible.role: Accessible.Button
             Accessible.name: card.actionAccessibleName
@@ -63,9 +63,9 @@ Rectangle {
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                color: "transparent"
+                color: card.colors.transparent
                 border.color: card.colors.primary
-                border.width: parent.activeFocus ? 2 : 0
+                border.width: parent.activeFocus ? card.theme.shape.focusBorderWidth : 0
             }
 
             Text {
@@ -116,9 +116,9 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         radius: card.radius
-        color: "transparent"
+        color: card.colors.transparent
         border.color: card.colors.primary
-        border.width: bodyArea.activeFocus ? 2 : 0
+        border.width: bodyArea.activeFocus ? card.theme.shape.focusBorderWidth : 0
     }
 
     MouseArea {

@@ -27,7 +27,7 @@ Rectangle {
         forgetRequested();
     }
 
-    height: 48
+    height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
     color: colors.surface
     border.width: 0
@@ -83,7 +83,7 @@ Rectangle {
             color: primaryInput.containsMouse || primaryInput.activeFocus
                 ? root.colors.surfaceHover
                 : root.colors.transparent
-            opacity: root.actionBusy ? 0.45 : 1
+            opacity: root.actionBusy ? root.theme.motion.opacityDisabled : 1
 
             Text {
                 id: primaryLabel

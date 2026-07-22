@@ -1,17 +1,20 @@
 import QtQuick
 import QtQuick.Controls as Controls
+import "../../theme"
 
 Item {
     id: control
 
+    readonly property var theme: AppTheme {}
+
     property real value: 0
     property bool available: true
     property int liveUpdateInterval: 75
-    property real trackHeight: 5
-    property color trackColor: "transparent"
-    property color fillColor: "white"
-    property color handleColor: "white"
-    property color handleBorderColor: "transparent"
+    property real trackHeight: theme.sizing.statusBarSliderTrackHeight
+    property color trackColor: theme.colors.transparent
+    property color fillColor: theme.colors.text
+    property color handleColor: theme.colors.text
+    property color handleBorderColor: theme.colors.transparent
     property string unavailableText: "Unavailable"
 
     readonly property bool interactionActive: draftActive
@@ -25,7 +28,7 @@ Item {
     signal interactionCanceled()
 
     enabled: available
-    opacity: enabled ? 1 : 0.45
+    opacity: enabled ? 1 : theme.motion.opacityDisabled
 
     function updateFromPointer(pointerX) {
         const travel = Math.max(1, width - sliderHandle.width);
@@ -93,8 +96,8 @@ Item {
         id: sliderHandle
         x: control.visualPosition * (control.width - width)
         anchors.verticalCenter: parent.verticalCenter
-        width: 14
-        height: 14
+        width: control.theme.sizing.statusBarSliderHandleSize
+        height: control.theme.sizing.statusBarSliderHandleSize
         radius: width / 2
         color: control.handleColor
         border.color: control.handleBorderColor
@@ -104,8 +107,8 @@ Item {
         id: pointerArea
         objectName: "pointerArea"
         anchors.fill: parent
-        anchors.topMargin: -8
-        anchors.bottomMargin: -8
+        anchors.topMargin: -control.theme.spacing.statusBarSliderHitAreaVerticalMargin
+        anchors.bottomMargin: -control.theme.spacing.statusBarSliderHitAreaVerticalMargin
         enabled: control.enabled
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton

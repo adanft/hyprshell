@@ -21,7 +21,7 @@ PopupWindow {
     required property var barWindow
     readonly property int contentPadding: theme.spacing.notificationCenterPadding
     readonly property int cardWidth: theme.sizing.notificationCenterCardWidth
-    readonly property real heightRatio: 0.75
+    readonly property real heightRatio: theme.sizing.notificationCenterHeightRatio
     property var expandedNotificationIds: ({})
 
     function notificationExpansionKey(notification) {
@@ -200,7 +200,7 @@ PopupWindow {
 
                         Behavior on x {
                             NumberAnimation {
-                                duration: 120
+                                duration: popup.theme.motion.durationShort
                                 easing.type: Easing.OutCubic
                             }
 

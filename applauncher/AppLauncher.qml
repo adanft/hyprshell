@@ -10,6 +10,7 @@ Scope {
     readonly property var
     theme: AppTheme {
     }
+    readonly property var icons: Icons {}
 
     property alias visible: panel.visible
     property bool quitOnClose: false
@@ -199,7 +200,7 @@ Scope {
                     anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
                     anchors.verticalCenter: parent.verticalCenter
                     width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
-                    text: ""
+                    text: launcher.icons.search
                     color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.textSubtle
                     font.family: launcher.theme.typography.iconFontFamily
                     font.pixelSize: launcher.theme.typography.sizeLg

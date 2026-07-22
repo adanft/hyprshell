@@ -18,7 +18,7 @@ Rectangle {
             toggleRequested(profile);
     }
 
-    height: 48
+    height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
     color: colors.surface
     border.width: 0
@@ -63,7 +63,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         radius: root.theme.shape.radius8
         color: actionInput.containsMouse || actionInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
-        opacity: root.busy ? 0.45 : 1
+        opacity: root.busy ? root.theme.motion.opacityDisabled : 1
 
         Text {
             id: actionLabel

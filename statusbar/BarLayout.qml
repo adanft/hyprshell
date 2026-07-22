@@ -9,6 +9,7 @@ Item {
     readonly property var
     theme: AppTheme {
     }
+    readonly property var icons: Icons {}
 
     required property var colors
     required property var services
@@ -108,9 +109,10 @@ Item {
 
                         BarText {
                             anchors.centerIn: parent
-                            text: "󰰮"
-                            color: root.colors.primary
-                            font.pixelSize: 24
+                            text: root.icons.controlCenter
+                            color: root.colors.info
+                            font.family: root.theme.typography.iconFontFamily
+                            font.pixelSize: root.theme.typography.statusBarIconFontSize
                         }
 
                         MouseArea {

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "../../theme"
 
 Scope {
     id: root
@@ -11,6 +12,7 @@ Scope {
     property var network: null
     property string errorText: ""
 
+    readonly property var icons: Icons {}
     readonly property bool busy: Boolean(network?.stateChanging)
 
     signal submitted(string password)
@@ -94,7 +96,10 @@ Scope {
             Rectangle {
                 id: dialog
 
-                width: Math.min(420, parent.width - root.theme.spacing.space16 * 2)
+                width: Math.min(
+                    root.theme.sizing.statusBarWifiPasswordModalMaxWidth,
+                    parent.width - root.theme.spacing.space16 * 2
+                )
                 height: dialogContent.implicitHeight + root.theme.spacing.space16 * 2
                 anchors.centerIn: parent
                 radius: root.theme.shape.appLauncherRadius
@@ -151,8 +156,8 @@ Scope {
 
                         Rectangle {
                             id: closeButton
-                            width: 30
-                            height: 30
+                            width: root.theme.sizing.statusBarWifiPasswordCloseButtonSize
+                            height: root.theme.sizing.statusBarWifiPasswordCloseButtonSize
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             radius: root.theme.shape.radius8
@@ -162,7 +167,7 @@ Scope {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "×"
+                                text: root.icons.close
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
@@ -187,7 +192,7 @@ Scope {
 
                     Rectangle {
                         width: parent.width
-                        height: 46
+                        height: root.theme.sizing.statusBarWifiPasswordFieldHeight
                         radius: root.theme.shape.radius12
                         color: root.colors.surface
                         border.color: passwordInput.activeFocus ? root.colors.primary : root.colors.border
@@ -217,14 +222,16 @@ Scope {
 
                         Rectangle {
                             id: visibilityButton
-                            width: 38
+                            width: root.theme.sizing.statusBarWifiPasswordVisibilityButtonWidth
                             height: parent.height
                             anchors.right: parent.right
                             color: root.colors.transparent
 
                             Text {
                                 anchors.centerIn: parent
-                                text: passwordInput.echoMode === TextInput.Password ? "󰈈" : "󰈉"
+                                    text: passwordInput.echoMode === TextInput.Password
+                                        ? root.icons.passwordHidden
+                                        : root.icons.passwordVisible
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
@@ -263,7 +270,7 @@ Scope {
 
                         Rectangle {
                             width: cancelLabel.implicitWidth + root.theme.spacing.space24
-                            height: 38
+                            height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
                             color: cancelInput.containsMouse || cancelInput.activeFocus
                                 ? root.colors.surfaceHover
@@ -296,10 +303,12 @@ Scope {
 
                         Rectangle {
                             width: connectLabel.implicitWidth + root.theme.spacing.space24
-                            height: 38
+                            height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
                             color: root.colors.primary
-                            opacity: passwordInput.text.length > 0 && !root.busy ? 1 : 0.45
+                            opacity: passwordInput.text.length > 0 && !root.busy
+                                ? 1
+                                : root.theme.motion.opacityDisabled
 
                             Text {
                                 id: connectLabel

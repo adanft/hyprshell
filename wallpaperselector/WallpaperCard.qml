@@ -16,8 +16,7 @@ Item {
     property real focusWeight: selected ? 1 : 0
     property real renderWidth: width
     readonly property bool hovered: mouseArea.containsMouse
-    // 1.5x keeps selected cards sharp without decoding every repeater item at 2x.
-    readonly property real previewScale: 1.5
+    readonly property real previewScale: theme.sizing.wallpaperCardPreviewScale
     readonly property real slant: Math.min(height * 0.08, width * 0.35)
     readonly property real borderWidth: theme.shape.appLauncherCardBorderWidth
     readonly property real pathInset: borderWidth / 2
@@ -77,7 +76,7 @@ Item {
 
         ShapePath {
             fillColor: card.theme.colors.mask
-            strokeColor: "transparent"
+            strokeColor: card.theme.colors.transparent
             startX: card.pathInset + card.slant + card.cornerRadius
             startY: card.pathInset
             PathLine { x: card.width - card.pathInset - card.cornerRadius; y: card.pathInset }
@@ -98,7 +97,7 @@ Item {
         containsMode: Shape.FillContains
 
         ShapePath {
-            fillColor: "transparent"
+            fillColor: card.theme.colors.transparent
             strokeColor: card.borderColor
             strokeWidth: card.borderWidth
             startX: card.pathInset + card.slant + card.cornerRadius

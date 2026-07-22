@@ -20,7 +20,7 @@ Rectangle {
     readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4
         ? themeData.previewColors.slice(0, 4)
         : [previewText, previewBorder, previewSurface, previewBackground]
-    readonly property int paletteDotSize: 28
+    readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
     readonly property int nameLineHeight: theme.typography.sizeMd + theme.spacing.space4
 
     implicitHeight: theme.spacing.appLauncherCardPadding * 2

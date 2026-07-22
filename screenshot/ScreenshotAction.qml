@@ -20,7 +20,7 @@ Rectangle {
     width: theme.sizing.screenshotToolActionWidth
     height: theme.sizing.screenshotToolActionHeight
     radius: theme.shape.screenshotToolActionRadius
-    opacity: enabled ? 1 : 0.45
+    opacity: enabled ? 1 : theme.motion.opacityDisabled
     color: active ? theme.colors.surfaceActive : theme.colors.surfaceTransparent
     border.width: selected ? theme.shape.screenshotToolActionBorderWidth : 0
     border.color: theme.colors.focus

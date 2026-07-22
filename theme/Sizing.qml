@@ -20,11 +20,24 @@ QtObject {
     readonly property int appLauncherCardHeight: 104
     readonly property int appLauncherIconSlotSize: 56
     readonly property int appLauncherIconSize: 52
+    readonly property int themeSelectorPaletteDotSize: size28
+    readonly property int themeSelectorGridColumns: 2
+    readonly property int themePreviewReferenceWidth: 400
+    readonly property int themePreviewReferenceHeight: 208
+    readonly property int themePreviewHeaderMinHeight: size24
+    readonly property int themePreviewDotMinSize: 9
+    readonly property int themePreviewDotSize: 12
+    readonly property int themePreviewRailMinWidth: 30
+    readonly property int themePreviewNavigationItemMinSize: 22
+    readonly property int themePreviewContentMinWidth: 68
+    readonly property int themePreviewBarMinHeight: 5
+    readonly property int themePreviewBarHeight: 7
 
     readonly property int powerMenuActionSize: 136
 
     readonly property int wallpaperCardWidth: 220
     readonly property int wallpaperCardHeight: 150
+    readonly property real wallpaperCardPreviewScale: 1.5
 
     readonly property int screenshotToolActionWidth: appLauncherCardWidth
     readonly property int screenshotToolActionHeight: appLauncherCardHeight
@@ -40,6 +53,7 @@ QtObject {
     readonly property int notificationPopupWidth: 380
     readonly property int notificationCenterCardWidth: 380
     readonly property int notificationCenterFallbackScreenHeight: 560
+    readonly property real notificationCenterHeightRatio: 0.75
     readonly property int notificationCenterTopOffset: 42
     readonly property int notificationCenterHeaderHeight: size30
     readonly property int notificationCenterSpacerHeight: 1
@@ -48,6 +62,7 @@ QtObject {
     readonly property int notificationCenterDndSwitchWidth: size34
     readonly property int notificationCenterDndSwitchHeight: size16
     readonly property int notificationCenterDndKnobSize: size14
+    readonly property int notificationCardCollapsedBodyLines: 2
     readonly property int notificationCardIconSlotSize: size32
     readonly property int notificationCardIconSize: size24
     readonly property int notificationCardCloseButtonSize: size24
@@ -60,6 +75,25 @@ QtObject {
     readonly property int statusBarIconSize: size24
     readonly property int statusBarWorkspaceSlotSize: size24
     readonly property int statusBarWindowTitleWidth: 420
+    readonly property int statusBarNetworkMenuWidth: 420
+    readonly property int statusBarNetworkUserCardHeight: 88
+    readonly property int statusBarNetworkAvatarSize: 64
+    readonly property int statusBarNetworkUserTextReserve: 76
+    readonly property int statusBarNetworkQuickControlHeight: 54
+    readonly property int statusBarNetworkQuickControlIconWidth: 22
+    readonly property int statusBarNetworkQuickControlSliderHeight: size32
+    readonly property int statusBarNetworkControlIconSize: 38
+    readonly property int statusBarControlEmptyStateHeight: 58
+    readonly property int statusBarNetworkDeviceRowHeight: 48
+    readonly property int statusBarNetworkInfoLabelWidth: 72
+    readonly property int statusBarWifiPasswordModalMaxWidth: 420
+    readonly property int statusBarWifiPasswordCloseButtonSize: size30
+    readonly property int statusBarWifiPasswordFieldHeight: 46
+    readonly property int statusBarWifiPasswordVisibilityButtonWidth: 38
+    readonly property int statusBarWifiPasswordActionHeight: 38
+    readonly property int statusBarSliderTrackHeight: 5
+    readonly property int statusBarQuickControlTrackHeight: 8
+    readonly property int statusBarSliderHandleSize: size14
     readonly property int statusBarTrayMenuWidth: 260
     readonly property int statusBarTrayMenuMinHeight: size32
     readonly property int statusBarTrayMenuItemHeight: size28

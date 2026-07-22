@@ -9,9 +9,12 @@ QtObject {
     readonly property int sizeMd: 14
     readonly property int sizeLg: 16
     readonly property int sizeXl: 20
+    readonly property int statusBarIconFontSize: 24
+    readonly property int themePreviewMinFontSize: 9
     readonly property int actionIconFontSize: 28
     readonly property int displayIconFontSize: 56
     readonly property int heroIconFontSize: 68
+    readonly property real notificationBodyLineHeight: 1.35
 
     readonly property string styleRegular: "Regular"
     readonly property string styleMedium: "Medium"

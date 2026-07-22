@@ -16,19 +16,6 @@ Item {
     readonly property string username: Quickshell.env("USER") || Quickshell.env("LOGNAME") || "User"
     readonly property string hostname: NetworkMenuLogic.hostnameOrFallback(hostnameFile.loaded ? hostnameFile.text() : "")
     readonly property string userInitial: NetworkMenuLogic.userInitial(username)
-    readonly property int menuWidth: 420
-    readonly property int userCardHeight: 88
-    readonly property int avatarSize: 64
-    readonly property int detailRowHeight: 46
-    readonly property int toggleWidth: 42
-    readonly property int toggleHeight: 22
-    readonly property int toggleKnobSize: 16
-    readonly property int userTextReserve: 76
-    readonly property int lanStatusReserve: 90
-    readonly property int networkTextReserve: 78
-    readonly property int quickControlHeight: 54
-    readonly property int quickControlIconWidth: 22
-
     required property var colors
     required property var services
     required property var barWindow
@@ -348,7 +335,7 @@ Item {
         Rectangle {
             id: menuContainer
 
-            width: Math.max(0, Math.min(root.menuWidth, menuWindow.width - root.theme.spacing.space16))
+            width: Math.max(0, Math.min(root.theme.sizing.statusBarNetworkMenuWidth, menuWindow.width - root.theme.spacing.space16))
             height: Math.max(0, Math.min(
                 menuWindow.height - root.theme.spacing.space16,
                 Math.max(360, menuColumn.implicitHeight + root.theme.spacing.space24)
@@ -388,7 +375,7 @@ Item {
                     Rectangle {
                         id: userCard
                         width: parent.width
-                        height: root.userCardHeight
+                        height: root.theme.sizing.statusBarNetworkUserCardHeight
                         radius: root.theme.shape.radius12
                         color: root.colors.surface
                         border.width: 0
@@ -399,8 +386,8 @@ Item {
                             spacing: root.theme.spacing.space12
 
                             Rectangle {
-                                width: root.avatarSize
-                                height: root.avatarSize
+                                width: root.theme.sizing.statusBarNetworkAvatarSize
+                                height: root.theme.sizing.statusBarNetworkAvatarSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 radius: width / 2
                                 color: root.colors.primary
@@ -418,7 +405,7 @@ Item {
                                 ClippingRectangle {
                                     anchors.fill: parent
                                     radius: width / 2
-                                    color: "transparent"
+                                    color: root.colors.transparent
 
                                     Image {
                                         id: avatarImage
@@ -428,22 +415,22 @@ Item {
                                         asynchronous: true
                                         cache: false
                                         fillMode: Image.PreserveAspectCrop
-                                        sourceSize.width: root.avatarSize * 2
-                                        sourceSize.height: root.avatarSize * 2
+                                        sourceSize.width: root.theme.sizing.statusBarNetworkAvatarSize * 2
+                                        sourceSize.height: root.theme.sizing.statusBarNetworkAvatarSize * 2
                                     }
                                 }
 
                                 Rectangle {
                                     anchors.fill: parent
                                     radius: width / 2
-                                    color: "transparent"
+                                    color: root.colors.transparent
                                     border.color: root.colors.primary
-                                    border.width: 2
+                                    border.width: root.theme.shape.borderMedium
                                 }
                             }
 
                             Column {
-                                width: parent.width - root.userTextReserve
+                                width: parent.width - root.theme.sizing.statusBarNetworkUserTextReserve
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space2
 
@@ -476,7 +463,7 @@ Item {
                         Item {
                             id: quickControlsRow
                             width: parent.width
-                            height: root.quickControlHeight
+                            height: root.theme.sizing.statusBarNetworkQuickControlHeight
 
                             Row {
                                 anchors.fill: parent
@@ -486,7 +473,7 @@ Item {
                                     width: (parent.width - parent.spacing) / 2
                                     height: parent.height
                                     radius: root.theme.shape.radius12
-                                    color: "transparent"
+                                    color: root.colors.transparent
                                     border.width: 0
 
                                     Row {
@@ -495,7 +482,7 @@ Item {
                                         spacing: root.theme.spacing.space8
 
                                         BarText {
-                                            width: root.quickControlIconWidth
+                                            width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                             anchors.verticalCenter: parent.verticalCenter
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.volumeIcon()
@@ -507,10 +494,10 @@ Item {
 
                                         QuickControlSlider {
                                             id: volumeSlider
-                                            width: parent.width - root.quickControlIconWidth - parent.spacing
-                                            height: 32
+                                            width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth - parent.spacing
+                                            height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
-                                            trackHeight: 8
+                                            trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                             value: root.services.quickVolume?.authoritativePercent ?? 0
                                             available: root.services.quickVolume?.authoritativePercent !== null
                                                 && root.services.quickVolume?.authoritativePercent !== undefined
@@ -532,7 +519,7 @@ Item {
                                     width: (parent.width - parent.spacing) / 2
                                     height: parent.height
                                     radius: root.theme.shape.radius12
-                                    color: "transparent"
+                                    color: root.colors.transparent
                                     border.width: 0
 
                                     Row {
@@ -541,7 +528,7 @@ Item {
                                         spacing: root.theme.spacing.space8
 
                                         BarText {
-                                            width: root.quickControlIconWidth
+                                            width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                             anchors.verticalCenter: parent.verticalCenter
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.icons.brightnessControl
@@ -553,10 +540,10 @@ Item {
 
                                         QuickControlSlider {
                                             id: brightnessSlider
-                                            width: parent.width - root.quickControlIconWidth - parent.spacing
-                                            height: 32
+                                            width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth - parent.spacing
+                                            height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
-                                            trackHeight: 8
+                                            trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                             value: root.services.brightnessLevel
                                             available: root.services.brightnessAvailable
                                             trackColor: root.colors.surface
@@ -574,7 +561,7 @@ Item {
                         Item {
                             id: networkControlsRow
                             width: parent.width
-                            height: root.quickControlHeight
+                            height: root.theme.sizing.statusBarNetworkQuickControlHeight
 
                             Row {
                                 anchors.fill: parent
@@ -626,7 +613,7 @@ Item {
 
                         Item {
                             width: parent.width
-                            height: root.quickControlHeight
+                            height: root.theme.sizing.statusBarNetworkQuickControlHeight
 
                             Row {
                                 anchors.fill: parent
@@ -709,7 +696,7 @@ Item {
 
                                 Rectangle {
                                     width: parent.width
-                                    height: root.quickControlHeight
+                                    height: root.theme.sizing.statusBarNetworkQuickControlHeight
                                     radius: root.theme.shape.radius12
                                     color: root.colors.transparent
                                     border.width: 0
@@ -720,7 +707,7 @@ Item {
                                         spacing: root.theme.spacing.space8
 
                                         BarText {
-                                            width: root.quickControlIconWidth
+                                            width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                             anchors.verticalCenter: parent.verticalCenter
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
@@ -732,10 +719,10 @@ Item {
 
                                         QuickControlSlider {
                                             id: microphoneSlider
-                                            width: parent.width - root.quickControlIconWidth - parent.spacing
-                                            height: 32
+                                            width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth - parent.spacing
+                                            height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
-                                            trackHeight: 8
+                                            trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                             value: Math.max(0, root.services.sourceVolume)
                                             available: root.services.microphoneAvailable
                                             trackColor: root.colors.surface
@@ -1049,7 +1036,7 @@ Item {
                                 Rectangle {
                                     visible: root.availableWifiNetworks.length === 0
                                     width: parent.width
-                                    height: 58
+                                    height: root.theme.sizing.statusBarControlEmptyStateHeight
                                     radius: root.theme.shape.radius12
                                     color: root.colors.surface
                                     border.width: 0

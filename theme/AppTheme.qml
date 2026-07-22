@@ -11,4 +11,6 @@ QtObject {
     }
     readonly property var sizing: Sizing {
     }
+    readonly property var motion: Motion {
+    }
 }

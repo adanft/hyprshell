@@ -8,7 +8,7 @@ Rectangle {
     property string title: ""
     property string description: ""
 
-    height: 58
+    height: theme.sizing.statusBarControlEmptyStateHeight
     radius: theme.shape.radius12
     color: colors.surface
     border.width: 0

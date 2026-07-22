@@ -17,8 +17,8 @@ Item {
     property real enterOffset: width + theme.spacing.notificationPopupEnterOffsetMargin
     property int autoCloseRemainingMs: 0
     property bool autoCloseTimerInitialized: false
-    readonly property int enterAnimationMs: 260
-    readonly property int moveAnimationMs: 220
+    readonly property int enterAnimationMs: theme.motion.durationEntrance
+    readonly property int moveAnimationMs: theme.motion.durationNormal
     readonly property real layoutHeight: notificationCard.layoutHeight
     readonly property real renderedLayoutHeight: notificationCard.renderedLayoutHeight
     readonly property real allocatedLayoutHeight: notificationCard.allocatedLayoutHeight

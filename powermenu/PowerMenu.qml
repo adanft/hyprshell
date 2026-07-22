@@ -9,6 +9,7 @@ Scope {
     readonly property var
     theme: AppTheme {
     }
+    readonly property var icons: Icons {}
 
     property alias visible: panel.visible
     property bool quitOnClose: false
@@ -17,23 +18,23 @@ Scope {
     property int selectedIndex: 0
     property int confirmSelectedIndex: 0
     readonly property var actions: [{
-        "icon": "",
+        "icon": icons.lockSession,
         "command": ["loginctl", "lock-session"],
         "primary": theme.colors.warning
     }, {
-        "icon": "",
+        "icon": icons.suspendSession,
         "command": ["systemctl", "suspend"],
         "primary": theme.colors.info
     }, {
-        "icon": "",
+        "icon": icons.logoutSession,
         "command": ["hyprctl", "dispatch", "hl.dsp.exit()"],
         "primary": theme.colors.primary
     }, {
-        "icon": "",
+        "icon": icons.rebootSession,
         "command": ["systemctl", "reboot"],
         "primary": theme.colors.success
     }, {
-        "icon": "",
+        "icon": icons.powerOffSession,
         "command": ["systemctl", "poweroff"],
         "primary": theme.colors.danger
     }]
@@ -171,7 +172,7 @@ Scope {
             spacing: powerMenu.theme.spacing.powerMenuActionSpacing
 
             ActionButton {
-                icon: ""
+                icon: powerMenu.icons.confirm
                 primary: powerMenu.theme.colors.success
                 selected: powerMenu.confirmSelectedIndex === 0
                 onHovered: powerMenu.confirmSelectedIndex = 0
@@ -179,7 +180,7 @@ Scope {
             }
 
             ActionButton {
-                icon: ""
+                icon: powerMenu.icons.cancel
                 primary: powerMenu.theme.colors.danger
                 selected: powerMenu.confirmSelectedIndex === 1
                 onHovered: powerMenu.confirmSelectedIndex = 1

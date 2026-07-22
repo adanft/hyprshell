@@ -133,7 +133,7 @@ Scope {
                     property: "transitionProgress"
                     from: 0
                     to: 1
-                    duration: 120
+                    duration: selector.theme.motion.durationShort
                     easing.type: Easing.InOutCubic
                     onFinished: wallpaperList.finishTransition()
                 }
@@ -292,7 +292,10 @@ Scope {
                                 target: wallpaperFolderModel
                             function onDataChanged() { thumbnailCache.request(wallpaperPath, freshnessToken) }
                             }
-                            opacity: Math.max(0.22, 1 - depth * 0.14)
+                            opacity: Math.max(
+                                selector.theme.motion.opacityCarouselMinimum,
+                                1 - depth * selector.theme.motion.opacityCarouselDepthStep
+                            )
                             Connections {
                                 target: thumbnailCache
                             function onThumbnailReady(sourcePath, thumbnailUrl) {

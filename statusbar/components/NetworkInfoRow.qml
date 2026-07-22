@@ -13,7 +13,7 @@ Row {
     visible: value.length > 0
 
     Text {
-        width: 72
+        width: root.theme.sizing.statusBarNetworkInfoLabelWidth
         text: root.label
         color: root.colors.textMuted
         font.family: root.theme.typography.textFontFamily
@@ -22,7 +22,7 @@ Row {
     }
 
     Text {
-        width: parent.width - 72 - parent.spacing
+        width: parent.width - root.theme.sizing.statusBarNetworkInfoLabelWidth - parent.spacing
         text: root.value
         color: root.colors.text
         font.family: root.theme.typography.textFontFamily

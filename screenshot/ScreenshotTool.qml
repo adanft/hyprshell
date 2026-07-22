@@ -239,7 +239,7 @@ Scope {
 
                         Behavior on x {
                             NumberAnimation {
-                                duration: 120
+                                duration: tool.theme.motion.durationShort
                                 easing.type: Easing.OutCubic
                             }
                         }

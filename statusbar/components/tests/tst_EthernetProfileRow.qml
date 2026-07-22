@@ -45,7 +45,7 @@ TestCase {
 
     function test_activeProfileRequestsDisable() {
         const row = createRow({ active: true });
-        compare(row.border.width, 2);
+        compare(row.border.width, 0);
         compare(row.active, true);
         row.requestToggle();
         compare(toggleSpy.count, 1);

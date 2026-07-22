@@ -247,9 +247,8 @@ Item {
                         width: parent.width
                         height: root.userCardHeight
                         radius: root.theme.shape.radius12
-                        color: root.colors.background
-                        border.color: root.colors.border
-                        border.width: root.theme.shape.borderThin
+                        color: root.colors.surface
+                        border.width: 0
 
                         Row {
                             anchors.fill: parent
@@ -344,9 +343,8 @@ Item {
                                     width: (parent.width - parent.spacing) / 2
                                     height: parent.height
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.surface
-                                    border.color: root.colors.border
-                                    border.width: root.theme.shape.borderThin
+                                    color: "transparent"
+                                    border.width: 0
 
                                     Row {
                                         anchors.fill: parent
@@ -367,11 +365,12 @@ Item {
                                             width: parent.width - root.quickControlIconWidth - parent.spacing
                                             height: 32
                                             anchors.verticalCenter: parent.verticalCenter
+                                            trackHeight: 8
                                             value: root.services.quickVolume?.authoritativePercent ?? 0
                                             available: root.services.quickVolume?.authoritativePercent !== null
                                                 && root.services.quickVolume?.authoritativePercent !== undefined
                                                 && root.services.quickVolume?.availability !== "unavailable"
-                                            trackColor: root.colors.background
+                                            trackColor: root.colors.surface
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
                                             handleBorderColor: root.colors.primary
@@ -388,9 +387,8 @@ Item {
                                     width: (parent.width - parent.spacing) / 2
                                     height: parent.height
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.surface
-                                    border.color: root.colors.border
-                                    border.width: root.theme.shape.borderThin
+                                    color: "transparent"
+                                    border.width: 0
 
                                     Row {
                                         anchors.fill: parent
@@ -411,9 +409,10 @@ Item {
                                             width: parent.width - root.quickControlIconWidth - parent.spacing
                                             height: 32
                                             anchors.verticalCenter: parent.verticalCenter
+                                            trackHeight: 8
                                             value: root.services.brightnessLevel
                                             available: root.services.brightnessAvailable
-                                            trackColor: root.colors.background
+                                            trackColor: root.colors.surface
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
                                             handleBorderColor: root.colors.primary
@@ -904,8 +903,8 @@ Item {
                                 width: parent.width
                                 height: passwordColumn.implicitHeight + root.theme.spacing.space12
                                 radius: root.theme.shape.radius8
-                                color: root.colors.background
-                                border.color: root.colors.border
+                                color: root.colors.surface
+                                border.width: 0
 
                                 Column {
                                     id: passwordColumn

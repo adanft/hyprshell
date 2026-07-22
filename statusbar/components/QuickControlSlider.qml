@@ -7,6 +7,7 @@ Item {
     property real value: 0
     property bool available: true
     property int liveUpdateInterval: 75
+    property real trackHeight: 5
     property color trackColor: "transparent"
     property color fillColor: "white"
     property color handleColor: "white"
@@ -76,7 +77,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        height: 5
+        height: control.trackHeight
         radius: height / 2
         color: control.trackColor
 

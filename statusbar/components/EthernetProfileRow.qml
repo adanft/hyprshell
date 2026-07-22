@@ -21,8 +21,7 @@ Rectangle {
     height: 48
     radius: theme.shape.radius12
     color: colors.surface
-    border.width: active ? theme.shape.borderMedium : 0
-    border.color: colors.primary
+    border.width: 0
 
     Accessible.role: Accessible.ListItem
     Accessible.name: `${NetworkMenuLogic.ethernetProfileLabel(profile)}, ${active ? "Active" : "Available"}`

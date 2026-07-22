@@ -23,8 +23,7 @@ Rectangle {
 
     radius: theme.shape.radius12
     color: bodyArea.containsMouse ? colors.surfaceHover : colors.surface
-    border.color: expanded || bodyArea.activeFocus ? colors.primary : colors.border
-    border.width: expanded || bodyArea.activeFocus ? theme.shape.borderMedium : theme.shape.borderThin
+    border.width: 0
 
     function requestBodyAction() {
         if (detailAvailable)

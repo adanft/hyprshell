@@ -26,6 +26,9 @@ Scope {
     readonly property var powerProfiles: [PowerProfile.Performance, PowerProfile.Balanced, PowerProfile.PowerSaver]
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
+    readonly property var audioSources: (Pipewire.nodes?.values ?? []).filter(node =>
+        node && node.audio && !node.isSink && !node.isStream
+    )
     readonly property var batteries: UPower.devices.values.filter(device => device && device.isLaptopBattery)
     readonly property var readyBatteries: batteries.filter(device => device.ready)
     readonly property bool batteryAvailable: batteries.length > 0
@@ -467,6 +470,22 @@ Scope {
         const node = isSource ? source : sink
         if (node?.audio)
             node.audio.muted = !node.audio.muted
+    }
+
+    function setSourceVolume(percent) {
+        const request = QuickControlState.normalizedVolumeRequest(percent, source?.audio !== null && source?.audio !== undefined)
+        if (!request)
+            return
+
+        source.audio.volume = request.volume
+        if (request.unmute)
+            source.audio.muted = false
+    }
+
+    function selectAudioSource(node) {
+        if (!node || !audioSources.includes(node) || node === source)
+            return
+        Pipewire.preferredDefaultAudioSource = node
     }
 
     function changeVolume(isSource, delta) {

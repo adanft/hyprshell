@@ -58,6 +58,11 @@ function ethernetToggleAction(network) {
 	return network.connected ? "disconnect" : "connect";
 }
 
+function ethernetProfileLabel(profile) {
+	if (!profile) return "Unnamed profile";
+	return profile.id || profile.uuid || "Unnamed profile";
+}
+
 function shouldScanWifi(
 	menuOpen,
 	expandedSection,

@@ -88,7 +88,12 @@ assert.equal(
 	menu.ethernetToggleAction({ stateChanging: false, connected: true }),
 	"disconnect",
 );
-
+assert.equal(
+	menu.ethernetProfileLabel({ id: "Office LAN", uuid: "uuid" }),
+	"Office LAN",
+);
+assert.equal(menu.ethernetProfileLabel({ id: "", uuid: "uuid" }), "uuid");
+assert.equal(menu.ethernetProfileLabel(null), "Unnamed profile");
 assert.equal(menu.shouldScanWifi(true, "wifi", true, true), true);
 assert.equal(menu.shouldScanWifi(false, "wifi", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "ethernet", true, true), false);

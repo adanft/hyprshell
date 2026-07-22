@@ -9,6 +9,7 @@ import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import "../theme"
 import "QuickControlState.js" as QuickControlState
+import "NetworkState.js" as NetworkState
 
 Scope {
     id: service
@@ -23,6 +24,21 @@ Scope {
     readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null
     readonly property string lanInterface: lanDevice?.name ?? ""
     readonly property string wifiInterface: wifiDevice?.name ?? ""
+    property var ethernetInfo: ({
+        connectionName: "",
+        activeUuid: "",
+        macAddress: "",
+        ipv4Address: "",
+        ipv4Gateway: "",
+        ipv4Dns: [],
+        ipv6Address: "",
+        ipv6Gateway: "",
+        ipv6Dns: []
+    })
+    property bool ethernetProfileBusy: false
+    property bool ethernetProfileAwaitingRefresh: false
+    property string ethernetProfilePendingUuid: ""
+    property string ethernetProfileError: ""
     readonly property var powerProfiles: [PowerProfile.Performance, PowerProfile.Balanced, PowerProfile.PowerSaver]
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
@@ -322,6 +338,21 @@ Scope {
     }
 
     Timer {
+        interval: 3000
+        running: service.lanDevice !== null
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: service.refreshEthernetInfo()
+    }
+
+    Timer {
+        id: ethernetActionRefreshTimer
+        interval: 750
+        repeat: false
+        onTriggered: service.refreshEthernetInfo()
+    }
+
+    Timer {
         interval: service.systemStatsRefreshMs
         running: service.cpuUsageEnabled || service.memoryUsageEnabled
         repeat: true
@@ -340,6 +371,42 @@ Scope {
         interval: 500
         repeat: false
         onTriggered: service.saveNotificationHistory()
+    }
+
+    Process {
+        id: ethernetInfoProcess
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                service.ethernetInfo = NetworkState.parseNmcliDeviceInfo(this.text)
+                if (service.ethernetProfileAwaitingRefresh) {
+                    service.ethernetProfileAwaitingRefresh = false
+                    service.ethernetProfileBusy = false
+                    service.ethernetProfilePendingUuid = ""
+                }
+            }
+        }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0 && service.ethernetProfileAwaitingRefresh) {
+                service.ethernetProfileAwaitingRefresh = false
+                service.ethernetProfileBusy = false
+                service.ethernetProfilePendingUuid = ""
+            }
+        }
+    }
+
+    Process {
+        id: ethernetProfileActionProcess
+
+        stderr: StdioCollector {
+            onStreamFinished: service.ethernetProfileError = String(this.text || "").trim()
+        }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0 && service.ethernetProfileError.length === 0)
+                service.ethernetProfileError = `NetworkManager command failed (${exitCode})`
+            service.ethernetProfileAwaitingRefresh = true
+            ethernetActionRefreshTimer.restart()
+        }
     }
 
     Process {
@@ -816,6 +883,36 @@ Scope {
             memoryUsage = Math.max(0, Math.min(100, Math.round(((total - available) * 100) / total)))
         else
             memoryUsage = 0
+    }
+
+    function refreshEthernetInfo() {
+        if (ethernetInfoProcess.running)
+            return
+        if (!/^[A-Za-z0-9._:-]{1,64}$/.test(lanInterface)) {
+            ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
+            return
+        }
+
+        ethernetInfoProcess.exec([
+            "nmcli", "--terse", "--escape", "no", "--fields",
+            "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
+            "device", "show", lanInterface
+        ])
+    }
+
+    function setEthernetProfileEnabled(profile) {
+        const uuid = String(profile?.uuid || "")
+        const action = NetworkState.ethernetProfileAction(ethernetInfo.activeUuid, uuid, ethernetProfileBusy)
+        if (!action)
+            return
+
+        ethernetProfileBusy = true
+        ethernetProfileAwaitingRefresh = false
+        ethernetProfilePendingUuid = uuid
+        ethernetProfileError = ""
+        ethernetProfileActionProcess.exec([
+            "nmcli", "connection", action === "disable" ? "down" : "up", "uuid", uuid
+        ])
     }
 
     function refreshNetwork() {

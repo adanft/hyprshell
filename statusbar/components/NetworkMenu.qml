@@ -439,7 +439,9 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: root.icons.ethernet
+                                    icon: root.services.lanUp
+                                        ? root.icons.ethernet
+                                        : root.icons.ethernetDisconnected
                                     title: "Ethernet"
                                     subtitle: root.services.lanUp
                                         ? "Connected"
@@ -737,69 +739,103 @@ Item {
                             anchors.margins: root.theme.spacing.space12
                             spacing: root.theme.spacing.space8
 
-                            Row {
-                                width: parent.width
-                                spacing: root.theme.spacing.space8
-
-                                BarText {
-                                    text: root.icons.networkThroughput
-                                    color: root.services.lanUp ? root.colors.primary : root.colors.textMuted
-                                    font.pixelSize: root.theme.typography.sizeLg
-                                }
-
-                                BarText {
-                                    text: "LAN"
-                                    color: root.colors.text
-                                    font.pixelSize: root.theme.typography.sizeLg
-                                    font.weight: Font.Medium
-                                }
-
-                                BarText {
-                                    width: parent.width - root.lanStatusReserve
-                                    horizontalAlignment: Text.AlignRight
-                                    text: root.services.lanUp ? "Connected" : "Disconnected"
-                                    color: root.services.lanUp ? root.colors.primary : root.colors.textSubtle
-                                }
+                            BarText {
+                                text: "Network info"
+                                color: root.colors.textSubtle
+                                font.pixelSize: root.theme.typography.sizeMd
+                                font.weight: Font.Normal
                             }
 
                             Rectangle {
                                 width: parent.width
-                                height: root.detailRowHeight
-                                color: root.colors.transparent
+                                height: networkInfoColumn.implicitHeight + root.theme.spacing.space16
+                                radius: root.theme.shape.radius12
+                                color: root.colors.surface
                                 border.width: 0
 
-                                Row {
-                                    anchors.fill: parent
+                                Column {
+                                    id: networkInfoColumn
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
                                     anchors.margins: root.theme.spacing.space8
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space4
 
-                                    Column {
-                                        width: parent.width - speedLabel.width - parent.spacing
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        spacing: root.theme.spacing.space2
-
-                                        BarText {
-                                            width: parent.width
-                                            text: root.services.lanDevice?.name || "No wired adapter"
-                                            color: root.colors.text
-                                            font.weight: Font.Normal
-                                            elide: Text.ElideRight
-                                        }
-
-                                        BarText {
-                                            width: parent.width
-                                            text: root.services.lanDevice?.hasLink ? "Cable connected" : "Cable disconnected"
-                                            color: root.colors.textMuted
-                                            font.pixelSize: root.theme.typography.sizeSm
-                                        }
+                                    BarText {
+                                        width: parent.width
+                                        text: root.services.lanDevice?.name || "No wired adapter"
+                                        color: root.colors.text
+                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.weight: Font.Normal
+                                        elide: Text.ElideRight
                                     }
 
                                     BarText {
-                                        id: speedLabel
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: root.services.lanDevice?.linkSpeed > 0 ? `${root.services.lanDevice.linkSpeed} Mb/s` : "—"
-                                        color: root.colors.textSubtle
+                                        width: parent.width
+                                        text: root.services.lanDevice?.hasLink
+                                            ? (root.services.lanUp ? "Connected" : "Cable connected")
+                                            : "Cable disconnected"
+                                        color: root.services.lanUp ? root.colors.primary : root.colors.textMuted
+                                        font.pixelSize: root.theme.typography.sizeSm
+                                        font.weight: Font.Normal
                                     }
+
+                                    NetworkInfoRow { label: "Profile"; value: root.services.ethernetInfo.connectionName || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "IPv4"; value: root.services.ethernetInfo.ipv4Address || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "Gateway"; value: root.services.ethernetInfo.ipv4Gateway || root.services.ethernetInfo.ipv6Gateway || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "DNS"; value: [...(root.services.ethernetInfo.ipv4Dns || []), ...(root.services.ethernetInfo.ipv6Dns || [])].join(", "); colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "IPv6"; value: root.services.ethernetInfo.ipv6Address || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "MAC"; value: root.services.ethernetInfo.macAddress || root.services.lanDevice?.address || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "Link speed"; value: root.services.lanDevice?.linkSpeed > 0 ? `${root.services.lanDevice.linkSpeed} Mb/s` : ""; colors: root.colors; theme: root.theme }
+                                }
+                            }
+
+                            Connections {
+                                target: root.services.lanDevice?.network ?? null
+                                ignoreUnknownSignals: true
+                                function onConnectionFailed(reason) {
+                                    root.connectionError = `Ethernet: ${ConnectionFailReason.toString(reason)}`;
+                                }
+                            }
+
+                            BarText {
+                                visible: root.connectionError.length > 0 || root.services.ethernetProfileError.length > 0
+                                width: parent.width
+                                text: root.services.ethernetProfileError || root.connectionError
+                                color: root.colors.danger
+                                font.pixelSize: root.theme.typography.sizeSm
+                                font.weight: Font.Normal
+                                wrapMode: Text.Wrap
+                            }
+
+                            Rectangle {
+                                visible: (root.services.lanDevice?.network?.nmSettings?.length ?? 0) > 0
+                                width: parent.width
+                                height: root.theme.shape.borderThin
+                                color: root.colors.border
+                            }
+
+                            BarText {
+                                visible: (root.services.lanDevice?.network?.nmSettings?.length ?? 0) > 0
+                                text: "Connection profiles"
+                                color: root.colors.textSubtle
+                                font.pixelSize: root.theme.typography.sizeMd
+                                font.weight: Font.Normal
+                            }
+
+                            Repeater {
+                                model: root.services.lanDevice?.network?.nmSettings ?? []
+
+                                EthernetProfileRow {
+                                    required property var modelData
+                                    width: lanColumn.width
+                                    profile: modelData
+                                    active: modelData.uuid === root.services.ethernetInfo.activeUuid
+                                    busy: root.services.ethernetProfileBusy
+                                    pending: modelData.uuid === root.services.ethernetProfilePendingUuid
+                                    colors: root.colors
+                                    theme: root.theme
+                                    onToggleRequested: profile => root.services.setEthernetProfileEnabled(profile)
                                 }
                             }
                         }

@@ -115,10 +115,6 @@ function shouldScanWifi(
 	);
 }
 
-function shouldStopBluetoothScan(menuOpen, expandedSection, discovering) {
-	return Boolean(discovering && (!menuOpen || expandedSection !== "bluetooth"));
-}
-
 function bluetoothSummary(available, powered, connectedCount) {
 	if (!available) return "Unavailable";
 	if (!powered) return "Off";
@@ -126,72 +122,11 @@ function bluetoothSummary(available, powered, connectedCount) {
 	return count > 0 ? count + " connected" : "Enabled";
 }
 
-function bluetoothVisibleDevices(devices, discovering) {
-	if (!Array.isArray(devices)) return [];
-	return devices.filter((device) =>
-		Boolean(
-			device &&
-				(discovering || device.paired || device.connected || device.pairing),
-		),
-	);
-}
-
-function bluetoothEmptyState(available, powered, discovering) {
-	if (!available) return "Bluetooth adapter unavailable";
-	if (!powered) return "Bluetooth is off";
-	if (discovering) return "Searching for nearby devices…";
-	return "No paired devices";
-}
-
-function bluetoothEmptyDescription(available, powered, discovering) {
-	if (!available) return "No Bluetooth adapter was detected";
-	if (!powered) return "Turn on Bluetooth to discover devices";
-	if (discovering) return "Nearby devices will appear here";
-	return "Scan to discover nearby devices";
-}
-
 function microphoneSummary(available, muted, volume) {
 	if (!available) return "Unavailable";
 	if (muted) return "Muted";
 	var value = Math.max(0, Math.min(100, Math.round(Number(volume) || 0)));
 	return value + "%";
-}
-
-function bluetoothDeviceStatus(device) {
-	if (!device) return "Unavailable";
-	if (device.pairing) return "Pairing…";
-	if (device.connected)
-		return device.batteryAvailable
-			? "Connected · " + Math.round(device.battery * 100) + "%"
-			: "Connected";
-	if (device.paired) return "Paired";
-	return "Available";
-}
-
-function bluetoothDeviceAction(device) {
-	if (!device) return "none";
-	if (device.pairing) return "cancelPair";
-	if (!device.paired) return "pair";
-	return device.connected ? "disconnect" : "connect";
-}
-
-function bluetoothActionLabel(device) {
-	var action = bluetoothDeviceAction(device);
-	if (action === "cancelPair") return "Cancel";
-	if (action === "pair") return "Pair";
-	if (action === "disconnect") return "Disconnect";
-	if (action === "connect") return "Connect";
-	return "Unavailable";
-}
-
-function runBluetoothDeviceAction(device, action) {
-	if (!device || bluetoothDeviceAction(device) !== action) return false;
-	if (action === "pair") device.pair();
-	else if (action === "cancelPair") device.cancelPair();
-	else if (action === "connect") device.connect();
-	else if (action === "disconnect") device.disconnect();
-	else return false;
-	return true;
 }
 
 function audioSourceLabel(node) {

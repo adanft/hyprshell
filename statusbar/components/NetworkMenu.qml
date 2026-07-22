@@ -108,16 +108,8 @@ Item {
         device.scannerEnabled = true;
     }
 
-    onMenuOpenChanged: {
-        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
-            services.bluetoothAdapter.discovering = false;
-        updateWifiScanner(menuOpen);
-    }
-    onExpandedNetworkSectionChanged: {
-        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
-            services.bluetoothAdapter.discovering = false;
-        updateWifiScanner(expandedNetworkSection === "wifi");
-    }
+    onMenuOpenChanged: updateWifiScanner(menuOpen)
+    onExpandedNetworkSectionChanged: updateWifiScanner(expandedNetworkSection === "wifi")
     property string expandedNetworkSection: ""
 
     function toggleNetworkSection(section) {
@@ -218,10 +210,6 @@ Item {
             pendingNetwork = null;
         connectionError = "";
         network.forget();
-    }
-
-    function performBluetoothAction(device, action) {
-        NetworkMenuLogic.runBluetoothDeviceAction(device, action);
     }
 
     FileView {
@@ -685,16 +673,12 @@ Item {
                                     )
                                     active: root.services.bluetoothPowered
                                     available: root.services.bluetoothAvailable
-                                    detailAvailable: true
-                                    expanded: root.expandedNetworkSection === "bluetooth"
                                     actionAccessibleName: root.services.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
-                                    detailAccessibleName: expanded ? "Hide Bluetooth devices" : "Show Bluetooth devices"
                                     stateDescription: subtitle
-                                    onBodyClicked: root.toggleNetworkSection("bluetooth")
-                                        onToggled: {
-                                            if (root.services.bluetoothAdapter)
-                                                root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled;
-                                        }
+                                    onToggled: {
+                                        if (root.services.bluetoothAdapter)
+                                            root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled;
+                                    }
                                 }
                             }
                         }
@@ -800,87 +784,6 @@ Item {
                                     description: root.services.microphoneAvailable
                                         ? "The active microphone is already selected"
                                         : "Connect an input device to control it here"
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            id: bluetoothCard
-                            visible: root.expandedNetworkSection === "bluetooth"
-                            width: parent.width
-                            height: bluetoothColumn.implicitHeight + root.theme.spacing.space24
-                            color: root.colors.transparent
-                            border.width: 0
-
-                            Column {
-                                id: bluetoothColumn
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.margins: root.theme.spacing.space12
-                                spacing: root.theme.spacing.space8
-
-                                    Row {
-                                    width: parent.width
-                                    height: root.theme.sizing.statusBarTrayMenuItemHeight
-
-                                    BarText {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "Bluetooth devices"
-                                        color: root.colors.textSubtle
-                                        font.pixelSize: root.theme.typography.sizeMd
-                                        font.styleName: root.theme.typography.styleRegular
-                                    }
-
-                                    BluetoothScanButton {
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        colors: root.colors
-                                        theme: root.theme
-                                        discovering: root.services.bluetoothAdapter?.discovering ?? false
-                                        available: root.services.bluetoothPowered
-                                        onScanToggled: discovering => {
-                                            if (root.services.bluetoothAdapter)
-                                                root.services.bluetoothAdapter.discovering = discovering;
-                                        }
-                                    }
-                                }
-
-                                Repeater {
-                                    model: NetworkMenuLogic.bluetoothVisibleDevices(
-                                        root.services.bluetoothAdapter?.devices?.values ?? [],
-                                        root.services.bluetoothAdapter?.discovering ?? false
-                                    )
-
-                                    BluetoothDeviceRow {
-                                        required property var modelData
-                                        width: bluetoothColumn.width
-                                        device: modelData
-                                        colors: root.colors
-                                        theme: root.theme
-                                        onPrimaryActionRequested: action => root.performBluetoothAction(modelData, action)
-                                        onForgetRequested: modelData.forget()
-                                    }
-                                }
-
-                                ControlEmptyState {
-                                    visible: NetworkMenuLogic.bluetoothVisibleDevices(
-                                        root.services.bluetoothAdapter?.devices?.values ?? [],
-                                        root.services.bluetoothAdapter?.discovering ?? false
-                                    ).length === 0
-                                    width: parent.width
-                                    colors: root.colors
-                                    theme: root.theme
-                                    title: NetworkMenuLogic.bluetoothEmptyState(
-                                        root.services.bluetoothAvailable,
-                                        root.services.bluetoothPowered,
-                                        root.services.bluetoothAdapter?.discovering ?? false
-                                    )
-                                    description: NetworkMenuLogic.bluetoothEmptyDescription(
-                                        root.services.bluetoothAvailable,
-                                        root.services.bluetoothPowered,
-                                        root.services.bluetoothAdapter?.discovering ?? false
-                                    )
                                 }
                             }
                         }

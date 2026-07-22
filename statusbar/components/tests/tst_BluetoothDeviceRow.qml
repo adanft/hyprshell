@@ -30,8 +30,8 @@ TestCase {
                 danger: "#ff7777"
             })
             theme: ({
-                shape: { radius8: 8, radius6: 6 },
-                spacing: { space8: 8, space6: 6, space2: 2 },
+                shape: { radius12: 12, radius8: 8 },
+                spacing: { space16: 16, space12: 12, space8: 8, space4: 4, space2: 2 },
                 sizing: { statusBarTrayMenuItemHeight: 36 },
                     typography: {
                         sizeSm: 11,

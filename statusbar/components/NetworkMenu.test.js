@@ -168,6 +168,22 @@ assert.equal(
 	"Searching for nearby devices…",
 );
 assert.equal(menu.bluetoothEmptyState(true, true, false), "No paired devices");
+assert.equal(
+	menu.bluetoothEmptyDescription(false, false, false),
+	"No Bluetooth adapter was detected",
+);
+assert.equal(
+	menu.bluetoothEmptyDescription(true, false, false),
+	"Turn on Bluetooth to discover devices",
+);
+assert.equal(
+	menu.bluetoothEmptyDescription(true, true, true),
+	"Nearby devices will appear here",
+);
+assert.equal(
+	menu.bluetoothEmptyDescription(true, true, false),
+	"Scan to discover nearby devices",
+);
 assert.equal(menu.microphoneSummary(false, false, -1), "Unavailable");
 assert.equal(menu.microphoneSummary(true, true, 58), "Muted");
 assert.equal(menu.microphoneSummary(true, false, 58.4), "58%");
@@ -224,6 +240,36 @@ assert.equal(menu.runBluetoothDeviceAction(pairableDevice, "pair"), true);
 assert.deepEqual(bluetoothCalls, ["pair"]);
 assert.equal(menu.runBluetoothDeviceAction(pairableDevice, "connect"), false);
 assert.deepEqual(bluetoothCalls, ["pair"]);
+const pairingDevice = {
+	pairing: true,
+	paired: false,
+	connected: false,
+	cancelPair: () => bluetoothCalls.push("cancelPair"),
+};
+assert.equal(menu.runBluetoothDeviceAction(pairingDevice, "cancelPair"), true);
+const pairedDevice = {
+	pairing: false,
+	paired: true,
+	connected: false,
+	connect: () => bluetoothCalls.push("connect"),
+};
+assert.equal(menu.runBluetoothDeviceAction(pairedDevice, "connect"), true);
+const connectedDevice = {
+	pairing: false,
+	paired: true,
+	connected: true,
+	disconnect: () => bluetoothCalls.push("disconnect"),
+};
+assert.equal(
+	menu.runBluetoothDeviceAction(connectedDevice, "disconnect"),
+	true,
+);
+assert.deepEqual(bluetoothCalls, [
+	"pair",
+	"cancelPair",
+	"connect",
+	"disconnect",
+]);
 assert.equal(
 	menu.audioSourceLabel({
 		nickname: "Studio Mic",

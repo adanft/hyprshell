@@ -18,9 +18,9 @@ Rectangle {
         if (forgetAvailable)
             forgetRequested();
     }
-    height: 52
-    radius: theme.shape.radius8
-    color: colors.transparent
+    height: 48
+    radius: theme.shape.radius12
+    color: colors.surface
     border.width: 0
     Accessible.role: Accessible.ListItem
     Accessible.name: device ? `${device.name || device.deviceName}, ${NetworkMenuLogic.bluetoothDeviceStatus(device)}` : "Bluetooth device"
@@ -28,7 +28,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: actionButton.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: root.theme.spacing.space8
+        anchors.leftMargin: root.theme.spacing.space12
         anchors.rightMargin: root.theme.spacing.space8
         spacing: root.theme.spacing.space2
 
@@ -55,18 +55,21 @@ Rectangle {
     Rectangle {
         id: actionButton
         objectName: "bluetoothPrimaryAction"
-        width: 78
+        width: actionLabel.implicitWidth + root.theme.spacing.space16
         height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
-        anchors.right: forgetButton.left
-        anchors.rightMargin: forgetButton.opacity > 0 ? root.theme.spacing.space6 : 0
+        anchors.right: forgetButton.visible ? forgetButton.left : parent.right
+        anchors.rightMargin: forgetButton.visible ? root.theme.spacing.space4 : root.theme.spacing.space8
         anchors.verticalCenter: parent.verticalCenter
-        radius: root.theme.shape.radius6
-        color: actionMouse.containsMouse || actionMouse.activeFocus ? root.colors.surfaceHover : root.colors.surface
+        radius: root.theme.shape.radius8
+        color: actionMouse.containsMouse || actionMouse.activeFocus ? root.colors.surfaceHover : root.colors.transparent
 
-        Text {
-            anchors.centerIn: parent
-            text: NetworkMenuLogic.bluetoothActionLabel(root.device)
-            color: root.colors.text
+            Text {
+                id: actionLabel
+                anchors.centerIn: parent
+                text: NetworkMenuLogic.bluetoothActionLabel(root.device)
+                color: root.action === "disconnect" || root.action === "cancelPair"
+                    ? root.colors.danger
+                    : root.colors.primary
             font.family: root.theme.typography.textFontFamily
             font.styleName: root.theme.typography.styleMedium
             font.pixelSize: root.theme.typography.sizeSm
@@ -102,16 +105,17 @@ Rectangle {
     Rectangle {
         id: forgetButton
         objectName: "bluetoothForgetAction"
-        width: 58
+        visible: root.forgetAvailable
+        width: visible ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
         height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
         anchors.right: parent.right
         anchors.rightMargin: root.theme.spacing.space8
         anchors.verticalCenter: parent.verticalCenter
-        radius: root.theme.shape.radius6
-        opacity: root.forgetAvailable ? 1 : 0
+        radius: root.theme.shape.radius8
         color: forgetMouse.containsMouse || forgetMouse.activeFocus ? root.colors.surfaceHover : root.colors.transparent
 
         Text {
+            id: forgetLabel
             anchors.centerIn: parent
             text: "Forget"
             color: root.colors.danger

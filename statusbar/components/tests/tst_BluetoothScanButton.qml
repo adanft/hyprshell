@@ -16,16 +16,18 @@ TestCase {
                     primary: "#88aaff",
                     surface: "#202020",
                     surfaceHover: "#303030",
-                    text: "#ffffff"
+                    text: "#ffffff",
+                    textSubtle: "#aaaaaa",
+                    transparent: "transparent"
                 })
             theme: ({
-                shape: { radius6: 6 },
-                spacing: { space6: 6 },
+                shape: { radius8: 8 },
+                spacing: { space8: 8, space16: 16 },
                 sizing: { statusBarTrayMenuItemHeight: 36 },
                     typography: {
                         sizeSm: 11,
                         textFontFamily: "sans-serif",
-                        styleMedium: "Medium"
+                        styleRegular: "Regular"
                     }
             })
         }

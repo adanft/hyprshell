@@ -695,176 +695,156 @@ Item {
                             }
                         }
 
-                        Item {
+                        Rectangle {
+                            id: microphoneCard
                             visible: root.expandedNetworkSection === "microphone"
                             width: parent.width
-                            height: microphoneColumn.implicitHeight + root.theme.spacing.space8
+                            height: microphoneColumn.implicitHeight + root.theme.spacing.space24
+                            color: root.colors.transparent
+                            border.width: 0
 
                             Column {
                                 id: microphoneColumn
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: root.theme.spacing.space12
-                                anchors.rightMargin: root.theme.spacing.space12
-                                spacing: root.theme.spacing.space6
+                                spacing: root.theme.spacing.space8
 
-                                Row {
+                                BarText {
+                                    x: root.theme.spacing.space12
+                                    width: parent.width - root.theme.spacing.space24
+                                    text: "Input volume"
+                                    color: root.colors.textSubtle
+                                    font.pixelSize: root.theme.typography.sizeMd
+                                    font.styleName: root.theme.typography.styleRegular
+                                }
+
+                                Rectangle {
                                     width: parent.width
                                     height: root.quickControlHeight
-                                    spacing: root.theme.spacing.space8
+                                    radius: root.theme.shape.radius12
+                                    color: root.colors.transparent
+                                    border.width: 0
 
-                                    BarText {
-                                        width: root.quickControlIconWidth
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        horizontalAlignment: Text.AlignHCenter
-                                        text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
-                                        color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
-                                        font.pixelSize: 20
-                                    }
+                                    Row {
+                                        anchors.fill: parent
+                                        anchors.margins: root.theme.spacing.space12
+                                        spacing: root.theme.spacing.space8
 
-                                    QuickControlSlider {
-                                        id: microphoneSlider
-                                        width: parent.width - root.quickControlIconWidth - parent.spacing
-                                        height: 32
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        value: Math.max(0, root.services.sourceVolume)
-                                        available: root.services.microphoneAvailable
-                                        trackColor: root.colors.background
-                                        fillColor: root.colors.primary
-                                        handleColor: root.colors.text
-                                        handleBorderColor: root.colors.primary
-                                        unavailableText: "Microphone unavailable"
-                                        onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                        BarText {
+                                            width: root.quickControlIconWidth
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            horizontalAlignment: Text.AlignHCenter
+                                            text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                            color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
+                                            font.pixelSize: 20
+                                        }
+
+                                        QuickControlSlider {
+                                            id: microphoneSlider
+                                            width: parent.width - root.quickControlIconWidth - parent.spacing
+                                            height: 32
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            trackHeight: 8
+                                            value: Math.max(0, root.services.sourceVolume)
+                                            available: root.services.microphoneAvailable
+                                            trackColor: root.colors.surface
+                                            fillColor: root.colors.primary
+                                            handleColor: root.colors.text
+                                            handleBorderColor: root.colors.primary
+                                            unavailableText: "Microphone unavailable"
+                                            onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                        }
                                     }
                                 }
 
                                 BarText {
-                                    visible: root.services.audioSources.length > 0
+                                    x: root.theme.spacing.space12
+                                    width: parent.width - root.theme.spacing.space24
                                     text: "Input devices"
-                                    color: root.colors.text
-                                    font.styleName: root.theme.typography.styleMedium
+                                    color: root.colors.textSubtle
+                                    font.pixelSize: root.theme.typography.sizeMd
+                                    font.styleName: root.theme.typography.styleRegular
                                 }
 
                                 Repeater {
-                                    model: root.services.audioSources
+                                    model: root.services.audioSources ?? []
 
-                                    Rectangle {
-                                        id: sourceRow
+                                    MicrophoneSourceRow {
                                         required property var modelData
-                                        width: microphoneColumn.width
-                                        height: root.detailRowHeight
-                                        radius: root.theme.shape.radius8
-                                        color: modelData === root.services.source
-                                            ? root.colors.surfaceHover
-                                            : (sourceMouse.containsMouse ? root.colors.surface : root.colors.transparent)
-                                        border.width: 0
-
-                                        Column {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            anchors.leftMargin: root.theme.spacing.space8
-                                            anchors.rightMargin: root.theme.spacing.space8
-                                            spacing: root.theme.spacing.space2
-
-                                            BarText {
-                                                width: parent.width
-                                                text: NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)
-                                                color: root.colors.text
-                                                    font.styleName: sourceRow.modelData === root.services.source
-                                                        ? root.theme.typography.styleMedium
-                                                        : root.theme.typography.styleRegular
-                                                    elide: Text.ElideRight
-                                            }
-
-                                            BarText {
-                                                text: NetworkMenuLogic.audioSourceStatus(sourceRow.modelData, root.services.source)
-                                                color: sourceRow.modelData === root.services.source ? root.colors.primary : root.colors.textSubtle
-                                                font.pixelSize: root.theme.typography.sizeSm
-                                            }
-                                        }
-
-                                        Rectangle {
-                                            anchors.fill: parent
-                                            radius: parent.radius
-                                            color: "transparent"
-                                            border.color: root.colors.primary
-                                            border.width: sourceMouse.activeFocus ? 2 : 0
-                                        }
-
-                                        MouseArea {
-                                            id: sourceMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            enabled: sourceRow.modelData !== root.services.source
-                                            activeFocusOnTab: enabled
-                                            Accessible.role: Accessible.Button
-                                            Accessible.name: `Use ${NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)} as microphone`
-                                            onClicked: root.services.selectAudioSource(sourceRow.modelData)
-                                            Keys.onSpacePressed: root.services.selectAudioSource(sourceRow.modelData)
-                                            Keys.onReturnPressed: root.services.selectAudioSource(sourceRow.modelData)
-                                            Keys.onEnterPressed: root.services.selectAudioSource(sourceRow.modelData)
-                                        }
+                                        x: root.theme.spacing.space12
+                                        width: microphoneColumn.width - root.theme.spacing.space24
+                                        source: modelData
+                                        active: modelData === root.services.source
+                                        colors: root.colors
+                                        theme: root.theme
+                                        onSelectRequested: source => root.services.selectAudioSource(source)
                                     }
                                 }
 
-                                BarText {
-                                    visible: root.services.audioSources.length === 0
-                                        text: root.services.microphoneAvailable
-                                            ? "No additional microphone inputs"
-                                            : "Microphone unavailable"
-                                        color: root.colors.textSubtle
-                                        font.styleName: root.theme.typography.styleRegular
+                                ControlEmptyState {
+                                    visible: (root.services.audioSources?.length ?? 0) === 0
+                                    x: root.theme.spacing.space12
+                                    width: parent.width - root.theme.spacing.space24
+                                    colors: root.colors
+                                    theme: root.theme
+                                    title: root.services.microphoneAvailable
+                                        ? "No additional microphone inputs"
+                                        : "Microphone unavailable"
+                                    description: root.services.microphoneAvailable
+                                        ? "The active microphone is already selected"
+                                        : "Connect an input device to control it here"
                                 }
                             }
                         }
 
-                        Item {
+                        Rectangle {
+                            id: bluetoothCard
                             visible: root.expandedNetworkSection === "bluetooth"
                             width: parent.width
-                            height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
+                            height: bluetoothColumn.implicitHeight + root.theme.spacing.space24
+                            color: root.colors.transparent
+                            border.width: 0
 
                             Column {
                                 id: bluetoothColumn
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: root.theme.spacing.space12
-                                anchors.rightMargin: root.theme.spacing.space12
-                                spacing: root.theme.spacing.space6
+                                anchors.margins: root.theme.spacing.space12
+                                spacing: root.theme.spacing.space8
 
                                     Row {
-                                        width: parent.width
-                                        height: root.theme.sizing.statusBarTrayMenuItemHeight
+                                    width: parent.width
+                                    height: root.theme.sizing.statusBarTrayMenuItemHeight
 
-                                        BarText {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: "Bluetooth devices"
-                                            color: root.colors.text
-                                            font.styleName: root.theme.typography.styleMedium
-                                        }
-
-                                        BluetoothScanButton {
-                                            anchors.right: parent.right
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            colors: root.colors
-                                            theme: root.theme
-                                            discovering: root.services.bluetoothAdapter?.discovering ?? false
-                                            available: root.services.bluetoothPowered
-                                                onScanToggled: discovering => {
-                                                    if (root.services.bluetoothAdapter)
-                                                        root.services.bluetoothAdapter.discovering = discovering;
-                                                }
-                                        }
+                                    BarText {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Bluetooth devices"
+                                        color: root.colors.textSubtle
+                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.styleName: root.theme.typography.styleRegular
                                     }
 
-                                    Repeater {
-                                        model: NetworkMenuLogic.bluetoothVisibleDevices(
-                                            root.services.bluetoothAdapter?.devices?.values ?? [],
-                                            root.services.bluetoothAdapter?.discovering ?? false
-                                        )
+                                    BluetoothScanButton {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        colors: root.colors
+                                        theme: root.theme
+                                        discovering: root.services.bluetoothAdapter?.discovering ?? false
+                                        available: root.services.bluetoothPowered
+                                        onScanToggled: discovering => {
+                                            if (root.services.bluetoothAdapter)
+                                                root.services.bluetoothAdapter.discovering = discovering;
+                                        }
+                                    }
+                                }
+
+                                Repeater {
+                                    model: NetworkMenuLogic.bluetoothVisibleDevices(
+                                        root.services.bluetoothAdapter?.devices?.values ?? [],
+                                        root.services.bluetoothAdapter?.discovering ?? false
+                                    )
 
                                     BluetoothDeviceRow {
                                         required property var modelData
@@ -877,19 +857,25 @@ Item {
                                     }
                                 }
 
-                                    BarText {
-                                        visible: NetworkMenuLogic.bluetoothVisibleDevices(
-                                            root.services.bluetoothAdapter?.devices?.values ?? [],
-                                            root.services.bluetoothAdapter?.discovering ?? false
-                                        ).length === 0
-                                        text: NetworkMenuLogic.bluetoothEmptyState(
-                                            root.services.bluetoothAvailable,
-                                            root.services.bluetoothPowered,
-                                            root.services.bluetoothAdapter?.discovering ?? false
-                                        )
-                                        color: root.colors.textSubtle
-                                        font.styleName: root.theme.typography.styleRegular
-                                    }
+                                ControlEmptyState {
+                                    visible: NetworkMenuLogic.bluetoothVisibleDevices(
+                                        root.services.bluetoothAdapter?.devices?.values ?? [],
+                                        root.services.bluetoothAdapter?.discovering ?? false
+                                    ).length === 0
+                                    width: parent.width
+                                    colors: root.colors
+                                    theme: root.theme
+                                    title: NetworkMenuLogic.bluetoothEmptyState(
+                                        root.services.bluetoothAvailable,
+                                        root.services.bluetoothPowered,
+                                        root.services.bluetoothAdapter?.discovering ?? false
+                                    )
+                                    description: NetworkMenuLogic.bluetoothEmptyDescription(
+                                        root.services.bluetoothAvailable,
+                                        root.services.bluetoothPowered,
+                                        root.services.bluetoothAdapter?.discovering ?? false
+                                    )
+                                }
                             }
                         }
 

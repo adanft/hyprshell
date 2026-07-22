@@ -13,10 +13,10 @@ Rectangle {
             scanToggled(!discovering);
     }
 
-    width: 58
-    height: theme.sizing.statusBarTrayMenuItemHeight - theme.spacing.space6
-    radius: theme.shape.radius6
-    color: input.containsMouse || input.activeFocus ? colors.surfaceHover : colors.surface
+    width: label.implicitWidth + theme.spacing.space16
+    height: theme.sizing.statusBarTrayMenuItemHeight - theme.spacing.space8
+    radius: theme.shape.radius8
+    color: input.containsMouse || input.activeFocus ? colors.surfaceHover : colors.transparent
     opacity: available ? 1 : 0.45
 
     Accessible.role: Accessible.Button
@@ -24,11 +24,12 @@ Rectangle {
     Accessible.description: available ? "" : "Bluetooth must be enabled before scanning"
 
     Text {
+        id: label
         anchors.centerIn: parent
         text: root.discovering ? "Stop" : "Scan"
-        color: root.colors.text
+        color: root.available ? root.colors.primary : root.colors.textSubtle
         font.family: root.theme.typography.textFontFamily
-        font.styleName: root.theme.typography.styleMedium
+        font.styleName: root.theme.typography.styleRegular
         font.pixelSize: root.theme.typography.sizeSm
     }
 

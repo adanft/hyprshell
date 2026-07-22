@@ -143,6 +143,13 @@ function bluetoothEmptyState(available, powered, discovering) {
 	return "No paired devices";
 }
 
+function bluetoothEmptyDescription(available, powered, discovering) {
+	if (!available) return "No Bluetooth adapter was detected";
+	if (!powered) return "Turn on Bluetooth to discover devices";
+	if (discovering) return "Nearby devices will appear here";
+	return "Scan to discover nearby devices";
+}
+
 function microphoneSummary(available, muted, volume) {
 	if (!available) return "Unavailable";
 	if (muted) return "Muted";

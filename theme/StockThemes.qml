@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "HyprlandThemeCommand.js" as HyprlandThemeCommand
 
 QtObject {
     id: stockThemes
@@ -131,8 +132,24 @@ QtObject {
         if (hyprlandSyncBusy)
             return
 
+        let processArgs
+        try {
+            processArgs = HyprlandThemeCommand.processArguments(nextTheme)
+        } catch (error) {
+            pendingHyprlandTheme = null
+            console.warn(`Failed to build Hyprland theme command: ${error}`)
+            return
+        }
+
         hyprlandSyncBusy = true
         const process = hyprlandProcessComponent.createObject(stockThemes)
+        if (!process) {
+            pendingHyprlandTheme = null
+            hyprlandSyncBusy = false
+            console.warn("Failed to create Hyprland theme process")
+            return
+        }
+
         process.onExited.connect(function(exitCode) {
             if (exitCode !== 0)
                 console.warn(`Failed to apply Hyprland theme (exit ${exitCode})`)
@@ -141,12 +158,14 @@ QtObject {
             if (pendingHyprlandTheme !== nextTheme)
                 syncHyprlandTheme(pendingHyprlandTheme)
         })
-        process.exec([
-            `${Quickshell.env("HOME")}/.config/hypr/scripts/apply_hyprland_theme.sh`,
-            nextTheme.focus,
-            nextTheme.borderStrong,
-            nextTheme.background
-        ])
+        try {
+            process.exec(processArgs)
+        } catch (error) {
+            process.destroy()
+            pendingHyprlandTheme = null
+            hyprlandSyncBusy = false
+            console.warn(`Failed to start Hyprland theme process: ${error}`)
+        }
     }
 
     readonly property Component hyprlandProcessComponent: Component { Process {} }

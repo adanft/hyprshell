@@ -139,6 +139,10 @@ Item {
         network.forget();
     }
 
+    function performBluetoothAction(device, action) {
+        NetworkMenuLogic.runBluetoothDeviceAction(device, action);
+    }
+
     FileView {
         id: hostnameFile
         path: "/etc/hostname"
@@ -636,73 +640,52 @@ Item {
                             }
                         }
 
-                            Item {
-                                visible: root.expandedNetworkSection === "bluetooth"
-                                width: parent.width
-                                height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
+                        Item {
+                            visible: root.expandedNetworkSection === "bluetooth"
+                            width: parent.width
+                            height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
 
-                                Column {
-                                    id: bluetoothColumn
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    anchors.leftMargin: root.theme.spacing.space12
-                                    anchors.rightMargin: root.theme.spacing.space12
-                                    spacing: root.theme.spacing.space6
+                            Column {
+                                id: bluetoothColumn
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: root.theme.spacing.space12
+                                anchors.rightMargin: root.theme.spacing.space12
+                                spacing: root.theme.spacing.space6
 
-                                    BarText {
-                                        text: "Bluetooth devices"
-                                        color: root.colors.text
-                                        font.weight: Font.Medium
-                                    }
+                                BarText {
+                                    text: "Bluetooth devices"
+                                    color: root.colors.text
+                                    font.weight: Font.Medium
+                                }
 
-                                    Repeater {
-                                        model: root.services.bluetoothAdapter?.devices?.values?.filter(device => device && (device.paired || device.connected)) ?? []
+                                Repeater {
+                                    model: root.services.bluetoothAdapter?.devices?.values?.filter(
+                                        device => device && (device.paired || device.connected || device.pairing)
+                                    ) ?? []
 
-                                        Item {
-                                            required property var modelData
-                                            width: bluetoothColumn.width
-                                            height: root.detailRowHeight
-
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: root.theme.spacing.space8
-                                                anchors.rightMargin: root.theme.spacing.space8
-                                                spacing: root.theme.spacing.space8
-
-                                                BarText {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.connected ? root.icons.bluetoothConnected : root.icons.bluetoothOn
-                                                    color: modelData.connected ? root.colors.primary : root.colors.textMuted
-                                                }
-
-                                                BarText {
-                                                    width: parent.width - 80
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.name || modelData.alias || "Bluetooth device"
-                                                    color: root.colors.text
-                                                    font.weight: modelData.connected ? Font.Medium : Font.Normal
-                                                    elide: Text.ElideRight
-                                                }
-
-                                                BarText {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.connected ? "Connected" : "Paired"
-                                                    color: modelData.connected ? root.colors.primary : root.colors.textSubtle
-                                                    font.weight: Font.Normal
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    BarText {
-                                        visible: (root.services.bluetoothAdapter?.devices?.values?.filter(device => device && (device.paired || device.connected)).length ?? 0) === 0
-                                        text: root.services.bluetoothPowered ? "No paired devices" : "Bluetooth is off"
-                                        color: root.colors.textSubtle
-                                        font.weight: Font.Normal
+                                    BluetoothDeviceRow {
+                                        required property var modelData
+                                        width: bluetoothColumn.width
+                                        device: modelData
+                                        colors: root.colors
+                                        theme: root.theme
+                                        onPrimaryActionRequested: action => root.performBluetoothAction(modelData, action)
+                                        onForgetRequested: modelData.forget()
                                     }
                                 }
+
+                                BarText {
+                                    visible: (root.services.bluetoothAdapter?.devices?.values?.filter(
+                                        device => device && (device.paired || device.connected || device.pairing)
+                                    ).length ?? 0) === 0
+                                    text: root.services.bluetoothPowered ? "No paired devices" : "Bluetooth is off"
+                                    color: root.colors.textSubtle
+                                    font.weight: Font.Normal
+                                }
                             }
+                        }
 
                             Rectangle {
                                 id: lanCard

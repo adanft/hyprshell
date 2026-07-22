@@ -19,7 +19,6 @@ for (const loaderId of [
 	"themeSelectorLoader",
 	"screenshotToolLoader",
 	"notificationCenterLoader",
-	"notificationPopupLoader",
 ]) {
 	assert.match(
 		shell,
@@ -56,6 +55,13 @@ for (const eagerWindow of [
 		`${eagerWindow} must not be eager`,
 	);
 }
+
+assert.match(
+	shell,
+	/Notifications\.NotificationPopupManager\s*{\s*colors: themeColors\s*services: serviceState\s*barWindow: barWindow/,
+	"notification popup manager must remain resident to preserve stack state",
+);
+assert.equal(shell.includes("id: notificationPopupLoader"), false);
 
 assert.match(barWindow, /LazyLoader\s*{\s*id: networkMenuLoader/);
 assert.match(

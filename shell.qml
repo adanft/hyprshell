@@ -209,22 +209,6 @@ ShellRoot {
                 });
             }
 
-            function syncNotificationPopupLoader() {
-                if (serviceState.visibleNotifications.length > 0) {
-                    notificationPopupLoader.active = true;
-                    Qt.callLater(() => {
-                        const manager = notificationPopupLoader.item;
-                        if (manager && !manager.isFocusedScreen)
-                            notificationPopupLoader.active = false;
-                    });
-                    return;
-                }
-
-                if (notificationPopupLoader.item
-                        && notificationPopupLoader.item.popupItems.length === 0)
-                    notificationPopupLoader.active = false;
-            }
-
             onOpenNotificationCenterRequested: toggleNotificationCenter()
 
             LazyLoader {
@@ -252,42 +236,11 @@ ShellRoot {
                 }
             }
 
-            LazyLoader {
-                id: notificationPopupLoader
-                property var ownerWindow: barWindow
-                active: false
-
-                Notifications.NotificationPopupManager {
-                    colors: themeColors
-                    services: serviceState
-                    barWindow: notificationPopupLoader.ownerWindow
-                }
+            Notifications.NotificationPopupManager {
+                colors: themeColors
+                services: serviceState
+                barWindow: barWindow
             }
-
-            Connections {
-                target: notificationPopupLoader.item
-                enabled: target !== null
-                function onVisibleChanged() {
-                    const manager = notificationPopupLoader.item;
-                    if (manager && !manager.visible
-                            && serviceState.visibleNotifications.length === 0)
-                        notificationPopupLoader.active = false;
-                }
-            }
-
-            Connections {
-                target: serviceState
-
-                function onVisibleNotificationsChanged() {
-                    barWindow.syncNotificationPopupLoader();
-                }
-
-                function onFocusedNotificationScreenNameChanged() {
-                    barWindow.syncNotificationPopupLoader();
-                }
-            }
-
-            Component.onCompleted: syncNotificationPopupLoader()
         }
     }
 

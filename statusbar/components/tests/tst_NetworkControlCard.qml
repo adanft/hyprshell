@@ -30,7 +30,10 @@ TestCase {
                 spacing: { space8: 8, space6: 6, space2: 2 },
                     typography: {
                         sizeSm: 11,
+                        sizeMd: 14,
+                        sizeXl: 20,
                         textFontFamily: "sans-serif",
+                        iconFontFamily: "sans-serif",
                         styleRegular: "Regular",
                         styleSemibold: "Semibold"
                     }

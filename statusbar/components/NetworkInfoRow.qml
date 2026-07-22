@@ -18,7 +18,7 @@ Row {
         color: root.colors.textMuted
         font.family: root.theme.typography.textFontFamily
         font.pixelSize: root.theme.typography.sizeSm
-        font.weight: Font.Normal
+        font.styleName: root.theme.typography.styleRegular
     }
 
     Text {
@@ -27,7 +27,7 @@ Row {
         color: root.colors.text
         font.family: root.theme.typography.textFontFamily
         font.pixelSize: root.theme.typography.sizeSm
-        font.weight: Font.Normal
+        font.styleName: root.theme.typography.styleRegular
         wrapMode: Text.WrapAnywhere
     }
 }

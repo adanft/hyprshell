@@ -51,7 +51,7 @@ Rectangle {
             color: root.network?.connected ? root.colors.primary : root.colors.text
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
-            font.weight: Font.Normal
+            font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
 
@@ -62,7 +62,7 @@ Rectangle {
             color: root.network?.connected ? root.colors.primary : root.colors.textSubtle
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
-            font.weight: Font.Normal
+            font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
     }
@@ -95,7 +95,7 @@ Rectangle {
                 color: root.network?.connected ? root.colors.danger : root.colors.primary
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
-                font.weight: Font.Normal
+                font.styleName: root.theme.typography.styleRegular
             }
 
             MouseArea {
@@ -135,7 +135,7 @@ Rectangle {
                 color: root.colors.danger
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
-                font.weight: Font.Normal
+                font.styleName: root.theme.typography.styleRegular
             }
 
             MouseArea {

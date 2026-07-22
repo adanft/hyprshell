@@ -72,8 +72,9 @@ Rectangle {
                 anchors.centerIn: parent
                 text: card.icon
                 color: card.active ? card.colors.background : card.colors.textMuted
-                font.family: card.theme.typography.textFontFamily
-                font.pixelSize: 20
+                font.family: card.theme.typography.iconFontFamily
+                font.pixelSize: card.theme.typography.sizeXl
+                font.styleName: card.theme.typography.styleRegular
             }
 
             MouseArea {
@@ -95,6 +96,7 @@ Rectangle {
                 text: card.title
                 color: card.colors.text
                 font.family: card.theme.typography.textFontFamily
+                font.pixelSize: card.theme.typography.sizeMd
                 font.styleName: card.theme.typography.styleSemibold
                 elide: Text.ElideRight
             }

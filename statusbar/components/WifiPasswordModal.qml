@@ -134,7 +134,7 @@ Scope {
                                 color: root.colors.text
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
-                                font.weight: Font.Medium
+                                font.styleName: root.theme.typography.styleMedium
                                 elide: Text.ElideRight
                             }
 
@@ -144,7 +144,7 @@ Scope {
                                 color: root.colors.textSubtle
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeSm
-                                font.weight: Font.Normal
+                                font.styleName: root.theme.typography.styleRegular
                                 elide: Text.ElideRight
                             }
                         }
@@ -166,6 +166,7 @@ Scope {
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
+                                font.styleName: root.theme.typography.styleRegular
                             }
 
                             MouseArea {
@@ -207,6 +208,7 @@ Scope {
                             verticalAlignment: TextInput.AlignVCenter
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.sizeMd
+                            font.styleName: root.theme.typography.styleRegular
                             enabled: !root.busy
                             Accessible.role: Accessible.EditableText
                             Accessible.name: root.network ? `Password for ${root.network.name}` : "Wi-Fi password"
@@ -226,6 +228,7 @@ Scope {
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
+                                font.styleName: root.theme.typography.styleRegular
                             }
 
                             MouseArea {
@@ -250,6 +253,7 @@ Scope {
                         color: root.colors.danger
                         font.family: root.theme.typography.textFontFamily
                         font.pixelSize: root.theme.typography.sizeSm
+                        font.styleName: root.theme.typography.styleRegular
                         wrapMode: Text.WordWrap
                     }
 

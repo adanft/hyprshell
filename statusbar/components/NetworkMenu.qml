@@ -424,7 +424,7 @@ Item {
                                     color: root.colors.background
                                     font.family: root.theme.typography.textFontFamily
                                     font.pixelSize: root.theme.typography.actionIconFontSize
-                                    font.bold: true
+                                    font.styleName: root.theme.typography.styleSemibold
                                 }
 
                                 ClippingRectangle {
@@ -464,8 +464,8 @@ Item {
                                     text: root.username
                                     color: root.colors.text
                                     font.family: root.theme.typography.textFontFamily
-                                    font.pixelSize: 16
-                                    font.weight: Font.DemiBold
+                                    font.pixelSize: root.theme.typography.sizeLg
+                                    font.styleName: root.theme.typography.styleSemibold
                                     elide: Text.ElideRight
                                 }
 
@@ -479,7 +479,7 @@ Item {
                                     }
                                     color: root.colors.textMuted
                                     font.pixelSize: root.theme.typography.sizeSm
-                                    font.weight: Font.Normal
+                                    font.styleName: root.theme.typography.styleRegular
                                 }
                             }
                         }
@@ -512,7 +512,9 @@ Item {
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.volumeIcon()
                                             color: volumeSlider.enabled ? root.colors.text : root.colors.textMuted
-                                            font.pixelSize: 20
+                                            font.family: root.theme.typography.iconFontFamily
+                                            font.pixelSize: root.theme.typography.sizeXl
+                                            font.styleName: root.theme.typography.styleRegular
                                         }
 
                                         QuickControlSlider {
@@ -556,7 +558,9 @@ Item {
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.icons.brightnessControl
                                             color: brightnessSlider.enabled ? root.colors.text : root.colors.textMuted
-                                            font.pixelSize: 20
+                                            font.family: root.theme.typography.iconFontFamily
+                                            font.pixelSize: root.theme.typography.sizeXl
+                                            font.styleName: root.theme.typography.styleRegular
                                         }
 
                                         QuickControlSlider {
@@ -737,7 +741,9 @@ Item {
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
                                             color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
-                                            font.pixelSize: 20
+                                            font.family: root.theme.typography.iconFontFamily
+                                            font.pixelSize: root.theme.typography.sizeXl
+                                            font.styleName: root.theme.typography.styleRegular
                                         }
 
                                         QuickControlSlider {
@@ -899,7 +905,7 @@ Item {
                                 text: "Network info"
                                 color: root.colors.textSubtle
                                 font.pixelSize: root.theme.typography.sizeMd
-                                font.weight: Font.Normal
+                                font.styleName: root.theme.typography.styleRegular
                             }
 
                             Rectangle {
@@ -922,7 +928,7 @@ Item {
                                         text: root.services.lanDevice?.name || "No wired adapter"
                                         color: root.colors.text
                                         font.pixelSize: root.theme.typography.sizeMd
-                                        font.weight: Font.Normal
+                                        font.styleName: root.theme.typography.styleRegular
                                         elide: Text.ElideRight
                                     }
 
@@ -933,7 +939,7 @@ Item {
                                             : "Cable disconnected"
                                         color: root.services.lanUp ? root.colors.primary : root.colors.textMuted
                                         font.pixelSize: root.theme.typography.sizeSm
-                                        font.weight: Font.Normal
+                                        font.styleName: root.theme.typography.styleRegular
                                     }
 
                                     NetworkInfoRow { label: "Profile"; value: root.services.ethernetInfo.connectionName || ""; colors: root.colors; theme: root.theme }
@@ -960,7 +966,7 @@ Item {
                                 text: root.services.ethernetProfileError || root.connectionError
                                 color: root.colors.danger
                                 font.pixelSize: root.theme.typography.sizeSm
-                                font.weight: Font.Normal
+                                font.styleName: root.theme.typography.styleRegular
                                 wrapMode: Text.Wrap
                             }
 
@@ -976,7 +982,7 @@ Item {
                                 text: "Connection profiles"
                                 color: root.colors.textSubtle
                                 font.pixelSize: root.theme.typography.sizeMd
-                                font.weight: Font.Normal
+                                font.styleName: root.theme.typography.styleRegular
                             }
 
                             Repeater {
@@ -1017,7 +1023,7 @@ Item {
                                         text: "Network info"
                                         color: root.colors.textSubtle
                                         font.pixelSize: root.theme.typography.sizeMd
-                                        font.weight: Font.Normal
+                                        font.styleName: root.theme.typography.styleRegular
                                     }
 
                                     Rectangle {
@@ -1040,7 +1046,7 @@ Item {
                                                 text: root.services.wifiInterface || "No Wi-Fi adapter"
                                                 color: root.colors.text
                                                 font.pixelSize: root.theme.typography.sizeMd
-                                                font.weight: Font.Normal
+                                                font.styleName: root.theme.typography.styleRegular
                                                 elide: Text.ElideRight
                                             }
 
@@ -1055,7 +1061,7 @@ Item {
                                                                 : (root.services.wifiUp ? "Connected" : "Not connected")))
                                                 color: root.services.wifiUp ? root.colors.primary : root.colors.textMuted
                                                 font.pixelSize: root.theme.typography.sizeSm
-                                                font.weight: Font.Normal
+                                                font.styleName: root.theme.typography.styleRegular
                                             }
 
                                                 BarText {
@@ -1068,7 +1074,7 @@ Item {
                                                         : "Loading network details…"
                                                     color: root.colors.textSubtle
                                                     font.pixelSize: root.theme.typography.sizeSm
-                                                    font.weight: Font.Normal
+                                                    font.styleName: root.theme.typography.styleRegular
                                                     wrapMode: Text.WordWrap
                                                 }
 
@@ -1095,7 +1101,7 @@ Item {
                                 text: "Available networks"
                                 color: root.colors.textSubtle
                                 font.pixelSize: root.theme.typography.sizeMd
-                                font.weight: Font.Normal
+                                font.styleName: root.theme.typography.styleRegular
                             }
 
                                 Repeater {
@@ -1161,7 +1167,7 @@ Item {
                                                     : (!Networking.wifiEnabled ? "Wi-Fi is disabled" : "No networks found"))
                                             color: root.colors.text
                                             font.pixelSize: root.theme.typography.sizeMd
-                                            font.weight: Font.Normal
+                                            font.styleName: root.theme.typography.styleRegular
                                             elide: Text.ElideRight
                                         }
 
@@ -1176,7 +1182,7 @@ Item {
                                                         : "Scanning continues automatically"))
                                             color: root.colors.textSubtle
                                             font.pixelSize: root.theme.typography.sizeSm
-                                            font.weight: Font.Normal
+                                            font.styleName: root.theme.typography.styleRegular
                                             elide: Text.ElideRight
                                         }
                                     }

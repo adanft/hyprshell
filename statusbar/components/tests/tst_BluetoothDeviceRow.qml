@@ -35,6 +35,7 @@ TestCase {
                 sizing: { statusBarTrayMenuItemHeight: 36 },
                     typography: {
                         sizeSm: 11,
+                        sizeMd: 14,
                         textFontFamily: "sans-serif",
                         styleRegular: "Regular",
                         styleMedium: "Medium"

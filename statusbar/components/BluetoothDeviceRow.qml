@@ -37,9 +37,8 @@ Rectangle {
             text: root.device?.name || root.device?.deviceName || "Bluetooth device"
             color: root.colors.text
             font.family: root.theme.typography.textFontFamily
-            font.styleName: root.device?.connected
-                ? root.theme.typography.styleMedium
-                : root.theme.typography.styleRegular
+            font.pixelSize: root.theme.typography.sizeMd
+            font.styleName: root.device?.connected ? root.theme.typography.styleMedium : root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
 

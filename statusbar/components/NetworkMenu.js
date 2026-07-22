@@ -70,6 +70,10 @@ function shouldScanWifi(
 	);
 }
 
+function shouldStopBluetoothScan(menuOpen, expandedSection, discovering) {
+	return Boolean(discovering && (!menuOpen || expandedSection !== "bluetooth"));
+}
+
 function bluetoothSummary(available, powered, connectedCount) {
 	if (!available) return "Unavailable";
 	if (!powered) return "Off";

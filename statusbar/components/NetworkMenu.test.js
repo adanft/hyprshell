@@ -77,6 +77,10 @@ assert.equal(menu.shouldScanWifi(false, "wifi", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "ethernet", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "wifi", false, true), false);
 assert.equal(menu.shouldScanWifi(true, "wifi", true, false), false);
+assert.equal(menu.shouldStopBluetoothScan(true, "bluetooth", true), false);
+assert.equal(menu.shouldStopBluetoothScan(false, "bluetooth", true), true);
+assert.equal(menu.shouldStopBluetoothScan(true, "wifi", true), true);
+assert.equal(menu.shouldStopBluetoothScan(false, "wifi", false), false);
 
 assert.equal(menu.bluetoothSummary(false, false, 0), "Unavailable");
 assert.equal(menu.bluetoothSummary(true, false, 0), "Off");

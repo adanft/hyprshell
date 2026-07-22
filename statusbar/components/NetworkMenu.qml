@@ -40,6 +40,15 @@ Item {
     property string connectionError: ""
     property real uptimeSeconds: 0
     property int quickControlRequestSequence: 0
+
+    onMenuOpenChanged: {
+        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
+            services.bluetoothAdapter.discovering = false;
+    }
+    onExpandedNetworkSectionChanged: {
+        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
+            services.bluetoothAdapter.discovering = false;
+    }
     property string expandedNetworkSection: ""
 
     function toggleNetworkSection(section) {
@@ -654,16 +663,35 @@ Item {
                                 anchors.rightMargin: root.theme.spacing.space12
                                 spacing: root.theme.spacing.space6
 
-                                BarText {
-                                    text: "Bluetooth devices"
-                                    color: root.colors.text
-                                    font.weight: Font.Medium
-                                }
+                                    Row {
+                                        width: parent.width
+                                        height: root.theme.sizing.statusBarTrayMenuItemHeight
 
-                                Repeater {
-                                    model: root.services.bluetoothAdapter?.devices?.values?.filter(
-                                        device => device && (device.paired || device.connected || device.pairing)
-                                    ) ?? []
+                                        BarText {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: root.services.bluetoothAdapter?.discovering ? "Scanning for devices…" : "Bluetooth devices"
+                                            color: root.colors.text
+                                            font.weight: Font.Medium
+                                        }
+
+                                        BluetoothScanButton {
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            colors: root.colors
+                                            theme: root.theme
+                                            discovering: root.services.bluetoothAdapter?.discovering ?? false
+                                            available: root.services.bluetoothPowered
+                                            onScanToggled: discovering => root.services.bluetoothAdapter.discovering = discovering
+                                        }
+                                    }
+
+                                    Repeater {
+                                        model: {
+                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
+                                            if (root.services.bluetoothAdapter?.discovering)
+                                                return devices.filter(device => device);
+                                            return devices.filter(device => device && (device.paired || device.connected || device.pairing));
+                                        }
 
                                     BluetoothDeviceRow {
                                         required property var modelData
@@ -676,14 +704,20 @@ Item {
                                     }
                                 }
 
-                                BarText {
-                                    visible: (root.services.bluetoothAdapter?.devices?.values?.filter(
-                                        device => device && (device.paired || device.connected || device.pairing)
-                                    ).length ?? 0) === 0
-                                    text: root.services.bluetoothPowered ? "No paired devices" : "Bluetooth is off"
-                                    color: root.colors.textSubtle
-                                    font.weight: Font.Normal
-                                }
+                                    BarText {
+                                        visible: {
+                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
+                                            const visibleDevices = root.services.bluetoothAdapter?.discovering
+                                                ? devices.filter(device => device)
+                                                : devices.filter(device => device && (device.paired || device.connected || device.pairing));
+                                            return visibleDevices.length === 0;
+                                        }
+                                        text: !root.services.bluetoothPowered
+                                            ? "Bluetooth is off"
+                                            : (root.services.bluetoothAdapter?.discovering ? "Searching…" : "No paired devices")
+                                        color: root.colors.textSubtle
+                                        font.weight: Font.Normal
+                                    }
                             }
                         }
 

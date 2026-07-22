@@ -42,3 +42,26 @@ function wifiSummary(network, wifiHardwareEnabled) {
 	if (network) return network.name + " · " + networkSignalText(network);
 	return wifiHardwareEnabled ? "Not connected" : "Disabled by hardware";
 }
+
+function nextExpandedSection(currentSection, requestedSection) {
+	return currentSection === requestedSection ? "" : requestedSection;
+}
+
+function ethernetToggleAction(network) {
+	if (!network || network.stateChanging) return null;
+	return network.connected ? "disconnect" : "connect";
+}
+
+function shouldScanWifi(
+	menuOpen,
+	expandedSection,
+	wifiEnabled,
+	wifiHardwareEnabled,
+) {
+	return Boolean(
+		menuOpen &&
+			expandedSection === "wifi" &&
+			wifiEnabled &&
+			wifiHardwareEnabled,
+	);
+}

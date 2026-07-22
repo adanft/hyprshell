@@ -48,4 +48,30 @@ assert.equal(
 assert.equal(menu.wifiSummary(null, true), "Not connected");
 assert.equal(menu.wifiSummary(null, false), "Disabled by hardware");
 
-console.log("NetworkMenu: identity, uptime, and network state helpers passed");
+assert.equal(menu.nextExpandedSection("", "ethernet"), "ethernet");
+assert.equal(menu.nextExpandedSection("ethernet", "ethernet"), "");
+assert.equal(menu.nextExpandedSection("ethernet", "wifi"), "wifi");
+
+assert.equal(menu.ethernetToggleAction(null), null);
+assert.equal(
+	menu.ethernetToggleAction({ stateChanging: true, connected: false }),
+	null,
+);
+assert.equal(
+	menu.ethernetToggleAction({ stateChanging: false, connected: false }),
+	"connect",
+);
+assert.equal(
+	menu.ethernetToggleAction({ stateChanging: false, connected: true }),
+	"disconnect",
+);
+
+assert.equal(menu.shouldScanWifi(true, "wifi", true, true), true);
+assert.equal(menu.shouldScanWifi(false, "wifi", true, true), false);
+assert.equal(menu.shouldScanWifi(true, "ethernet", true, true), false);
+assert.equal(menu.shouldScanWifi(true, "wifi", false, true), false);
+assert.equal(menu.shouldScanWifi(true, "wifi", true, false), false);
+
+console.log(
+	"NetworkMenu: identity, uptime, network state, and control actions passed",
+);

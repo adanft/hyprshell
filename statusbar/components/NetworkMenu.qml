@@ -39,6 +39,24 @@ Item {
     property string connectionError: ""
     property real uptimeSeconds: 0
     property int quickControlRequestSequence: 0
+    property string expandedNetworkSection: ""
+
+    function toggleNetworkSection(section) {
+        expandedNetworkSection = NetworkMenuLogic.nextExpandedSection(expandedNetworkSection, section);
+        connectionError = "";
+        pendingNetwork = null;
+        passwordInput.text = "";
+    }
+
+    function toggleEthernet() {
+        const network = services.lanDevice?.network;
+        const action = NetworkMenuLogic.ethernetToggleAction(network);
+        if (action === "disconnect")
+            network.disconnect();
+        else if (action === "connect")
+            network.connect();
+    }
+
     function volumeIcon() {
         if (root.services.quickVolume?.muted)
             return root.icons.volumeMuted;
@@ -80,6 +98,7 @@ Item {
 
     function close() {
         menuOpen = false;
+        expandedNetworkSection = "";
         pendingNetwork = null;
         passwordInput.text = "";
         connectionError = "";
@@ -370,14 +389,62 @@ Item {
                             }
                         }
 
+                        Item {
+                            id: networkControlsRow
+                            width: parent.width
+                            height: root.quickControlHeight
+
+                            Row {
+                                anchors.fill: parent
+                                spacing: root.theme.spacing.space8
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
+                                    icon: "󰈀"
+                                    title: "Ethernet"
+                                    subtitle: root.services.lanUp
+                                        ? "Connected"
+                                        : (root.services.lanDevice?.hasLink ? "Disconnected" : "Cable unplugged")
+                                    active: root.services.lanUp
+                                    available: root.services.lanDevice?.network !== null
+                                        && root.services.lanDevice?.network !== undefined
+                                    busy: root.services.lanDevice?.network?.stateChanging ?? false
+                                    expanded: root.expandedNetworkSection === "ethernet"
+                                    onBodyClicked: root.toggleNetworkSection("ethernet")
+                                    onToggled: root.toggleEthernet()
+                                }
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
+                                    icon: root.services.wifiUp ? root.icons.wifiConnected : root.icons.wifiDisconnected
+                                    title: "Wi-Fi"
+                                    subtitle: !Networking.wifiHardwareEnabled
+                                        ? "Unavailable"
+                                        : (!Networking.wifiEnabled
+                                            ? "Disabled"
+                                            : NetworkMenuLogic.wifiSummary(root.services.connectedWifiNetwork, true))
+                                    active: Networking.wifiEnabled
+                                    available: Networking.wifiHardwareEnabled
+                                    expanded: root.expandedNetworkSection === "wifi"
+                                    onBodyClicked: root.toggleNetworkSection("wifi")
+                                    onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+                                }
+                            }
+                        }
+
                         Rectangle {
                             id: lanCard
-                        width: parent.width
+                            visible: root.expandedNetworkSection === "ethernet"
+                            width: parent.width
                         height: lanColumn.implicitHeight + root.theme.spacing.space24
-                        radius: root.theme.shape.radius12
-                        color: root.colors.surface
-                        border.color: root.services.lanUp ? root.colors.primary : root.colors.border
-                        border.width: root.services.lanUp ? root.theme.shape.borderMedium : root.theme.shape.borderThin
+                        color: root.colors.transparent
+                        border.width: 0
 
                         Column {
                             id: lanColumn
@@ -401,7 +468,7 @@ Item {
                                     text: "LAN"
                                     color: root.colors.text
                                     font.pixelSize: root.theme.typography.sizeLg
-                                    font.bold: true
+                                    font.weight: Font.Medium
                                 }
 
                                 BarText {
@@ -415,10 +482,8 @@ Item {
                             Rectangle {
                                 width: parent.width
                                 height: root.detailRowHeight
-                                radius: root.theme.shape.radius8
-                                color: root.colors.background
-                                border.color: root.colors.border
-                                border.width: root.theme.shape.borderThin
+                                color: root.colors.transparent
+                                border.width: 0
 
                                 Row {
                                     anchors.fill: parent
@@ -434,7 +499,7 @@ Item {
                                             width: parent.width
                                             text: root.services.lanDevice?.name || "No wired adapter"
                                             color: root.colors.text
-                                            font.bold: true
+                                            font.weight: Font.Normal
                                             elide: Text.ElideRight
                                         }
 
@@ -459,12 +524,11 @@ Item {
 
                     Rectangle {
                         id: wifiCard
+                        visible: root.expandedNetworkSection === "wifi"
                         width: parent.width
                         height: wifiColumn.implicitHeight + root.theme.spacing.space24
-                        radius: root.theme.shape.radius12
-                        color: root.colors.surface
-                        border.color: root.services.wifiUp ? root.colors.primary : root.colors.border
-                        border.width: root.services.wifiUp ? root.theme.shape.borderMedium : root.theme.shape.borderThin
+                        color: root.colors.transparent
+                        border.width: 0
 
                         Column {
                             id: wifiColumn
@@ -486,7 +550,7 @@ Item {
                                 }
 
                                 Column {
-                                    width: parent.width - wifiToggle.width - root.theme.spacing.space16 - 18
+                                    width: parent.width - root.theme.spacing.space16 - 18
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: root.theme.spacing.space2
 
@@ -494,7 +558,7 @@ Item {
                                         text: "Wi-Fi"
                                         color: root.colors.text
                                         font.pixelSize: root.theme.typography.sizeLg
-                                        font.bold: true
+                                        font.weight: Font.Medium
                                     }
 
                                     BarText {
@@ -506,31 +570,6 @@ Item {
                                     }
                                 }
 
-                                Rectangle {
-                                    id: wifiToggle
-                                    width: root.toggleWidth
-                                    height: root.toggleHeight
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    radius: height / 2
-                                    color: Networking.wifiEnabled ? root.colors.primary : root.colors.surfaceHover
-                                    border.color: root.colors.border
-
-                                    Rectangle {
-                                        width: root.toggleKnobSize
-                                        height: root.toggleKnobSize
-                                        radius: width / 2
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        x: Networking.wifiEnabled ? parent.width - width - 3 : 3
-                                        color: root.colors.background
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: Networking.wifiHardwareEnabled
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
-                                    }
-                                }
                             }
 
                             BarText {
@@ -595,10 +634,8 @@ Item {
                                     required property var modelData
                                     width: wifiColumn.width
                                     height: root.detailRowHeight
-                                    radius: root.theme.shape.radius8
-                                    color: networkMouse.containsMouse ? root.colors.surfaceHover : root.colors.background
-                                    border.color: networkRow.modelData.connected ? root.colors.primary : root.colors.border
-                                    border.width: networkRow.modelData.connected ? root.theme.shape.borderMedium : root.theme.shape.borderThin
+                                    color: networkMouse.containsMouse ? root.colors.surfaceHover : root.colors.transparent
+                                    border.width: 0
 
                                     Connections {
                                         target: networkRow.modelData
@@ -631,7 +668,7 @@ Item {
                                                 width: parent.width
                                                 text: networkRow.modelData.name
                                                 color: root.colors.text
-                                                font.bold: networkRow.modelData.connected
+                                                font.weight: networkRow.modelData.connected ? Font.Medium : Font.Normal
                                                 elide: Text.ElideRight
                                             }
 
@@ -675,7 +712,12 @@ Item {
     Binding {
         target: root.services.wifiDevice
         property: "scannerEnabled"
-        value: root.menuOpen && Networking.wifiEnabled
+        value: NetworkMenuLogic.shouldScanWifi(
+            root.menuOpen,
+            root.expandedNetworkSection,
+            Networking.wifiEnabled,
+            Networking.wifiHardwareEnabled
+        )
         when: root.services.wifiDevice !== null
         restoreMode: Binding.RestoreBindingOrValue
     }

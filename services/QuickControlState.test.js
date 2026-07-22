@@ -41,6 +41,18 @@ assert.equal(state.normalizedReadback("0", "0"), null);
 assert.equal(state.rawForPercent(33, 10), 3);
 assert.equal(state.rawForPercent(100, 10), 10);
 assert.equal(state.rawForPercent(Number.NaN, 10), null);
+assert.deepEqual(JSON.parse(JSON.stringify(state.normalizedVolumeRequest(42.6, true))), {
+    percent: 43,
+    volume: 0.43,
+    unmute: true
+});
+assert.deepEqual(JSON.parse(JSON.stringify(state.normalizedVolumeRequest(0, true))), {
+    percent: 0,
+    volume: 0,
+    unmute: false
+});
+assert.equal(state.normalizedVolumeRequest(50, false), null);
+assert.equal(state.normalizedVolumeRequest(Number.NaN, true), null);
 
 let capability = state.unavailableCapability("Unavailable");
 assert.equal(capability.authoritativePercent, null, "unavailable must not fabricate 0%");

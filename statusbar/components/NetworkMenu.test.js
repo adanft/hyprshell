@@ -30,6 +30,10 @@ assert.equal(
 	"Available",
 );
 assert.equal(menu.networkStatus(null), "Unavailable");
+assert.equal(menu.canForgetNetwork({ known: true, connected: false, stateChanging: false }), true);
+assert.equal(menu.canForgetNetwork({ known: true, connected: true, stateChanging: false }), false);
+assert.equal(menu.canForgetNetwork({ known: false, connected: false, stateChanging: false }), false);
+assert.equal(menu.canForgetNetwork(null), false);
 
 assert.equal(
 	menu.networkSignalText({ stateChanging: true, signalStrength: 0.75 }),
@@ -51,6 +55,8 @@ assert.equal(menu.wifiSummary(null, false), "Disabled by hardware");
 assert.equal(menu.nextExpandedSection("", "ethernet"), "ethernet");
 assert.equal(menu.nextExpandedSection("ethernet", "ethernet"), "");
 assert.equal(menu.nextExpandedSection("ethernet", "wifi"), "wifi");
+assert.equal(menu.nextExpandedSection("wifi", "microphone"), "microphone");
+assert.equal(menu.nextExpandedSection("microphone", "bluetooth"), "bluetooth");
 
 assert.equal(menu.ethernetToggleAction(null), null);
 assert.equal(
@@ -71,6 +77,45 @@ assert.equal(menu.shouldScanWifi(false, "wifi", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "ethernet", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "wifi", false, true), false);
 assert.equal(menu.shouldScanWifi(true, "wifi", true, false), false);
+assert.equal(menu.shouldStopBluetoothScan(true, "bluetooth", true), false);
+assert.equal(menu.shouldStopBluetoothScan(false, "bluetooth", true), true);
+assert.equal(menu.shouldStopBluetoothScan(true, "wifi", true), true);
+assert.equal(menu.shouldStopBluetoothScan(false, "wifi", false), false);
+
+assert.equal(menu.bluetoothSummary(false, false, 0), "Unavailable");
+assert.equal(menu.bluetoothSummary(true, false, 0), "Off");
+assert.equal(menu.bluetoothSummary(true, true, 0), "Enabled");
+assert.equal(menu.bluetoothSummary(true, true, 2), "2 connected");
+assert.equal(menu.bluetoothDeviceStatus({ pairing: true }), "Pairing…");
+assert.equal(menu.bluetoothDeviceStatus({ connected: true, batteryAvailable: true, battery: 0.67 }), "Connected · 67%");
+assert.equal(menu.bluetoothDeviceStatus({ connected: false, paired: true }), "Paired");
+assert.equal(menu.bluetoothDeviceStatus({ connected: false, paired: false }), "Available");
+assert.equal(menu.bluetoothDeviceAction({ pairing: true }), "cancelPair");
+assert.equal(menu.bluetoothDeviceAction({ pairing: false, paired: false }), "pair");
+assert.equal(menu.bluetoothDeviceAction({ pairing: false, paired: true, connected: false }), "connect");
+assert.equal(menu.bluetoothDeviceAction({ pairing: false, paired: true, connected: true }), "disconnect");
+assert.equal(menu.bluetoothActionLabel({ pairing: false, paired: false }), "Pair");
+const bluetoothCalls = [];
+const pairableDevice = {
+	pairing: false,
+	paired: false,
+	connected: false,
+	pair: () => bluetoothCalls.push("pair"),
+	cancelPair: () => bluetoothCalls.push("cancelPair"),
+	connect: () => bluetoothCalls.push("connect"),
+	disconnect: () => bluetoothCalls.push("disconnect"),
+};
+assert.equal(menu.runBluetoothDeviceAction(pairableDevice, "pair"), true);
+assert.deepEqual(bluetoothCalls, ["pair"]);
+assert.equal(menu.runBluetoothDeviceAction(pairableDevice, "connect"), false);
+assert.deepEqual(bluetoothCalls, ["pair"]);
+assert.equal(menu.audioSourceLabel({ nickname: "Studio Mic", description: "Fallback", name: "node" }), "Studio Mic");
+assert.equal(menu.audioSourceLabel({ nickname: "", description: "USB microphone", name: "node" }), "USB microphone");
+assert.equal(menu.audioSourceLabel(null), "Unknown input");
+const activeSource = { audio: { muted: false } };
+assert.equal(menu.audioSourceStatus(activeSource, activeSource), "Active input");
+assert.equal(menu.audioSourceStatus({ audio: { muted: true } }, activeSource), "Muted");
+assert.equal(menu.audioSourceStatus({ audio: { muted: false } }, activeSource), "Available");
 
 console.log(
 	"NetworkMenu: identity, uptime, network state, and control actions passed",

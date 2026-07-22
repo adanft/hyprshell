@@ -40,6 +40,15 @@ Item {
     property string connectionError: ""
     property real uptimeSeconds: 0
     property int quickControlRequestSequence: 0
+
+    onMenuOpenChanged: {
+        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
+            services.bluetoothAdapter.discovering = false;
+    }
+    onExpandedNetworkSectionChanged: {
+        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
+            services.bluetoothAdapter.discovering = false;
+    }
     property string expandedNetworkSection: ""
 
     function toggleNetworkSection(section) {
@@ -126,6 +135,21 @@ Item {
         pendingNetwork.connectWithPsk(passwordInput.text);
         passwordInput.text = "";
         pendingNetwork = null;
+    }
+
+    function forgetNetwork(network) {
+        if (!NetworkMenuLogic.canForgetNetwork(network))
+            return;
+        if (pendingNetwork === network) {
+            pendingNetwork = null;
+            passwordInput.text = "";
+        }
+        connectionError = "";
+        network.forget();
+    }
+
+    function performBluetoothAction(device, action) {
+        NetworkMenuLogic.runBluetoothDeviceAction(device, action);
     }
 
     FileView {
@@ -450,9 +474,256 @@ Item {
                             }
                         }
 
-                        Rectangle {
-                            id: lanCard
-                            visible: root.expandedNetworkSection === "ethernet"
+                        Item {
+                            width: parent.width
+                            height: root.quickControlHeight
+
+                            Row {
+                                anchors.fill: parent
+                                spacing: root.theme.spacing.space8
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
+                                    icon: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                    title: "Microphone"
+                                    subtitle: !root.services.source?.audio
+                                        ? "Unavailable"
+                                        : (root.services.sourceMuted ? "Muted" : `${root.services.sourceVolume}%`)
+                                    active: root.services.source?.audio !== null
+                                        && root.services.source?.audio !== undefined
+                                        && !root.services.sourceMuted
+                                    available: root.services.source?.audio !== null
+                                        && root.services.source?.audio !== undefined
+                                    detailAvailable: available
+                                    expanded: root.expandedNetworkSection === "microphone"
+                                    actionAccessibleName: root.services.sourceMuted ? "Unmute microphone" : "Mute microphone"
+                                    detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
+                                    stateDescription: subtitle
+                                    onBodyClicked: root.toggleNetworkSection("microphone")
+                                    onToggled: root.services.toggleMute(true)
+                                }
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
+                                    icon: !root.services.bluetoothAvailable
+                                        ? root.icons.bluetoothOff
+                                        : (root.services.bluetoothConnectedCount > 0
+                                            ? root.icons.bluetoothConnected
+                                            : (root.services.bluetoothPowered ? root.icons.bluetoothOn : root.icons.bluetoothOff))
+                                    title: "Bluetooth"
+                                    subtitle: NetworkMenuLogic.bluetoothSummary(
+                                        root.services.bluetoothAvailable,
+                                        root.services.bluetoothPowered,
+                                        root.services.bluetoothConnectedCount
+                                    )
+                                    active: root.services.bluetoothPowered
+                                    available: root.services.bluetoothAvailable
+                                    detailAvailable: root.services.bluetoothAvailable
+                                    expanded: root.expandedNetworkSection === "bluetooth"
+                                    actionAccessibleName: root.services.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
+                                    detailAccessibleName: expanded ? "Hide Bluetooth devices" : "Show Bluetooth devices"
+                                    stateDescription: subtitle
+                                    onBodyClicked: root.toggleNetworkSection("bluetooth")
+                                    onToggled: root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled
+                                }
+                            }
+                        }
+
+                        Item {
+                            visible: root.expandedNetworkSection === "microphone"
+                            width: parent.width
+                            height: microphoneColumn.implicitHeight + root.theme.spacing.space8
+
+                            Column {
+                                id: microphoneColumn
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: root.theme.spacing.space12
+                                anchors.rightMargin: root.theme.spacing.space12
+                                spacing: root.theme.spacing.space6
+
+                                Row {
+                                    width: parent.width
+                                    height: root.quickControlHeight
+                                    spacing: root.theme.spacing.space8
+
+                                    BarText {
+                                        width: root.quickControlIconWidth
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        horizontalAlignment: Text.AlignHCenter
+                                        text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                        color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
+                                        font.pixelSize: 20
+                                    }
+
+                                    QuickControlSlider {
+                                        id: microphoneSlider
+                                        width: parent.width - root.quickControlIconWidth - parent.spacing
+                                        height: 32
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        value: root.services.sourceVolume
+                                        available: root.services.source?.audio !== null
+                                            && root.services.source?.audio !== undefined
+                                        trackColor: root.colors.background
+                                        fillColor: root.colors.primary
+                                        handleColor: root.colors.text
+                                        handleBorderColor: root.colors.primary
+                                        unavailableText: "Microphone unavailable"
+                                        onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                    }
+                                }
+
+                                BarText {
+                                    visible: root.services.audioSources.length > 0
+                                    text: "Input devices"
+                                    color: root.colors.text
+                                    font.weight: Font.Medium
+                                }
+
+                                Repeater {
+                                    model: root.services.audioSources
+
+                                    Rectangle {
+                                        id: sourceRow
+                                        required property var modelData
+                                        width: microphoneColumn.width
+                                        height: root.detailRowHeight
+                                        radius: root.theme.shape.radius8
+                                        color: modelData === root.services.source
+                                            ? root.colors.surfaceHover
+                                            : (sourceMouse.containsMouse ? root.colors.surface : root.colors.transparent)
+                                        border.width: 0
+
+                                        Column {
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.leftMargin: root.theme.spacing.space8
+                                            anchors.rightMargin: root.theme.spacing.space8
+                                            spacing: root.theme.spacing.space2
+
+                                            BarText {
+                                                width: parent.width
+                                                text: NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)
+                                                color: root.colors.text
+                                                font.weight: sourceRow.modelData === root.services.source ? Font.Medium : Font.Normal
+                                                elide: Text.ElideRight
+                                            }
+
+                                            BarText {
+                                                text: NetworkMenuLogic.audioSourceStatus(sourceRow.modelData, root.services.source)
+                                                color: sourceRow.modelData === root.services.source ? root.colors.primary : root.colors.textSubtle
+                                                font.pixelSize: root.theme.typography.sizeSm
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: sourceMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            enabled: sourceRow.modelData !== root.services.source
+                                            activeFocusOnTab: enabled
+                                            Accessible.role: Accessible.Button
+                                            Accessible.name: `Use ${NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)} as microphone`
+                                            onClicked: root.services.selectAudioSource(sourceRow.modelData)
+                                            Keys.onSpacePressed: root.services.selectAudioSource(sourceRow.modelData)
+                                            Keys.onReturnPressed: root.services.selectAudioSource(sourceRow.modelData)
+                                            Keys.onEnterPressed: root.services.selectAudioSource(sourceRow.modelData)
+                                        }
+                                    }
+                                }
+
+                                BarText {
+                                    visible: root.services.audioSources.length === 0
+                                    text: "No microphone inputs"
+                                    color: root.colors.textMuted
+                                }
+                            }
+                        }
+
+                        Item {
+                            visible: root.expandedNetworkSection === "bluetooth"
+                            width: parent.width
+                            height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
+
+                            Column {
+                                id: bluetoothColumn
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: root.theme.spacing.space12
+                                anchors.rightMargin: root.theme.spacing.space12
+                                spacing: root.theme.spacing.space6
+
+                                    Row {
+                                        width: parent.width
+                                        height: root.theme.sizing.statusBarTrayMenuItemHeight
+
+                                        BarText {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: root.services.bluetoothAdapter?.discovering ? "Scanning for devices…" : "Bluetooth devices"
+                                            color: root.colors.text
+                                            font.weight: Font.Medium
+                                        }
+
+                                        BluetoothScanButton {
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            colors: root.colors
+                                            theme: root.theme
+                                            discovering: root.services.bluetoothAdapter?.discovering ?? false
+                                            available: root.services.bluetoothPowered
+                                            onScanToggled: discovering => root.services.bluetoothAdapter.discovering = discovering
+                                        }
+                                    }
+
+                                    Repeater {
+                                        model: {
+                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
+                                            if (root.services.bluetoothAdapter?.discovering)
+                                                return devices.filter(device => device);
+                                            return devices.filter(device => device && (device.paired || device.connected || device.pairing));
+                                        }
+
+                                    BluetoothDeviceRow {
+                                        required property var modelData
+                                        width: bluetoothColumn.width
+                                        device: modelData
+                                        colors: root.colors
+                                        theme: root.theme
+                                        onPrimaryActionRequested: action => root.performBluetoothAction(modelData, action)
+                                        onForgetRequested: modelData.forget()
+                                    }
+                                }
+
+                                    BarText {
+                                        visible: {
+                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
+                                            const visibleDevices = root.services.bluetoothAdapter?.discovering
+                                                ? devices.filter(device => device)
+                                                : devices.filter(device => device && (device.paired || device.connected || device.pairing));
+                                            return visibleDevices.length === 0;
+                                        }
+                                        text: !root.services.bluetoothPowered
+                                            ? "Bluetooth is off"
+                                            : (root.services.bluetoothAdapter?.discovering ? "Searching…" : "No paired devices")
+                                        color: root.colors.textSubtle
+                                        font.weight: Font.Normal
+                                    }
+                            }
+                        }
+
+                            Rectangle {
+                                id: lanCard
+                                visible: root.expandedNetworkSection === "ethernet"
                             width: parent.width
                         height: lanColumn.implicitHeight + root.theme.spacing.space24
                         color: root.colors.transparent
@@ -641,73 +912,30 @@ Item {
                             Repeater {
                                 model: root.services.wifiDevice?.networks?.values ?? []
 
-                                Rectangle {
-                                    id: networkRow
-                                    required property var modelData
-                                    width: wifiColumn.width
-                                    height: root.detailRowHeight
-                                    color: networkMouse.containsMouse ? root.colors.surfaceHover : root.colors.transparent
-                                    border.width: 0
+                                    WifiNetworkRow {
+                                        id: networkRow
+                                        required property var modelData
+                                        width: wifiColumn.width
+                                        network: modelData
+                                        colors: root.colors
+                                        theme: root.theme
+                                        icons: root.icons
 
-                                    Connections {
-                                        target: networkRow.modelData
-                                        function onConnectionFailed(reason) {
-                                            root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
-                                            if (reason === ConnectionFailReason.NoSecrets) {
-                                                root.pendingNetwork = networkRow.modelData;
-                                                passwordInput.forceActiveFocus();
-                                            }
-                                        }
-                                    }
-
-                                    Row {
-                                        anchors.fill: parent
-                                        anchors.margins: root.theme.spacing.space8
-                                        spacing: root.theme.spacing.space8
-
-                                        BarText {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: networkRow.modelData.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected
-                                            color: networkRow.modelData.connected ? root.colors.primary : root.colors.text
-                                        }
-
-                                        Column {
-                                            width: parent.width - root.networkTextReserve
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            spacing: root.theme.spacing.space2
-
-                                            BarText {
-                                                width: parent.width
-                                                text: networkRow.modelData.name
-                                                color: root.colors.text
-                                                font.weight: networkRow.modelData.connected ? Font.Medium : Font.Normal
-                                                elide: Text.ElideRight
-                                            }
-
-                                            BarText {
-                                                text: NetworkMenuLogic.networkStatus(networkRow.modelData)
-                                                color: root.colors.textMuted
-                                                font.pixelSize: root.theme.typography.sizeSm
+                                        Connections {
+                                            target: networkRow.modelData
+                                            function onConnectionFailed(reason) {
+                                                root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
+                                                if (reason === ConnectionFailReason.NoSecrets) {
+                                                    root.pendingNetwork = networkRow.modelData;
+                                                    passwordInput.forceActiveFocus();
+                                                }
                                             }
                                         }
 
-                                        BarText {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: NetworkMenuLogic.networkSignalText(networkRow.modelData)
-                                            color: root.colors.textMuted
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        id: networkMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        enabled: !networkRow.modelData.stateChanging
-                                        onClicked: root.connectNetwork(networkRow.modelData)
+                                        onPrimaryActionRequested: root.connectNetwork(modelData)
+                                        onForgetRequested: root.forgetNetwork(modelData)
                                     }
                                 }
-                            }
 
                             BarText {
                                 visible: Networking.wifiEnabled && (root.services.wifiDevice?.networks?.values?.length ?? 0) === 0

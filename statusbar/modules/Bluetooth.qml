@@ -1,6 +1,5 @@
 import "../components"
 import QtQuick
-import Quickshell
 import "../../theme"
 
 Item {
@@ -49,12 +48,6 @@ Item {
             color: root.moduleColor
         }
 
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd(\"[float] blueman-manager\")"])
     }
 
 }

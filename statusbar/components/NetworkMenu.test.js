@@ -61,6 +61,12 @@ assert.equal(
 	"75%",
 );
 assert.equal(menu.networkSignalText(null), "0%");
+assert.equal(menu.wifiSignalQualityText({ signalStrength: 0.754 }), "75%");
+assert.equal(
+	menu.wifiSignalQualityText({ stateChanging: true, signalStrength: 0.754 }),
+	"75%",
+);
+assert.equal(menu.wifiSignalQualityText(null), "");
 
 assert.equal(
 	menu.wifiSummary({ name: "Home", signalStrength: 0.814 }, true),
@@ -68,6 +74,30 @@ assert.equal(
 );
 assert.equal(menu.wifiSummary(null, true), "Not connected");
 assert.equal(menu.wifiSummary(null, false), "Disabled by hardware");
+assert.equal(menu.wifiSecurityLabel({ security: 0 }, 0), "Open");
+assert.equal(menu.wifiSecurityLabel({ security: 2 }, 0), "Secured");
+assert.equal(menu.wifiSecurityLabel(null, 0), "");
+assert.equal(
+	menu.wifiNetworkMeta({ security: 0, signalStrength: 0.814 }, 0),
+	"Open · 81%",
+);
+assert.equal(
+	menu.wifiNetworkMeta({ security: 2, signalStrength: 0.754 }, 0),
+	"Secured · 75%",
+);
+assert.equal(menu.wifiNetworkMeta(null, 0), "");
+
+const sortedWifiNetworks = menu.sortedWifiNetworks([
+	{ name: "Weak", connected: false, signalStrength: 0.2 },
+	{ name: "Active", connected: true, signalStrength: 0.1 },
+	{ name: "Strong", connected: false, signalStrength: 0.9 },
+	{ name: "Medium", connected: false, signalStrength: 0.5 },
+]);
+assert.deepEqual(
+	Array.from(sortedWifiNetworks, (network) => network.name),
+	["Active", "Strong", "Medium", "Weak"],
+);
+assert.equal(menu.sortedWifiNetworks(null).length, 0);
 
 assert.equal(menu.nextExpandedSection("", "ethernet"), "ethernet");
 assert.equal(menu.nextExpandedSection("ethernet", "ethernet"), "");

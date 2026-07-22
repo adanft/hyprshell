@@ -15,7 +15,6 @@ Item {
 
     required property var colors
     required property var services
-    signal openRequested(var anchorItem)
     readonly property bool networkAvailable: services.activeNetworkInterface.length > 0
     readonly property color neutralColor: colors.text
     readonly property color txColor: networkAvailable ? colors.danger : colors.text
@@ -64,11 +63,5 @@ Item {
 
 
     }
-
-MouseArea {
-anchors.fill: parent
-cursorShape: Qt.PointingHandCursor
-onClicked: root.openRequested(root)
-}
 
 }

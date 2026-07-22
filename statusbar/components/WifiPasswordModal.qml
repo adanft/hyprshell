@@ -1,0 +1,329 @@
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+
+Scope {
+    id: root
+
+    required property var screen
+    required property var colors
+    required property var theme
+    property var network: null
+    property string errorText: ""
+
+    readonly property bool busy: Boolean(network?.stateChanging)
+
+    signal submitted(string password)
+    signal cancelled()
+
+    function focusPassword(selectExisting) {
+        passwordInput.forceActiveFocus();
+        if (selectExisting)
+            passwordInput.selectAll();
+    }
+
+    function togglePasswordVisibility() {
+        passwordInput.echoMode = passwordInput.echoMode === TextInput.Password
+            ? TextInput.Normal
+            : TextInput.Password;
+        focusPassword(false);
+    }
+
+    function submitCurrentPassword() {
+        if (passwordInput.text.length > 0 && !busy)
+            submitted(passwordInput.text);
+    }
+
+    onErrorTextChanged: {
+        if (errorText.length > 0 && panel.visible)
+            Qt.callLater(() => root.focusPassword(true));
+    }
+
+    PanelWindow {
+        id: panel
+
+        visible: root.network !== null
+        screen: root.screen
+        aboveWindows: true
+        focusable: true
+        exclusionMode: ExclusionMode.Ignore
+        exclusiveZone: 0
+        mask: null
+        color: root.colors.transparent
+        surfaceFormat.opaque: false
+
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+        WlrLayershell.namespace: "qs-statusbar-wifi-password-modal"
+
+        anchors {
+            top: true
+            right: true
+            bottom: true
+            left: true
+        }
+
+        Shortcut {
+            sequence: "Escape"
+            onActivated: root.cancelled()
+        }
+
+        onVisibleChanged: {
+            if (visible) {
+                passwordInput.text = "";
+                passwordInput.echoMode = TextInput.Password;
+                Qt.callLater(() => root.focusPassword(false));
+            } else {
+                passwordInput.text = "";
+            }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: root.colors.scrim
+            focus: true
+
+            Keys.onEscapePressed: root.cancelled()
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                onClicked: root.cancelled()
+            }
+
+            Rectangle {
+                id: dialog
+
+                width: Math.min(420, parent.width - root.theme.spacing.space16 * 2)
+                height: dialogContent.implicitHeight + root.theme.spacing.space16 * 2
+                anchors.centerIn: parent
+                radius: root.theme.shape.appLauncherRadius
+                color: root.colors.panel
+                border.color: root.colors.border
+                border.width: root.theme.shape.appLauncherBorderWidth
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.AllButtons
+                }
+
+                Column {
+                    id: dialogContent
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.margins: root.theme.spacing.space16
+                    spacing: root.theme.spacing.space12
+
+                    Item {
+                        width: parent.width
+                        height: Math.max(titleColumn.implicitHeight, closeButton.height)
+
+                        Column {
+                            id: titleColumn
+                            anchors.left: parent.left
+                            anchors.right: closeButton.left
+                            anchors.rightMargin: root.theme.spacing.space12
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: root.theme.spacing.space2
+
+                            Text {
+                                width: parent.width
+                                text: "Connect to Wi-Fi"
+                                color: root.colors.text
+                                font.family: root.theme.typography.textFontFamily
+                                font.pixelSize: root.theme.typography.sizeLg
+                                font.weight: Font.Medium
+                                elide: Text.ElideRight
+                            }
+
+                            Text {
+                                width: parent.width
+                                text: root.network ? `Enter password for ${root.network.name}` : "Enter password"
+                                color: root.colors.textSubtle
+                                font.family: root.theme.typography.textFontFamily
+                                font.pixelSize: root.theme.typography.sizeSm
+                                font.weight: Font.Normal
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        Rectangle {
+                            id: closeButton
+                            width: 30
+                            height: 30
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            radius: root.theme.shape.radius8
+                            color: closeInput.containsMouse || closeInput.activeFocus
+                                ? root.colors.surfaceHover
+                                : root.colors.transparent
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "×"
+                                color: root.colors.textMuted
+                                font.family: root.theme.typography.textFontFamily
+                                font.pixelSize: root.theme.typography.sizeLg
+                            }
+
+                            MouseArea {
+                                id: closeInput
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                activeFocusOnTab: true
+                                Accessible.role: Accessible.Button
+                                Accessible.name: "Close Wi-Fi password dialog"
+                                onClicked: root.cancelled()
+                                Keys.onSpacePressed: root.cancelled()
+                                Keys.onReturnPressed: root.cancelled()
+                                Keys.onEnterPressed: root.cancelled()
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: 46
+                        radius: root.theme.shape.radius12
+                        color: root.colors.surface
+                        border.color: passwordInput.activeFocus ? root.colors.primary : root.colors.border
+                        border.width: root.theme.shape.borderThin
+
+                        TextInput {
+                            id: passwordInput
+                            anchors.left: parent.left
+                            anchors.right: visibilityButton.left
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.leftMargin: root.theme.spacing.space12
+                            anchors.rightMargin: root.theme.spacing.space8
+                            color: root.colors.text
+                            selectionColor: root.colors.primary
+                            selectedTextColor: root.colors.background
+                            echoMode: TextInput.Password
+                            verticalAlignment: TextInput.AlignVCenter
+                            font.family: root.theme.typography.textFontFamily
+                            font.pixelSize: root.theme.typography.sizeMd
+                            enabled: !root.busy
+                            Accessible.role: Accessible.EditableText
+                            Accessible.name: root.network ? `Password for ${root.network.name}` : "Wi-Fi password"
+                            onAccepted: root.submitCurrentPassword()
+                        }
+
+                        Rectangle {
+                            id: visibilityButton
+                            width: 38
+                            height: parent.height
+                            anchors.right: parent.right
+                            color: root.colors.transparent
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: passwordInput.echoMode === TextInput.Password ? "󰈈" : "󰈉"
+                                color: root.colors.textMuted
+                                font.family: root.theme.typography.iconFontFamily
+                                font.pixelSize: root.theme.typography.sizeMd
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                activeFocusOnTab: true
+                                Accessible.role: Accessible.Button
+                                Accessible.name: passwordInput.echoMode === TextInput.Password ? "Show password" : "Hide password"
+                                onClicked: root.togglePasswordVisibility()
+                                Keys.onSpacePressed: root.togglePasswordVisibility()
+                                Keys.onReturnPressed: root.togglePasswordVisibility()
+                                Keys.onEnterPressed: root.togglePasswordVisibility()
+                            }
+                        }
+                    }
+
+                    Text {
+                        visible: root.errorText.length > 0
+                        width: parent.width
+                        text: root.errorText
+                        color: root.colors.danger
+                        font.family: root.theme.typography.textFontFamily
+                        font.pixelSize: root.theme.typography.sizeSm
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Row {
+                        anchors.right: parent.right
+                        spacing: root.theme.spacing.space8
+
+                        Rectangle {
+                            width: cancelLabel.implicitWidth + root.theme.spacing.space24
+                            height: 38
+                            radius: root.theme.shape.radius12
+                            color: cancelInput.containsMouse || cancelInput.activeFocus
+                                ? root.colors.surfaceHover
+                                : root.colors.surface
+
+                            Text {
+                                id: cancelLabel
+                                anchors.centerIn: parent
+                                text: "Cancel"
+                                color: root.colors.text
+                                font.family: root.theme.typography.textFontFamily
+                                font.pixelSize: root.theme.typography.sizeMd
+                                font.styleName: root.theme.typography.styleMedium
+                            }
+
+                            MouseArea {
+                                id: cancelInput
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                activeFocusOnTab: true
+                                Accessible.role: Accessible.Button
+                                Accessible.name: "Cancel Wi-Fi connection"
+                                onClicked: root.cancelled()
+                                Keys.onSpacePressed: root.cancelled()
+                                Keys.onReturnPressed: root.cancelled()
+                                Keys.onEnterPressed: root.cancelled()
+                            }
+                        }
+
+                        Rectangle {
+                            width: connectLabel.implicitWidth + root.theme.spacing.space24
+                            height: 38
+                            radius: root.theme.shape.radius12
+                            color: root.colors.primary
+                            opacity: passwordInput.text.length > 0 && !root.busy ? 1 : 0.45
+
+                            Text {
+                                id: connectLabel
+                                anchors.centerIn: parent
+                                text: root.busy ? "Please wait…" : "Connect"
+                                color: root.colors.background
+                                font.family: root.theme.typography.textFontFamily
+                                font.pixelSize: root.theme.typography.sizeMd
+                                font.styleName: root.theme.typography.styleMedium
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                enabled: passwordInput.text.length > 0 && !root.busy
+                                hoverEnabled: true
+                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                activeFocusOnTab: enabled
+                                Accessible.role: Accessible.Button
+                                Accessible.name: root.network ? `Connect to ${root.network.name}` : "Connect to Wi-Fi"
+                                onClicked: root.submitCurrentPassword()
+                                Keys.onSpacePressed: root.submitCurrentPassword()
+                                Keys.onReturnPressed: root.submitCurrentPassword()
+                                Keys.onEnterPressed: root.submitCurrentPassword()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

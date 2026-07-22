@@ -35,8 +35,29 @@ Scope {
         ipv6Gateway: "",
         ipv6Dns: []
     })
+    property string ethernetInfoRequestedInterface: ""
+    property int ethernetInfoRequestGeneration: 0
+    property int ethernetInfoProcessGeneration: 0
+    property bool ethernetInfoProcessRefreshesProfile: false
+    property var wifiInfo: ({
+        connectionName: "",
+        activeUuid: "",
+        macAddress: "",
+        ipv4Address: "",
+        ipv4Gateway: "",
+        ipv4Dns: [],
+        ipv6Address: "",
+        ipv6Gateway: "",
+        ipv6Dns: []
+    })
+    property string wifiInfoRequestedInterface: ""
+    property string wifiInfoAvailability: "idle"
+    property int wifiInfoRequestGeneration: 0
+    property int wifiInfoProcessGeneration: 0
     property bool ethernetProfileBusy: false
     property bool ethernetProfileAwaitingRefresh: false
+    property int ethernetProfileActionGeneration: 0
+    property int ethernetProfileActionProcessGeneration: 0
     property string ethernetProfilePendingUuid: ""
     property string ethernetProfileError: ""
     readonly property var powerProfiles: [PowerProfile.Performance, PowerProfile.Balanced, PowerProfile.PowerSaver]
@@ -142,6 +163,37 @@ Scope {
         return networks.find(network => network.connected) ?? null
     }
     readonly property int wifiSignal: Math.round((connectedWifiNetwork?.signalStrength ?? 0) * 100)
+
+        onLanInterfaceChanged: {
+            ethernetInfoRequestGeneration += 1
+            ethernetInfoRequestedInterface = ""
+            ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
+            ethernetProfileActionGeneration += 1
+            if (ethernetProfileBusy || ethernetProfileAwaitingRefresh) {
+                ethernetProfileAwaitingRefresh = false
+                ethernetProfileBusy = false
+                ethernetProfilePendingUuid = ""
+                if (ethernetProfileError.length === 0)
+                    ethernetProfileError = "Ethernet interface changed"
+            }
+            Qt.callLater(refreshEthernetInfo)
+        }
+
+        onWifiInterfaceChanged: {
+        wifiInfoRequestGeneration += 1
+        wifiInfoRequestedInterface = ""
+        wifiInfoAvailability = "idle"
+        wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+        Qt.callLater(refreshWifiInfo)
+    }
+
+    onWifiUpChanged: {
+        wifiInfoRequestGeneration += 1
+        wifiInfoRequestedInterface = ""
+        wifiInfoAvailability = "idle"
+        wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+        Qt.callLater(refreshWifiInfo)
+    }
     property bool notificationDnd: false
     property string previousNetworkInterface: ""
     property real previousNetworkSampleMs: 0
@@ -346,6 +398,14 @@ Scope {
     }
 
     Timer {
+        interval: 3000
+        running: service.wifiDevice !== null
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: service.refreshWifiInfo()
+    }
+
+    Timer {
         id: ethernetActionRefreshTimer
         interval: 750
         repeat: false
@@ -378,20 +438,52 @@ Scope {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                service.ethernetInfo = NetworkState.parseNmcliDeviceInfo(this.text)
-                if (service.ethernetProfileAwaitingRefresh) {
-                    service.ethernetProfileAwaitingRefresh = false
-                    service.ethernetProfileBusy = false
-                    service.ethernetProfilePendingUuid = ""
+                const requestIsCurrent = service.ethernetInfoProcessGeneration === service.ethernetInfoRequestGeneration
+                    && service.ethernetInfoRequestedInterface === service.lanInterface
+                if (requestIsCurrent)
+                    service.ethernetInfo = NetworkState.parseNmcliDeviceInfo(this.text)
+            }
+        }
+        onExited: (exitCode, exitStatus) => {
+            const requestIsCurrent = service.ethernetInfoProcessGeneration === service.ethernetInfoRequestGeneration
+                && service.ethernetInfoRequestedInterface === service.lanInterface
+            if (requestIsCurrent
+                    && service.ethernetInfoProcessRefreshesProfile
+                    && service.ethernetProfileAwaitingRefresh) {
+                service.ethernetProfileAwaitingRefresh = false
+                service.ethernetProfileBusy = false
+                service.ethernetProfilePendingUuid = ""
+                if (exitCode !== 0 && service.ethernetProfileError.length === 0)
+                    service.ethernetProfileError = `Ethernet refresh failed (${exitCode})`
+            }
+            if ((!requestIsCurrent || (service.ethernetProfileAwaitingRefresh
+                    && !service.ethernetInfoProcessRefreshesProfile))
+                    && service.lanInterface.length > 0)
+                Qt.callLater(service.refreshEthernetInfo)
+        }
+    }
+
+    Process {
+        id: wifiInfoProcess
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (service.wifiInfoProcessGeneration === service.wifiInfoRequestGeneration
+                        && service.wifiInfoRequestedInterface === service.wifiInterface) {
+                    service.wifiInfo = NetworkState.parseNmcliDeviceInfo(this.text)
+                    service.wifiInfoAvailability = "available"
                 }
             }
         }
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0 && service.ethernetProfileAwaitingRefresh) {
-                service.ethernetProfileAwaitingRefresh = false
-                service.ethernetProfileBusy = false
-                service.ethernetProfilePendingUuid = ""
+            const requestIsCurrent = service.wifiInfoProcessGeneration === service.wifiInfoRequestGeneration
+                && service.wifiInfoRequestedInterface === service.wifiInterface
+            if (exitCode !== 0 && requestIsCurrent) {
+                service.wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+                service.wifiInfoAvailability = "unavailable"
             }
+            if (!requestIsCurrent && service.wifiInterface.length > 0)
+                Qt.callLater(service.refreshWifiInfo)
         }
     }
 
@@ -399,9 +491,14 @@ Scope {
         id: ethernetProfileActionProcess
 
         stderr: StdioCollector {
-            onStreamFinished: service.ethernetProfileError = String(this.text || "").trim()
+            onStreamFinished: {
+                if (service.ethernetProfileActionProcessGeneration === service.ethernetProfileActionGeneration)
+                service.ethernetProfileError = String(this.text || "").trim()
+            }
         }
         onExited: (exitCode, exitStatus) => {
+            if (service.ethernetProfileActionProcessGeneration !== service.ethernetProfileActionGeneration)
+                return
             if (exitCode !== 0 && service.ethernetProfileError.length === 0)
                 service.ethernetProfileError = `NetworkManager command failed (${exitCode})`
             service.ethernetProfileAwaitingRefresh = true
@@ -886,23 +983,56 @@ Scope {
     }
 
     function refreshEthernetInfo() {
-        if (ethernetInfoProcess.running)
-            return
         if (!/^[A-Za-z0-9._:-]{1,64}$/.test(lanInterface)) {
             ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
+            if (ethernetProfileAwaitingRefresh) {
+                ethernetProfileAwaitingRefresh = false
+                ethernetProfileBusy = false
+                ethernetProfilePendingUuid = ""
+                if (ethernetProfileError.length === 0)
+                    ethernetProfileError = "Ethernet interface unavailable"
+            }
             return
         }
+        if (ethernetInfoProcess.running)
+            return
 
+        ethernetInfoRequestedInterface = lanInterface
+        ethernetInfoProcessGeneration = ethernetInfoRequestGeneration
+        ethernetInfoProcessRefreshesProfile = ethernetProfileAwaitingRefresh
         ethernetInfoProcess.exec([
-            "nmcli", "--terse", "--escape", "no", "--fields",
+            "timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields",
             "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
             "device", "show", lanInterface
         ])
     }
 
+    function refreshWifiInfo() {
+        if (wifiInfoProcess.running)
+            return
+        if (!/^[A-Za-z0-9._:-]{1,64}$/.test(wifiInterface)) {
+            wifiInfoRequestedInterface = ""
+            wifiInfoAvailability = "idle"
+            wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+            return
+        }
+
+        if (wifiInfoAvailability !== "available")
+            wifiInfoAvailability = "loading"
+        wifiInfoRequestedInterface = wifiInterface
+        wifiInfoProcessGeneration = wifiInfoRequestGeneration
+        wifiInfoProcess.exec([
+            "timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields",
+            "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
+            "device", "show", wifiInterface
+        ])
+    }
+
     function setEthernetProfileEnabled(profile) {
-        const uuid = String(profile?.uuid || "")
-        const action = NetworkState.ethernetProfileAction(ethernetInfo.activeUuid, uuid, ethernetProfileBusy)
+            const uuid = String(profile?.uuid || "")
+            if (ethernetProfileActionProcess.running)
+                return
+            const action = NetworkState.ethernetProfileAction(ethernetInfo.activeUuid, uuid, ethernetProfileBusy)
         if (!action)
             return
 
@@ -910,8 +1040,9 @@ Scope {
         ethernetProfileAwaitingRefresh = false
         ethernetProfilePendingUuid = uuid
         ethernetProfileError = ""
+        ethernetProfileActionProcessGeneration = ethernetProfileActionGeneration
         ethernetProfileActionProcess.exec([
-            "nmcli", "connection", action === "disable" ? "down" : "up", "uuid", uuid
+            "timeout", "10s", "nmcli", "connection", action === "disable" ? "down" : "up", "uuid", uuid
         ])
     }
 

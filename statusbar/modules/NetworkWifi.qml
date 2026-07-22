@@ -1,6 +1,6 @@
 import "../components"
 import QtQuick
-import Quickshell
+import Quickshell.Networking
 import "../../theme"
 
 Item {
@@ -16,9 +16,14 @@ Item {
 
     required property var colors
     required property var services
-    signal openRequested(var anchorItem)
     readonly property bool connected: services.wifiUp && services.wifiSignal > 0
     readonly property color moduleColor: connected ? colors.primary : colors.text
+
+    function icon() {
+        if (connected)
+            return icons.wifiConnected;
+        return Networking.wifiEnabled ? icons.wifiEnabled : icons.wifiDisconnected;
+    }
 
     implicitWidth: content.implicitWidth
     implicitHeight: theme.sizing.statusBarHeight
@@ -32,7 +37,7 @@ Item {
         spacing: root.theme.spacing.space6
 
         BarText {
-            text: root.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected
+            text: root.icon()
             color: root.moduleColor
         }
 
@@ -42,12 +47,6 @@ Item {
             color: root.moduleColor
         }
 
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: root.openRequested(root)
     }
 
 }

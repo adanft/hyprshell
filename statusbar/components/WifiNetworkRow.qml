@@ -7,15 +7,16 @@ Rectangle {
     required property var network
     required property var colors
     required property var theme
-    required property var icons
+    property var openSecurityValue: 0
 
     signal primaryActionRequested
     signal forgetRequested
 
     readonly property bool forgetAvailable: NetworkMenuLogic.canForgetNetwork(network)
+    readonly property bool actionBusy: Boolean(network?.stateChanging)
 
     function requestPrimaryAction() {
-        if (!network || network.stateChanging)
+        if (!network || actionBusy)
             return;
         primaryActionRequested();
     }
@@ -27,73 +28,105 @@ Rectangle {
     }
 
     height: 48
-    color: primaryMouse.containsMouse ? colors.surfaceHover : colors.transparent
+    radius: theme.shape.radius12
+    color: colors.surface
     border.width: 0
 
     Accessible.role: Accessible.ListItem
     Accessible.name: network ? `${network.name}, ${NetworkMenuLogic.networkStatus(network)}` : "Wi-Fi network"
 
-    Row {
-        anchors.fill: parent
-        anchors.margins: root.theme.spacing.space8
-        spacing: root.theme.spacing.space8
+    Column {
+        id: networkDetails
+        objectName: "networkDetails"
+        anchors.left: parent.left
+        anchors.right: actions.left
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: root.theme.spacing.space12
+        anchors.rightMargin: root.theme.spacing.space8
+        spacing: root.theme.spacing.space2
 
         Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.network.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected
-            color: root.network.connected ? root.colors.primary : root.colors.text
-            font.family: root.theme.typography.iconFontFamily
+            width: parent.width
+            text: root.network?.name || ""
+            color: root.network?.connected ? root.colors.primary : root.colors.text
+            font.family: root.theme.typography.textFontFamily
+            font.pixelSize: root.theme.typography.sizeMd
+            font.weight: Font.Normal
+            elide: Text.ElideRight
         }
 
-        Column {
-            width: parent.width - signalLabel.width - forgetButton.width
-                - (root.forgetAvailable ? parent.spacing * 2 : parent.spacing)
-                - 20
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: root.theme.spacing.space2
+        Text {
+            objectName: "wifiNetworkMeta"
+            width: parent.width
+            text: NetworkMenuLogic.wifiNetworkMeta(root.network, root.openSecurityValue)
+            color: root.network?.connected ? root.colors.primary : root.colors.textSubtle
+            font.family: root.theme.typography.textFontFamily
+            font.pixelSize: root.theme.typography.sizeSm
+            font.weight: Font.Normal
+            elide: Text.ElideRight
+        }
+    }
+
+    Row {
+        id: actions
+        anchors.right: parent.right
+        anchors.rightMargin: root.theme.spacing.space8
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: root.theme.spacing.space4
+
+        Rectangle {
+            id: primaryButton
+            objectName: "primaryActionButton"
+            width: primaryLabel.implicitWidth + root.theme.spacing.space16
+            height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
+            radius: root.theme.shape.radius8
+            color: primaryInput.containsMouse || primaryInput.activeFocus
+                ? root.colors.surfaceHover
+                : root.colors.transparent
+            opacity: root.actionBusy ? 0.45 : 1
 
             Text {
-                width: parent.width
-                text: root.network.name
-                color: root.colors.text
-                font.family: root.theme.typography.textFontFamily
-                font.weight: root.network.connected ? Font.Medium : Font.Normal
-                elide: Text.ElideRight
-            }
-
-            Text {
-                text: NetworkMenuLogic.networkStatus(root.network)
-                color: root.colors.textMuted
+                id: primaryLabel
+                objectName: "primaryActionLabel"
+                anchors.centerIn: parent
+                text: root.actionBusy
+                    ? "Please wait…"
+                    : (root.network?.connected ? "Disconnect" : "Connect")
+                color: root.network?.connected ? root.colors.danger : root.colors.primary
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
+                font.weight: Font.Normal
             }
-        }
 
-        Text {
-            id: signalLabel
-            anchors.verticalCenter: parent.verticalCenter
-            text: NetworkMenuLogic.networkSignalText(root.network)
-            color: root.colors.textMuted
-            font.family: root.theme.typography.textFontFamily
+            MouseArea {
+                id: primaryInput
+                objectName: "primaryAction"
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                enabled: Boolean(root.network) && !root.actionBusy
+                activeFocusOnTab: enabled
+                Accessible.role: Accessible.Button
+                Accessible.name: root.network
+                    ? `${root.network.connected ? "Disconnect from" : "Connect to"} ${root.network.name}`
+                    : "Wi-Fi network"
+                onClicked: root.requestPrimaryAction()
+                Keys.onSpacePressed: root.requestPrimaryAction()
+                Keys.onReturnPressed: root.requestPrimaryAction()
+                Keys.onEnterPressed: root.requestPrimaryAction()
+            }
         }
 
         Rectangle {
             id: forgetButton
             objectName: "forgetAction"
-            width: 58
-            opacity: root.forgetAvailable ? 1 : 0
+            visible: root.forgetAvailable
+            width: visible ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
             height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
-            anchors.verticalCenter: parent.verticalCenter
-            radius: root.theme.shape.radius6
-            color: forgetMouse.containsMouse || forgetMouse.activeFocus
+            radius: root.theme.shape.radius8
+            color: forgetInput.containsMouse || forgetInput.activeFocus
                 ? root.colors.surfaceHover
                 : root.colors.transparent
-            border.width: 0
-
-            Accessible.role: Accessible.Button
-            Accessible.name: root.network ? `Forget ${root.network.name}` : "Forget network"
-            Accessible.focusable: root.forgetAvailable
-            Accessible.ignored: !root.forgetAvailable
 
             Text {
                 id: forgetLabel
@@ -102,40 +135,24 @@ Rectangle {
                 color: root.colors.danger
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
+                font.weight: Font.Normal
             }
 
             MouseArea {
-                id: forgetMouse
+                id: forgetInput
                 objectName: "forgetInput"
                 anchors.fill: parent
                 hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 enabled: root.forgetAvailable
                 activeFocusOnTab: enabled
+                Accessible.role: Accessible.Button
+                Accessible.name: root.network ? `Forget ${root.network.name}` : "Forget network"
                 onClicked: root.requestForget()
                 Keys.onSpacePressed: root.requestForget()
                 Keys.onReturnPressed: root.requestForget()
                 Keys.onEnterPressed: root.requestForget()
             }
         }
-    }
-
-    MouseArea {
-        id: primaryMouse
-        objectName: "primaryAction"
-        anchors.fill: parent
-        anchors.rightMargin: root.forgetAvailable ? forgetButton.width + root.theme.spacing.space8 : 0
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        enabled: Boolean(root.network) && !root.network.stateChanging
-        activeFocusOnTab: enabled
-        Accessible.role: Accessible.Button
-        Accessible.name: root.network
-            ? `${root.network.connected ? "Disconnect from" : "Connect to"} ${root.network.name}`
-            : "Wi-Fi network"
-        onClicked: root.requestPrimaryAction()
-        Keys.onSpacePressed: root.requestPrimaryAction()
-        Keys.onReturnPressed: root.requestPrimaryAction()
-        Keys.onEnterPressed: root.requestPrimaryAction()
     }
 }

@@ -49,6 +49,44 @@ function wifiSummary(network, wifiHardwareEnabled) {
 	return wifiHardwareEnabled ? "Not connected" : "Disabled by hardware";
 }
 
+function wifiSignalQualityText(network) {
+	if (!network) return "";
+	return Math.round((Number(network.signalStrength) || 0) * 100) + "%";
+}
+
+function wifiSecurityLabel(network, openSecurityValue) {
+	if (!network) return "";
+	return network.security === openSecurityValue ? "Open" : "Secured";
+}
+
+function wifiNetworkMeta(network, openSecurityValue) {
+	if (!network) return "";
+	return (
+		wifiSecurityLabel(network, openSecurityValue) +
+		" · " +
+		wifiSignalQualityText(network)
+	);
+}
+
+function sortedWifiNetworks(networks) {
+	return Array.from(networks || [])
+		.map((network, index) => ({ network: network, index: index }))
+		.sort((left, right) => {
+			var connectedDifference =
+				Number(Boolean(right.network.connected)) -
+				Number(Boolean(left.network.connected));
+			if (connectedDifference !== 0) return connectedDifference;
+
+			var signalDifference =
+				(Number(right.network.signalStrength) || 0) -
+				(Number(left.network.signalStrength) || 0);
+			return signalDifference !== 0
+				? signalDifference
+				: left.index - right.index;
+		})
+		.map((entry) => entry.network);
+}
+
 function nextExpandedSection(currentSection, requestedSection) {
 	return currentSection === requestedSection ? "" : requestedSection;
 }

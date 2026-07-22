@@ -31,6 +31,21 @@ assert.equal(parsed.ipv6Address, "fe80::1234/64");
 assert.equal(parsed.ipv6Gateway, "fe80::1");
 assert.deepEqual(Array.from(parsed.ipv6Dns), ["fe80::1"]);
 
+const parsedWifi = context.parseNmcliDeviceInfo(`GENERAL.CONNECTION:Home Wi-Fi
+GENERAL.CON-UUID:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+GENERAL.HWADDR:AA:BB:CC:DD:EE:FF
+IP4.ADDRESS[1]:10.0.0.42/24
+IP4.GATEWAY:10.0.0.1
+IP4.DNS[1]:10.0.0.1
+IP6.ADDRESS[1]:fe80::abcd/64
+`);
+assert.equal(parsedWifi.connectionName, "Home Wi-Fi");
+assert.equal(parsedWifi.macAddress, "AA:BB:CC:DD:EE:FF");
+assert.equal(parsedWifi.ipv4Address, "10.0.0.42/24");
+assert.equal(parsedWifi.ipv4Gateway, "10.0.0.1");
+assert.deepEqual(Array.from(parsedWifi.ipv4Dns), ["10.0.0.1"]);
+assert.equal(parsedWifi.ipv6Address, "fe80::abcd/64");
+
 assert.equal(
 	context.validConnectionUuid("cb89613f-ca03-39f0-9bce-dca5619093d7"),
 	true,

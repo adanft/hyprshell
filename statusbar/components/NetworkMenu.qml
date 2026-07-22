@@ -37,17 +37,86 @@ Item {
     property real menuAnchorX: 0
     property real menuAnchorY: theme.sizing.statusBarOuterHeight
     property var pendingNetwork: null
+    property var suppressedPasswordNetwork: null
+    property var wifiScannerDevice: null
+    property bool wifiActivationPending: false
+    property bool wifiActivationRequested: false
+    property int wifiActivationGeneration: 0
     property string connectionError: ""
+    readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled
+            && Networking.wifiEnabled
+            && !wifiActivationPending
+            && services.wifiDevice
+        ? NetworkMenuLogic.sortedWifiNetworks(services.wifiDevice.networks?.values ?? [])
+        : []
     property real uptimeSeconds: 0
     property int quickControlRequestSequence: 0
+
+    function beginWifiActivation() {
+        wifiActivationGeneration += 1;
+        wifiActivationRequested = true;
+        wifiActivationPending = true;
+        wifiActivationSettleTimer.activationGeneration = wifiActivationGeneration;
+        wifiActivationSettleTimer.restart();
+    }
+
+    function toggleWifiEnabled() {
+        const enable = !Networking.wifiEnabled;
+        if (enable) {
+            beginWifiActivation();
+        } else {
+            wifiActivationGeneration += 1;
+            wifiActivationRequested = false;
+            wifiActivationPending = false;
+            wifiActivationSettleTimer.stop();
+        }
+        Networking.wifiEnabled = enable;
+    }
+
+    function updateWifiScanner(forceRestart) {
+        wifiScannerStartTimer.stop();
+
+        const device = services.wifiDevice;
+        if (wifiScannerDevice && wifiScannerDevice !== device)
+            wifiScannerDevice.scannerEnabled = false;
+        wifiScannerDevice = device;
+        if (!device)
+            return;
+
+        const shouldScan = NetworkMenuLogic.shouldScanWifi(
+            menuOpen,
+            expandedNetworkSection,
+            Networking.wifiEnabled,
+            Networking.wifiHardwareEnabled
+        );
+
+        if (!shouldScan) {
+            if (!wifiActivationRequested) {
+                wifiActivationPending = false;
+                wifiActivationSettleTimer.stop();
+            }
+            device.scannerEnabled = false;
+            return;
+        }
+
+        if (forceRestart) {
+            device.scannerEnabled = false;
+            wifiScannerStartTimer.restart();
+            return;
+        }
+
+        device.scannerEnabled = true;
+    }
 
     onMenuOpenChanged: {
         if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
             services.bluetoothAdapter.discovering = false;
+        updateWifiScanner(menuOpen);
     }
     onExpandedNetworkSectionChanged: {
         if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
             services.bluetoothAdapter.discovering = false;
+        updateWifiScanner(expandedNetworkSection === "wifi");
     }
     property string expandedNetworkSection: ""
 
@@ -55,7 +124,6 @@ Item {
         expandedNetworkSection = NetworkMenuLogic.nextExpandedSection(expandedNetworkSection, section);
         connectionError = "";
         pendingNetwork = null;
-        passwordInput.text = "";
     }
 
     function toggleEthernet() {
@@ -107,15 +175,17 @@ Item {
     }
 
     function close() {
+        if (pendingNetwork?.stateChanging)
+            suppressedPasswordNetwork = pendingNetwork;
         menuOpen = false;
         expandedNetworkSection = "";
         pendingNetwork = null;
-        passwordInput.text = "";
         connectionError = "";
     }
 
     function connectNetwork(network) {
         connectionError = "";
+        suppressedPasswordNetwork = null;
         if (network.connected) {
             network.disconnect();
             return;
@@ -125,25 +195,27 @@ Item {
             return;
         }
         pendingNetwork = network;
-        passwordInput.text = "";
-        passwordInput.forceActiveFocus();
     }
 
-    function submitPassword() {
-        if (!pendingNetwork || passwordInput.text.length === 0)
+    function submitPassword(password) {
+        if (!pendingNetwork || password.length === 0 || pendingNetwork.stateChanging)
             return;
-        pendingNetwork.connectWithPsk(passwordInput.text);
-        passwordInput.text = "";
+        connectionError = "";
+        pendingNetwork.connectWithPsk(password);
+    }
+
+    function cancelPasswordEntry() {
+        if (pendingNetwork?.stateChanging)
+            suppressedPasswordNetwork = pendingNetwork;
         pendingNetwork = null;
+        connectionError = "";
     }
 
     function forgetNetwork(network) {
         if (!NetworkMenuLogic.canForgetNetwork(network))
             return;
-        if (pendingNetwork === network) {
+        if (pendingNetwork === network)
             pendingNetwork = null;
-            passwordInput.text = "";
-        }
         connectionError = "";
         network.forget();
     }
@@ -172,6 +244,89 @@ Item {
         running: root.menuOpen
         repeat: true
         onTriggered: root.refreshUptime()
+    }
+
+    Timer {
+        id: wifiScannerStartTimer
+        interval: 300
+        repeat: false
+        onTriggered: {
+            if (NetworkMenuLogic.shouldScanWifi(
+                    root.menuOpen,
+                    root.expandedNetworkSection,
+                    Networking.wifiEnabled,
+                    Networking.wifiHardwareEnabled
+                ) && root.wifiScannerDevice === root.services.wifiDevice) {
+                root.wifiScannerDevice.scannerEnabled = true;
+                if (root.wifiActivationPending) {
+                    wifiActivationSettleTimer.activationGeneration = root.wifiActivationGeneration;
+                    wifiActivationSettleTimer.restart();
+                }
+            } else if (!root.wifiActivationRequested) {
+                root.wifiActivationPending = false;
+            }
+        }
+    }
+
+    Timer {
+        id: wifiActivationSettleTimer
+        property int activationGeneration: 0
+        interval: 900
+        repeat: false
+        onTriggered: {
+            if (activationGeneration === root.wifiActivationGeneration) {
+                root.wifiActivationRequested = false;
+                root.wifiActivationPending = false;
+            }
+        }
+    }
+
+    Connections {
+        target: Networking
+        ignoreUnknownSignals: true
+
+        function onWifiEnabledChanged() {
+            if (root.wifiActivationRequested && !Networking.wifiEnabled)
+                return;
+
+            if (Networking.wifiEnabled && !root.wifiActivationRequested) {
+                root.beginWifiActivation();
+            } else if (!Networking.wifiEnabled) {
+                root.wifiActivationPending = false;
+                root.cancelPasswordEntry();
+                root.suppressedPasswordNetwork = null;
+            }
+
+            root.updateWifiScanner(Networking.wifiEnabled);
+        }
+
+        function onWifiHardwareEnabledChanged() {
+            if (!Networking.wifiHardwareEnabled) {
+                root.cancelPasswordEntry();
+                root.suppressedPasswordNetwork = null;
+            }
+            root.updateWifiScanner(Networking.wifiHardwareEnabled);
+        }
+    }
+
+    Connections {
+        target: root.services
+        ignoreUnknownSignals: true
+
+        function onWifiDeviceChanged() {
+            root.cancelPasswordEntry();
+            root.suppressedPasswordNetwork = null;
+            root.updateWifiScanner(Networking.wifiEnabled);
+        }
+    }
+
+    Component.onCompleted: root.updateWifiScanner(false)
+    Component.onDestruction: {
+        wifiScannerStartTimer.stop();
+        wifiActivationSettleTimer.stop();
+        if (root.wifiScannerDevice)
+            root.wifiScannerDevice.scannerEnabled = false;
+        root.wifiScannerDevice = null;
     }
 
     PanelWindow {
@@ -459,7 +614,9 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: root.services.wifiUp ? root.icons.wifiConnected : root.icons.wifiDisconnected
+                                    icon: root.services.wifiUp
+                                        ? root.icons.wifiConnected
+                                        : (Networking.wifiEnabled ? root.icons.wifiEnabled : root.icons.wifiDisconnected)
                                     title: "Wi-Fi"
                                     subtitle: !Networking.wifiHardwareEnabled
                                         ? "Unavailable"
@@ -470,7 +627,7 @@ Item {
                                     available: Networking.wifiHardwareEnabled
                                     expanded: root.expandedNetworkSection === "wifi"
                                     onBodyClicked: root.toggleNetworkSection("wifi")
-                                    onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+                                    onToggled: root.toggleWifiEnabled()
                                 }
                             }
                         }
@@ -856,96 +1013,93 @@ Item {
                             anchors.margins: root.theme.spacing.space12
                             spacing: root.theme.spacing.space8
 
-                            Row {
-                                width: parent.width
-                                spacing: root.theme.spacing.space8
-
-                                BarText {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: root.services.wifiUp ? root.icons.wifiConnected : root.icons.wifiDisconnected
-                                    color: root.services.wifiUp ? root.colors.primary : root.colors.textMuted
-                                    font.pixelSize: root.theme.typography.sizeLg
-                                }
-
-                                Column {
-                                    width: parent.width - root.theme.spacing.space16 - 18
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: root.theme.spacing.space2
-
                                     BarText {
-                                        text: "Wi-Fi"
-                                        color: root.colors.text
-                                        font.pixelSize: root.theme.typography.sizeLg
-                                        font.weight: Font.Medium
-                                    }
-
-                                    BarText {
-                                        width: parent.width
-                                        text: NetworkMenuLogic.wifiSummary(root.services.connectedWifiNetwork, Networking.wifiHardwareEnabled)
-                                        color: root.services.wifiUp ? root.colors.primary : root.colors.textSubtle
-                                        font.pixelSize: root.theme.typography.sizeSm
-                                        elide: Text.ElideRight
-                                    }
-                                }
-
-                            }
-
-                            BarText {
-                                visible: root.connectionError.length > 0
-                                width: parent.width
-                                text: root.connectionError
-                                color: root.colors.danger
-                                wrapMode: Text.Wrap
-                            }
-
-                            Rectangle {
-                                visible: root.pendingNetwork !== null
-                                width: parent.width
-                                height: passwordColumn.implicitHeight + root.theme.spacing.space12
-                                radius: root.theme.shape.radius8
-                                color: root.colors.surface
-                                border.width: 0
-
-                                Column {
-                                    id: passwordColumn
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    anchors.margins: root.theme.spacing.space6
-                                    spacing: root.theme.spacing.space6
-
-                                    BarText {
-                                        width: parent.width
-                                        text: root.pendingNetwork ? `Password for ${root.pendingNetwork.name}` : "Password"
-                                        color: root.colors.text
-                                        elide: Text.ElideRight
+                                        text: "Network info"
+                                        color: root.colors.textSubtle
+                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.weight: Font.Normal
                                     }
 
                                     Rectangle {
                                         width: parent.width
-                                        height: root.theme.sizing.statusBarTrayMenuItemHeight
-                                        radius: root.theme.shape.radius8
+                                        height: wifiNetworkInfoColumn.implicitHeight + root.theme.spacing.space16
+                                        radius: root.theme.shape.radius12
                                         color: root.colors.surface
-                                        border.color: passwordInput.activeFocus ? root.colors.primary : root.colors.border
+                                        border.width: 0
 
-                                        TextInput {
-                                            id: passwordInput
-                                            anchors.fill: parent
-                                            anchors.leftMargin: root.theme.spacing.space8
-                                            anchors.rightMargin: root.theme.spacing.space8
-                                            color: root.colors.text
-                                            selectionColor: root.colors.primary
-                                            echoMode: TextInput.Password
-                                            verticalAlignment: TextInput.AlignVCenter
-                                            font.family: root.theme.typography.textFontFamily
-                                            onAccepted: root.submitPassword()
+                                        Column {
+                                            id: wifiNetworkInfoColumn
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.margins: root.theme.spacing.space8
+                                            spacing: root.theme.spacing.space4
+
+                                            BarText {
+                                                width: parent.width
+                                                text: root.services.wifiInterface || "No Wi-Fi adapter"
+                                                color: root.colors.text
+                                                font.pixelSize: root.theme.typography.sizeMd
+                                                font.weight: Font.Normal
+                                                elide: Text.ElideRight
+                                            }
+
+                                            BarText {
+                                                width: parent.width
+                                                    text: !Networking.wifiHardwareEnabled
+                                                        ? "Unavailable"
+                                                        : (root.wifiActivationPending
+                                                            ? "Enabling…"
+                                                            : (!Networking.wifiEnabled
+                                                                ? "Disabled"
+                                                                : (root.services.wifiUp ? "Connected" : "Not connected")))
+                                                color: root.services.wifiUp ? root.colors.primary : root.colors.textMuted
+                                                font.pixelSize: root.theme.typography.sizeSm
+                                                font.weight: Font.Normal
+                                            }
+
+                                                BarText {
+                                                    visible: !root.wifiActivationPending
+                                                        && root.services.wifiUp
+                                                        && root.services.wifiInfoAvailability !== "available"
+                                                    width: parent.width
+                                                    text: root.services.wifiInfoAvailability === "unavailable"
+                                                        ? "Network details unavailable"
+                                                        : "Loading network details…"
+                                                    color: root.colors.textSubtle
+                                                    font.pixelSize: root.theme.typography.sizeSm
+                                                    font.weight: Font.Normal
+                                                    wrapMode: Text.WordWrap
+                                                }
+
+                                            NetworkInfoRow { label: "Network"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.connectionName || root.services.connectedWifiNetwork?.name || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Security"; value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSecurityLabel(root.services.connectedWifiNetwork, WifiSecurityType.None); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Signal quality"; value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSignalQualityText(root.services.connectedWifiNetwork); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "IPv4"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.ipv4Address || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Gateway"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.ipv4Gateway || root.services.wifiInfo.ipv6Gateway || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "IPv6"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.ipv6Address || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "MAC"; value: root.services.wifiInfo.macAddress || root.services.wifiDevice?.address || ""; colors: root.colors; theme: root.theme }
                                         }
                                     }
+
+                                BarText {
+                                    visible: root.connectionError.length > 0
+                                    width: parent.width
+                                    text: root.connectionError
+                                    color: root.colors.danger
+                                    wrapMode: Text.Wrap
                                 }
+
+
+                            BarText {
+                                text: "Available networks"
+                                color: root.colors.textSubtle
+                                font.pixelSize: root.theme.typography.sizeMd
+                                font.weight: Font.Normal
                             }
 
-                            Repeater {
-                                model: root.services.wifiDevice?.networks?.values ?? []
+                                Repeater {
+                                    model: root.availableWifiNetworks
 
                                     WifiNetworkRow {
                                         id: networkRow
@@ -954,16 +1108,27 @@ Item {
                                         network: modelData
                                         colors: root.colors
                                         theme: root.theme
-                                        icons: root.icons
+                                        openSecurityValue: WifiSecurityType.None
 
-                                        Connections {
-                                            target: networkRow.modelData
-                                            function onConnectionFailed(reason) {
-                                                root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
-                                                if (reason === ConnectionFailReason.NoSecrets) {
-                                                    root.pendingNetwork = networkRow.modelData;
-                                                    passwordInput.forceActiveFocus();
+                                            Connections {
+                                                target: networkRow.modelData
+
+                                                function onConnectedChanged() {
+                                                    if (networkRow.modelData.connected
+                                                            && root.suppressedPasswordNetwork === networkRow.modelData)
+                                                        root.suppressedPasswordNetwork = null;
                                                 }
+
+                                                function onConnectionFailed(reason) {
+                                                if (root.pendingNetwork === networkRow.modelData)
+                                                    return;
+                                                if (root.suppressedPasswordNetwork === networkRow.modelData) {
+                                                    root.suppressedPasswordNetwork = null;
+                                                    return;
+                                                }
+                                                root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
+                                                if (reason === ConnectionFailReason.NoSecrets)
+                                                    root.pendingNetwork = networkRow.modelData;
                                             }
                                         }
 
@@ -972,11 +1137,50 @@ Item {
                                     }
                                 }
 
-                            BarText {
-                                visible: Networking.wifiEnabled && (root.services.wifiDevice?.networks?.values?.length ?? 0) === 0
-                                text: "Scanning for networks…"
-                                color: root.colors.textMuted
-                            }
+                                Rectangle {
+                                    visible: root.availableWifiNetworks.length === 0
+                                    width: parent.width
+                                    height: 58
+                                    radius: root.theme.shape.radius12
+                                    color: root.colors.surface
+                                    border.width: 0
+
+                                    Column {
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.margins: root.theme.spacing.space12
+                                        spacing: root.theme.spacing.space2
+
+                                        BarText {
+                                            width: parent.width
+                                            text: !Networking.wifiHardwareEnabled || !root.services.wifiDevice
+                                                ? "Wi-Fi unavailable"
+                                                : (root.wifiActivationPending
+                                                    ? "Enabling Wi-Fi…"
+                                                    : (!Networking.wifiEnabled ? "Wi-Fi is disabled" : "No networks found"))
+                                            color: root.colors.text
+                                            font.pixelSize: root.theme.typography.sizeMd
+                                            font.weight: Font.Normal
+                                            elide: Text.ElideRight
+                                        }
+
+                                        BarText {
+                                            width: parent.width
+                                            text: !Networking.wifiHardwareEnabled || !root.services.wifiDevice
+                                                ? "No wireless adapter is available"
+                                                : (root.wifiActivationPending
+                                                    ? "Preparing wireless scan"
+                                                    : (!Networking.wifiEnabled
+                                                        ? "Enable Wi-Fi to scan for networks"
+                                                        : "Scanning continues automatically"))
+                                            color: root.colors.textSubtle
+                                            font.pixelSize: root.theme.typography.sizeSm
+                                            font.weight: Font.Normal
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
                         }
                     }
                 }
@@ -984,16 +1188,30 @@ Item {
         }
     }
 
-    Binding {
-        target: root.services.wifiDevice
-        property: "scannerEnabled"
-        value: NetworkMenuLogic.shouldScanWifi(
-            root.menuOpen,
-            root.expandedNetworkSection,
-            Networking.wifiEnabled,
-            Networking.wifiHardwareEnabled
-        )
-        when: root.services.wifiDevice !== null
-        restoreMode: Binding.RestoreBindingOrValue
-    }
+        Connections {
+            target: root.pendingNetwork
+            ignoreUnknownSignals: true
+
+            function onConnectedChanged() {
+                if (root.pendingNetwork?.connected)
+                    root.cancelPasswordEntry();
+            }
+
+            function onConnectionFailed(reason) {
+                if (!root.pendingNetwork)
+                    return;
+                root.connectionError = `${root.pendingNetwork.name}: ${ConnectionFailReason.toString(reason)}`;
+            }
+        }
+
+        WifiPasswordModal {
+            screen: root.barWindow.screen
+            colors: root.colors
+            theme: root.theme
+            network: root.pendingNetwork
+            errorText: root.connectionError
+            onSubmitted: password => root.submitPassword(password)
+            onCancelled: root.cancelPasswordEntry()
+        }
+
 }

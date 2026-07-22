@@ -51,6 +51,7 @@ assert.equal(menu.wifiSummary(null, false), "Disabled by hardware");
 assert.equal(menu.nextExpandedSection("", "ethernet"), "ethernet");
 assert.equal(menu.nextExpandedSection("ethernet", "ethernet"), "");
 assert.equal(menu.nextExpandedSection("ethernet", "wifi"), "wifi");
+assert.equal(menu.nextExpandedSection("wifi", "microphone"), "microphone");
 
 assert.equal(menu.ethernetToggleAction(null), null);
 assert.equal(

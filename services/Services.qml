@@ -469,6 +469,16 @@ Scope {
             node.audio.muted = !node.audio.muted
     }
 
+    function setSourceVolume(percent) {
+        const request = QuickControlState.normalizedVolumeRequest(percent, source?.audio !== null && source?.audio !== undefined)
+        if (!request)
+            return
+
+        source.audio.volume = request.volume
+        if (request.unmute)
+            source.audio.muted = false
+    }
+
     function changeVolume(isSource, delta) {
         const node = isSource ? source : sink
         if (!node?.audio)

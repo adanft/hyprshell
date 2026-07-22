@@ -450,6 +450,68 @@ Item {
                             }
                         }
 
+                        NetworkControlCard {
+                            width: parent.width
+                            height: root.quickControlHeight
+                            colors: root.colors
+                            theme: root.theme
+                            icon: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                            title: "Microphone"
+                            subtitle: !root.services.source?.audio
+                                ? "Unavailable"
+                                : (root.services.sourceMuted ? "Muted" : `${root.services.sourceVolume}%`)
+                            active: root.services.source?.audio !== null
+                                && root.services.source?.audio !== undefined
+                                && !root.services.sourceMuted
+                            available: root.services.source?.audio !== null
+                                && root.services.source?.audio !== undefined
+                            detailAvailable: available
+                            expanded: root.expandedNetworkSection === "microphone"
+                            actionAccessibleName: root.services.sourceMuted ? "Unmute microphone" : "Mute microphone"
+                            detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
+                            stateDescription: subtitle
+                            onBodyClicked: root.toggleNetworkSection("microphone")
+                            onToggled: root.services.toggleMute(true)
+                        }
+
+                        Item {
+                            visible: root.expandedNetworkSection === "microphone"
+                            width: parent.width
+                            height: root.quickControlHeight
+
+                            Row {
+                                anchors.fill: parent
+                                anchors.leftMargin: root.theme.spacing.space12
+                                anchors.rightMargin: root.theme.spacing.space12
+                                spacing: root.theme.spacing.space8
+
+                                BarText {
+                                    width: root.quickControlIconWidth
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                    color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
+                                    font.pixelSize: 20
+                                }
+
+                                QuickControlSlider {
+                                    id: microphoneSlider
+                                    width: parent.width - root.quickControlIconWidth - parent.spacing
+                                    height: 32
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    value: root.services.sourceVolume
+                                    available: root.services.source?.audio !== null
+                                        && root.services.source?.audio !== undefined
+                                    trackColor: root.colors.background
+                                    fillColor: root.colors.primary
+                                    handleColor: root.colors.text
+                                    handleBorderColor: root.colors.primary
+                                    unavailableText: "Microphone unavailable"
+                                    onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                }
+                            }
+                        }
+
                         Rectangle {
                             id: lanCard
                             visible: root.expandedNetworkSection === "ethernet"

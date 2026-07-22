@@ -41,6 +41,17 @@ function rawForPercent(percent, maximum) {
     return Math.max(0, Math.min(maximum, Math.round(normalized * maximum / 100)));
 }
 
+function normalizedVolumeRequest(percent, available) {
+    var normalized = clampPercent(percent);
+    if (!available || normalized === null)
+        return null;
+    return {
+        percent: normalized,
+        volume: normalized / 100,
+        unmute: normalized > 0
+    };
+}
+
 function unavailableCapability(errorText) {
     return {
         availability: "unavailable",

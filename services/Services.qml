@@ -148,9 +148,11 @@ Scope {
     property real activeNetworkRxRate: 0
     property real activeNetworkTxRate: 0
     property int networkThroughputSubscriberCount: 0
+    property int networkDetailsSubscriberCount: 0
     property int cpuUsageSubscriberCount: 0
     property int memoryUsageSubscriberCount: 0
     readonly property bool networkThroughputEnabled: networkThroughputSubscriberCount > 0
+    readonly property bool networkDetailsEnabled: networkDetailsSubscriberCount > 0
     readonly property bool cpuUsageEnabled: cpuUsageSubscriberCount > 0
     readonly property bool memoryUsageEnabled: memoryUsageSubscriberCount > 0
     property int cpuUsage: 0
@@ -392,7 +394,7 @@ Scope {
 
     Timer {
         interval: 3000
-        running: service.lanDevice !== null
+        running: service.networkDetailsEnabled && service.lanDevice !== null
         repeat: true
         triggeredOnStart: true
         onTriggered: service.refreshEthernetInfo()
@@ -400,7 +402,7 @@ Scope {
 
     Timer {
         interval: 3000
-        running: service.wifiDevice !== null
+        running: service.networkDetailsEnabled && service.wifiDevice !== null
         repeat: true
         triggeredOnStart: true
         onTriggered: service.refreshWifiInfo()
@@ -572,6 +574,14 @@ Scope {
         networkThroughputSubscriberCount = Math.max(0, networkThroughputSubscriberCount - 1)
         if (!networkThroughputEnabled)
             refreshNetwork()
+    }
+
+    function enableNetworkDetails() {
+        networkDetailsSubscriberCount++
+    }
+
+    function disableNetworkDetails() {
+        networkDetailsSubscriberCount = Math.max(0, networkDetailsSubscriberCount - 1)
     }
 
     function enableCpuUsage() {

@@ -95,8 +95,14 @@ Item {
         device.scannerEnabled = true;
     }
 
-    onMenuOpenChanged: updateWifiScanner(menuOpen)
-    onExpandedNetworkSectionChanged: updateWifiScanner(expandedNetworkSection === "wifi")
+        onMenuOpenChanged: {
+            updateWifiScanner(menuOpen);
+            if (menuOpen)
+                services.enableNetworkDetails();
+            else
+                services.disableNetworkDetails();
+        }
+        onExpandedNetworkSectionChanged: updateWifiScanner(expandedNetworkSection === "wifi")
     property string expandedNetworkSection: ""
 
     function toggleNetworkSection(section) {
@@ -297,6 +303,8 @@ Item {
 
     Component.onCompleted: root.updateWifiScanner(false)
     Component.onDestruction: {
+        if (root.menuOpen)
+            root.services.disableNetworkDetails();
         wifiScannerStartTimer.stop();
         wifiActivationSettleTimer.stop();
         if (root.wifiScannerDevice)

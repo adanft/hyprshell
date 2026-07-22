@@ -23,20 +23,96 @@ ShellRoot {
         id: serviceState
     }
 
-    Applauncher.AppLauncher {
-        id: appLauncher
+    LazyLoader {
+        id: appLauncherLoader
+        property bool requestedVisible: false
+        active: false
+
+        Applauncher.AppLauncher {}
     }
-    Powermenu.PowerMenu {
-        id: powerMenu
+    LazyLoader {
+        id: powerMenuLoader
+        property bool requestedVisible: false
+        active: false
+
+        Powermenu.PowerMenu {}
     }
-    Wallpaperselector.WallpaperSelector {
-        id: wallpaperSelector
+    LazyLoader {
+        id: wallpaperSelectorLoader
+        property bool requestedVisible: false
+        active: false
+
+        Wallpaperselector.WallpaperSelector {}
     }
-    Themeselector.ThemeSelector {
-        id: themeSelector
+    LazyLoader {
+        id: themeSelectorLoader
+        property bool requestedVisible: false
+        active: false
+
+        Themeselector.ThemeSelector {}
     }
-    Screenshot.ScreenshotTool {
-        id: screenshotTool
+    LazyLoader {
+        id: screenshotToolLoader
+        property bool requestedVisible: false
+        active: false
+
+        Screenshot.ScreenshotTool {}
+    }
+
+    Connections {
+        target: appLauncherLoader.item
+        enabled: target !== null
+        function onVisibleChanged() {
+            const window = appLauncherLoader.item;
+            if (window && !window.visible) {
+                appLauncherLoader.requestedVisible = false;
+                appLauncherLoader.active = false;
+            }
+        }
+    }
+    Connections {
+        target: powerMenuLoader.item
+        enabled: target !== null
+        function onVisibleChanged() {
+            const window = powerMenuLoader.item;
+            if (window && !window.visible) {
+                powerMenuLoader.requestedVisible = false;
+                powerMenuLoader.active = false;
+            }
+        }
+    }
+    Connections {
+        target: wallpaperSelectorLoader.item
+        enabled: target !== null
+        function onVisibleChanged() {
+            const window = wallpaperSelectorLoader.item;
+            if (window && !window.visible) {
+                wallpaperSelectorLoader.requestedVisible = false;
+                wallpaperSelectorLoader.active = false;
+            }
+        }
+    }
+    Connections {
+        target: themeSelectorLoader.item
+        enabled: target !== null
+        function onVisibleChanged() {
+            const window = themeSelectorLoader.item;
+            if (window && !window.visible) {
+                themeSelectorLoader.requestedVisible = false;
+                themeSelectorLoader.active = false;
+            }
+        }
+    }
+    Connections {
+        target: screenshotToolLoader.item
+        enabled: target !== null
+        function onVisibleChanged() {
+            const window = screenshotToolLoader.item;
+            if (window && !window.visible) {
+                screenshotToolLoader.requestedVisible = false;
+                screenshotToolLoader.active = false;
+            }
+        }
     }
 
     IpcHandler {
@@ -99,7 +175,7 @@ ShellRoot {
         }
 
         function set(name: string): void {
-            themeSelector.selectTheme(name);
+            themeColors.setTheme(name);
         }
     }
 
@@ -115,61 +191,169 @@ ShellRoot {
             colors: themeColors
             services: serviceState
 
-            onOpenNotificationCenterRequested: notificationCenter.visible = !notificationCenter.visible
+            function toggleNotificationCenter() {
+                notificationCenterLoader.requestedVisible = !notificationCenterLoader.requestedVisible;
+                if (!notificationCenterLoader.requestedVisible) {
+                    if (notificationCenterLoader.item)
+                        notificationCenterLoader.item.visible = false;
+                    else
+                        notificationCenterLoader.active = false;
+                    return;
+                }
 
-            Notifications.NotificationCenter {
-                id: notificationCenter
-
-                colors: themeColors
-                services: serviceState
-                barWindow: barWindow
+                notificationCenterLoader.active = true;
+                Qt.callLater(() => {
+                    if (notificationCenterLoader.requestedVisible
+                            && notificationCenterLoader.item)
+                        notificationCenterLoader.item.visible = true;
+                });
             }
 
-            Notifications.NotificationPopupManager {
-                colors: themeColors
-                services: serviceState
-                barWindow: barWindow
+            function syncNotificationPopupLoader() {
+                if (serviceState.visibleNotifications.length > 0) {
+                    notificationPopupLoader.active = true;
+                    Qt.callLater(() => {
+                        const manager = notificationPopupLoader.item;
+                        if (manager && !manager.isFocusedScreen)
+                            notificationPopupLoader.active = false;
+                    });
+                    return;
+                }
+
+                if (notificationPopupLoader.item
+                        && notificationPopupLoader.item.popupItems.length === 0)
+                    notificationPopupLoader.active = false;
             }
+
+            onOpenNotificationCenterRequested: toggleNotificationCenter()
+
+            LazyLoader {
+                id: notificationCenterLoader
+                property bool requestedVisible: false
+                property var ownerWindow: barWindow
+                active: false
+
+                Notifications.NotificationCenter {
+                    colors: themeColors
+                    services: serviceState
+                    barWindow: notificationCenterLoader.ownerWindow
+                }
+            }
+
+            Connections {
+                target: notificationCenterLoader.item
+                enabled: target !== null
+                function onVisibleChanged() {
+                    const center = notificationCenterLoader.item;
+                    if (center && !center.visible) {
+                        notificationCenterLoader.requestedVisible = false;
+                        notificationCenterLoader.active = false;
+                    }
+                }
+            }
+
+            LazyLoader {
+                id: notificationPopupLoader
+                property var ownerWindow: barWindow
+                active: false
+
+                Notifications.NotificationPopupManager {
+                    colors: themeColors
+                    services: serviceState
+                    barWindow: notificationPopupLoader.ownerWindow
+                }
+            }
+
+            Connections {
+                target: notificationPopupLoader.item
+                enabled: target !== null
+                function onVisibleChanged() {
+                    const manager = notificationPopupLoader.item;
+                    if (manager && !manager.visible
+                            && serviceState.visibleNotifications.length === 0)
+                        notificationPopupLoader.active = false;
+                }
+            }
+
+            Connections {
+                target: serviceState
+
+                function onVisibleNotificationsChanged() {
+                    barWindow.syncNotificationPopupLoader();
+                }
+
+                function onFocusedNotificationScreenNameChanged() {
+                    barWindow.syncNotificationPopupLoader();
+                }
+            }
+
+            Component.onCompleted: syncNotificationPopupLoader()
         }
     }
 
+    function openLoader(loader) {
+        loader.requestedVisible = true;
+        loader.active = true;
+        Qt.callLater(() => {
+            if (loader.requestedVisible && loader.item)
+                loader.item.open();
+        });
+    }
+
+    function toggleLoader(loader) {
+        loader.requestedVisible = !loader.requestedVisible;
+        if (!loader.requestedVisible) {
+            if (loader.item && loader.item.visible)
+                loader.item.toggle();
+            else
+                loader.active = false;
+            return;
+        }
+
+        loader.active = true;
+        Qt.callLater(() => {
+            if (loader.requestedVisible && loader.item)
+                loader.item.open();
+        });
+    }
+
     function openPowerMenu() {
-        powerMenu.open();
+        openLoader(powerMenuLoader);
     }
 
     function openAppLauncher() {
-        appLauncher.open();
+        openLoader(appLauncherLoader);
     }
 
     function toggleAppLauncher() {
-        appLauncher.toggle();
+        toggleLoader(appLauncherLoader);
     }
 
     function togglePowerMenu() {
-        powerMenu.toggle();
+        toggleLoader(powerMenuLoader);
     }
 
     function openWallpaperSelector() {
-        wallpaperSelector.open();
+        openLoader(wallpaperSelectorLoader);
     }
 
     function toggleWallpaperSelector() {
-        wallpaperSelector.toggle();
+        toggleLoader(wallpaperSelectorLoader);
     }
 
     function openScreenshotTool() {
-        screenshotTool.open();
+        openLoader(screenshotToolLoader);
     }
 
     function toggleScreenshotTool() {
-        screenshotTool.toggle();
+        toggleLoader(screenshotToolLoader);
     }
 
     function openThemeSelector() {
-        themeSelector.open();
+        openLoader(themeSelectorLoader);
     }
 
     function toggleThemeSelector() {
-        themeSelector.toggle();
+        toggleLoader(themeSelectorLoader);
     }
 }

@@ -44,6 +44,14 @@ Item {
         return icon;
     }
 
+    function openTrayMenu(trayItem, anchorItem, localX, localY) {
+        trayMenuLoader.active = true;
+        Qt.callLater(() => {
+            if (trayMenuLoader.item)
+                trayMenuLoader.item.open(trayItem, anchorItem, localX, localY);
+        });
+    }
+
     implicitWidth: hasItems ? iconRow.implicitWidth : 0
     width: implicitWidth
     height: theme.sizing.statusBarHeight
@@ -71,31 +79,40 @@ Item {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                     onClicked: (mouse) => {
                         if (mouse.button === Qt.RightButton && modelData.hasMenu)
-                            trayMenu.open(modelData, parent, mouse.x, mouse.y);
+                            root.openTrayMenu(modelData, parent, mouse.x, mouse.y);
                         else if (mouse.button === Qt.MiddleButton)
                             modelData.secondaryActivate();
                         else if (modelData.onlyMenu && modelData.hasMenu)
-                            trayMenu.open(modelData, parent, mouse.x, mouse.y);
+                            root.openTrayMenu(modelData, parent, mouse.x, mouse.y);
                         else
                             modelData.activate();
                     }
                 }
-
             }
 
             model: ScriptModel {
                 values: SystemTray.items && SystemTray.items.values ? SystemTray.items.values : []
             }
-
         }
-
     }
 
-    TrayMenu {
-        id: trayMenu
+    LazyLoader {
+        id: trayMenuLoader
+        active: false
 
-        colors: root.colors
-        barWindow: root.barWindow
+        TrayMenu {
+            colors: root.colors
+            barWindow: root.barWindow
+        }
     }
 
+    Connections {
+        target: trayMenuLoader.item
+        enabled: target !== null
+        function onMenuOpenChanged() {
+            const menu = trayMenuLoader.item;
+            if (menu && !menu.menuOpen)
+                trayMenuLoader.active = false;
+        }
+    }
 }

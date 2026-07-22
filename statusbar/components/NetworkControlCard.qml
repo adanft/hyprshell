@@ -95,7 +95,7 @@ Rectangle {
                 text: card.title
                 color: card.colors.text
                 font.family: card.theme.typography.textFontFamily
-                font.bold: true
+                font.styleName: card.theme.typography.styleSemibold
                 elide: Text.ElideRight
             }
 
@@ -104,10 +104,19 @@ Rectangle {
                 text: card.subtitle
                 color: card.active ? card.colors.primary : card.colors.textSubtle
                 font.family: card.theme.typography.textFontFamily
+                font.styleName: card.theme.typography.styleRegular
                 font.pixelSize: card.theme.typography.sizeSm
                 elide: Text.ElideRight
             }
         }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        radius: card.radius
+        color: "transparent"
+        border.color: card.colors.primary
+        border.width: bodyArea.activeFocus ? 2 : 0
     }
 
     MouseArea {

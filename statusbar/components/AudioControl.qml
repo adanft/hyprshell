@@ -15,12 +15,13 @@ Item {
     required property var colors
     required property var services
     property bool source: false
+    readonly property bool available: source ? services.microphoneAvailable : Boolean(services.sink?.audio)
     readonly property int volume: source ? services.sourceVolume : services.sinkVolume
     readonly property bool muted: source ? services.sourceMuted : services.sinkMuted
-    readonly property color textColor: colors.text
+    readonly property color textColor: available ? colors.text : colors.textMuted
 
     function iconText() {
-        if (muted)
+        if (!available || muted)
             return source ? icons.microphoneMuted : icons.volumeMuted;
 
         if (source)
@@ -50,20 +51,38 @@ Item {
         }
 
         BarText {
-            visible: !root.muted
+            visible: root.available && !root.muted
             text: `${root.volume}%`
             color: root.textColor
         }
 
     }
 
-    MouseArea {
+    Rectangle {
         anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
+        radius: root.theme.shape.radius6
+        color: "transparent"
+        border.color: root.colors.primary
+        border.width: input.activeFocus ? 2 : 0
+    }
+
+    MouseArea {
+        id: input
+        anchors.fill: parent
+        enabled: root.available
+        hoverEnabled: true
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        activeFocusOnTab: enabled
+        Accessible.role: Accessible.Button
+        Accessible.name: root.source ? (root.muted ? "Unmute microphone" : "Mute microphone") : (root.muted ? "Unmute audio" : "Mute audio")
+        Accessible.description: root.available ? (root.muted ? "Muted" : `${root.volume}%`) : "Unavailable"
         onClicked: root.services.toggleMute(root.source)
+        Keys.onSpacePressed: root.services.toggleMute(root.source)
+        Keys.onReturnPressed: root.services.toggleMute(root.source)
+        Keys.onEnterPressed: root.services.toggleMute(root.source)
         onWheel: (wheel) => {
             const delta = wheel.angleDelta.y;
-            if (delta === 0)
+            if (!root.available || delta === 0)
                 return;
 
             root.services.changeVolume(root.source, delta > 0 ? 1 : -1);

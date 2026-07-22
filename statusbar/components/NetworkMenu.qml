@@ -647,15 +647,14 @@ Item {
                                     theme: root.theme
                                     icon: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
                                     title: "Microphone"
-                                    subtitle: !root.services.source?.audio
-                                        ? "Unavailable"
-                                        : (root.services.sourceMuted ? "Muted" : `${root.services.sourceVolume}%`)
-                                    active: root.services.source?.audio !== null
-                                        && root.services.source?.audio !== undefined
-                                        && !root.services.sourceMuted
-                                    available: root.services.source?.audio !== null
-                                        && root.services.source?.audio !== undefined
-                                    detailAvailable: available
+                                    subtitle: NetworkMenuLogic.microphoneSummary(
+                                        root.services.microphoneAvailable,
+                                        root.services.sourceMuted,
+                                        root.services.sourceVolume
+                                    )
+                                    active: root.services.microphoneAvailable && !root.services.sourceMuted
+                                    available: root.services.microphoneAvailable
+                                    detailAvailable: true
                                     expanded: root.expandedNetworkSection === "microphone"
                                     actionAccessibleName: root.services.sourceMuted ? "Unmute microphone" : "Mute microphone"
                                     detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
@@ -682,13 +681,16 @@ Item {
                                     )
                                     active: root.services.bluetoothPowered
                                     available: root.services.bluetoothAvailable
-                                    detailAvailable: root.services.bluetoothAvailable
+                                    detailAvailable: true
                                     expanded: root.expandedNetworkSection === "bluetooth"
                                     actionAccessibleName: root.services.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
                                     detailAccessibleName: expanded ? "Hide Bluetooth devices" : "Show Bluetooth devices"
                                     stateDescription: subtitle
                                     onBodyClicked: root.toggleNetworkSection("bluetooth")
-                                    onToggled: root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled
+                                        onToggled: {
+                                            if (root.services.bluetoothAdapter)
+                                                root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled;
+                                        }
                                 }
                             }
                         }
@@ -726,9 +728,8 @@ Item {
                                         width: parent.width - root.quickControlIconWidth - parent.spacing
                                         height: 32
                                         anchors.verticalCenter: parent.verticalCenter
-                                        value: root.services.sourceVolume
-                                        available: root.services.source?.audio !== null
-                                            && root.services.source?.audio !== undefined
+                                        value: Math.max(0, root.services.sourceVolume)
+                                        available: root.services.microphoneAvailable
                                         trackColor: root.colors.background
                                         fillColor: root.colors.primary
                                         handleColor: root.colors.text
@@ -742,7 +743,7 @@ Item {
                                     visible: root.services.audioSources.length > 0
                                     text: "Input devices"
                                     color: root.colors.text
-                                    font.weight: Font.Medium
+                                    font.styleName: root.theme.typography.styleMedium
                                 }
 
                                 Repeater {
@@ -771,8 +772,10 @@ Item {
                                                 width: parent.width
                                                 text: NetworkMenuLogic.audioSourceLabel(sourceRow.modelData)
                                                 color: root.colors.text
-                                                font.weight: sourceRow.modelData === root.services.source ? Font.Medium : Font.Normal
-                                                elide: Text.ElideRight
+                                                    font.styleName: sourceRow.modelData === root.services.source
+                                                        ? root.theme.typography.styleMedium
+                                                        : root.theme.typography.styleRegular
+                                                    elide: Text.ElideRight
                                             }
 
                                             BarText {
@@ -780,6 +783,14 @@ Item {
                                                 color: sourceRow.modelData === root.services.source ? root.colors.primary : root.colors.textSubtle
                                                 font.pixelSize: root.theme.typography.sizeSm
                                             }
+                                        }
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: parent.radius
+                                            color: "transparent"
+                                            border.color: root.colors.primary
+                                            border.width: sourceMouse.activeFocus ? 2 : 0
                                         }
 
                                         MouseArea {
@@ -801,8 +812,11 @@ Item {
 
                                 BarText {
                                     visible: root.services.audioSources.length === 0
-                                    text: "No microphone inputs"
-                                    color: root.colors.textMuted
+                                        text: root.services.microphoneAvailable
+                                            ? "No additional microphone inputs"
+                                            : "Microphone unavailable"
+                                        color: root.colors.textSubtle
+                                        font.styleName: root.theme.typography.styleRegular
                                 }
                             }
                         }
@@ -827,9 +841,9 @@ Item {
 
                                         BarText {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: root.services.bluetoothAdapter?.discovering ? "Scanning for devices…" : "Bluetooth devices"
+                                            text: "Bluetooth devices"
                                             color: root.colors.text
-                                            font.weight: Font.Medium
+                                            font.styleName: root.theme.typography.styleMedium
                                         }
 
                                         BluetoothScanButton {
@@ -839,17 +853,18 @@ Item {
                                             theme: root.theme
                                             discovering: root.services.bluetoothAdapter?.discovering ?? false
                                             available: root.services.bluetoothPowered
-                                            onScanToggled: discovering => root.services.bluetoothAdapter.discovering = discovering
+                                                onScanToggled: discovering => {
+                                                    if (root.services.bluetoothAdapter)
+                                                        root.services.bluetoothAdapter.discovering = discovering;
+                                                }
                                         }
                                     }
 
                                     Repeater {
-                                        model: {
-                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
-                                            if (root.services.bluetoothAdapter?.discovering)
-                                                return devices.filter(device => device);
-                                            return devices.filter(device => device && (device.paired || device.connected || device.pairing));
-                                        }
+                                        model: NetworkMenuLogic.bluetoothVisibleDevices(
+                                            root.services.bluetoothAdapter?.devices?.values ?? [],
+                                            root.services.bluetoothAdapter?.discovering ?? false
+                                        )
 
                                     BluetoothDeviceRow {
                                         required property var modelData
@@ -863,18 +878,17 @@ Item {
                                 }
 
                                     BarText {
-                                        visible: {
-                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
-                                            const visibleDevices = root.services.bluetoothAdapter?.discovering
-                                                ? devices.filter(device => device)
-                                                : devices.filter(device => device && (device.paired || device.connected || device.pairing));
-                                            return visibleDevices.length === 0;
-                                        }
-                                        text: !root.services.bluetoothPowered
-                                            ? "Bluetooth is off"
-                                            : (root.services.bluetoothAdapter?.discovering ? "Searching…" : "No paired devices")
+                                        visible: NetworkMenuLogic.bluetoothVisibleDevices(
+                                            root.services.bluetoothAdapter?.devices?.values ?? [],
+                                            root.services.bluetoothAdapter?.discovering ?? false
+                                        ).length === 0
+                                        text: NetworkMenuLogic.bluetoothEmptyState(
+                                            root.services.bluetoothAvailable,
+                                            root.services.bluetoothPowered,
+                                            root.services.bluetoothAdapter?.discovering ?? false
+                                        )
                                         color: root.colors.textSubtle
-                                        font.weight: Font.Normal
+                                        font.styleName: root.theme.typography.styleRegular
                                     }
                             }
                         }

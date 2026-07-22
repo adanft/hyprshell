@@ -140,8 +140,9 @@ Scope {
     readonly property string powerProfile: profileSlug(PowerProfiles.profile)
     readonly property int sinkVolume: Math.round((sink?.audio?.volume ?? 0) * 100)
     readonly property bool sinkMuted: sink?.audio?.muted ?? false
-    readonly property int sourceVolume: Math.round((source?.audio?.volume ?? 0) * 100)
-    readonly property bool sourceMuted: source?.audio?.muted ?? false
+    readonly property bool microphoneAvailable: Boolean(source && source.audio)
+    readonly property int sourceVolume: microphoneAvailable ? Math.round(source.audio.volume * 100) : -1
+    readonly property bool sourceMuted: microphoneAvailable ? source.audio.muted : false
     property real previousNetworkRx: 0
     property real previousNetworkTx: 0
     property real activeNetworkRxRate: 0
@@ -637,7 +638,7 @@ Scope {
     }
 
     function setSourceVolume(percent) {
-        const request = QuickControlState.normalizedVolumeRequest(percent, source?.audio !== null && source?.audio !== undefined)
+        const request = QuickControlState.normalizedVolumeRequest(percent, microphoneAvailable)
         if (!request)
             return
 

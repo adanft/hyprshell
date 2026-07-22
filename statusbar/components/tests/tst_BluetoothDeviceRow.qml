@@ -33,7 +33,12 @@ TestCase {
                 shape: { radius8: 8, radius6: 6 },
                 spacing: { space8: 8, space6: 6, space2: 2 },
                 sizing: { statusBarTrayMenuItemHeight: 36 },
-                typography: { sizeSm: 11, textFontFamily: "sans-serif" }
+                    typography: {
+                        sizeSm: 11,
+                        textFontFamily: "sans-serif",
+                        styleRegular: "Regular",
+                        styleMedium: "Medium"
+                    }
             })
         }
     }

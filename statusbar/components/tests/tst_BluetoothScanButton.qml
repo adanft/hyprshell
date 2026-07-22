@@ -12,12 +12,21 @@ TestCase {
     Component {
         id: buttonComponent
         BluetoothScanButton {
-            colors: ({ surface: "#202020", surfaceHover: "#303030", text: "#ffffff" })
+                colors: ({
+                    primary: "#88aaff",
+                    surface: "#202020",
+                    surfaceHover: "#303030",
+                    text: "#ffffff"
+                })
             theme: ({
                 shape: { radius6: 6 },
                 spacing: { space6: 6 },
                 sizing: { statusBarTrayMenuItemHeight: 36 },
-                typography: { sizeSm: 11, textFontFamily: "sans-serif" }
+                    typography: {
+                        sizeSm: 11,
+                        textFontFamily: "sans-serif",
+                        styleMedium: "Medium"
+                    }
             })
         }
     }

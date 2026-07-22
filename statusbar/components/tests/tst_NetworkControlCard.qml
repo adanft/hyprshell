@@ -28,7 +28,12 @@ TestCase {
             theme: ({
                 shape: { radius12: 12, borderMedium: 2, borderThin: 1 },
                 spacing: { space8: 8, space6: 6, space2: 2 },
-                typography: { sizeSm: 11, textFontFamily: "sans-serif" }
+                    typography: {
+                        sizeSm: 11,
+                        textFontFamily: "sans-serif",
+                        styleRegular: "Regular",
+                        styleSemibold: "Semibold"
+                    }
             })
             icon: "N"
             title: "Network"

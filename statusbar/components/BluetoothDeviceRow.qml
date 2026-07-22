@@ -37,7 +37,9 @@ Rectangle {
             text: root.device?.name || root.device?.deviceName || "Bluetooth device"
             color: root.colors.text
             font.family: root.theme.typography.textFontFamily
-            font.weight: root.device?.connected ? Font.Medium : Font.Normal
+            font.styleName: root.device?.connected
+                ? root.theme.typography.styleMedium
+                : root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
 
@@ -45,6 +47,7 @@ Rectangle {
             text: NetworkMenuLogic.bluetoothDeviceStatus(root.device)
             color: root.device?.connected ? root.colors.primary : root.colors.textSubtle
             font.family: root.theme.typography.textFontFamily
+            font.styleName: root.theme.typography.styleRegular
             font.pixelSize: root.theme.typography.sizeSm
         }
     }
@@ -65,7 +68,16 @@ Rectangle {
             text: NetworkMenuLogic.bluetoothActionLabel(root.device)
             color: root.colors.text
             font.family: root.theme.typography.textFontFamily
+            font.styleName: root.theme.typography.styleMedium
             font.pixelSize: root.theme.typography.sizeSm
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: "transparent"
+            border.color: root.colors.primary
+            border.width: actionMouse.activeFocus ? 2 : 0
         }
 
         MouseArea {
@@ -73,7 +85,7 @@ Rectangle {
             objectName: "bluetoothPrimaryInput"
             anchors.fill: parent
             hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
+            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
             enabled: root.actionAvailable
             activeFocusOnTab: enabled
             Accessible.role: Accessible.Button
@@ -104,7 +116,16 @@ Rectangle {
             text: "Forget"
             color: root.colors.danger
             font.family: root.theme.typography.textFontFamily
+            font.styleName: root.theme.typography.styleMedium
             font.pixelSize: root.theme.typography.sizeSm
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: "transparent"
+            border.color: root.colors.primary
+            border.width: forgetMouse.activeFocus ? 2 : 0
         }
 
         MouseArea {
@@ -112,7 +133,7 @@ Rectangle {
             objectName: "bluetoothForgetInput"
             anchors.fill: parent
             hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
+            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
             enabled: root.forgetAvailable
             activeFocusOnTab: enabled
             Accessible.role: Accessible.Button

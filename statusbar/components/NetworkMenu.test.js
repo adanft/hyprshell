@@ -138,6 +138,40 @@ assert.equal(menu.bluetoothSummary(false, false, 0), "Unavailable");
 assert.equal(menu.bluetoothSummary(true, false, 0), "Off");
 assert.equal(menu.bluetoothSummary(true, true, 0), "Enabled");
 assert.equal(menu.bluetoothSummary(true, true, 2), "2 connected");
+assert.deepEqual(Array.from(menu.bluetoothVisibleDevices(null, false)), []);
+const bluetoothDevices = [
+	{ name: "Available", paired: false, connected: false, pairing: false },
+	{ name: "Paired", paired: true, connected: false, pairing: false },
+	{ name: "Connected", paired: true, connected: true, pairing: false },
+];
+assert.deepEqual(
+	Array.from(
+		menu.bluetoothVisibleDevices(bluetoothDevices, false),
+		(device) => device.name,
+	),
+	["Paired", "Connected"],
+);
+assert.deepEqual(
+	Array.from(
+		menu.bluetoothVisibleDevices(bluetoothDevices, true),
+		(device) => device.name,
+	),
+	["Available", "Paired", "Connected"],
+);
+assert.equal(
+	menu.bluetoothEmptyState(false, false, false),
+	"Bluetooth adapter unavailable",
+);
+assert.equal(menu.bluetoothEmptyState(true, false, false), "Bluetooth is off");
+assert.equal(
+	menu.bluetoothEmptyState(true, true, true),
+	"Searching for nearby devices…",
+);
+assert.equal(menu.bluetoothEmptyState(true, true, false), "No paired devices");
+assert.equal(menu.microphoneSummary(false, false, -1), "Unavailable");
+assert.equal(menu.microphoneSummary(true, true, 58), "Muted");
+assert.equal(menu.microphoneSummary(true, false, 58.4), "58%");
+assert.equal(menu.microphoneSummary(true, false, 140), "100%");
 assert.equal(menu.bluetoothDeviceStatus({ pairing: true }), "Pairing…");
 assert.equal(
 	menu.bluetoothDeviceStatus({
@@ -211,6 +245,11 @@ const activeSource = { audio: { muted: false } };
 assert.equal(
 	menu.audioSourceStatus(activeSource, activeSource),
 	"Active input",
+);
+const mutedActiveSource = { audio: { muted: true } };
+assert.equal(
+	menu.audioSourceStatus(mutedActiveSource, mutedActiveSource),
+	"Active · Muted",
 );
 assert.equal(
 	menu.audioSourceStatus({ audio: { muted: true } }, activeSource),

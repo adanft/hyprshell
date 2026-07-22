@@ -126,6 +126,30 @@ function bluetoothSummary(available, powered, connectedCount) {
 	return count > 0 ? count + " connected" : "Enabled";
 }
 
+function bluetoothVisibleDevices(devices, discovering) {
+	if (!Array.isArray(devices)) return [];
+	return devices.filter((device) =>
+		Boolean(
+			device &&
+				(discovering || device.paired || device.connected || device.pairing),
+		),
+	);
+}
+
+function bluetoothEmptyState(available, powered, discovering) {
+	if (!available) return "Bluetooth adapter unavailable";
+	if (!powered) return "Bluetooth is off";
+	if (discovering) return "Searching for nearby devices…";
+	return "No paired devices";
+}
+
+function microphoneSummary(available, muted, volume) {
+	if (!available) return "Unavailable";
+	if (muted) return "Muted";
+	var value = Math.max(0, Math.min(100, Math.round(Number(volume) || 0)));
+	return value + "%";
+}
+
 function bluetoothDeviceStatus(device) {
 	if (!device) return "Unavailable";
 	if (device.pairing) return "Pairing…";
@@ -169,6 +193,9 @@ function audioSourceLabel(node) {
 }
 
 function audioSourceStatus(node, activeNode) {
-	if (node === activeNode) return "Active input";
+	if (node === activeNode)
+		return node && node.audio && node.audio.muted
+			? "Active · Muted"
+			: "Active input";
 	return node && node.audio && node.audio.muted ? "Muted" : "Available";
 }

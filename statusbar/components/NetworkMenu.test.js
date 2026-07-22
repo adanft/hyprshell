@@ -52,6 +52,7 @@ assert.equal(menu.nextExpandedSection("", "ethernet"), "ethernet");
 assert.equal(menu.nextExpandedSection("ethernet", "ethernet"), "");
 assert.equal(menu.nextExpandedSection("ethernet", "wifi"), "wifi");
 assert.equal(menu.nextExpandedSection("wifi", "microphone"), "microphone");
+assert.equal(menu.nextExpandedSection("microphone", "bluetooth"), "bluetooth");
 
 assert.equal(menu.ethernetToggleAction(null), null);
 assert.equal(
@@ -72,6 +73,11 @@ assert.equal(menu.shouldScanWifi(false, "wifi", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "ethernet", true, true), false);
 assert.equal(menu.shouldScanWifi(true, "wifi", false, true), false);
 assert.equal(menu.shouldScanWifi(true, "wifi", true, false), false);
+
+assert.equal(menu.bluetoothSummary(false, false, 0), "Unavailable");
+assert.equal(menu.bluetoothSummary(true, false, 0), "Off");
+assert.equal(menu.bluetoothSummary(true, true, 0), "Enabled");
+assert.equal(menu.bluetoothSummary(true, true, 2), "2 connected");
 
 console.log(
 	"NetworkMenu: identity, uptime, network state, and control actions passed",

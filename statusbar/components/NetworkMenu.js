@@ -65,3 +65,10 @@ function shouldScanWifi(
 			wifiHardwareEnabled,
 	);
 }
+
+function bluetoothSummary(available, powered, connectedCount) {
+	if (!available) return "Unavailable";
+	if (!powered) return "Off";
+	var count = Math.max(0, Number(connectedCount) || 0);
+	return count > 0 ? count + " connected" : "Enabled";
+}

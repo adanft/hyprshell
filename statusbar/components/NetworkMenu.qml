@@ -450,28 +450,65 @@ Item {
                             }
                         }
 
-                        NetworkControlCard {
+                        Item {
                             width: parent.width
                             height: root.quickControlHeight
-                            colors: root.colors
-                            theme: root.theme
-                            icon: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
-                            title: "Microphone"
-                            subtitle: !root.services.source?.audio
-                                ? "Unavailable"
-                                : (root.services.sourceMuted ? "Muted" : `${root.services.sourceVolume}%`)
-                            active: root.services.source?.audio !== null
-                                && root.services.source?.audio !== undefined
-                                && !root.services.sourceMuted
-                            available: root.services.source?.audio !== null
-                                && root.services.source?.audio !== undefined
-                            detailAvailable: available
-                            expanded: root.expandedNetworkSection === "microphone"
-                            actionAccessibleName: root.services.sourceMuted ? "Unmute microphone" : "Mute microphone"
-                            detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
-                            stateDescription: subtitle
-                            onBodyClicked: root.toggleNetworkSection("microphone")
-                            onToggled: root.services.toggleMute(true)
+
+                            Row {
+                                anchors.fill: parent
+                                spacing: root.theme.spacing.space8
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
+                                    icon: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                    title: "Microphone"
+                                    subtitle: !root.services.source?.audio
+                                        ? "Unavailable"
+                                        : (root.services.sourceMuted ? "Muted" : `${root.services.sourceVolume}%`)
+                                    active: root.services.source?.audio !== null
+                                        && root.services.source?.audio !== undefined
+                                        && !root.services.sourceMuted
+                                    available: root.services.source?.audio !== null
+                                        && root.services.source?.audio !== undefined
+                                    detailAvailable: available
+                                    expanded: root.expandedNetworkSection === "microphone"
+                                    actionAccessibleName: root.services.sourceMuted ? "Unmute microphone" : "Mute microphone"
+                                    detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
+                                    stateDescription: subtitle
+                                    onBodyClicked: root.toggleNetworkSection("microphone")
+                                    onToggled: root.services.toggleMute(true)
+                                }
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
+                                    icon: !root.services.bluetoothAvailable
+                                        ? root.icons.bluetoothOff
+                                        : (root.services.bluetoothConnectedCount > 0
+                                            ? root.icons.bluetoothConnected
+                                            : (root.services.bluetoothPowered ? root.icons.bluetoothOn : root.icons.bluetoothOff))
+                                    title: "Bluetooth"
+                                    subtitle: NetworkMenuLogic.bluetoothSummary(
+                                        root.services.bluetoothAvailable,
+                                        root.services.bluetoothPowered,
+                                        root.services.bluetoothConnectedCount
+                                    )
+                                    active: root.services.bluetoothPowered
+                                    available: root.services.bluetoothAvailable
+                                    detailAvailable: root.services.bluetoothAvailable
+                                    expanded: root.expandedNetworkSection === "bluetooth"
+                                    actionAccessibleName: root.services.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
+                                    detailAccessibleName: expanded ? "Hide Bluetooth devices" : "Show Bluetooth devices"
+                                    stateDescription: subtitle
+                                    onBodyClicked: root.toggleNetworkSection("bluetooth")
+                                    onToggled: root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled
+                                }
+                            }
                         }
 
                         Item {
@@ -512,9 +549,77 @@ Item {
                             }
                         }
 
-                        Rectangle {
-                            id: lanCard
-                            visible: root.expandedNetworkSection === "ethernet"
+                            Item {
+                                visible: root.expandedNetworkSection === "bluetooth"
+                                width: parent.width
+                                height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
+
+                                Column {
+                                    id: bluetoothColumn
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.leftMargin: root.theme.spacing.space12
+                                    anchors.rightMargin: root.theme.spacing.space12
+                                    spacing: root.theme.spacing.space6
+
+                                    BarText {
+                                        text: "Bluetooth devices"
+                                        color: root.colors.text
+                                        font.weight: Font.Medium
+                                    }
+
+                                    Repeater {
+                                        model: root.services.bluetoothAdapter?.devices?.values?.filter(device => device && (device.paired || device.connected)) ?? []
+
+                                        Item {
+                                            required property var modelData
+                                            width: bluetoothColumn.width
+                                            height: root.detailRowHeight
+
+                                            Row {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: root.theme.spacing.space8
+                                                anchors.rightMargin: root.theme.spacing.space8
+                                                spacing: root.theme.spacing.space8
+
+                                                BarText {
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: modelData.connected ? root.icons.bluetoothConnected : root.icons.bluetoothOn
+                                                    color: modelData.connected ? root.colors.primary : root.colors.textMuted
+                                                }
+
+                                                BarText {
+                                                    width: parent.width - 80
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: modelData.name || modelData.alias || "Bluetooth device"
+                                                    color: root.colors.text
+                                                    font.weight: modelData.connected ? Font.Medium : Font.Normal
+                                                    elide: Text.ElideRight
+                                                }
+
+                                                BarText {
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: modelData.connected ? "Connected" : "Paired"
+                                                    color: modelData.connected ? root.colors.primary : root.colors.textSubtle
+                                                    font.weight: Font.Normal
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    BarText {
+                                        visible: (root.services.bluetoothAdapter?.devices?.values?.filter(device => device && (device.paired || device.connected)).length ?? 0) === 0
+                                        text: root.services.bluetoothPowered ? "No paired devices" : "Bluetooth is off"
+                                        color: root.colors.textSubtle
+                                        font.weight: Font.Normal
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: lanCard
+                                visible: root.expandedNetworkSection === "ethernet"
                             width: parent.width
                         height: lanColumn.implicitHeight + root.theme.spacing.space24
                         color: root.colors.transparent

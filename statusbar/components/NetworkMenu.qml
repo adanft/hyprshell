@@ -40,6 +40,15 @@ Item {
     property string connectionError: ""
     property real uptimeSeconds: 0
     property int quickControlRequestSequence: 0
+
+    onMenuOpenChanged: {
+        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
+            services.bluetoothAdapter.discovering = false;
+    }
+    onExpandedNetworkSectionChanged: {
+        if (NetworkMenuLogic.shouldStopBluetoothScan(menuOpen, expandedNetworkSection, services.bluetoothAdapter?.discovering))
+            services.bluetoothAdapter.discovering = false;
+    }
     property string expandedNetworkSection: ""
 
     function toggleNetworkSection(section) {
@@ -137,6 +146,10 @@ Item {
         }
         connectionError = "";
         network.forget();
+    }
+
+    function performBluetoothAction(device, action) {
+        NetworkMenuLogic.runBluetoothDeviceAction(device, action);
     }
 
     FileView {
@@ -636,73 +649,77 @@ Item {
                             }
                         }
 
-                            Item {
-                                visible: root.expandedNetworkSection === "bluetooth"
-                                width: parent.width
-                                height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
+                        Item {
+                            visible: root.expandedNetworkSection === "bluetooth"
+                            width: parent.width
+                            height: bluetoothColumn.implicitHeight + root.theme.spacing.space16
 
-                                Column {
-                                    id: bluetoothColumn
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    anchors.leftMargin: root.theme.spacing.space12
-                                    anchors.rightMargin: root.theme.spacing.space12
-                                    spacing: root.theme.spacing.space6
+                            Column {
+                                id: bluetoothColumn
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.leftMargin: root.theme.spacing.space12
+                                anchors.rightMargin: root.theme.spacing.space12
+                                spacing: root.theme.spacing.space6
 
-                                    BarText {
-                                        text: "Bluetooth devices"
-                                        color: root.colors.text
-                                        font.weight: Font.Medium
-                                    }
+                                    Row {
+                                        width: parent.width
+                                        height: root.theme.sizing.statusBarTrayMenuItemHeight
 
-                                    Repeater {
-                                        model: root.services.bluetoothAdapter?.devices?.values?.filter(device => device && (device.paired || device.connected)) ?? []
+                                        BarText {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: root.services.bluetoothAdapter?.discovering ? "Scanning for devices…" : "Bluetooth devices"
+                                            color: root.colors.text
+                                            font.weight: Font.Medium
+                                        }
 
-                                        Item {
-                                            required property var modelData
-                                            width: bluetoothColumn.width
-                                            height: root.detailRowHeight
-
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: root.theme.spacing.space8
-                                                anchors.rightMargin: root.theme.spacing.space8
-                                                spacing: root.theme.spacing.space8
-
-                                                BarText {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.connected ? root.icons.bluetoothConnected : root.icons.bluetoothOn
-                                                    color: modelData.connected ? root.colors.primary : root.colors.textMuted
-                                                }
-
-                                                BarText {
-                                                    width: parent.width - 80
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.name || modelData.alias || "Bluetooth device"
-                                                    color: root.colors.text
-                                                    font.weight: modelData.connected ? Font.Medium : Font.Normal
-                                                    elide: Text.ElideRight
-                                                }
-
-                                                BarText {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.connected ? "Connected" : "Paired"
-                                                    color: modelData.connected ? root.colors.primary : root.colors.textSubtle
-                                                    font.weight: Font.Normal
-                                                }
-                                            }
+                                        BluetoothScanButton {
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            colors: root.colors
+                                            theme: root.theme
+                                            discovering: root.services.bluetoothAdapter?.discovering ?? false
+                                            available: root.services.bluetoothPowered
+                                            onScanToggled: discovering => root.services.bluetoothAdapter.discovering = discovering
                                         }
                                     }
 
+                                    Repeater {
+                                        model: {
+                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
+                                            if (root.services.bluetoothAdapter?.discovering)
+                                                return devices.filter(device => device);
+                                            return devices.filter(device => device && (device.paired || device.connected || device.pairing));
+                                        }
+
+                                    BluetoothDeviceRow {
+                                        required property var modelData
+                                        width: bluetoothColumn.width
+                                        device: modelData
+                                        colors: root.colors
+                                        theme: root.theme
+                                        onPrimaryActionRequested: action => root.performBluetoothAction(modelData, action)
+                                        onForgetRequested: modelData.forget()
+                                    }
+                                }
+
                                     BarText {
-                                        visible: (root.services.bluetoothAdapter?.devices?.values?.filter(device => device && (device.paired || device.connected)).length ?? 0) === 0
-                                        text: root.services.bluetoothPowered ? "No paired devices" : "Bluetooth is off"
+                                        visible: {
+                                            const devices = root.services.bluetoothAdapter?.devices?.values ?? [];
+                                            const visibleDevices = root.services.bluetoothAdapter?.discovering
+                                                ? devices.filter(device => device)
+                                                : devices.filter(device => device && (device.paired || device.connected || device.pairing));
+                                            return visibleDevices.length === 0;
+                                        }
+                                        text: !root.services.bluetoothPowered
+                                            ? "Bluetooth is off"
+                                            : (root.services.bluetoothAdapter?.discovering ? "Searching…" : "No paired devices")
                                         color: root.colors.textSubtle
                                         font.weight: Font.Normal
                                     }
-                                }
                             }
+                        }
 
                             Rectangle {
                                 id: lanCard

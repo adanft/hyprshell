@@ -30,6 +30,10 @@ assert.equal(
 	"Available",
 );
 assert.equal(menu.networkStatus(null), "Unavailable");
+assert.equal(menu.canForgetNetwork({ known: true, connected: false, stateChanging: false }), true);
+assert.equal(menu.canForgetNetwork({ known: true, connected: true, stateChanging: false }), false);
+assert.equal(menu.canForgetNetwork({ known: false, connected: false, stateChanging: false }), false);
+assert.equal(menu.canForgetNetwork(null), false);
 
 assert.equal(
 	menu.networkSignalText({ stateChanging: true, signalStrength: 0.75 }),

@@ -32,6 +32,10 @@ function networkStatus(network) {
 	return network.known ? "Saved" : "Available";
 }
 
+function canForgetNetwork(network) {
+	return Boolean(network && network.known && !network.connected && !network.stateChanging);
+}
+
 function networkSignalText(network) {
 	if (!network) return "0%";
 	if (network.stateChanging) return "…";

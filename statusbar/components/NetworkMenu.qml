@@ -128,6 +128,17 @@ Item {
         pendingNetwork = null;
     }
 
+    function forgetNetwork(network) {
+        if (!NetworkMenuLogic.canForgetNetwork(network))
+            return;
+        if (pendingNetwork === network) {
+            pendingNetwork = null;
+            passwordInput.text = "";
+        }
+        connectionError = "";
+        network.forget();
+    }
+
     FileView {
         id: hostnameFile
         path: "/etc/hostname"
@@ -808,73 +819,30 @@ Item {
                             Repeater {
                                 model: root.services.wifiDevice?.networks?.values ?? []
 
-                                Rectangle {
-                                    id: networkRow
-                                    required property var modelData
-                                    width: wifiColumn.width
-                                    height: root.detailRowHeight
-                                    color: networkMouse.containsMouse ? root.colors.surfaceHover : root.colors.transparent
-                                    border.width: 0
+                                    WifiNetworkRow {
+                                        id: networkRow
+                                        required property var modelData
+                                        width: wifiColumn.width
+                                        network: modelData
+                                        colors: root.colors
+                                        theme: root.theme
+                                        icons: root.icons
 
-                                    Connections {
-                                        target: networkRow.modelData
-                                        function onConnectionFailed(reason) {
-                                            root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
-                                            if (reason === ConnectionFailReason.NoSecrets) {
-                                                root.pendingNetwork = networkRow.modelData;
-                                                passwordInput.forceActiveFocus();
-                                            }
-                                        }
-                                    }
-
-                                    Row {
-                                        anchors.fill: parent
-                                        anchors.margins: root.theme.spacing.space8
-                                        spacing: root.theme.spacing.space8
-
-                                        BarText {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: networkRow.modelData.connected ? root.icons.wifiConnected : root.icons.wifiDisconnected
-                                            color: networkRow.modelData.connected ? root.colors.primary : root.colors.text
-                                        }
-
-                                        Column {
-                                            width: parent.width - root.networkTextReserve
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            spacing: root.theme.spacing.space2
-
-                                            BarText {
-                                                width: parent.width
-                                                text: networkRow.modelData.name
-                                                color: root.colors.text
-                                                font.weight: networkRow.modelData.connected ? Font.Medium : Font.Normal
-                                                elide: Text.ElideRight
-                                            }
-
-                                            BarText {
-                                                text: NetworkMenuLogic.networkStatus(networkRow.modelData)
-                                                color: root.colors.textMuted
-                                                font.pixelSize: root.theme.typography.sizeSm
+                                        Connections {
+                                            target: networkRow.modelData
+                                            function onConnectionFailed(reason) {
+                                                root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
+                                                if (reason === ConnectionFailReason.NoSecrets) {
+                                                    root.pendingNetwork = networkRow.modelData;
+                                                    passwordInput.forceActiveFocus();
+                                                }
                                             }
                                         }
 
-                                        BarText {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: NetworkMenuLogic.networkSignalText(networkRow.modelData)
-                                            color: root.colors.textMuted
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        id: networkMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        enabled: !networkRow.modelData.stateChanging
-                                        onClicked: root.connectNetwork(networkRow.modelData)
+                                        onPrimaryActionRequested: root.connectNetwork(modelData)
+                                        onForgetRequested: root.forgetNetwork(modelData)
                                     }
                                 }
-                            }
 
                             BarText {
                                 visible: Networking.wifiEnabled && (root.services.wifiDevice?.networks?.values?.length ?? 0) === 0

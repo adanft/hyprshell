@@ -7,6 +7,7 @@ const read = (relativePath) =>
 	fs.readFileSync(path.join(root, relativePath), "utf8");
 
 const shell = read("shell.qml");
+const overlayLifecycleLoader = read("OverlayLifecycleLoader.qml");
 const barWindow = read("statusbar/BarWindow.qml");
 const tray = read("statusbar/modules/Tray.qml");
 const networkMenu = read("statusbar/components/NetworkMenu.qml");
@@ -15,19 +16,31 @@ const networkController = read(
 );
 const networkService = read("services/capabilities/NetworkService.qml");
 
-for (const loaderId of [
-	"appLauncherLoader",
-	"powerMenuLoader",
-	"wallpaperSelectorLoader",
-	"themeSelectorLoader",
-	"screenshotToolLoader",
-	"notificationCenterLoader",
+for (const contract of [
+	/LazyLoader\s*{/,
+	/property bool requestedVisible: false/,
+	/property bool directVisibility: false/,
+	/property int _lifecycleGeneration: 0/,
+	/property var _observedItem: null/,
+	/property bool _itemPresented: false/,
+	/property int _scheduledGeneration: -1/,
+	/property var _scheduledItem: null/,
+	/property int _dispatchedGeneration: -1/,
+	/property var _dispatchedItem: null/,
+	/property bool _openingPending: false/,
+	/active: false/,
+	/function open\(\)[\s\S]*requestedVisible = true;[\s\S]*_openingPending = true;[\s\S]*active = true;[\s\S]*const generation = \+\+_lifecycleGeneration;[\s\S]*_scheduleOpen\(generation, item\);/,
+	/function toggle\(\)[\s\S]*if \(!requestedVisible\)[\s\S]*open\(\);[\s\S]*const loadedItem = item;[\s\S]*!_openingPending && \(!loadedItem \|\| !loadedItem\.visible\)[\s\S]*open\(\);[\s\S]*requestedVisible = false;[\s\S]*_openingPending = false;[\s\S]*_lifecycleGeneration\+\+;/,
+	/function _scheduleOpen\(generation, loadedItem\)[\s\S]*if \(!loadedItem\)[\s\S]*_scheduledItem === loadedItem[\s\S]*_dispatchedItem === loadedItem[\s\S]*Qt\.callLater/,
+	/root\._scheduledGeneration !== generation \|\| root\._scheduledItem !== loadedItem[\s\S]*return;/,
+	/generation !== root\._lifecycleGeneration[\s\S]*!root\.requestedVisible[\s\S]*root\.item !== loadedItem[\s\S]*return;/,
+	/root\._openingPending = false;[\s\S]*root\.directVisibility[\s\S]*loadedItem\.visible = true;[\s\S]*loadedItem\.open\(\);/,
+	/function _handleItemChanged\(loadedItem\)[\s\S]*const previousItem = _observedItem;[\s\S]*_observedItem = loadedItem;[\s\S]*_itemPresented = loadedItem !== null && loadedItem\.visible;[\s\S]*loadedItem !== previousItem[\s\S]*_scheduledGeneration = -1;[\s\S]*_dispatchedGeneration = -1;[\s\S]*loadedItem && requestedVisible[\s\S]*_scheduleOpen\(_lifecycleGeneration, loadedItem\);/,
+	/function _handleItemVisibleChanged\(loadedItem\)[\s\S]*loadedItem !== _observedItem[\s\S]*loadedItem\.visible[\s\S]*_itemPresented = true;[\s\S]*_openingPending = false;[\s\S]*if \(!_itemPresented\)[\s\S]*return;[\s\S]*requestedVisible = false;[\s\S]*active = false;/,
+	/onItemChanged: _handleItemChanged\(item\)/,
+	/Connections\s*{[\s\S]*target: root\._observedItem[\s\S]*root\._handleItemVisibleChanged\(target\);/,
 ]) {
-	assert.match(
-		shell,
-		new RegExp(`id: ${loaderId}`),
-		`${loaderId} must remain lazy`,
-	);
+	assert.match(overlayLifecycleLoader, contract);
 }
 
 for (const loaderId of [
@@ -40,10 +53,60 @@ for (const loaderId of [
 ]) {
 	assert.match(
 		shell,
-		new RegExp(`id: ${loaderId}\\s+property bool requestedVisible: false`),
-		`${loaderId} must track pending visibility intent`,
+		new RegExp(`OverlayLifecycleLoader\\s*\\{\\s*id: ${loaderId}`),
+		`${loaderId} must use the shared lazy lifecycle`,
 	);
 }
+
+for (const [helper, loaderId, method] of [
+	["openPowerMenu", "powerMenuLoader", "open"],
+	["openAppLauncher", "appLauncherLoader", "open"],
+	["toggleAppLauncher", "appLauncherLoader", "toggle"],
+	["togglePowerMenu", "powerMenuLoader", "toggle"],
+	["openWallpaperSelector", "wallpaperSelectorLoader", "open"],
+	["toggleWallpaperSelector", "wallpaperSelectorLoader", "toggle"],
+	["openScreenshotTool", "screenshotToolLoader", "open"],
+	["toggleScreenshotTool", "screenshotToolLoader", "toggle"],
+	["openThemeSelector", "themeSelectorLoader", "open"],
+	["toggleThemeSelector", "themeSelectorLoader", "toggle"],
+]) {
+	assert.match(
+		shell,
+		new RegExp(
+			`function ${helper}\\(\\) \\{\\s*${loaderId}\\.${method}\\(\\);\\s*\\}`,
+		),
+		`${helper} must delegate to ${loaderId}.${method}()`,
+	);
+}
+
+assert.equal(shell.includes("function openLoader(loader)"), false);
+assert.equal(shell.includes("function toggleLoader(loader)"), false);
+assert.match(
+	shell,
+	/function toggleNotificationCenter\(\)\s*{\s*notificationCenterLoader\.toggle\(\);\s*}/,
+);
+assert.match(
+	shell,
+	/OverlayLifecycleLoader\s*{\s*id: notificationCenterLoader\s*directVisibility: true\s*property var ownerWindow: barWindow/,
+);
+assert.match(
+	shell,
+	/Notifications\.NotificationCenter\s*{\s*colors: themeColors\s*services: serviceState\s*barWindow: notificationCenterLoader\.ownerWindow/,
+);
+
+for (const target of [
+	"applauncher",
+	"powermenu",
+	"wallpaperselector",
+	"screenshot",
+	"themeselector",
+]) {
+	assert.match(shell, new RegExp(`IpcHandler\\s*\\{\\s*target: "${target}"`));
+}
+assert.match(
+	shell,
+	/function set\(name: string\): void\s*{\s*themeColors\.setTheme\(name\);\s*}/,
+);
 
 for (const eagerWindow of [
 	"Applauncher.AppLauncher {\n        id:",

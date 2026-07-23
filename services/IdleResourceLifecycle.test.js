@@ -10,6 +10,9 @@ const shell = read("shell.qml");
 const barWindow = read("statusbar/BarWindow.qml");
 const tray = read("statusbar/modules/Tray.qml");
 const networkMenu = read("statusbar/components/NetworkMenu.qml");
+const networkController = read(
+	"statusbar/components/NetworkMenuController.qml",
+);
 const networkService = read("services/capabilities/NetworkService.qml");
 
 for (const loaderId of [
@@ -82,11 +85,17 @@ assert.match(
 	networkService,
 	/running: root\.networkDetailsEnabled && root\.wifiDevice !== null/,
 );
-assert.match(networkMenu, /services\.network\.enableNetworkDetails\(\)/);
-assert.match(networkMenu, /services\.network\.disableNetworkDetails\(\)/);
 assert.match(
 	networkMenu,
-	/Component\.onDestruction:\s*{\s*if \(root\.menuOpen\)\s*root\.services\.network\.disableNetworkDetails\(\)/,
+	/pendingNetwork: networkController\.pendingNetwork[\s\S]*NetworkMenuController\s*{[\s\S]*handleWifiNetworkConnectionFailed/,
+);
+assert.equal(networkMenu.includes("wifiScannerStartTimer"), false);
+assert.equal(networkMenu.includes("enableNetworkDetails()"), false);
+assert.match(networkController, /networkService\.enableNetworkDetails\(\)/);
+assert.match(networkController, /networkService\.disableNetworkDetails\(\)/);
+assert.match(
+	networkController,
+	/Component\.onDestruction: root\.dispatch\({ type: "destroy" }\)/,
 );
 assert.match(
 	networkService,

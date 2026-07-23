@@ -23,101 +23,23 @@ Item {
     property bool menuOpen: false
     property real menuAnchorX: 0
     property real menuAnchorY: theme.sizing.statusBarOuterHeight
-    property var pendingNetwork: null
-    property var suppressedPasswordNetwork: null
-    property var wifiScannerDevice: null
-    property bool wifiActivationPending: false
-    property bool wifiActivationRequested: false
-    property int wifiActivationGeneration: 0
-    property string connectionError: ""
+    readonly property var pendingNetwork: networkController.pendingNetwork
+    readonly property bool wifiActivationPending: networkController.wifiActivationPending
+    readonly property string connectionError: networkController.connectionError
+    readonly property string expandedNetworkSection: networkController.expandedNetworkSection
+    readonly property real uptimeSeconds: networkController.uptimeSeconds
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled
-            && Networking.wifiEnabled
-            && !wifiActivationPending
-            && services.network.wifiDevice
-        ? NetworkMenuLogic.sortedWifiNetworks(services.network.wifiDevice.networks?.values ?? [])
-        : []
-    property real uptimeSeconds: 0
+            && Networking.wifiEnabled && !wifiActivationPending && services.network.wifiDevice
+        ? NetworkMenuLogic.sortedWifiNetworks(services.network.wifiDevice.networks?.values ?? []) : []
     property int quickControlRequestSequence: 0
 
-    function beginWifiActivation() {
-        wifiActivationGeneration += 1;
-        wifiActivationRequested = true;
-        wifiActivationPending = true;
-        wifiActivationSettleTimer.activationGeneration = wifiActivationGeneration;
-        wifiActivationSettleTimer.restart();
-    }
-
-    function toggleWifiEnabled() {
-        const enable = !Networking.wifiEnabled;
-        if (enable) {
-            beginWifiActivation();
-        } else {
-            wifiActivationGeneration += 1;
-            wifiActivationRequested = false;
-            wifiActivationPending = false;
-            wifiActivationSettleTimer.stop();
-        }
-        Networking.wifiEnabled = enable;
-    }
-
-    function updateWifiScanner(forceRestart) {
-        wifiScannerStartTimer.stop();
-
-        const device = services.network.wifiDevice;
-        if (wifiScannerDevice && wifiScannerDevice !== device)
-            wifiScannerDevice.scannerEnabled = false;
-        wifiScannerDevice = device;
-        if (!device)
-            return;
-
-        const shouldScan = NetworkMenuLogic.shouldScanWifi(
-            menuOpen,
-            expandedNetworkSection,
-            Networking.wifiEnabled,
-            Networking.wifiHardwareEnabled
-        );
-
-        if (!shouldScan) {
-            if (!wifiActivationRequested) {
-                wifiActivationPending = false;
-                wifiActivationSettleTimer.stop();
-            }
-            device.scannerEnabled = false;
-            return;
-        }
-
-        if (forceRestart) {
-            device.scannerEnabled = false;
-            wifiScannerStartTimer.restart();
-            return;
-        }
-
-        device.scannerEnabled = true;
-    }
-
-        onMenuOpenChanged: {
-            updateWifiScanner(menuOpen);
-            if (menuOpen)
-                services.network.enableNetworkDetails();
-            else
-                services.network.disableNetworkDetails();
-        }
-        onExpandedNetworkSectionChanged: updateWifiScanner(expandedNetworkSection === "wifi")
-    property string expandedNetworkSection: ""
-
-    function toggleNetworkSection(section) {
-        expandedNetworkSection = NetworkMenuLogic.nextExpandedSection(expandedNetworkSection, section);
-        connectionError = "";
-        pendingNetwork = null;
-    }
-
-    function toggleEthernet() {
-        const network = services.network.lanDevice?.network;
-        const action = NetworkMenuLogic.ethernetToggleAction(network);
-        if (action === "disconnect")
-            network.disconnect();
-        else if (action === "connect")
-            network.connect();
+    NetworkMenuController {
+        id: networkController
+        networkService: root.services.network; networking: Networking; menuOpen: root.menuOpen
+        openSecurityValue: WifiSecurityType.None; noSecretsValue: ConnectionFailReason.NoSecrets
+        failureReasonText: reason => ConnectionFailReason.toString(reason)
+        uptimeSource: FileView { path: "/proc/uptime"; blockLoading: true; printErrors: false }
+        onCloseRequested: root.menuOpen = false
     }
 
     function volumeIcon() {
@@ -129,13 +51,6 @@ Item {
         if (percent < 67)
             return root.icons.volumeMedium;
         return root.icons.volumeHigh;
-    }
-
-    function refreshUptime() {
-        uptimeFile.reload();
-        const value = Number.parseFloat(String(uptimeFile.text() || "0").split(/\s+/)[0]);
-        if (!Number.isNaN(value))
-            uptimeSeconds = value;
     }
 
     function toggle(anchorItem) {
@@ -154,162 +69,17 @@ Item {
             menuAnchorX = globalPosition.x - screenX;
             menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
         }
-        refreshUptime();
-        connectionError = "";
+        networkController.prepareOpen();
         menuOpen = true;
     }
 
-    function close() {
-        if (pendingNetwork?.stateChanging)
-            suppressedPasswordNetwork = pendingNetwork;
-        menuOpen = false;
-        expandedNetworkSection = "";
-        pendingNetwork = null;
-        connectionError = "";
-    }
-
-    function connectNetwork(network) {
-        connectionError = "";
-        suppressedPasswordNetwork = null;
-        if (network.connected) {
-            network.disconnect();
-            return;
-        }
-        if (network.known || network.security === WifiSecurityType.None) {
-            network.connect();
-            return;
-        }
-        pendingNetwork = network;
-    }
-
-    function submitPassword(password) {
-        if (!pendingNetwork || password.length === 0 || pendingNetwork.stateChanging)
-            return;
-        connectionError = "";
-        pendingNetwork.connectWithPsk(password);
-    }
-
-    function cancelPasswordEntry() {
-        if (pendingNetwork?.stateChanging)
-            suppressedPasswordNetwork = pendingNetwork;
-        pendingNetwork = null;
-        connectionError = "";
-    }
-
-    function forgetNetwork(network) {
-        if (!NetworkMenuLogic.canForgetNetwork(network))
-            return;
-        if (pendingNetwork === network)
-            pendingNetwork = null;
-        connectionError = "";
-        network.forget();
-    }
+    function close() { networkController.requestClose(); }
 
     FileView {
         id: hostnameFile
         path: "/etc/hostname"
         blockLoading: true
         printErrors: false
-    }
-
-    FileView {
-        id: uptimeFile
-        path: "/proc/uptime"
-        blockLoading: true
-        printErrors: false
-        Component.onCompleted: root.refreshUptime()
-    }
-
-    Timer {
-        interval: 60000
-        running: root.menuOpen
-        repeat: true
-        onTriggered: root.refreshUptime()
-    }
-
-    Timer {
-        id: wifiScannerStartTimer
-        interval: 300
-        repeat: false
-        onTriggered: {
-            if (NetworkMenuLogic.shouldScanWifi(
-                    root.menuOpen,
-                    root.expandedNetworkSection,
-                    Networking.wifiEnabled,
-                    Networking.wifiHardwareEnabled
-                ) && root.wifiScannerDevice === root.services.network.wifiDevice) {
-                root.wifiScannerDevice.scannerEnabled = true;
-                if (root.wifiActivationPending) {
-                    wifiActivationSettleTimer.activationGeneration = root.wifiActivationGeneration;
-                    wifiActivationSettleTimer.restart();
-                }
-            } else if (!root.wifiActivationRequested) {
-                root.wifiActivationPending = false;
-            }
-        }
-    }
-
-    Timer {
-        id: wifiActivationSettleTimer
-        property int activationGeneration: 0
-        interval: 900
-        repeat: false
-        onTriggered: {
-            if (activationGeneration === root.wifiActivationGeneration) {
-                root.wifiActivationRequested = false;
-                root.wifiActivationPending = false;
-            }
-        }
-    }
-
-    Connections {
-        target: Networking
-        ignoreUnknownSignals: true
-
-        function onWifiEnabledChanged() {
-            if (root.wifiActivationRequested && !Networking.wifiEnabled)
-                return;
-
-            if (Networking.wifiEnabled && !root.wifiActivationRequested) {
-                root.beginWifiActivation();
-            } else if (!Networking.wifiEnabled) {
-                root.wifiActivationPending = false;
-                root.cancelPasswordEntry();
-                root.suppressedPasswordNetwork = null;
-            }
-
-            root.updateWifiScanner(Networking.wifiEnabled);
-        }
-
-        function onWifiHardwareEnabledChanged() {
-            if (!Networking.wifiHardwareEnabled) {
-                root.cancelPasswordEntry();
-                root.suppressedPasswordNetwork = null;
-            }
-            root.updateWifiScanner(Networking.wifiHardwareEnabled);
-        }
-    }
-
-    Connections {
-        target: root.services.network
-        ignoreUnknownSignals: true
-
-        function onWifiDeviceChanged() {
-            root.cancelPasswordEntry();
-            root.suppressedPasswordNetwork = null;
-            root.updateWifiScanner(Networking.wifiEnabled);
-        }
-    }
-
-    Component.onCompleted: root.updateWifiScanner(false)
-    Component.onDestruction: {
-        if (root.menuOpen)
-            root.services.network.disableNetworkDetails();
-        wifiScannerStartTimer.stop();
-        wifiActivationSettleTimer.stop();
-        if (root.wifiScannerDevice)
-            root.wifiScannerDevice.scannerEnabled = false;
-        root.wifiScannerDevice = null;
     }
 
     PanelWindow {
@@ -592,8 +362,8 @@ Item {
                                         && root.services.network.lanDevice?.network !== undefined
                                     busy: root.services.network.lanDevice?.network?.stateChanging ?? false
                                     expanded: root.expandedNetworkSection === "ethernet"
-                                    onBodyClicked: root.toggleNetworkSection("ethernet")
-                                    onToggled: root.toggleEthernet()
+                                    onBodyClicked: networkController.toggleNetworkSection("ethernet")
+                                    onToggled: networkController.toggleEthernet()
                                 }
 
                                 NetworkControlCard {
@@ -613,8 +383,8 @@ Item {
                                     active: Networking.wifiEnabled
                                     available: Networking.wifiHardwareEnabled
                                     expanded: root.expandedNetworkSection === "wifi"
-                                    onBodyClicked: root.toggleNetworkSection("wifi")
-                                    onToggled: root.toggleWifiEnabled()
+                                    onBodyClicked: networkController.toggleNetworkSection("wifi")
+                                    onToggled: networkController.toggleWifiEnabled()
                                 }
                             }
                         }
@@ -646,7 +416,7 @@ Item {
                                     actionAccessibleName: root.services.audio.sourceMuted ? "Unmute microphone" : "Mute microphone"
                                     detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
                                     stateDescription: subtitle
-                                    onBodyClicked: root.toggleNetworkSection("microphone")
+                                    onBodyClicked: networkController.toggleNetworkSection("microphone")
                                     onToggled: root.services.audio.toggleMute(true)
                                 }
 
@@ -850,14 +620,6 @@ Item {
                                 }
                             }
 
-                            Connections {
-                                target: root.services.network.lanDevice?.network ?? null
-                                ignoreUnknownSignals: true
-                                function onConnectionFailed(reason) {
-                                    root.connectionError = `Ethernet: ${ConnectionFailReason.toString(reason)}`;
-                                }
-                            }
-
                             BarText {
                                 visible: root.connectionError.length > 0 || root.services.network.ethernetProfileError.length > 0
                                 width: parent.width
@@ -1014,30 +776,13 @@ Item {
                                         theme: root.theme
                                         openSecurityValue: WifiSecurityType.None
 
-                                            Connections {
-                                                target: networkRow.modelData
-
-                                                function onConnectedChanged() {
-                                                    if (networkRow.modelData.connected
-                                                            && root.suppressedPasswordNetwork === networkRow.modelData)
-                                                        root.suppressedPasswordNetwork = null;
-                                                }
-
-                                                function onConnectionFailed(reason) {
-                                                if (root.pendingNetwork === networkRow.modelData)
-                                                    return;
-                                                if (root.suppressedPasswordNetwork === networkRow.modelData) {
-                                                    root.suppressedPasswordNetwork = null;
-                                                    return;
-                                                }
-                                                root.connectionError = `${networkRow.modelData.name}: ${ConnectionFailReason.toString(reason)}`;
-                                                if (reason === ConnectionFailReason.NoSecrets)
-                                                    root.pendingNetwork = networkRow.modelData;
+                                            Connections { target: networkRow.modelData
+                                                function onConnectedChanged() { networkController.handleWifiNetworkConnectedChanged(networkRow.modelData); }
+                                                function onConnectionFailed(reason) { networkController.handleWifiNetworkConnectionFailed(networkRow.modelData, reason); }
                                             }
-                                        }
 
-                                        onPrimaryActionRequested: root.connectNetwork(modelData)
-                                        onForgetRequested: root.forgetNetwork(modelData)
+                                        onPrimaryActionRequested: networkController.connectNetwork(modelData)
+                                        onForgetRequested: networkController.forgetNetwork(modelData)
                                     }
                                 }
 
@@ -1092,30 +837,14 @@ Item {
         }
     }
 
-        Connections {
-            target: root.pendingNetwork
-            ignoreUnknownSignals: true
-
-            function onConnectedChanged() {
-                if (root.pendingNetwork?.connected)
-                    root.cancelPasswordEntry();
-            }
-
-            function onConnectionFailed(reason) {
-                if (!root.pendingNetwork)
-                    return;
-                root.connectionError = `${root.pendingNetwork.name}: ${ConnectionFailReason.toString(reason)}`;
-            }
-        }
-
         WifiPasswordModal {
             screen: root.barWindow.screen
             colors: root.colors
             theme: root.theme
             network: root.pendingNetwork
             errorText: root.connectionError
-            onSubmitted: password => root.submitPassword(password)
-            onCancelled: root.cancelPasswordEntry()
+            onSubmitted: password => networkController.submitPassword(password)
+            onCancelled: networkController.cancelPasswordEntry()
         }
 
 }

@@ -1,1469 +1,244 @@
 import QtQuick
 import Quickshell
-import Quickshell.Bluetooth
-import Quickshell.Hyprland
-import Quickshell.Io
-import Quickshell.Networking
-import Quickshell.Services.Notifications
-import Quickshell.Services.Pipewire
-import Quickshell.Services.UPower
 import "../theme"
-import "QuickControlState.js" as QuickControlState
-import "NetworkState.js" as NetworkState
+import "capabilities" as Capabilities
+import "FileViewState.js" as FileViewState
 
 Scope {
-    id: service
+    id: root
 
     readonly property var theme: AppTheme {}
     readonly property string activeUserAvatarSource: activeUserAvatar.source
     readonly property string activeUserAvatarState: activeUserAvatar.state
-    readonly property int networkRefreshMs: 2000
-    readonly property int systemStatsRefreshMs: 2000
-    readonly property var networkDevices: Networking.devices?.values ?? []
-    readonly property var lanDevice: networkDevices.find(device => device.type === DeviceType.Wired) ?? null
-    readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null
-    readonly property string lanInterface: lanDevice?.name ?? ""
-    readonly property string wifiInterface: wifiDevice?.name ?? ""
-    property var ethernetInfo: ({
-        connectionName: "",
-        activeUuid: "",
-        macAddress: "",
-        ipv4Address: "",
-        ipv4Gateway: "",
-        ipv4Dns: [],
-        ipv6Address: "",
-        ipv6Gateway: "",
-        ipv6Dns: []
-    })
-    property string ethernetInfoRequestedInterface: ""
-    property int ethernetInfoRequestGeneration: 0
-    property int ethernetInfoProcessGeneration: 0
-    property bool ethernetInfoProcessRefreshesProfile: false
-    property var wifiInfo: ({
-        connectionName: "",
-        activeUuid: "",
-        macAddress: "",
-        ipv4Address: "",
-        ipv4Gateway: "",
-        ipv4Dns: [],
-        ipv6Address: "",
-        ipv6Gateway: "",
-        ipv6Dns: []
-    })
-    property string wifiInfoRequestedInterface: ""
-    property string wifiInfoAvailability: "idle"
-    property int wifiInfoRequestGeneration: 0
-    property int wifiInfoProcessGeneration: 0
-    property bool ethernetProfileBusy: false
-    property bool ethernetProfileAwaitingRefresh: false
-    property int ethernetProfileActionGeneration: 0
-    property int ethernetProfileActionProcessGeneration: 0
-    property string ethernetProfilePendingUuid: ""
-    property string ethernetProfileError: ""
-    readonly property var powerProfiles: [PowerProfile.Performance, PowerProfile.Balanced, PowerProfile.PowerSaver]
-    readonly property var sink: Pipewire.defaultAudioSink
-    readonly property var source: Pipewire.defaultAudioSource
-    readonly property var audioSources: (Pipewire.nodes?.values ?? []).filter(node =>
-        node && node.audio && !node.isSink && !node.isStream
-    )
-    readonly property var batteries: UPower.devices.values.filter(device => device && device.isLaptopBattery)
-    readonly property var readyBatteries: batteries.filter(device => device.ready)
-    readonly property bool batteryAvailable: batteries.length > 0
-    readonly property bool batteryCharging: hasBatteryState(UPowerDeviceState.Charging)
-    readonly property bool batteryEmpty: hasBatteryState(UPowerDeviceState.Empty)
-    readonly property bool batteryFull: readyBatteries.length > 0 && readyBatteries.every(device => device.state === UPowerDeviceState.FullyCharged)
-    readonly property bool batteryPendingCharge: hasBatteryState(UPowerDeviceState.PendingCharge)
-    readonly property bool batteryPendingDischarge: hasBatteryState(UPowerDeviceState.PendingDischarge)
-    readonly property bool batteryUnknown: !batteryAvailable || readyBatteries.length === 0 || readyBatteries.every(device => device.state === UPowerDeviceState.Unknown)
-    readonly property bool batteryLow: !batteryUnknown && batteryLevel <= 30
-    readonly property bool batteryCritical: !batteryUnknown && batteryLevel <= 15
-    readonly property int batteryLevel: computeBatteryLevel()
-    readonly property var bluetoothAdapter: Bluetooth.defaultAdapter
-    readonly property bool bluetoothAvailable: bluetoothAdapter !== null
-    readonly property bool bluetoothPowered: bluetoothAvailable ? bluetoothAdapter.enabled : false
-    readonly property int bluetoothConnectedCount: {
-        if (!bluetoothAdapter || !bluetoothAdapter.devices)
-            return 0
-
-        let count = 0
-        bluetoothAdapter.devices.values.forEach(device => {
-            if (device && device.connected)
-                count++
-        })
-        return count
-    }
-    readonly property int notificationCount: notificationHistory.length
-    readonly property bool hasNotifications: notificationCount > 0
-    readonly property var notifications: notificationHistory
-    readonly property int minVisibleNotifications: 1
-    readonly property int notificationPopupEstimatedHeight: theme.sizing.notificationPopupEstimatedHeight
-    readonly property int maxNotificationHistory: 100
-    readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/statusbar-notifications.json`
-    readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
-    readonly property var statusWorkspaceIds: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    readonly property var statusOccupiedWorkspaceIds: {
-        const occupied = {}
-        for (const workspace of Hyprland.workspaces.values)
-            occupied[workspace.id] = workspace.toplevels.values.length > 0
-        return occupied
-    }
-    readonly property var statusUrgentWorkspaceIds: {
-        const urgent = {}
-        for (const workspace of Hyprland.workspaces.values) {
-            if (workspace.urgent)
-                urgent[workspace.id] = true
-        }
-        for (const toplevel of Hyprland.toplevels.values) {
-            if (toplevel.urgent && toplevel.workspace)
-                urgent[toplevel.workspace.id] = true
-        }
-        return urgent
-    }
-    readonly property int maxPopupIngressPerSecond: 6
-    readonly property int maxNotificationQueueSize: 32
-    property int notificationTimeoutLow: 5000
-    property int notificationTimeoutNormal: 10000
-    property int notificationTimeoutCritical: 0
-    property var notificationRules: []
-    property var notificationQueue: []
-    property var visibleNotifications: []
-    property int notificationPopupCapacity: 4
-    property int notificationPopupSequence: 0
-    property int notificationIngressSecond: 0
-    property int notificationIngressCount: 0
-    property bool notificationTimeUpdateTick: false
-    property bool notificationCenterOpen: false
-    property var notificationHistory: []
-
     property string time: ""
     property string date: ""
-    readonly property string powerProfile: profileSlug(PowerProfiles.profile)
-    readonly property int sinkVolume: Math.round((sink?.audio?.volume ?? 0) * 100)
-    readonly property bool sinkMuted: sink?.audio?.muted ?? false
-    readonly property bool microphoneAvailable: Boolean(source && source.audio)
-    readonly property int sourceVolume: microphoneAvailable ? Math.round(source.audio.volume * 100) : -1
-    readonly property bool sourceMuted: microphoneAvailable ? source.audio.muted : false
-    property real previousNetworkRx: 0
-    property real previousNetworkTx: 0
-    property real activeNetworkRxRate: 0
-    property real activeNetworkTxRate: 0
-    property int networkThroughputSubscriberCount: 0
-    property int networkDetailsSubscriberCount: 0
-    property int cpuUsageSubscriberCount: 0
-    property int memoryUsageSubscriberCount: 0
-    readonly property bool networkThroughputEnabled: networkThroughputSubscriberCount > 0
-    readonly property bool networkDetailsEnabled: networkDetailsSubscriberCount > 0
-    readonly property bool cpuUsageEnabled: cpuUsageSubscriberCount > 0
-    readonly property bool memoryUsageEnabled: memoryUsageSubscriberCount > 0
-    property int cpuUsage: 0
-    property int memoryUsage: 0
-    property var previousCpuStats: null
-    readonly property bool lanUp: lanDevice?.connected ?? false
-    readonly property bool wifiUp: wifiDevice?.connected ?? false
-    readonly property string activeNetworkInterface: lanUp ? lanInterface : (wifiUp ? wifiInterface : "")
-    readonly property var connectedWifiNetwork: {
-        const networks = wifiDevice?.networks?.values ?? []
-        return networks.find(network => network.connected) ?? null
-    }
-    readonly property int wifiSignal: Math.round((connectedWifiNetwork?.signalStrength ?? 0) * 100)
 
-        onLanInterfaceChanged: {
-            ethernetInfoRequestGeneration += 1
-            ethernetInfoRequestedInterface = ""
-            ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
-            ethernetProfileActionGeneration += 1
-            if (ethernetProfileBusy || ethernetProfileAwaitingRefresh) {
-                ethernetProfileAwaitingRefresh = false
-                ethernetProfileBusy = false
-                ethernetProfilePendingUuid = ""
-                if (ethernetProfileError.length === 0)
-                    ethernetProfileError = "Ethernet interface changed"
-            }
-            Qt.callLater(refreshEthernetInfo)
-        }
-
-        onWifiInterfaceChanged: {
-        wifiInfoRequestGeneration += 1
-        wifiInfoRequestedInterface = ""
-        wifiInfoAvailability = "idle"
-        wifiInfo = NetworkState.parseNmcliDeviceInfo("")
-        Qt.callLater(refreshWifiInfo)
-    }
-
-    onWifiUpChanged: {
-        wifiInfoRequestGeneration += 1
-        wifiInfoRequestedInterface = ""
-        wifiInfoAvailability = "idle"
-        wifiInfo = NetworkState.parseNmcliDeviceInfo("")
-        Qt.callLater(refreshWifiInfo)
-    }
-    property bool notificationDnd: false
-    property string previousNetworkInterface: ""
-    property real previousNetworkSampleMs: 0
-    property string brightnessDevice: ""
-    property bool brightnessAvailable: false
-    property int brightnessLevel: 0
-    property int pendingBrightnessLevel: -1
-    readonly property int brightnessWriteDebounceMs: 100
-    readonly property string brightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/brightness` : ""
-    readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/max_brightness` : ""
-    // Deployment composition may supply this once. An absent or invalid value is intentionally unavailable.
-    property string brightnessDevicePath: ""
-    readonly property bool quickBrightnessPathValid: QuickControlState.validBrightnessDevicePath(brightnessDevicePath)
-    readonly property string quickBrightnessPath: quickBrightnessPathValid ? `${brightnessDevicePath}/brightness` : ""
-    readonly property string quickMaxBrightnessPath: quickBrightnessPathValid ? `${brightnessDevicePath}/max_brightness` : ""
-    property var quickVolume: QuickControlState.unavailableCapability("Volume unavailable")
-    property var quickBrightness: QuickControlState.unavailableCapability("Brightness unavailable")
-    property int quickBrightnessMaximum: 0
-    property int quickBrightnessRequestId: 0
-
-    ActiveUserAvatar {
-        id: activeUserAvatar
-    }
-
-    FileView {
-        id: notificationHistoryFileView
-        path: service.notificationHistoryFile
-        printErrors: false
-        onLoaded: service.loadNotificationHistory()
-        onLoadFailed: error => {
-            if (error === 2)
-                notificationHistoryFileView.writeAdapter()
-        }
-
-        JsonAdapter {
-            id: notificationHistoryAdapter
-            property var notifications: []
-        }
-    }
-
-    FileView {
-        id: networkRxBytes
-        path: `/sys/class/net/${service.activeNetworkInterface}/statistics/rx_bytes`
-        blockLoading: true
-        printErrors: false
-    }
-
-    FileView {
-        id: networkTxBytes
-        path: `/sys/class/net/${service.activeNetworkInterface}/statistics/tx_bytes`
-        blockLoading: true
-        printErrors: false
-    }
-
-    FileView {
-        id: cpuStatFile
-        path: "/proc/stat"
-        blockLoading: true
-        printErrors: false
-    }
-
-    FileView {
-        id: memoryInfoFile
-        path: "/proc/meminfo"
-        blockLoading: true
-        printErrors: false
-    }
-
-    FileView {
-        id: brightnessValueFile
-
-        path: service.brightnessPath
-        blockLoading: true
-        watchChanges: true
-        printErrors: false
-        onLoaded: service.updateBrightnessFromFiles(false)
-        onLoadFailed: service.clearBrightnessState()
-        onFileChanged: service.updateBrightnessFromFiles(true)
-    }
-
-    FileView {
-        id: maxBrightnessValueFile
-
-        path: service.maxBrightnessPath
-        blockLoading: true
-        watchChanges: true
-        printErrors: false
-        onLoaded: service.updateBrightnessFromFiles(false)
-        onLoadFailed: service.clearBrightnessState()
-        onFileChanged: service.updateBrightnessFromFiles(true)
-    }
-
-    FileView {
-        id: quickBrightnessValueFile
-
-        path: service.quickBrightnessPath
-        blockLoading: true
-        watchChanges: true
-        printErrors: false
-        atomicWrites: false
-        onLoaded: service.refreshQuickBrightness(false)
-        onLoadFailed: service.failQuickBrightnessRead("Brightness unavailable")
-        onFileChanged: service.refreshQuickBrightness(true)
-        onSaved: service.refreshQuickBrightness(true)
-        onSaveFailed: service.failQuickBrightnessRequest("write_failed", "Brightness adjustment failed")
-    }
-
-    FileView {
-        id: quickMaxBrightnessValueFile
-
-        path: service.quickMaxBrightnessPath
-        blockLoading: true
-        watchChanges: true
-        printErrors: false
-        onLoaded: service.refreshQuickBrightness(false)
-        onLoadFailed: service.failQuickBrightnessRead("Brightness unavailable")
-        onFileChanged: service.refreshQuickBrightness(true)
-    }
-
-    PwObjectTracker {
-        objects: [service.sink, service.source]
-    }
-
-    Connections {
-        target: service.sink?.audio ?? null
-
-        function onVolumeChanged() {
-            service.refreshQuickVolume()
-        }
-
-        function onMutedChanged() {
-            service.refreshQuickVolume()
-        }
-    }
-
-    onSinkChanged: refreshQuickVolume()
-    onBrightnessDevicePathChanged: {
-        quickBrightness = QuickControlState.unavailableCapability("Brightness unavailable")
-        quickBrightnessMaximum = 0
-        if (quickBrightnessPathValid)
-            Qt.callLater(refreshQuickBrightness, true)
-    }
-
-    NotificationServer {
-        id: notificationServer
-
-        keepOnReload: false
-        actionsSupported: true
-        actionIconsSupported: true
-        bodyHyperlinksSupported: true
-        bodyImagesSupported: true
-        bodyMarkupSupported: true
-        imageSupported: true
-        persistenceSupported: true
-
-        onNotification: notification => {
-            const policy = service.evaluateNotificationPolicy(notification)
-            if (policy.block || service.notificationDnd) {
-                notification.dismiss()
-                return
-            }
-
-            notification.tracked = !notification.transient && !policy.hideFromCenter
-
-            if (!notification.transient && !policy.hideFromCenter)
-                service.addNotificationToHistory(notification, policy)
-
-            if (policy.hide) {
-                notification.dismiss()
-                return
-            }
-
-            if (!policy.disablePopup && !service.notificationCenterOpen)
-                service.enqueueNotificationPopup(notification, policy)
-        }
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: {
-            service.updateClock()
-        }
-    }
-
-    Timer {
-        interval: service.networkRefreshMs
-        running: service.networkThroughputEnabled
-        repeat: true
-        onTriggered: {
-            service.refreshNetwork()
-        }
-    }
-
-    Timer {
-        interval: 3000
-        running: service.networkDetailsEnabled && service.lanDevice !== null
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: service.refreshEthernetInfo()
-    }
-
-    Timer {
-        interval: 3000
-        running: service.networkDetailsEnabled && service.wifiDevice !== null
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: service.refreshWifiInfo()
-    }
-
-    Timer {
-        id: ethernetActionRefreshTimer
-        interval: 750
-        repeat: false
-        onTriggered: service.refreshEthernetInfo()
-    }
-
-    Timer {
-        interval: service.systemStatsRefreshMs
-        running: service.cpuUsageEnabled || service.memoryUsageEnabled
-        repeat: true
-        onTriggered: service.refreshSystemStats()
-    }
-
-    Timer {
-        interval: 30000
-        running: notificationCenterOpen || notificationHistory.length > 0 || visibleNotifications.length > 0 || notificationQueue.length > 0
-        repeat: true
-        onTriggered: notificationTimeUpdateTick = !notificationTimeUpdateTick
-    }
-
-    Timer {
-        id: notificationHistorySaveTimer
-        interval: 500
-        repeat: false
-        onTriggered: service.saveNotificationHistory()
-    }
-
-    Process {
-        id: ethernetInfoProcess
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const requestIsCurrent = service.ethernetInfoProcessGeneration === service.ethernetInfoRequestGeneration
-                    && service.ethernetInfoRequestedInterface === service.lanInterface
-                if (requestIsCurrent)
-                    service.ethernetInfo = NetworkState.parseNmcliDeviceInfo(this.text)
-            }
-        }
-        onExited: (exitCode, exitStatus) => {
-            const requestIsCurrent = service.ethernetInfoProcessGeneration === service.ethernetInfoRequestGeneration
-                && service.ethernetInfoRequestedInterface === service.lanInterface
-            if (requestIsCurrent
-                    && service.ethernetInfoProcessRefreshesProfile
-                    && service.ethernetProfileAwaitingRefresh) {
-                service.ethernetProfileAwaitingRefresh = false
-                service.ethernetProfileBusy = false
-                service.ethernetProfilePendingUuid = ""
-                if (exitCode !== 0 && service.ethernetProfileError.length === 0)
-                    service.ethernetProfileError = `Ethernet refresh failed (${exitCode})`
-            }
-            if ((!requestIsCurrent || (service.ethernetProfileAwaitingRefresh
-                    && !service.ethernetInfoProcessRefreshesProfile))
-                    && service.lanInterface.length > 0)
-                Qt.callLater(service.refreshEthernetInfo)
-        }
-    }
-
-    Process {
-        id: wifiInfoProcess
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (service.wifiInfoProcessGeneration === service.wifiInfoRequestGeneration
-                        && service.wifiInfoRequestedInterface === service.wifiInterface) {
-                    service.wifiInfo = NetworkState.parseNmcliDeviceInfo(this.text)
-                    service.wifiInfoAvailability = "available"
-                }
-            }
-        }
-        onExited: (exitCode, exitStatus) => {
-            const requestIsCurrent = service.wifiInfoProcessGeneration === service.wifiInfoRequestGeneration
-                && service.wifiInfoRequestedInterface === service.wifiInterface
-            if (exitCode !== 0 && requestIsCurrent) {
-                service.wifiInfo = NetworkState.parseNmcliDeviceInfo("")
-                service.wifiInfoAvailability = "unavailable"
-            }
-            if (!requestIsCurrent && service.wifiInterface.length > 0)
-                Qt.callLater(service.refreshWifiInfo)
-        }
-    }
-
-    Process {
-        id: ethernetProfileActionProcess
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (service.ethernetProfileActionProcessGeneration === service.ethernetProfileActionGeneration)
-                service.ethernetProfileError = String(this.text || "").trim()
-            }
-        }
-        onExited: (exitCode, exitStatus) => {
-            if (service.ethernetProfileActionProcessGeneration !== service.ethernetProfileActionGeneration)
-                return
-            if (exitCode !== 0 && service.ethernetProfileError.length === 0)
-                service.ethernetProfileError = `NetworkManager command failed (${exitCode})`
-            service.ethernetProfileAwaitingRefresh = true
-            ethernetActionRefreshTimer.restart()
-        }
-    }
-
-    Process {
-        id: brightnessDetectProcess
-
-        stdout: StdioCollector {
-            onStreamFinished: service.detectBrightnessDevice(this.text)
-        }
-    }
-
-    Process {
-        id: brightnessWriteProcess
-        onExited: service.scheduleBrightnessWrite()
-    }
-
-    Timer {
-        id: brightnessWriteDebounceTimer
-        interval: service.brightnessWriteDebounceMs
-        repeat: false
-        onTriggered: service.flushBrightnessWrite()
-    }
-
-    Timer {
-        id: quickVolumeConfirmationTimer
-        interval: 1500
-        repeat: false
-        onTriggered: {
-            if (quickVolume.activeRequestId !== null)
-                quickVolume = QuickControlState.failRequest(quickVolume, quickVolume.activeRequestId, "reconciliation_timeout", "Volume adjustment failed")
-        }
-    }
-
-    Timer {
-        id: quickBrightnessConfirmationTimer
-        interval: 1500
-        repeat: false
-        onTriggered: service.failQuickBrightnessRequest("reconciliation_timeout", "Brightness adjustment failed")
-    }
-
-    Component.onCompleted: {
-        updateClock()
-        refreshNetwork()
-        refreshSystemStats()
-        detectBrightness()
-        refreshQuickVolume()
-        if (quickBrightnessPathValid)
-            refreshQuickBrightness(true)
-    }
-
-    Component.onDestruction: {
-        if (notificationHistorySaveTimer.running)
-            saveNotificationHistory()
-    }
-
-    function enableNetworkThroughput() {
-        networkThroughputSubscriberCount++
-        refreshNetwork()
-    }
-
-    function refreshActiveUserAvatar() {
-        activeUserAvatar.refresh()
-    }
-
-    function disableNetworkThroughput() {
-        networkThroughputSubscriberCount = Math.max(0, networkThroughputSubscriberCount - 1)
-        if (!networkThroughputEnabled)
-            refreshNetwork()
-    }
-
-    function enableNetworkDetails() {
-        networkDetailsSubscriberCount++
-    }
-
-    function disableNetworkDetails() {
-        networkDetailsSubscriberCount = Math.max(0, networkDetailsSubscriberCount - 1)
-    }
-
-    function enableCpuUsage() {
-        cpuUsageSubscriberCount++
-        refreshSystemStats()
-    }
-
-    function disableCpuUsage() {
-        cpuUsageSubscriberCount = Math.max(0, cpuUsageSubscriberCount - 1)
-        if (!cpuUsageEnabled)
-            previousCpuStats = null
-    }
-
-    function enableMemoryUsage() {
-        memoryUsageSubscriberCount++
-        refreshSystemStats()
-    }
-
-    function disableMemoryUsage() {
-        memoryUsageSubscriberCount = Math.max(0, memoryUsageSubscriberCount - 1)
-    }
-
-    function focusWorkspace(workspaceId) {
-        if (Hyprland.usingLua === true) {
-            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${workspaceId} })`)
-            return
-        }
-
-        Hyprland.dispatch(`workspace ${workspaceId}`)
-    }
-
-    function statusWorkspaceIdsForMonitor(monitor) {
-        if (!monitor)
-            return []
-
-        return statusWorkspaceIds.filter(workspaceId => {
-            const workspace = Hyprland.workspaces.values.find(candidate => candidate.id === workspaceId)
-            const assignedMonitor = workspace?.monitor
-            if (!assignedMonitor)
-                return false
-
-            return assignedMonitor === monitor
-                || (assignedMonitor.name.length > 0 && assignedMonitor.name === monitor.name)
-        })
-    }
-
+    Capabilities.AudioService { id: audioService }
+    Capabilities.BrightnessService { id: brightnessService }
+    Capabilities.NetworkService { id: networkService }
+    Capabilities.NotificationService { id: notificationService; theme: root.theme }
+    Capabilities.BatteryPowerService { id: batteryPowerService }
+    Capabilities.BluetoothService { id: bluetoothService }
+    Capabilities.SystemStatsService { id: systemStatsService }
+    Capabilities.WorkspaceService { id: workspaceService }
+
+    readonly property alias audio: audioService
+    readonly property alias brightness: brightnessService
+    readonly property alias network: networkService
+    readonly property alias notification: notificationService
+    readonly property alias notificationsCapability: notificationService
+    readonly property alias notificationCapability: notificationService
+    readonly property alias batteryPower: batteryPowerService
+    readonly property alias bluetooth: bluetoothService
+    readonly property alias systemStats: systemStatsService
+    readonly property alias workspace: workspaceService
+
+    readonly property alias networkRefreshMs: networkService.networkRefreshMs
+    readonly property alias systemStatsRefreshMs: systemStatsService.systemStatsRefreshMs
+    readonly property alias networkDevices: networkService.networkDevices
+    readonly property alias lanDevice: networkService.lanDevice
+    readonly property alias wifiDevice: networkService.wifiDevice
+    readonly property alias lanInterface: networkService.lanInterface
+    readonly property alias wifiInterface: networkService.wifiInterface
+    property alias ethernetInfo: networkService.ethernetInfo
+    property alias ethernetInfoRequestedInterface: networkService.ethernetInfoRequestedInterface
+    property alias ethernetInfoRequestGeneration: networkService.ethernetInfoRequestGeneration
+    property alias ethernetInfoProcessGeneration: networkService.ethernetInfoProcessGeneration
+    property alias ethernetInfoProcessRefreshesProfile: networkService.ethernetInfoProcessRefreshesProfile
+    property alias wifiInfo: networkService.wifiInfo
+    property alias wifiInfoRequestedInterface: networkService.wifiInfoRequestedInterface
+    property alias wifiInfoAvailability: networkService.wifiInfoAvailability
+    property alias wifiInfoRequestGeneration: networkService.wifiInfoRequestGeneration
+    property alias wifiInfoProcessGeneration: networkService.wifiInfoProcessGeneration
+    property alias ethernetProfileBusy: networkService.ethernetProfileBusy
+    property alias ethernetProfileAwaitingRefresh: networkService.ethernetProfileAwaitingRefresh
+    property alias ethernetProfileActionGeneration: networkService.ethernetProfileActionGeneration
+    property alias ethernetProfileActionProcessGeneration: networkService.ethernetProfileActionProcessGeneration
+    property alias ethernetProfilePendingUuid: networkService.ethernetProfilePendingUuid
+    property alias ethernetProfileError: networkService.ethernetProfileError
+    property alias previousNetworkRx: networkService.previousNetworkRx
+    property alias previousNetworkTx: networkService.previousNetworkTx
+    property alias activeNetworkRxRate: networkService.activeNetworkRxRate
+    property alias activeNetworkTxRate: networkService.activeNetworkTxRate
+    property alias networkThroughputSubscriberCount: networkService.networkThroughputSubscriberCount
+    property alias networkDetailsSubscriberCount: networkService.networkDetailsSubscriberCount
+    readonly property alias networkThroughputEnabled: networkService.networkThroughputEnabled
+    readonly property alias networkDetailsEnabled: networkService.networkDetailsEnabled
+    readonly property alias lanUp: networkService.lanUp
+    readonly property alias wifiUp: networkService.wifiUp
+    readonly property alias activeNetworkInterface: networkService.activeNetworkInterface
+    readonly property alias connectedWifiNetwork: networkService.connectedWifiNetwork
+    readonly property alias wifiSignal: networkService.wifiSignal
+    property alias previousNetworkInterface: networkService.previousNetworkInterface
+    property alias previousNetworkSampleMs: networkService.previousNetworkSampleMs
+
+    readonly property alias powerProfiles: batteryPowerService.powerProfiles
+    readonly property alias batteries: batteryPowerService.batteries
+    readonly property alias readyBatteries: batteryPowerService.readyBatteries
+    readonly property alias batteryAvailable: batteryPowerService.batteryAvailable
+    readonly property alias batteryCharging: batteryPowerService.batteryCharging
+    readonly property alias batteryEmpty: batteryPowerService.batteryEmpty
+    readonly property alias batteryFull: batteryPowerService.batteryFull
+    readonly property alias batteryPendingCharge: batteryPowerService.batteryPendingCharge
+    readonly property alias batteryPendingDischarge: batteryPowerService.batteryPendingDischarge
+    readonly property alias batteryUnknown: batteryPowerService.batteryUnknown
+    readonly property alias batteryLow: batteryPowerService.batteryLow
+    readonly property alias batteryCritical: batteryPowerService.batteryCritical
+    readonly property alias batteryLevel: batteryPowerService.batteryLevel
+    readonly property alias powerProfile: batteryPowerService.powerProfile
+
+    readonly property alias sink: audioService.sink
+    readonly property alias source: audioService.source
+    readonly property alias audioSources: audioService.audioSources
+    readonly property alias sinkVolume: audioService.sinkVolume
+    readonly property alias sinkMuted: audioService.sinkMuted
+    readonly property alias microphoneAvailable: audioService.microphoneAvailable
+    readonly property alias sourceVolume: audioService.sourceVolume
+    readonly property alias sourceMuted: audioService.sourceMuted
+    property alias quickVolume: audioService.quickVolume
+
+    readonly property alias bluetoothAdapter: bluetoothService.bluetoothAdapter
+    readonly property alias bluetoothAvailable: bluetoothService.bluetoothAvailable
+    readonly property alias bluetoothPowered: bluetoothService.bluetoothPowered
+    readonly property alias bluetoothConnectedCount: bluetoothService.bluetoothConnectedCount
+
+    readonly property alias notificationCount: notificationService.notificationCount
+    readonly property alias hasNotifications: notificationService.hasNotifications
+    readonly property alias notifications: notificationService.notifications
+    readonly property alias minVisibleNotifications: notificationService.minVisibleNotifications
+    readonly property alias notificationPopupEstimatedHeight: notificationService.notificationPopupEstimatedHeight
+    readonly property alias maxNotificationHistory: notificationService.maxNotificationHistory
+    readonly property alias notificationHistoryFile: notificationService.notificationHistoryFile
+    readonly property alias focusedNotificationScreenName: notificationService.focusedNotificationScreenName
+    readonly property alias maxPopupIngressPerSecond: notificationService.maxPopupIngressPerSecond
+    readonly property alias maxNotificationQueueSize: notificationService.maxNotificationQueueSize
+    property alias notificationTimeoutLow: notificationService.notificationTimeoutLow
+    property alias notificationTimeoutNormal: notificationService.notificationTimeoutNormal
+    property alias notificationTimeoutCritical: notificationService.notificationTimeoutCritical
+    property alias notificationRules: notificationService.notificationRules
+    property alias notificationQueue: notificationService.notificationQueue
+    property alias visibleNotifications: notificationService.visibleNotifications
+    property alias notificationPopupCapacity: notificationService.notificationPopupCapacity
+    property alias notificationPopupSequence: notificationService.notificationPopupSequence
+    property alias notificationIngressSecond: notificationService.notificationIngressSecond
+    property alias notificationIngressCount: notificationService.notificationIngressCount
+    property alias notificationTimeUpdateTick: notificationService.notificationTimeUpdateTick
+    property alias notificationCenterOpen: notificationService.notificationCenterOpen
+    property alias notificationHistory: notificationService.notificationHistory
+    property alias notificationDnd: notificationService.notificationDnd
+
+    readonly property alias statusWorkspaceIds: workspaceService.statusWorkspaceIds
+    readonly property alias statusOccupiedWorkspaceIds: workspaceService.statusOccupiedWorkspaceIds
+    readonly property alias statusUrgentWorkspaceIds: workspaceService.statusUrgentWorkspaceIds
+
+    property alias cpuUsageSubscriberCount: systemStatsService.cpuUsageSubscriberCount
+    property alias memoryUsageSubscriberCount: systemStatsService.memoryUsageSubscriberCount
+    readonly property alias cpuUsageEnabled: systemStatsService.cpuUsageEnabled
+    readonly property alias memoryUsageEnabled: systemStatsService.memoryUsageEnabled
+    property alias cpuUsage: systemStatsService.cpuUsage
+    property alias memoryUsage: systemStatsService.memoryUsage
+    property alias previousCpuStats: systemStatsService.previousCpuStats
+
+    property alias brightnessDevice: brightnessService.brightnessDevice
+    property alias brightnessAvailable: brightnessService.brightnessAvailable
+    property alias brightnessLevel: brightnessService.brightnessLevel
+    property alias pendingBrightnessLevel: brightnessService.pendingBrightnessLevel
+    readonly property alias brightnessWriteDebounceMs: brightnessService.brightnessWriteDebounceMs
+    readonly property alias brightnessPath: brightnessService.brightnessPath
+    readonly property alias maxBrightnessPath: brightnessService.maxBrightnessPath
+    property alias brightnessDevicePath: brightnessService.brightnessDevicePath
+    readonly property alias quickBrightnessPathValid: brightnessService.quickBrightnessPathValid
+    readonly property alias quickBrightnessPath: brightnessService.quickBrightnessPath
+    readonly property alias quickMaxBrightnessPath: brightnessService.quickMaxBrightnessPath
+    property alias quickBrightness: brightnessService.quickBrightness
+    property alias quickBrightnessMaximum: brightnessService.quickBrightnessMaximum
+    property alias quickBrightnessRequestId: brightnessService.quickBrightnessRequestId
+
+    ActiveUserAvatar { id: activeUserAvatar }
+    Timer { interval: 1000; running: true; repeat: true; onTriggered: root.updateClock() }
+    Component.onCompleted: updateClock()
+
+    function refreshActiveUserAvatar() { return activeUserAvatar.refresh() }
     function updateClock() {
-        const now = new Date()
-        const month = pad(now.getMonth() + 1)
-        const day = pad(now.getDate())
-
-        time = `${pad(now.getHours())}:${pad(now.getMinutes())}`
-        date = `${month}-${day}`
+        const now = new Date(); const month = pad(now.getMonth() + 1); const day = pad(now.getDate())
+        time = `${pad(now.getHours())}:${pad(now.getMinutes())}`; date = `${month}-${day}`
     }
-
-    function pad(value) {
-        return String(value).padStart(2, "0")
-    }
-
-    function toggleMute(isSource) {
-        const node = isSource ? source : sink
-        if (node?.audio)
-            node.audio.muted = !node.audio.muted
-    }
-
-    function setSourceVolume(percent) {
-        const request = QuickControlState.normalizedVolumeRequest(percent, microphoneAvailable)
-        if (!request)
-            return
-
-        source.audio.volume = request.volume
-        if (request.unmute)
-            source.audio.muted = false
-    }
-
-    function selectAudioSource(node) {
-        if (!node || !audioSources.includes(node) || node === source)
-            return
-        Pipewire.preferredDefaultAudioSource = node
-    }
-
-    function changeVolume(isSource, delta) {
-        const node = isSource ? source : sink
-        if (!node?.audio)
-            return
-
-        const currentVolume = Math.round(node.audio.volume * 100)
-        const nextVolume = Math.max(0, Math.min(currentVolume + delta, 100))
-
-        node.audio.volume = nextVolume / 100
-        node.audio.muted = false
-    }
-
-    function refreshQuickVolume() {
-        if (!sink?.audio || !Number.isFinite(Number(sink.audio.volume))) {
-            quickVolume = QuickControlState.unavailableCapability("Volume unavailable")
-            return
-        }
-
-        const percent = QuickControlState.clampPercent(Number(sink.audio.volume) * 100)
-        if (quickVolume.activeRequestId !== null && percent !== quickVolume.draftPercent)
-            return
-
-        const reconciled = quickVolume.activeRequestId !== null
-            ? QuickControlState.confirmRequest(quickVolume, quickVolume.activeRequestId, percent).state
-            : QuickControlState.syncConfirmed(quickVolume, percent).state
-        if (quickVolume.activeRequestId !== null)
-            quickVolumeConfirmationTimer.stop()
-        quickVolume = Object.assign({}, reconciled, { muted: Boolean(sink.audio.muted) })
-    }
-
-    function requestSinkVolume(percent, requestId) {
-        const normalized = QuickControlState.clampPercent(percent)
-        if (normalized === null || !Number.isSafeInteger(requestId) || requestId < 1 || !sink?.audio) {
-            quickVolume = QuickControlState.unavailableCapability("Volume unavailable")
-            return
-        }
-
-        quickVolume = Object.assign({}, quickVolume, {
-            availability: "pending_confirmation",
-            draftPercent: normalized,
-            activeRequestId: requestId,
-            errorCode: null,
-            errorText: null
-        })
-        try {
-            sink.audio.volume = normalized / 100
-            quickVolumeConfirmationTimer.restart()
-        } catch (error) {
-            quickVolume = QuickControlState.failRequest(quickVolume, requestId, "write_failed", "Volume adjustment failed")
-        }
-    }
-
-    function refreshQuickBrightness(reloadFiles) {
-        if (!quickBrightnessPathValid) {
-            quickBrightness = QuickControlState.unavailableCapability("Brightness unavailable")
-            quickBrightnessMaximum = 0
-            return
-        }
-        if (!quickBrightnessValueFile.loaded || !quickMaxBrightnessValueFile.loaded)
-            return
-
-        const currentText = safeFileViewText(quickBrightnessValueFile, "quick brightness", reloadFiles)
-        const maximumText = safeFileViewText(quickMaxBrightnessValueFile, "quick max brightness", reloadFiles)
-        const readback = currentText === null || maximumText === null
-            ? null
-            : QuickControlState.normalizedReadback(currentText, maximumText)
-        if (!readback) {
-            failQuickBrightnessRead("Brightness unavailable")
-            return
-        }
-
-        quickBrightnessMaximum = readback.rawMaximum
-        if (quickBrightness.activeRequestId !== null && readback.percent !== quickBrightness.draftPercent)
-            return
-
-        if (quickBrightness.activeRequestId !== null)
-            quickBrightness = QuickControlState.confirmRequest(quickBrightness, quickBrightness.activeRequestId, readback.percent).state
-        else
-            quickBrightness = QuickControlState.syncConfirmed(quickBrightness, readback.percent).state
-        quickBrightnessConfirmationTimer.stop()
-    }
-
-    function failQuickBrightnessRead(message) {
-        if (quickBrightness.lastKnownPercent !== null) {
-            quickBrightness = Object.assign({}, quickBrightness, {
-                availability: "failed",
-                authoritativePercent: quickBrightness.lastKnownPercent,
-                errorCode: "invalid_native_value",
-                errorText: message
-            })
-        } else {
-            quickBrightness = QuickControlState.unavailableCapability(message)
-        }
-    }
-
-    function requestBrightness(percent, requestId) {
-        const raw = QuickControlState.rawForPercent(percent, quickBrightnessMaximum)
-        if (!quickBrightnessPathValid || raw === null || !Number.isSafeInteger(requestId) || requestId < 1
-                || quickBrightness.availability === "unavailable")
-            return
-
-        const expectedPercent = Math.round((raw * 100) / quickBrightnessMaximum)
-        quickBrightnessRequestId = requestId
-        quickBrightness = Object.assign({}, quickBrightness, {
-            availability: "pending_confirmation",
-            draftPercent: expectedPercent,
-            activeRequestId: requestId,
-            errorCode: null,
-            errorText: null
-        })
-        try {
-            quickBrightnessValueFile.setText(String(raw))
-            quickBrightnessConfirmationTimer.restart()
-        } catch (error) {
-            failQuickBrightnessRequest("write_failed", "Brightness adjustment failed")
-        }
-    }
-
-    function failQuickBrightnessRequest(code, message) {
-        quickBrightnessConfirmationTimer.stop()
-        quickBrightness = QuickControlState.failRequest(
-            quickBrightness,
-            quickBrightnessRequestId,
-            code,
-            message
-        )
-    }
-
-    function computeBatteryLevel() {
-        if (readyBatteries.length === 0)
-            return 0
-
-        const capacity = readyBatteries.reduce((sum, device) => sum + device.energyCapacity, 0)
-        let level = 0
-
-        if (capacity > 0) {
-            const energy = readyBatteries.reduce((sum, device) => sum + device.energy, 0)
-            level = Math.round((energy * 100) / capacity)
-        } else {
-            const percentage = readyBatteries.reduce((sum, device) => sum + normalizePercentage(device.percentage), 0) / readyBatteries.length
-            level = Math.round(percentage)
-        }
-
-        return Math.max(0, Math.min(100, level))
-    }
-
-    function hasBatteryState(state) {
-        return readyBatteries.some(device => device.state === state)
-    }
-
-    function normalizePercentage(value) {
-        const percentage = Number(value) || 0
-        return percentage <= 1 ? percentage * 100 : percentage
-    }
-
-    function detectBrightness() {
-        if (brightnessDevice.length > 0) {
-            updateBrightnessFromFiles()
-            return
-        }
-
-        brightnessDetectProcess.exec(["sh", "-c", "brightnessctl -m 2>/dev/null || true"])
-    }
-
-    function detectBrightnessDevice(output) {
-        const fields = String(output || "").trim().split(",")
-        if (fields.length === 0 || fields[0].length === 0) {
-            clearBrightnessState()
-            return
-        }
-
-        brightnessDevice = fields[0]
-        const percentageMatch = String(output || "").match(/(\d+)%/)
-        if (percentageMatch)
-            brightnessLevel = Math.max(0, Math.min(100, parseInt(percentageMatch[1], 10)))
-
-        Qt.callLater(updateBrightnessFromFiles)
-    }
-
-    function clearBrightnessState() {
-        brightnessWriteDebounceTimer.stop()
-        pendingBrightnessLevel = -1
-        brightnessAvailable = false
-        brightnessLevel = 0
-    }
-
-    function updateBrightnessFromFiles(reloadFiles) {
-        if (brightnessDevice.length === 0) {
-            clearBrightnessState()
-            return
-        }
-
-        if (!brightnessValueFile.loaded || !maxBrightnessValueFile.loaded)
-            return
-
-        const currentText = safeFileViewText(brightnessValueFile, "brightness", reloadFiles)
-        const maximumText = safeFileViewText(maxBrightnessValueFile, "max brightness", reloadFiles)
-        if (currentText === null || maximumText === null) {
-            clearBrightnessState()
-            return
-        }
-
-        const current = Number(currentText.trim())
-        const maximum = Number(maximumText.trim())
-        if (!Number.isFinite(current) || !Number.isFinite(maximum) || maximum <= 0) {
-            clearBrightnessState()
-            return
-        }
-
-        brightnessAvailable = true
-        brightnessLevel = Math.max(0, Math.min(100, Math.round((current * 100) / maximum)))
-    }
-
-    function setBrightness(percent) {
-        const next = Math.max(0, Math.min(100, Math.round(percent)))
-        if (next === brightnessLevel && (pendingBrightnessLevel < 0 || pendingBrightnessLevel === next))
-            return
-
-        brightnessLevel = next
-        pendingBrightnessLevel = next
-        scheduleBrightnessWrite()
-    }
-
-    function scheduleBrightnessWrite() {
-        if (pendingBrightnessLevel >= 0)
-            brightnessWriteDebounceTimer.restart()
-    }
-
-    function flushBrightnessWrite() {
-        if (pendingBrightnessLevel < 0 || brightnessWriteProcess.running)
-            return
-
-        const next = pendingBrightnessLevel
-        pendingBrightnessLevel = -1
-        brightnessWriteProcess.exec(["brightnessctl", "set", `${next}%`])
-    }
-
-    function changeBrightness(delta) {
-        setBrightness(brightnessLevel + delta)
-    }
-
-    function safeFileViewText(fileView, label, reloadFile) {
-        try {
-            if (!fileView)
-                return null
-            if (reloadFile)
-                fileView.reload()
-            return String(fileView.text() || "")
-        } catch (error) {
-            console.warn(`Failed to read ${label}: ${error}`)
-            return null
-        }
-    }
-
-    function resetNetworkSample(clearInterface) {
-        activeNetworkRxRate = 0
-        activeNetworkTxRate = 0
-        previousNetworkRx = 0
-        previousNetworkTx = 0
-        previousNetworkSampleMs = 0
-        if (clearInterface)
-            previousNetworkInterface = ""
-    }
-
-    function refreshSystemStats() {
-        if (cpuUsageEnabled) {
-            const cpuText = safeFileViewText(cpuStatFile, "CPU stats", true)
-            if (cpuText === null) {
-                previousCpuStats = null
-                cpuUsage = 0
-            } else {
-                updateCpuUsage(cpuText)
-            }
-        }
-
-        if (memoryUsageEnabled) {
-            const memoryText = safeFileViewText(memoryInfoFile, "memory stats", true)
-            if (memoryText === null)
-                memoryUsage = 0
-            else
-                updateMemoryUsage(memoryText)
-        }
-    }
-
-    function updateCpuUsage(text) {
-        const line = String(text || "").split("\n")[0]
-        if (!line.startsWith("cpu ")) {
-            previousCpuStats = null
-            cpuUsage = 0
-            return
-        }
-
-        const parts = line.trim().split(/\s+/)
-        let total = 0
-        for (let i = 1; i < parts.length; i++)
-            total += Number(parts[i]) || 0
-
-        const idle = (Number(parts[4]) || 0) + (Number(parts[5]) || 0)
-        const previous = previousCpuStats
-        previousCpuStats = { total: total, idle: idle }
-
-        if (!previous)
-            return
-
-        const totalDelta = total - previous.total
-        const idleDelta = idle - previous.idle
-        if (totalDelta <= 0)
-            return
-
-        cpuUsage = Math.max(0, Math.min(100, Math.round(((totalDelta - idleDelta) * 100) / totalDelta)))
-    }
-
-    function updateMemoryUsage(text) {
-        const lines = String(text || "").split("\n")
-        let total = 0
-        let available = 0
-
-        for (const line of lines) {
-            if (line.startsWith("MemTotal:"))
-                total = Number(line.trim().split(/\s+/)[1]) || 0
-            else if (line.startsWith("MemAvailable:"))
-                available = Number(line.trim().split(/\s+/)[1]) || 0
-        }
-
-        if (total > 0)
-            memoryUsage = Math.max(0, Math.min(100, Math.round(((total - available) * 100) / total)))
-        else
-            memoryUsage = 0
-    }
-
-    function refreshEthernetInfo() {
-        if (!/^[A-Za-z0-9._:-]{1,64}$/.test(lanInterface)) {
-            ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
-            if (ethernetProfileAwaitingRefresh) {
-                ethernetProfileAwaitingRefresh = false
-                ethernetProfileBusy = false
-                ethernetProfilePendingUuid = ""
-                if (ethernetProfileError.length === 0)
-                    ethernetProfileError = "Ethernet interface unavailable"
-            }
-            return
-        }
-        if (ethernetInfoProcess.running)
-            return
-
-        ethernetInfoRequestedInterface = lanInterface
-        ethernetInfoProcessGeneration = ethernetInfoRequestGeneration
-        ethernetInfoProcessRefreshesProfile = ethernetProfileAwaitingRefresh
-        ethernetInfoProcess.exec([
-            "timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields",
-            "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
-            "device", "show", lanInterface
-        ])
-    }
-
-    function refreshWifiInfo() {
-        if (wifiInfoProcess.running)
-            return
-        if (!/^[A-Za-z0-9._:-]{1,64}$/.test(wifiInterface)) {
-            wifiInfoRequestedInterface = ""
-            wifiInfoAvailability = "idle"
-            wifiInfo = NetworkState.parseNmcliDeviceInfo("")
-            return
-        }
-
-        if (wifiInfoAvailability !== "available")
-            wifiInfoAvailability = "loading"
-        wifiInfoRequestedInterface = wifiInterface
-        wifiInfoProcessGeneration = wifiInfoRequestGeneration
-        wifiInfoProcess.exec([
-            "timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields",
-            "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
-            "device", "show", wifiInterface
-        ])
-    }
-
-    function setEthernetProfileEnabled(profile) {
-            const uuid = String(profile?.uuid || "")
-            if (ethernetProfileActionProcess.running)
-                return
-            const action = NetworkState.ethernetProfileAction(ethernetInfo.activeUuid, uuid, ethernetProfileBusy)
-        if (!action)
-            return
-
-        ethernetProfileBusy = true
-        ethernetProfileAwaitingRefresh = false
-        ethernetProfilePendingUuid = uuid
-        ethernetProfileError = ""
-        ethernetProfileActionProcessGeneration = ethernetProfileActionGeneration
-        ethernetProfileActionProcess.exec([
-            "timeout", "10s", "nmcli", "connection", action === "disable" ? "down" : "up", "uuid", uuid
-        ])
-    }
-
-    function refreshNetwork() {
-        if (!networkThroughputEnabled || !activeNetworkInterface) {
-            resetNetworkSample(true)
-            return
-        }
-
-        if (previousNetworkInterface !== activeNetworkInterface) {
-            previousNetworkInterface = activeNetworkInterface
-            resetNetworkSample(false)
-        }
-
-        const rxText = safeFileViewText(networkRxBytes, "network RX bytes", true)
-        const txText = safeFileViewText(networkTxBytes, "network TX bytes", true)
-        if (rxText === null || txText === null) {
-            resetNetworkSample(false)
-            return
-        }
-
-        const now = Date.now()
-        const rx = Number(rxText.trim())
-        const tx = Number(txText.trim())
-        const elapsedSeconds = previousNetworkSampleMs > 0 ? (now - previousNetworkSampleMs) / 1000 : 0
-
-        if (!Number.isFinite(rx) || !Number.isFinite(tx)) {
-            resetNetworkSample(false)
-            return
-        } else if (previousNetworkRx > 0 && previousNetworkTx > 0 && Number.isFinite(elapsedSeconds) && elapsedSeconds > 0) {
-            activeNetworkRxRate = Math.max(0, (rx - previousNetworkRx) / elapsedSeconds)
-            activeNetworkTxRate = Math.max(0, (tx - previousNetworkTx) / elapsedSeconds)
-        }
-
-        previousNetworkRx = rx
-        previousNetworkTx = tx
-        previousNetworkSampleMs = now
-    }
-
-    function dismissNotifications() {
-        notificationServer.trackedNotifications.values.forEach(notification => notification.dismiss())
-        notificationHistory = []
-        saveNotificationHistory()
-        notificationQueue = []
-        visibleNotifications = []
-    }
-
-    function dismissNotificationHistoryEntry(entry) {
-        if (!entry)
-            return
-
-        if (entry.notification && entry.notification.dismiss)
-            entry.notification.dismiss()
-
-        notificationHistory = notificationHistory.filter(item => item && item.id !== entry.id)
-        saveNotificationHistory()
-    }
-
-    function setNotificationCenterOpen(open) {
-        notificationCenterOpen = open
-
-        if (notificationCenterOpen)
-            clearNotificationPopups()
-    }
-
-    function clearNotificationPopups() {
-        notificationQueue = []
-        visibleNotifications = []
-    }
-
-    function toggleNotificationDnd() {
-        notificationDnd = !notificationDnd
-
-        if (notificationDnd) {
-            notificationQueue = []
-            visibleNotifications = []
-        }
-    }
-
-    function enqueueNotificationPopup(notification, policy) {
-        if (!shouldShowNotificationPopup(notification, policy))
-            return
-
-        const popup = createNotificationPopup(notification, policy)
-        let queued = notificationQueue.slice()
-
-        if (queued.length >= maxNotificationQueueSize) {
-            let victimIndex = queued.findIndex(item => item && item.urgency !== NotificationUrgency.Critical)
-            if (victimIndex < 0 && popup.urgency !== NotificationUrgency.Critical)
-                return
-            if (victimIndex < 0)
-                victimIndex = 0
-            queued.splice(victimIndex, 1)
-        }
-
-        notificationQueue = queued.concat([popup])
-        processNotificationPopupQueue()
-    }
-
-    function shouldShowNotificationPopup(notification, policy) {
-        const now = Date.now()
-        const currentSecond = Math.floor(now / 1000)
-        const urgency = policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency
-
-        if (notificationIngressSecond !== currentSecond) {
-            notificationIngressSecond = currentSecond
-            notificationIngressCount = 0
-        }
-
-        if (urgency !== NotificationUrgency.Critical && notificationIngressCount >= maxPopupIngressPerSecond)
-            return false
-
-        notificationIngressCount += 1
-
-        return true
-    }
-
-    function createNotificationPopup(notification, policy) {
-        notificationPopupSequence += 1
-
-        const appName = notification.appName || "App"
-        const appIcon = notification.appIcon || ""
-        const desktopEntry = notification.desktopEntry || ""
-        const image = notification.image || ""
-        const body = stripImages(notification.body || "")
-
-        return {
-            id: notificationPopupSequence,
-            notification: notification,
-            summary: stripImages(notification.summary || "Notification"),
-            body: body,
-            htmlBody: resolveHtmlBody(body),
-            appName: appName,
-            appIcon: appIcon,
-            desktopEntry: desktopEntry,
-            image: image,
-            urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
-            actions: notification.actions || [],
-            transient: notification.transient,
-            createdAt: Date.now()
-        }
-    }
-
-    function addNotificationToHistory(notification, policy) {
-        const entry = createNotificationHistoryEntry(notification, policy)
-        let history = notificationHistory.slice()
-        history.unshift(entry)
-
-        if (history.length > maxNotificationHistory)
-            history = history.slice(0, maxNotificationHistory)
-
-        notificationHistory = history
-        scheduleNotificationHistorySave()
-    }
-
-    function createNotificationHistoryEntry(notification, policy) {
-        const body = stripImages(notification.body || "")
-        const createdAt = Date.now()
-
-        return {
-            id: `${createdAt}-${Math.random()}`,
-            notification: notification,
-            summary: stripImages(notification.summary || "Notification"),
-            body: body,
-            htmlBody: resolveHtmlBody(body),
-            appName: notification.appName || "App",
-            appIcon: notification.appIcon || "",
-            desktopEntry: notification.desktopEntry || "",
-            image: notification.image || "",
-            urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
-            actions: [],
-            createdAt: createdAt,
-            timestamp: createdAt
-        }
-    }
-
-    function persistentNotificationImage(source) {
-        const imageSource = source || ""
-        return imageSource.startsWith("image://qsimage/") ? "" : imageSource
-    }
-
-    function scheduleNotificationHistorySave() {
-        notificationHistorySaveTimer.restart()
-    }
-
-    function saveNotificationHistory() {
-        notificationHistorySaveTimer.stop()
-        notificationHistoryAdapter.notifications = notificationHistory.map(item => ({
-            id: item.id,
-            summary: item.summary || "Notification",
-            body: item.body || "",
-            htmlBody: item.htmlBody || resolveHtmlBody(item.body || ""),
-            appName: item.appName || "App",
-            appIcon: item.appIcon || "",
-            desktopEntry: item.desktopEntry || "",
-            image: persistentNotificationImage(item.image),
-            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-            actions: [],
-            createdAt: item.createdAt || item.timestamp || Date.now(),
-            timestamp: item.timestamp || item.createdAt || Date.now()
-        }))
-        notificationHistoryFileView.writeAdapter()
-    }
-
-    function loadNotificationHistory() {
-        notificationHistory = (notificationHistoryAdapter.notifications || []).map(item => ({
-            id: item.id || `${item.timestamp || Date.now()}-${Math.random()}`,
-            summary: item.summary || "Notification",
-            body: item.body || "",
-            htmlBody: item.htmlBody || resolveHtmlBody(item.body || ""),
-            appName: item.appName || "App",
-            appIcon: item.appIcon || "",
-            desktopEntry: item.desktopEntry || "",
-            image: persistentNotificationImage(item.image),
-            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-            actions: [],
-            createdAt: item.createdAt || item.timestamp || Date.now(),
-            timestamp: item.timestamp || item.createdAt || Date.now()
-        }))
-    }
-
-    function processNotificationPopupQueue() {
-        let visible = visibleNotifications.slice()
-        let queued = notificationQueue.slice()
-
-        const capacity = Math.max(minVisibleNotifications, notificationPopupCapacity)
-
-        while (visible.length > capacity)
-            queued.unshift(visible.pop())
-
-        while (visible.length < capacity && queued.length > 0)
-            visible.unshift(queued.shift())
-
-        visibleNotifications = visible
-        notificationQueue = queued
-    }
-
-    function setNotificationPopupAvailableHeight(height) {
-        const availableHeight = Math.max(0, height || 0)
-        const popupSpacing = theme.spacing.notificationPopupSpacing
-        const slotHeight = notificationPopupEstimatedHeight + popupSpacing
-        const capacity = Math.max(minVisibleNotifications, Math.floor((availableHeight + popupSpacing) / slotHeight))
-
-        if (notificationPopupCapacity === capacity)
-            return
-
-        notificationPopupCapacity = capacity
-        processNotificationPopupQueue()
-    }
-
-    function closeNotificationPopup(id) {
-        visibleNotifications = visibleNotifications.filter(popup => popup.id !== id)
-        processNotificationPopupQueue()
-    }
-
-    function invokeNotificationPopupAction(id, action) {
-        if (action && action.invoke)
-            action.invoke()
-
-        closeNotificationPopup(id)
-    }
-
-    function notificationPopupTimeout(urgency) {
-        switch (urgency) {
-        case NotificationUrgency.Low:
-            return notificationTimeoutLow
-        case NotificationUrgency.Critical:
-            return notificationTimeoutCritical
-        default:
-            return notificationTimeoutNormal
-        }
-    }
-
-    function notificationTimeText(popup) {
-        notificationTimeUpdateTick
-
-        const timestamp = popup ? (popup.createdAt || popup.timestamp) : 0
-        if (!timestamp)
-            return "now"
-
-        const time = new Date(timestamp)
-        const now = new Date()
-        const diff = now.getTime() - time.getTime()
-        const minutes = Math.floor(diff / 60000)
-        const hours = Math.floor(minutes / 60)
-
-        if (hours < 1)
-            return minutes < 1 ? "now" : `${minutes}m ago`
-
-        const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        const timeDate = new Date(time.getFullYear(), time.getMonth(), time.getDate())
-        const daysDiff = Math.floor((nowDate - timeDate) / (1000 * 60 * 60 * 24))
-
-        if (daysDiff === 0)
-            return formatNotificationTime(time)
-
-        return `${time.toLocaleDateString(Qt.locale(), "dddd")}, ${formatNotificationTime(time)}`
-    }
-
-    function formatNotificationTime(date) {
-        return date.toLocaleTimeString(Qt.locale(), "HH:mm")
-    }
-
-    function evaluateNotificationPolicy(notification) {
-        const policy = {
-            block: false,
-            disablePopup: false,
-            hideFromCenter: false,
-            hide: false,
-            mute: false,
-            urgency: typeof notification.urgency === "number" ? notification.urgency : NotificationUrgency.Normal
-        }
-
-        for (const rule of notificationRules) {
-            if (!matchesNotificationRule(rule, notification))
-                continue
-
-            const action = String(rule.action || "default").toLowerCase()
-            if (action === "block" || action === "ignore")
-                policy.block = true
-            else if (action === "hide" || action === "no_popup")
-                policy.hide = true
-            else if (action === "mute")
-                policy.mute = true
-            else if (action === "popup_only")
-                policy.hideFromCenter = true
-            else if (action === "disable_popup")
-                policy.disablePopup = true
-
-            if (rule.urgency !== undefined)
-                policy.urgency = coerceNotificationUrgency(rule.urgency, policy.urgency)
-
-            return policy
-        }
-
-        return policy
-    }
-
-    function matchesNotificationRule(rule, notification) {
-        const fields = {
-            appName: notification.appName || "",
-            desktopEntry: notification.desktopEntry || "",
-            summary: notification.summary || "",
-            body: notification.body || ""
-        }
-
-        for (const key of Object.keys(rule)) {
-            if (["action", "urgency"].includes(key))
-                continue
-            if (!matchesRuleValue(fields[key] || "", rule[key]))
-                return false
-        }
-
-        return true
-    }
-
-    function matchesRuleValue(actual, expected) {
-        if (expected === undefined || expected === null || expected === "")
-            return true
-        return String(actual).toLowerCase().includes(String(expected).toLowerCase())
-    }
-
-    function coerceNotificationUrgency(value, fallback) {
-        if (typeof value === "number")
-            return value
-
-        const normalized = String(value).toLowerCase()
-        if (normalized === "low")
-            return NotificationUrgency.Low
-        if (normalized === "critical")
-            return NotificationUrgency.Critical
-        if (normalized === "normal")
-            return NotificationUrgency.Normal
-        return fallback
-    }
-
-    function stripImages(text) {
-        return String(text || "").replace(/<img\b[^>]*>/gi, "")
-    }
-
-    function escapeHtml(text) {
-        return String(text || "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;")
-    }
-
-    function resolveHtmlBody(body) {
-        const escaped = escapeHtml(body)
-        return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>')
-    }
-
-    function nextPowerProfile() {
-        const currentIndex = Math.max(0, powerProfiles.indexOf(PowerProfiles.profile))
-        const next = powerProfiles[(currentIndex + 1) % powerProfiles.length]
-
-        PowerProfiles.profile = next
-    }
-
-    function profileSlug(profile) {
-        switch (profile) {
-        case PowerProfile.Performance:
-            return "performance"
-        case PowerProfile.PowerSaver:
-            return "power-saver"
-        default:
-            return "balanced"
-        }
-    }
-
+    function pad(value) { return String(value).padStart(2, "0") }
+    function safeFileViewText(fileView, label, reloadFile) { return FileViewState.safeText(fileView, label, reloadFile) }
+
+    function enableNetworkThroughput() { return networkService.enableNetworkThroughput() }
+    function disableNetworkThroughput() { return networkService.disableNetworkThroughput() }
+    function enableNetworkDetails() { return networkService.enableNetworkDetails() }
+    function disableNetworkDetails() { return networkService.disableNetworkDetails() }
+    function resetNetworkSample(clearInterface) { return networkService.resetNetworkSample(clearInterface) }
+    function refreshEthernetInfo() { return networkService.refreshEthernetInfo() }
+    function refreshWifiInfo() { return networkService.refreshWifiInfo() }
+    function setEthernetProfileEnabled(profile) { return networkService.setEthernetProfileEnabled(profile) }
+    function refreshNetwork() { return networkService.refreshNetwork() }
+
+    function enableCpuUsage() { return systemStatsService.enableCpuUsage() }
+    function disableCpuUsage() { return systemStatsService.disableCpuUsage() }
+    function enableMemoryUsage() { return systemStatsService.enableMemoryUsage() }
+    function disableMemoryUsage() { return systemStatsService.disableMemoryUsage() }
+    function refreshSystemStats() { return systemStatsService.refreshSystemStats() }
+    function updateCpuUsage(text) { return systemStatsService.updateCpuUsage(text) }
+    function updateMemoryUsage(text) { return systemStatsService.updateMemoryUsage(text) }
+
+    function focusWorkspace(workspaceId) { return workspaceService.focusWorkspace(workspaceId) }
+    function statusWorkspaceIdsForMonitor(monitor) { return workspaceService.statusWorkspaceIdsForMonitor(monitor) }
+
+    function toggleMute(isSource) { return audioService.toggleMute(isSource) }
+    function setSourceVolume(percent) { return audioService.setSourceVolume(percent) }
+    function selectAudioSource(node) { return audioService.selectAudioSource(node) }
+    function changeVolume(isSource, delta) { return audioService.changeVolume(isSource, delta) }
+    function refreshQuickVolume() { return audioService.refreshQuickVolume() }
+    function requestSinkVolume(percent, requestId) { return audioService.requestSinkVolume(percent, requestId) }
+
+    function detectBrightness() { return brightnessService.detectBrightness() }
+    function detectBrightnessDevice(output) { return brightnessService.detectBrightnessDevice(output) }
+    function clearBrightnessState() { return brightnessService.clearBrightnessState() }
+    function updateBrightnessFromFiles(reloadFiles) { return brightnessService.updateBrightnessFromFiles(reloadFiles) }
+    function setBrightness(percent) { return brightnessService.setBrightness(percent) }
+    function scheduleBrightnessWrite() { return brightnessService.scheduleBrightnessWrite() }
+    function flushBrightnessWrite() { return brightnessService.flushBrightnessWrite() }
+    function changeBrightness(delta) { return brightnessService.changeBrightness(delta) }
+    function refreshQuickBrightness(reloadFiles) { return brightnessService.refreshQuickBrightness(reloadFiles) }
+    function failQuickBrightnessRead(message) { return brightnessService.failQuickBrightnessRead(message) }
+    function requestBrightness(percent, requestId) { return brightnessService.requestBrightness(percent, requestId) }
+    function failQuickBrightnessRequest(code, message) { return brightnessService.failQuickBrightnessRequest(code, message) }
+
+    function computeBatteryLevel() { return batteryPowerService.computeBatteryLevel() }
+    function hasBatteryState(state) { return batteryPowerService.hasBatteryState(state) }
+    function normalizePercentage(value) { return batteryPowerService.normalizePercentage(value) }
+    function nextPowerProfile() { return batteryPowerService.nextPowerProfile() }
+    function profileSlug(profile) { return batteryPowerService.profileSlug(profile) }
+
+    function dismissNotifications() { return notificationService.dismissNotifications() }
+    function dismissNotificationHistoryEntry(entry) { return notificationService.dismissNotificationHistoryEntry(entry) }
+    function setNotificationCenterOpen(open) { return notificationService.setNotificationCenterOpen(open) }
+    function clearNotificationPopups() { return notificationService.clearNotificationPopups() }
+    function toggleNotificationDnd() { return notificationService.toggleNotificationDnd() }
+    function enqueueNotificationPopup(notification, policy) { return notificationService.enqueueNotificationPopup(notification, policy) }
+    function shouldShowNotificationPopup(notification, policy) { return notificationService.shouldShowNotificationPopup(notification, policy) }
+    function createNotificationPopup(notification, policy) { return notificationService.createNotificationPopup(notification, policy) }
+    function addNotificationToHistory(notification, policy) { return notificationService.addNotificationToHistory(notification, policy) }
+    function createNotificationHistoryEntry(notification, policy) { return notificationService.createNotificationHistoryEntry(notification, policy) }
+    function persistentNotificationImage(source) { return notificationService.persistentNotificationImage(source) }
+    function scheduleNotificationHistorySave() { return notificationService.scheduleNotificationHistorySave() }
+    function saveNotificationHistory() { return notificationService.saveNotificationHistory() }
+    function loadNotificationHistory() { return notificationService.loadNotificationHistory() }
+    function processNotificationPopupQueue() { return notificationService.processNotificationPopupQueue() }
+    function setNotificationPopupAvailableHeight(height) { return notificationService.setNotificationPopupAvailableHeight(height) }
+    function closeNotificationPopup(id) { return notificationService.closeNotificationPopup(id) }
+    function invokeNotificationPopupAction(id, action) { return notificationService.invokeNotificationPopupAction(id, action) }
+    function notificationPopupTimeout(urgency) { return notificationService.notificationPopupTimeout(urgency) }
+    function notificationTimeText(popup) { return notificationService.notificationTimeText(popup) }
+    function formatNotificationTime(date) { return notificationService.formatNotificationTime(date) }
+    function evaluateNotificationPolicy(notification) { return notificationService.evaluateNotificationPolicy(notification) }
+    function matchesNotificationRule(rule, notification) { return notificationService.matchesNotificationRule(rule, notification) }
+    function matchesRuleValue(actual, expected) { return notificationService.matchesRuleValue(actual, expected) }
+    function coerceNotificationUrgency(value, fallback) { return notificationService.coerceNotificationUrgency(value, fallback) }
+    function stripImages(text) { return notificationService.stripImages(text) }
+    function escapeHtml(text) { return notificationService.escapeHtml(text) }
+    function resolveHtmlBody(body) { return notificationService.resolveHtmlBody(body) }
 }

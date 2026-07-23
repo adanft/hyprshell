@@ -1230,6 +1230,11 @@ Scope {
         }
     }
 
+    function persistentNotificationImage(source) {
+        const imageSource = source || ""
+        return imageSource.startsWith("image://qsimage/") ? "" : imageSource
+    }
+
     function scheduleNotificationHistorySave() {
         notificationHistorySaveTimer.restart()
     }
@@ -1244,7 +1249,7 @@ Scope {
             appName: item.appName || "App",
             appIcon: item.appIcon || "",
             desktopEntry: item.desktopEntry || "",
-            image: item.image || "",
+            image: persistentNotificationImage(item.image),
             urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
             actions: [],
             createdAt: item.createdAt || item.timestamp || Date.now(),
@@ -1262,7 +1267,7 @@ Scope {
             appName: item.appName || "App",
             appIcon: item.appIcon || "",
             desktopEntry: item.desktopEntry || "",
-            image: item.image || "",
+            image: persistentNotificationImage(item.image),
             urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
             actions: [],
             createdAt: item.createdAt || item.timestamp || Date.now(),

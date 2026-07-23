@@ -16,7 +16,7 @@ Item {
 
     required property var colors
     required property var services
-    readonly property bool connected: services.wifiUp && services.wifiSignal > 0
+    readonly property bool connected: services.network.wifiUp && services.network.wifiSignal > 0
     readonly property color moduleColor: connected ? colors.primary : colors.text
 
     function icon() {
@@ -43,7 +43,7 @@ Item {
 
         BarText {
             visible: root.connected
-            text: `${root.services.wifiSignal}%`
+            text: `${root.services.network.wifiSignal}%`
             color: root.moduleColor
         }
 

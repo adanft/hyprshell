@@ -15,7 +15,7 @@ Item {
 
     required property var colors
     required property var services
-    readonly property string profile: services.powerProfile
+    readonly property string profile: services.batteryPower.powerProfile
 
     width: theme.sizing.statusBarIconSize
     height: theme.sizing.statusBarIconSize
@@ -30,7 +30,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: services.nextPowerProfile()
+        onClicked: services.batteryPower.nextPowerProfile()
     }
 
 }

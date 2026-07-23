@@ -25,14 +25,15 @@ Item {
         anchors.centerIn: parent
 
         Repeater {
-            model: root.services.statusWorkspaceIdsForMonitor(root.monitor)
+            model: root.services.workspace.statusWorkspaceIdsForMonitor(root.monitor)
 
             BarText {
                 required property int modelData
 
                 readonly property bool active: root.monitor?.activeWorkspace?.id === modelData
-                readonly property bool urgent: root.services.statusUrgentWorkspaceIds[modelData] ?? false
-                readonly property bool empty: !(root.services.statusOccupiedWorkspaceIds[modelData] ?? false)
+                    readonly property bool urgent: root.services.workspace.statusUrgentWorkspaceIds[modelData] ?? false
+                    readonly property bool empty: !(root.services.workspace.statusOccupiedWorkspaceIds[modelData] ?? false)
+
                 readonly property bool hovered: mouseArea.containsMouse
 
                 width: root.theme.sizing.statusBarWorkspaceSlotSize
@@ -54,7 +55,7 @@ Item {
     }
 
     function focusWorkspace(workspaceId) {
-        root.services.focusWorkspace(workspaceId)
+        root.services.workspace.focusWorkspace(workspaceId)
     }
 
     function workspaceColor(urgent, active, monitorFocused, hovered, empty) {

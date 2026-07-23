@@ -48,7 +48,7 @@ PopupWindow {
 
     function pruneExpandedNotifications() {
         const activeIds = {};
-        const notifications = services.notifications || [];
+        const notifications = services.notification.notifications || [];
         for (const notification of notifications) {
             const key = notificationExpansionKey(notification);
             if (key.length > 0 && expandedNotificationIds[key] === true)
@@ -65,7 +65,7 @@ PopupWindow {
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - theme.spacing.notificationCenterScreenMargin)
     anchor.rect.y: theme.sizing.notificationCenterTopOffset
-    onVisibleChanged: popup.services.setNotificationCenterOpen(visible)
+    onVisibleChanged: popup.services.notification.setNotificationCenterOpen(visible)
 
     Rectangle {
         anchors.fill: parent
@@ -109,7 +109,7 @@ PopupWindow {
                     id: headerCount
 
                     anchors.verticalCenter: parent.verticalCenter
-                    text: popup.services.notificationCount
+                    text: popup.services.notification.notificationCount
                     color: popup.colors.text
                     font.family: popup.theme.typography.textFontFamily
                     font.pixelSize: popup.theme.typography.sizeMd
@@ -126,7 +126,7 @@ PopupWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: clearContent.implicitWidth
                     height: popup.theme.sizing.notificationCenterClearButtonHeight
-                    visible: popup.services.hasNotifications
+                    visible: popup.services.notification.hasNotifications
 
                     Row {
                         id: clearContent
@@ -158,7 +158,7 @@ PopupWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: popup.services.dismissNotifications()
+                        onClicked: popup.services.notification.dismissNotifications()
                     }
 
                 }
@@ -187,7 +187,7 @@ PopupWindow {
                     width: popup.theme.sizing.notificationCenterDndSwitchWidth
                     height: popup.theme.sizing.notificationCenterDndSwitchHeight
                     radius: height / 2
-                    color: popup.services.notificationDnd ? popup.colors.primary : popup.colors.surfaceHover
+                    color: popup.services.notification.notificationDnd ? popup.colors.primary : popup.colors.surfaceHover
                     border.width: 0
 
                     Rectangle {
@@ -195,8 +195,8 @@ PopupWindow {
                         height: popup.theme.sizing.notificationCenterDndKnobSize
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
-                        x: popup.services.notificationDnd ? parent.width - width - popup.theme.spacing.notificationCenterDndKnobMargin : popup.theme.spacing.notificationCenterDndKnobMargin
-                        color: popup.services.notificationDnd ? popup.colors.background : popup.colors.textSubtle
+                        x: popup.services.notification.notificationDnd ? parent.width - width - popup.theme.spacing.notificationCenterDndKnobMargin : popup.theme.spacing.notificationCenterDndKnobMargin
+                        color: popup.services.notification.notificationDnd ? popup.colors.background : popup.colors.textSubtle
 
                         Behavior on x {
                             NumberAnimation {
@@ -212,7 +212,7 @@ PopupWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: popup.services.toggleNotificationDnd()
+                        onClicked: popup.services.notification.toggleNotificationDnd()
                     }
 
                 }
@@ -226,7 +226,7 @@ PopupWindow {
                 Column {
                     anchors.centerIn: parent
                     spacing: popup.theme.spacing.notificationCenterSectionSpacing
-                    visible: !popup.services.hasNotifications
+                    visible: !popup.services.notification.hasNotifications
 
                     AppText {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -250,13 +250,13 @@ PopupWindow {
                     id: notificationList
 
                     anchors.fill: parent
-                    visible: popup.services.hasNotifications
+                    visible: popup.services.notification.hasNotifications
                     clip: true
                     orientation: ListView.Vertical
                     spacing: popup.theme.spacing.notificationCenterListSpacing
                     cacheBuffer: Math.max(0, height * 2)
                     reuseItems: false
-                    model: popup.visible && popup.services.hasNotifications ? popup.services.notifications : []
+                    model: popup.visible && popup.services.notification.hasNotifications ? popup.services.notification.notifications : []
                     onModelChanged: popup.pruneExpandedNotifications()
 
                     delegate: NotificationCard {
@@ -268,9 +268,9 @@ PopupWindow {
                         notificationData: modelData
                         cornerRadius: popup.theme.shape.notificationCenterCardRadius
                         useRenderedHeightForLayout: true
-                        timeText: popup.services.notificationTimeText(modelData)
+                        timeText: popup.services.notification.notificationTimeText(modelData)
                         onExpandedChanged: popup.setNotificationExpanded(modelData, expanded)
-                        onCloseRequested: popup.services.dismissNotificationHistoryEntry(modelData)
+                        onCloseRequested: popup.services.notification.dismissNotificationHistoryEntry(modelData)
                         onActionInvoked: (action) => {
                             if (action && action.invoke)
                                 action.invoke();

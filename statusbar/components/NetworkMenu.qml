@@ -33,8 +33,8 @@ Item {
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled
             && Networking.wifiEnabled
             && !wifiActivationPending
-            && services.wifiDevice
-        ? NetworkMenuLogic.sortedWifiNetworks(services.wifiDevice.networks?.values ?? [])
+            && services.network.wifiDevice
+        ? NetworkMenuLogic.sortedWifiNetworks(services.network.wifiDevice.networks?.values ?? [])
         : []
     property real uptimeSeconds: 0
     property int quickControlRequestSequence: 0
@@ -63,7 +63,7 @@ Item {
     function updateWifiScanner(forceRestart) {
         wifiScannerStartTimer.stop();
 
-        const device = services.wifiDevice;
+        const device = services.network.wifiDevice;
         if (wifiScannerDevice && wifiScannerDevice !== device)
             wifiScannerDevice.scannerEnabled = false;
         wifiScannerDevice = device;
@@ -98,9 +98,9 @@ Item {
         onMenuOpenChanged: {
             updateWifiScanner(menuOpen);
             if (menuOpen)
-                services.enableNetworkDetails();
+                services.network.enableNetworkDetails();
             else
-                services.disableNetworkDetails();
+                services.network.disableNetworkDetails();
         }
         onExpandedNetworkSectionChanged: updateWifiScanner(expandedNetworkSection === "wifi")
     property string expandedNetworkSection: ""
@@ -112,7 +112,7 @@ Item {
     }
 
     function toggleEthernet() {
-        const network = services.lanDevice?.network;
+        const network = services.network.lanDevice?.network;
         const action = NetworkMenuLogic.ethernetToggleAction(network);
         if (action === "disconnect")
             network.disconnect();
@@ -121,9 +121,9 @@ Item {
     }
 
     function volumeIcon() {
-        if (root.services.quickVolume?.muted)
+        if (root.services.audio.quickVolume?.muted)
             return root.icons.volumeMuted;
-        const percent = root.services.quickVolume?.authoritativePercent;
+        const percent = root.services.audio.quickVolume?.authoritativePercent;
         if (percent === null || percent === undefined || percent < 34)
             return root.icons.volumeLow;
         if (percent < 67)
@@ -237,7 +237,7 @@ Item {
                     root.expandedNetworkSection,
                     Networking.wifiEnabled,
                     Networking.wifiHardwareEnabled
-                ) && root.wifiScannerDevice === root.services.wifiDevice) {
+                ) && root.wifiScannerDevice === root.services.network.wifiDevice) {
                 root.wifiScannerDevice.scannerEnabled = true;
                 if (root.wifiActivationPending) {
                     wifiActivationSettleTimer.activationGeneration = root.wifiActivationGeneration;
@@ -291,7 +291,7 @@ Item {
     }
 
     Connections {
-        target: root.services
+        target: root.services.network
         ignoreUnknownSignals: true
 
         function onWifiDeviceChanged() {
@@ -304,7 +304,7 @@ Item {
     Component.onCompleted: root.updateWifiScanner(false)
     Component.onDestruction: {
         if (root.menuOpen)
-            root.services.disableNetworkDetails();
+            root.services.network.disableNetworkDetails();
         wifiScannerStartTimer.stop();
         wifiActivationSettleTimer.stop();
         if (root.wifiScannerDevice)
@@ -506,18 +506,18 @@ Item {
                                             height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
                                             trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
-                                            value: root.services.quickVolume?.authoritativePercent ?? 0
-                                            available: root.services.quickVolume?.authoritativePercent !== null
-                                                && root.services.quickVolume?.authoritativePercent !== undefined
-                                                && root.services.quickVolume?.availability !== "unavailable"
+                                            value: root.services.audio.quickVolume?.authoritativePercent ?? 0
+                                            available: root.services.audio.quickVolume?.authoritativePercent !== null
+                                                && root.services.audio.quickVolume?.authoritativePercent !== undefined
+                                                && root.services.audio.quickVolume?.availability !== "unavailable"
                                             trackColor: root.colors.surface
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
                                             handleBorderColor: root.colors.primary
-                                            unavailableText: root.services.quickVolume?.errorText || "Volume unavailable"
+                                            unavailableText: root.services.audio.quickVolume?.errorText || "Volume unavailable"
                                             onLiveValueRequested: value => {
                                                 root.quickControlRequestSequence += 1;
-                                                root.services.requestSinkVolume(value, root.quickControlRequestSequence);
+                                                root.services.audio.requestSinkVolume(value, root.quickControlRequestSequence);
                                             }
                                         }
                                     }
@@ -552,14 +552,14 @@ Item {
                                             height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
                                             trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
-                                            value: root.services.brightnessLevel
-                                            available: root.services.brightnessAvailable
+                                            value: root.services.brightness.brightnessLevel
+                                            available: root.services.brightness.brightnessAvailable
                                             trackColor: root.colors.surface
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
                                             handleBorderColor: root.colors.primary
                                             unavailableText: "Brightness unavailable"
-                                            onLiveValueRequested: value => root.services.setBrightness(value)
+                                            onLiveValueRequested: value => root.services.brightness.setBrightness(value)
                                         }
                                     }
                                 }
@@ -580,17 +580,17 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: root.services.lanUp
+                                    icon: root.services.network.lanUp
                                         ? root.icons.ethernet
                                         : root.icons.ethernetDisconnected
                                     title: "Ethernet"
-                                    subtitle: root.services.lanUp
+                                    subtitle: root.services.network.lanUp
                                         ? "Connected"
-                                        : (root.services.lanDevice?.hasLink ? "Disconnected" : "Cable unplugged")
-                                    active: root.services.lanUp
-                                    available: root.services.lanDevice?.network !== null
-                                        && root.services.lanDevice?.network !== undefined
-                                    busy: root.services.lanDevice?.network?.stateChanging ?? false
+                                        : (root.services.network.lanDevice?.hasLink ? "Disconnected" : "Cable unplugged")
+                                    active: root.services.network.lanUp
+                                    available: root.services.network.lanDevice?.network !== null
+                                        && root.services.network.lanDevice?.network !== undefined
+                                    busy: root.services.network.lanDevice?.network?.stateChanging ?? false
                                     expanded: root.expandedNetworkSection === "ethernet"
                                     onBodyClicked: root.toggleNetworkSection("ethernet")
                                     onToggled: root.toggleEthernet()
@@ -601,7 +601,7 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: root.services.wifiUp
+                                    icon: root.services.network.wifiUp
                                         ? root.icons.wifiConnected
                                         : (Networking.wifiEnabled ? root.icons.wifiEnabled : root.icons.wifiDisconnected)
                                     title: "Wi-Fi"
@@ -609,7 +609,7 @@ Item {
                                         ? "Unavailable"
                                         : (!Networking.wifiEnabled
                                             ? "Disabled"
-                                            : NetworkMenuLogic.wifiSummary(root.services.connectedWifiNetwork, true))
+                                            : NetworkMenuLogic.wifiSummary(root.services.network.connectedWifiNetwork, true))
                                     active: Networking.wifiEnabled
                                     available: Networking.wifiHardwareEnabled
                                     expanded: root.expandedNetworkSection === "wifi"
@@ -632,22 +632,22 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                    icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
                                     title: "Microphone"
                                     subtitle: NetworkMenuLogic.microphoneSummary(
-                                        root.services.microphoneAvailable,
-                                        root.services.sourceMuted,
-                                        root.services.sourceVolume
+                                        root.services.audio.microphoneAvailable,
+                                        root.services.audio.sourceMuted,
+                                        root.services.audio.sourceVolume
                                     )
-                                    active: root.services.microphoneAvailable && !root.services.sourceMuted
-                                    available: root.services.microphoneAvailable
+                                    active: root.services.audio.microphoneAvailable && !root.services.audio.sourceMuted
+                                    available: root.services.audio.microphoneAvailable
                                     detailAvailable: true
                                     expanded: root.expandedNetworkSection === "microphone"
-                                    actionAccessibleName: root.services.sourceMuted ? "Unmute microphone" : "Mute microphone"
+                                    actionAccessibleName: root.services.audio.sourceMuted ? "Unmute microphone" : "Mute microphone"
                                     detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
                                     stateDescription: subtitle
                                     onBodyClicked: root.toggleNetworkSection("microphone")
-                                    onToggled: root.services.toggleMute(true)
+                                    onToggled: root.services.audio.toggleMute(true)
                                 }
 
                                 NetworkControlCard {
@@ -655,24 +655,24 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: !root.services.bluetoothAvailable
+                                    icon: !root.services.bluetooth.bluetoothAvailable
                                         ? root.icons.bluetoothOff
-                                        : (root.services.bluetoothConnectedCount > 0
+                                        : (root.services.bluetooth.bluetoothConnectedCount > 0
                                             ? root.icons.bluetoothConnected
-                                            : (root.services.bluetoothPowered ? root.icons.bluetoothOn : root.icons.bluetoothOff))
+                                            : (root.services.bluetooth.bluetoothPowered ? root.icons.bluetoothOn : root.icons.bluetoothOff))
                                     title: "Bluetooth"
                                     subtitle: NetworkMenuLogic.bluetoothSummary(
-                                        root.services.bluetoothAvailable,
-                                        root.services.bluetoothPowered,
-                                        root.services.bluetoothConnectedCount
+                                        root.services.bluetooth.bluetoothAvailable,
+                                        root.services.bluetooth.bluetoothPowered,
+                                        root.services.bluetooth.bluetoothConnectedCount
                                     )
-                                    active: root.services.bluetoothPowered
-                                    available: root.services.bluetoothAvailable
-                                    actionAccessibleName: root.services.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
+                                    active: root.services.bluetooth.bluetoothPowered
+                                    available: root.services.bluetooth.bluetoothAvailable
+                                    actionAccessibleName: root.services.bluetooth.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
                                     stateDescription: subtitle
                                     onToggled: {
-                                        if (root.services.bluetoothAdapter)
-                                            root.services.bluetoothAdapter.enabled = !root.services.bluetoothAdapter.enabled;
+                                        if (root.services.bluetooth.bluetoothAdapter)
+                                            root.services.bluetooth.bluetoothAdapter.enabled = !root.services.bluetooth.bluetoothAdapter.enabled;
                                     }
                                 }
                             }
@@ -718,7 +718,7 @@ Item {
                                             width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                             anchors.verticalCenter: parent.verticalCenter
                                             horizontalAlignment: Text.AlignHCenter
-                                            text: root.services.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                                            text: root.services.audio.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
                                             color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
                                             font.family: root.theme.typography.iconFontFamily
                                             font.pixelSize: root.theme.typography.sizeXl
@@ -731,14 +731,14 @@ Item {
                                             height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
                                             trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
-                                            value: Math.max(0, root.services.sourceVolume)
-                                            available: root.services.microphoneAvailable
+                                            value: Math.max(0, root.services.audio.sourceVolume)
+                                            available: root.services.audio.microphoneAvailable
                                             trackColor: root.colors.surface
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
                                             handleBorderColor: root.colors.primary
                                             unavailableText: "Microphone unavailable"
-                                            onLiveValueRequested: value => root.services.setSourceVolume(value)
+                                            onLiveValueRequested: value => root.services.audio.setSourceVolume(value)
                                         }
                                     }
                                 }
@@ -753,30 +753,30 @@ Item {
                                 }
 
                                 Repeater {
-                                    model: root.services.audioSources ?? []
+                                    model: root.services.audio.audioSources ?? []
 
                                     MicrophoneSourceRow {
                                         required property var modelData
                                         x: root.theme.spacing.space12
                                         width: microphoneColumn.width - root.theme.spacing.space24
                                         source: modelData
-                                        active: modelData === root.services.source
+                                        active: modelData === root.services.audio.source
                                         colors: root.colors
                                         theme: root.theme
-                                        onSelectRequested: source => root.services.selectAudioSource(source)
+                                        onSelectRequested: source => root.services.audio.selectAudioSource(source)
                                     }
                                 }
 
                                 ControlEmptyState {
-                                    visible: (root.services.audioSources?.length ?? 0) === 0
+                                    visible: (root.services.audio.audioSources?.length ?? 0) === 0
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
                                     colors: root.colors
                                     theme: root.theme
-                                    title: root.services.microphoneAvailable
+                                    title: root.services.audio.microphoneAvailable
                                         ? "No additional microphone inputs"
                                         : "Microphone unavailable"
-                                    description: root.services.microphoneAvailable
+                                    description: root.services.audio.microphoneAvailable
                                         ? "The active microphone is already selected"
                                         : "Connect an input device to control it here"
                                 }
@@ -823,7 +823,7 @@ Item {
 
                                     BarText {
                                         width: parent.width
-                                        text: root.services.lanDevice?.name || "No wired adapter"
+                                        text: root.services.network.lanDevice?.name || "No wired adapter"
                                         color: root.colors.text
                                         font.pixelSize: root.theme.typography.sizeMd
                                         font.styleName: root.theme.typography.styleRegular
@@ -832,26 +832,26 @@ Item {
 
                                     BarText {
                                         width: parent.width
-                                        text: root.services.lanDevice?.hasLink
-                                            ? (root.services.lanUp ? "Connected" : "Cable connected")
+                                        text: root.services.network.lanDevice?.hasLink
+                                            ? (root.services.network.lanUp ? "Connected" : "Cable connected")
                                             : "Cable disconnected"
-                                        color: root.services.lanUp ? root.colors.primary : root.colors.textMuted
+                                        color: root.services.network.lanUp ? root.colors.primary : root.colors.textMuted
                                         font.pixelSize: root.theme.typography.sizeSm
                                         font.styleName: root.theme.typography.styleRegular
                                     }
 
-                                    NetworkInfoRow { label: "Profile"; value: root.services.ethernetInfo.connectionName || ""; colors: root.colors; theme: root.theme }
-                                    NetworkInfoRow { label: "IPv4"; value: root.services.ethernetInfo.ipv4Address || ""; colors: root.colors; theme: root.theme }
-                                    NetworkInfoRow { label: "Gateway"; value: root.services.ethernetInfo.ipv4Gateway || root.services.ethernetInfo.ipv6Gateway || ""; colors: root.colors; theme: root.theme }
-                                    NetworkInfoRow { label: "DNS"; value: [...(root.services.ethernetInfo.ipv4Dns || []), ...(root.services.ethernetInfo.ipv6Dns || [])].join(", "); colors: root.colors; theme: root.theme }
-                                    NetworkInfoRow { label: "IPv6"; value: root.services.ethernetInfo.ipv6Address || ""; colors: root.colors; theme: root.theme }
-                                    NetworkInfoRow { label: "MAC"; value: root.services.ethernetInfo.macAddress || root.services.lanDevice?.address || ""; colors: root.colors; theme: root.theme }
-                                    NetworkInfoRow { label: "Link speed"; value: root.services.lanDevice?.linkSpeed > 0 ? `${root.services.lanDevice.linkSpeed} Mb/s` : ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "Profile"; value: root.services.network.ethernetInfo.connectionName || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "IPv4"; value: root.services.network.ethernetInfo.ipv4Address || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "Gateway"; value: root.services.network.ethernetInfo.ipv4Gateway || root.services.network.ethernetInfo.ipv6Gateway || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "DNS"; value: [...(root.services.network.ethernetInfo.ipv4Dns || []), ...(root.services.network.ethernetInfo.ipv6Dns || [])].join(", "); colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "IPv6"; value: root.services.network.ethernetInfo.ipv6Address || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "MAC"; value: root.services.network.ethernetInfo.macAddress || root.services.network.lanDevice?.address || ""; colors: root.colors; theme: root.theme }
+                                    NetworkInfoRow { label: "Link speed"; value: root.services.network.lanDevice?.linkSpeed > 0 ? `${root.services.network.lanDevice.linkSpeed} Mb/s` : ""; colors: root.colors; theme: root.theme }
                                 }
                             }
 
                             Connections {
-                                target: root.services.lanDevice?.network ?? null
+                                target: root.services.network.lanDevice?.network ?? null
                                 ignoreUnknownSignals: true
                                 function onConnectionFailed(reason) {
                                     root.connectionError = `Ethernet: ${ConnectionFailReason.toString(reason)}`;
@@ -859,9 +859,9 @@ Item {
                             }
 
                             BarText {
-                                visible: root.connectionError.length > 0 || root.services.ethernetProfileError.length > 0
+                                visible: root.connectionError.length > 0 || root.services.network.ethernetProfileError.length > 0
                                 width: parent.width
-                                text: root.services.ethernetProfileError || root.connectionError
+                                text: root.services.network.ethernetProfileError || root.connectionError
                                 color: root.colors.danger
                                 font.pixelSize: root.theme.typography.sizeSm
                                 font.styleName: root.theme.typography.styleRegular
@@ -869,14 +869,14 @@ Item {
                             }
 
                             Rectangle {
-                                visible: (root.services.lanDevice?.network?.nmSettings?.length ?? 0) > 0
+                                visible: (root.services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
                                 width: parent.width
                                 height: root.theme.shape.borderThin
                                 color: root.colors.border
                             }
 
                             BarText {
-                                visible: (root.services.lanDevice?.network?.nmSettings?.length ?? 0) > 0
+                                visible: (root.services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
                                 text: "Connection profiles"
                                 color: root.colors.textSubtle
                                 font.pixelSize: root.theme.typography.sizeMd
@@ -884,18 +884,18 @@ Item {
                             }
 
                             Repeater {
-                                model: root.services.lanDevice?.network?.nmSettings ?? []
+                                model: root.services.network.lanDevice?.network?.nmSettings ?? []
 
                                 EthernetProfileRow {
                                     required property var modelData
                                     width: lanColumn.width
                                     profile: modelData
-                                    active: modelData.uuid === root.services.ethernetInfo.activeUuid
-                                    busy: root.services.ethernetProfileBusy
-                                    pending: modelData.uuid === root.services.ethernetProfilePendingUuid
+                                    active: modelData.uuid === root.services.network.ethernetInfo.activeUuid
+                                    busy: root.services.network.ethernetProfileBusy
+                                    pending: modelData.uuid === root.services.network.ethernetProfilePendingUuid
                                     colors: root.colors
                                     theme: root.theme
-                                    onToggleRequested: profile => root.services.setEthernetProfileEnabled(profile)
+                                    onToggleRequested: profile => root.services.network.setEthernetProfileEnabled(profile)
                                 }
                             }
                         }
@@ -941,7 +941,7 @@ Item {
 
                                             BarText {
                                                 width: parent.width
-                                                text: root.services.wifiInterface || "No Wi-Fi adapter"
+                                                text: root.services.network.wifiInterface || "No Wi-Fi adapter"
                                                 color: root.colors.text
                                                 font.pixelSize: root.theme.typography.sizeMd
                                                 font.styleName: root.theme.typography.styleRegular
@@ -956,18 +956,18 @@ Item {
                                                             ? "Enabling…"
                                                             : (!Networking.wifiEnabled
                                                                 ? "Disabled"
-                                                                : (root.services.wifiUp ? "Connected" : "Not connected")))
-                                                color: root.services.wifiUp ? root.colors.primary : root.colors.textMuted
+                                                                : (root.services.network.wifiUp ? "Connected" : "Not connected")))
+                                                color: root.services.network.wifiUp ? root.colors.primary : root.colors.textMuted
                                                 font.pixelSize: root.theme.typography.sizeSm
                                                 font.styleName: root.theme.typography.styleRegular
                                             }
 
                                                 BarText {
                                                     visible: !root.wifiActivationPending
-                                                        && root.services.wifiUp
-                                                        && root.services.wifiInfoAvailability !== "available"
+                                                        && root.services.network.wifiUp
+                                                        && root.services.network.wifiInfoAvailability !== "available"
                                                     width: parent.width
-                                                    text: root.services.wifiInfoAvailability === "unavailable"
+                                                    text: root.services.network.wifiInfoAvailability === "unavailable"
                                                         ? "Network details unavailable"
                                                         : "Loading network details…"
                                                     color: root.colors.textSubtle
@@ -976,13 +976,13 @@ Item {
                                                     wrapMode: Text.WordWrap
                                                 }
 
-                                            NetworkInfoRow { label: "Network"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.connectionName || root.services.connectedWifiNetwork?.name || ""); colors: root.colors; theme: root.theme }
-                                            NetworkInfoRow { label: "Security"; value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSecurityLabel(root.services.connectedWifiNetwork, WifiSecurityType.None); colors: root.colors; theme: root.theme }
-                                            NetworkInfoRow { label: "Signal quality"; value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSignalQualityText(root.services.connectedWifiNetwork); colors: root.colors; theme: root.theme }
-                                            NetworkInfoRow { label: "IPv4"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.ipv4Address || ""); colors: root.colors; theme: root.theme }
-                                            NetworkInfoRow { label: "Gateway"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.ipv4Gateway || root.services.wifiInfo.ipv6Gateway || ""); colors: root.colors; theme: root.theme }
-                                            NetworkInfoRow { label: "IPv6"; value: root.wifiActivationPending ? "" : (root.services.wifiInfo.ipv6Address || ""); colors: root.colors; theme: root.theme }
-                                            NetworkInfoRow { label: "MAC"; value: root.services.wifiInfo.macAddress || root.services.wifiDevice?.address || ""; colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Network"; value: root.wifiActivationPending ? "" : (root.services.network.wifiInfo.connectionName || root.services.network.connectedWifiNetwork?.name || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Security"; value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSecurityLabel(root.services.network.connectedWifiNetwork, WifiSecurityType.None); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Signal quality"; value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSignalQualityText(root.services.network.connectedWifiNetwork); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "IPv4"; value: root.wifiActivationPending ? "" : (root.services.network.wifiInfo.ipv4Address || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "Gateway"; value: root.wifiActivationPending ? "" : (root.services.network.wifiInfo.ipv4Gateway || root.services.network.wifiInfo.ipv6Gateway || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "IPv6"; value: root.wifiActivationPending ? "" : (root.services.network.wifiInfo.ipv6Address || ""); colors: root.colors; theme: root.theme }
+                                            NetworkInfoRow { label: "MAC"; value: root.services.network.wifiInfo.macAddress || root.services.network.wifiDevice?.address || ""; colors: root.colors; theme: root.theme }
                                         }
                                     }
 
@@ -1058,7 +1058,7 @@ Item {
 
                                         BarText {
                                             width: parent.width
-                                            text: !Networking.wifiHardwareEnabled || !root.services.wifiDevice
+                                            text: !Networking.wifiHardwareEnabled || !root.services.network.wifiDevice
                                                 ? "Wi-Fi unavailable"
                                                 : (root.wifiActivationPending
                                                     ? "Enabling Wi-Fi…"
@@ -1071,7 +1071,7 @@ Item {
 
                                         BarText {
                                             width: parent.width
-                                            text: !Networking.wifiHardwareEnabled || !root.services.wifiDevice
+                                            text: !Networking.wifiHardwareEnabled || !root.services.network.wifiDevice
                                                 ? "No wireless adapter is available"
                                                 : (root.wifiActivationPending
                                                     ? "Preparing wireless scan"

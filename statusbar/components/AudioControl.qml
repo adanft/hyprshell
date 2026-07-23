@@ -15,9 +15,9 @@ Item {
     required property var colors
     required property var services
     property bool source: false
-    readonly property bool available: source ? services.microphoneAvailable : Boolean(services.sink?.audio)
-    readonly property int volume: source ? services.sourceVolume : services.sinkVolume
-    readonly property bool muted: source ? services.sourceMuted : services.sinkMuted
+    readonly property bool available: source ? services.audio.microphoneAvailable : Boolean(services.audio.sink?.audio)
+    readonly property int volume: source ? services.audio.sourceVolume : services.audio.sinkVolume
+    readonly property bool muted: source ? services.audio.sourceMuted : services.audio.sinkMuted
     readonly property color textColor: available ? colors.text : colors.textMuted
 
     function iconText() {
@@ -76,16 +76,16 @@ Item {
         Accessible.role: Accessible.Button
         Accessible.name: root.source ? (root.muted ? "Unmute microphone" : "Mute microphone") : (root.muted ? "Unmute audio" : "Mute audio")
         Accessible.description: root.available ? (root.muted ? "Muted" : `${root.volume}%`) : "Unavailable"
-        onClicked: root.services.toggleMute(root.source)
-        Keys.onSpacePressed: root.services.toggleMute(root.source)
-        Keys.onReturnPressed: root.services.toggleMute(root.source)
-        Keys.onEnterPressed: root.services.toggleMute(root.source)
+        onClicked: root.services.audio.toggleMute(root.source)
+        Keys.onSpacePressed: root.services.audio.toggleMute(root.source)
+        Keys.onReturnPressed: root.services.audio.toggleMute(root.source)
+        Keys.onEnterPressed: root.services.audio.toggleMute(root.source)
         onWheel: (wheel) => {
             const delta = wheel.angleDelta.y;
             if (!root.available || delta === 0)
                 return;
 
-            root.services.changeVolume(root.source, delta > 0 ? 1 : -1);
+            root.services.audio.changeVolume(root.source, delta > 0 ? 1 : -1);
             wheel.accepted = true;
         }
     }

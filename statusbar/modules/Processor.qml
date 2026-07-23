@@ -13,10 +13,11 @@ Item {
 
     required property var colors
     required property var services
-    readonly property color moduleColor: {
-        if (services.cpuUsage > 80)
-            return colors.danger
-        if (services.cpuUsage > 60)
+        readonly property color moduleColor: {
+            if (services.systemStats.cpuUsage > 80)
+                return colors.danger
+            if (services.systemStats.cpuUsage > 60)
+
             return colors.warning
         return colors.text
     }
@@ -26,9 +27,9 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    Component.onCompleted: services.enableCpuUsage()
+    Component.onCompleted: services.systemStats.enableCpuUsage()
 
-    Component.onDestruction: services.disableCpuUsage()
+    Component.onDestruction: services.systemStats.disableCpuUsage()
 
     Row {
         id: content
@@ -42,7 +43,7 @@ Item {
         }
 
         BarText {
-            text: `${Math.round(root.services.cpuUsage)}%`
+            text: `${Math.round(root.services.systemStats.cpuUsage)}%`
             color: root.moduleColor
         }
 

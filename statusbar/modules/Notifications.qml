@@ -15,12 +15,13 @@ Item {
 
     required property var colors
     required property var services
-    readonly property color moduleColor: services.notificationDnd ? colors.primary : colors.text
+        readonly property color moduleColor: services.notification.notificationDnd ? colors.primary : colors.text
 
-    signal openRequested()
+        signal openRequested()
 
-    function iconText() {
-        if (services.notificationDnd)
+        function iconText() {
+            if (services.notification.notificationDnd)
+
             return icons.notificationsDnd;
 
         return icons.notifications;
@@ -44,7 +45,7 @@ Item {
         height: root.theme.sizing.notificationBadgeSize
         radius: root.theme.shape.notificationBadgeRadius
         color: root.colors.danger
-        visible: root.services.hasNotifications
+        visible: root.services.notification.hasNotifications
         anchors.top: parent.top
         anchors.topMargin: root.theme.spacing.notificationBadgeTopMargin
         anchors.right: parent.right
@@ -57,7 +58,7 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: (mouse) => {
             if (mouse.button === Qt.RightButton)
-                services.toggleNotificationDnd();
+                services.notification.toggleNotificationDnd();
             else
                 root.openRequested();
         }

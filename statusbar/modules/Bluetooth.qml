@@ -15,13 +15,14 @@ Item {
 
     required property var colors
     required property var services
-    readonly property color moduleColor: services.bluetoothConnectedCount > 0 ? colors.primary : colors.text
+        readonly property color moduleColor: services.bluetooth.bluetoothConnectedCount > 0 ? colors.primary : colors.text
 
-    function icon() {
-        if (!services.bluetoothPowered)
-            return icons.bluetoothOff;
+        function icon() {
+            if (!services.bluetooth.bluetoothPowered)
+                return icons.bluetoothOff;
 
-        if (services.bluetoothConnectedCount > 0)
+            if (services.bluetooth.bluetoothConnectedCount > 0)
+
             return icons.bluetoothConnected;
 
         return icons.bluetoothOn;
@@ -44,7 +45,7 @@ Item {
         }
 
         BarText {
-            text: root.services.bluetoothConnectedCount
+            text: root.services.bluetooth.bluetoothConnectedCount
             color: root.moduleColor
         }
 

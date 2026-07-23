@@ -10,7 +10,7 @@ const shell = read("shell.qml");
 const barWindow = read("statusbar/BarWindow.qml");
 const tray = read("statusbar/modules/Tray.qml");
 const networkMenu = read("statusbar/components/NetworkMenu.qml");
-const services = read("services/Services.qml");
+const networkService = read("services/capabilities/NetworkService.qml");
 
 for (const loaderId of [
 	"appLauncherLoader",
@@ -75,21 +75,21 @@ assert.match(
 );
 
 assert.match(
-	services,
-	/running: service\.networkDetailsEnabled && service\.lanDevice !== null/,
+	networkService,
+	/running: root\.networkDetailsEnabled && root\.lanDevice !== null/,
 );
 assert.match(
-	services,
-	/running: service\.networkDetailsEnabled && service\.wifiDevice !== null/,
+	networkService,
+	/running: root\.networkDetailsEnabled && root\.wifiDevice !== null/,
 );
-assert.match(networkMenu, /services\.enableNetworkDetails\(\)/);
-assert.match(networkMenu, /services\.disableNetworkDetails\(\)/);
+assert.match(networkMenu, /services\.network\.enableNetworkDetails\(\)/);
+assert.match(networkMenu, /services\.network\.disableNetworkDetails\(\)/);
 assert.match(
 	networkMenu,
-	/Component\.onDestruction:\s*{\s*if \(root\.menuOpen\)\s*root\.services\.disableNetworkDetails\(\)/,
+	/Component\.onDestruction:\s*{\s*if \(root\.menuOpen\)\s*root\.services\.network\.disableNetworkDetails\(\)/,
 );
 assert.match(
-	services,
+	networkService,
 	/networkDetailsSubscriberCount = Math\.max\(0, networkDetailsSubscriberCount - 1\)/,
 );
 

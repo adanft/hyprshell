@@ -15,7 +15,7 @@ Item {
 
     required property var colors
     required property var services
-    readonly property bool networkAvailable: services.activeNetworkInterface.length > 0
+    readonly property bool networkAvailable: services.network.activeNetworkInterface.length > 0
     readonly property color neutralColor: colors.text
     readonly property color txColor: networkAvailable ? colors.danger : colors.text
     readonly property color rxColor: networkAvailable ? colors.info : colors.text
@@ -37,8 +37,8 @@ Item {
     implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
     height: implicitHeight
-    Component.onCompleted: services.enableNetworkThroughput()
-    Component.onDestruction: services.disableNetworkThroughput()
+    Component.onCompleted: services.network.enableNetworkThroughput()
+    Component.onDestruction: services.network.disableNetworkThroughput()
 
     Row {
         id: content
@@ -52,12 +52,12 @@ Item {
         }
 
         BarText {
-            text: root.formatRate(root.services.activeNetworkTxRate)
+            text: root.formatRate(root.services.network.activeNetworkTxRate)
             color: root.txColor
         }
 
         BarText {
-            text: root.formatRate(root.services.activeNetworkRxRate)
+            text: root.formatRate(root.services.network.activeNetworkRxRate)
             color: root.rxColor
         }
 

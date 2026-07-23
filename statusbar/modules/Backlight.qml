@@ -11,10 +11,10 @@ Item {
     required property var colors
     required property var services
 
-    readonly property int level: services.brightnessLevel
+    readonly property int level: services.brightness.brightnessLevel
     readonly property int iconIndex: Math.max(0, Math.min(icons.backlightLevels.length - 1, Math.floor(level / 100 * (icons.backlightLevels.length - 1))))
 
-    visible: services.brightnessAvailable
+    visible: services.brightness.brightnessAvailable
     implicitWidth: visible ? content.implicitWidth : 0
     implicitHeight: theme.sizing.statusBarHeight
     width: implicitWidth
@@ -45,7 +45,7 @@ Item {
             if (delta === 0)
                 return
 
-            root.services.changeBrightness(delta > 0 ? 1 : -1)
+            root.services.brightness.changeBrightness(delta > 0 ? 1 : -1)
             wheel.accepted = true
         }
     }

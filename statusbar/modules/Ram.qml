@@ -13,10 +13,11 @@ Item {
 
     required property var colors
     required property var services
-    readonly property color moduleColor: {
-        if (services.memoryUsage > 90)
-            return colors.danger
-        if (services.memoryUsage > 75)
+        readonly property color moduleColor: {
+            if (services.systemStats.memoryUsage > 90)
+                return colors.danger
+            if (services.systemStats.memoryUsage > 75)
+
             return colors.warning
         return colors.text
     }
@@ -26,9 +27,9 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    Component.onCompleted: services.enableMemoryUsage()
+    Component.onCompleted: services.systemStats.enableMemoryUsage()
 
-    Component.onDestruction: services.disableMemoryUsage()
+    Component.onDestruction: services.systemStats.disableMemoryUsage()
 
     Row {
         id: content
@@ -42,7 +43,7 @@ Item {
         }
 
         BarText {
-            text: `${Math.round(root.services.memoryUsage)}%`
+            text: `${Math.round(root.services.systemStats.memoryUsage)}%`
             color: root.moduleColor
         }
 

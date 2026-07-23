@@ -22,7 +22,7 @@ PopupWindow {
     property bool popupRepositionScheduled: false
     property bool popupRepositionWithoutYAnimation: false
     readonly property string screenName: barWindow.screen ? barWindow.screen.name : ""
-    readonly property bool isFocusedScreen: screenName === services.focusedNotificationScreenName
+    readonly property bool isFocusedScreen: screenName === services.notification.focusedNotificationScreenName
 
     function itemFor(popupData) {
         if (!popupData)
@@ -77,7 +77,7 @@ PopupWindow {
             return;
         }
 
-        const visiblePopups = root.services.visibleNotifications || [];
+        const visiblePopups = root.services.notification.visibleNotifications || [];
         const nextItems = [];
         const enteringItems = [];
         for (const popupData of visiblePopups) {
@@ -125,11 +125,11 @@ PopupWindow {
     }
 
     function updatePopupCapacity() {
-        if (!root.isFocusedScreen || !root.services || typeof root.services.setNotificationPopupAvailableHeight !== "function")
+        if (!root.isFocusedScreen || !root.services || typeof root.services.notification.setNotificationPopupAvailableHeight !== "function")
             return ;
 
         const screenHeight = root.barWindow.screen ? root.barWindow.screen.height : root.barWindow.height;
-        root.services.setNotificationPopupAvailableHeight(screenHeight - root.topMargin - root.bottomMargin);
+        root.services.notification.setNotificationPopupAvailableHeight(screenHeight - root.topMargin - root.bottomMargin);
     }
 
     function finishPopupExit(item) {
@@ -268,7 +268,7 @@ PopupWindow {
             root.syncPopups();
         }
 
-        target: root.services
+        target: root.services.notification
     }
 
 }

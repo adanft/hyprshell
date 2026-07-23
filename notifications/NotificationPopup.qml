@@ -49,7 +49,7 @@ Item {
     function resetAutoCloseTimer() {
         autoCloseTimer.stop();
         autoCloseTimerInitialized = false;
-        if (!popup.popupData || !popup.services || typeof popup.services.notificationPopupTimeout !== "function") {
+        if (!popup.popupData || !popup.services || typeof popup.services.notification.notificationPopupTimeout !== "function") {
             autoCloseRemainingMs = 0;
             return ;
         }
@@ -59,7 +59,7 @@ Item {
             return ;
         }
 
-        autoCloseRemainingMs = popup.services.notificationPopupTimeout(popup.popupData.urgency);
+        autoCloseRemainingMs = popup.services.notification.notificationPopupTimeout(popup.popupData.urgency);
         autoCloseTimerInitialized = true;
     }
 
@@ -110,7 +110,7 @@ Item {
         onTriggered: {
             popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval);
             if (popup.popupData && popup.autoCloseRemainingMs <= 0)
-                popup.services.closeNotificationPopup(popup.popupData.id);
+                popup.services.notification.closeNotificationPopup(popup.popupData.id);
 
         }
     }
@@ -123,17 +123,17 @@ Item {
         colors: popup.colors
         notificationData: popup.popupData
         cornerRadius: popup.theme.shape.notificationCardRadius
-        timeText: popup.popupData ? popup.services.notificationTimeText(popup.popupData) : ""
+        timeText: popup.popupData ? popup.services.notification.notificationTimeText(popup.popupData) : ""
         onLayoutChanged: popup.layoutChanged()
         onSlotHeightChanged: popup.slotHeightChanged()
         onCloseRequested: {
             if (popup.popupData)
-                popup.services.closeNotificationPopup(popup.popupData.id);
+                popup.services.notification.closeNotificationPopup(popup.popupData.id);
 
         }
         onActionInvoked: (action) => {
             if (popup.popupData)
-                popup.services.invokeNotificationPopupAction(popup.popupData.id, action);
+                popup.services.notification.invokeNotificationPopupAction(popup.popupData.id, action);
 
         }
     }

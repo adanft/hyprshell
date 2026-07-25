@@ -264,6 +264,7 @@ PopupWindow {
 
                         width: notificationList.width
                         colors: popup.colors
+                        notificationService: popup.services.notification
                         initialExpanded: popup.isNotificationExpanded(modelData)
                         notificationData: modelData
                         cornerRadius: popup.theme.shape.notificationCenterCardRadius

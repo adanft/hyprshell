@@ -16,6 +16,7 @@ Item {
     }
 
     required property var colors
+    required property var notificationService
     property var notificationData: null
     property string timeText: "now"
     property int cornerRadius: theme.shape.notificationCardRadius
@@ -102,7 +103,7 @@ Item {
     readonly property string iconSource: notificationData?.image || fallbackIconSource
     readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://") || iconSource.startsWith("image://")
     property string failedImageSource: ""
-    readonly property bool iconSourceQuarantined: failedImageSource.length > 0 && iconSource === failedImageSource
+    readonly property bool iconSourceQuarantined: (notificationService && typeof notificationService.isInvalidLiveImageSource === "function" && notificationService.isInvalidLiveImageSource(iconSource)) || (failedImageSource.length > 0 && iconSource === failedImageSource)
 
     signal layoutChanged()
     signal slotHeightChanged()
@@ -300,8 +301,12 @@ Item {
                         smooth: true
                         onStatusChanged: {
                             const failedSource = source.toString();
-                            if (status === Image.Error && failedSource.startsWith("image://qsimage/"))
-                                card.failedImageSource = failedSource;
+                                if (status === Image.Error && failedSource.startsWith("image://qsimage/")) {
+                                    card.failedImageSource = failedSource;
+                                    if (card.notificationService && typeof card.notificationService.quarantineInvalidLiveImageSource === "function")
+                                        card.notificationService.quarantineInvalidLiveImageSource(failedSource);
+                                }
+
                         }
                     }
 

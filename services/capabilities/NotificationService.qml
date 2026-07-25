@@ -31,6 +31,8 @@ Scope {
     property bool notificationCenterOpen: false
     property var notificationHistory: []
     property bool notificationDnd: false
+    // Session-scoped quarantine; entries live only as long as this capability.
+    property var invalidLiveImageSources: ({})
 
     FileView {
         id: historyFileView
@@ -139,7 +141,18 @@ Scope {
             urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
             actions: [], createdAt: createdAt, timestamp: createdAt }
     }
-    function persistentNotificationImage(source) {
+        function isInvalidLiveImageSource(source) {
+            const imageSource = String(source || "")
+            return imageSource.startsWith("image://qsimage/") && root.invalidLiveImageSources[imageSource] === true
+        }
+        function quarantineInvalidLiveImageSource(source) {
+            const imageSource = String(source || "")
+            if (!imageSource.startsWith("image://qsimage/") || root.invalidLiveImageSources[imageSource] === true) return
+            const next = Object.assign({}, root.invalidLiveImageSources)
+            next[imageSource] = true
+            root.invalidLiveImageSources = next
+        }
+        function persistentNotificationImage(source) {
         const imageSource = source || ""
         return imageSource.startsWith("image://qsimage/") ? "" : imageSource
     }

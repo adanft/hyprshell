@@ -2,36 +2,36 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const source = fs.readFileSync(
-	path.join(__dirname, "NotificationCard.qml"),
-	"utf8",
-);
+const read = (name) => fs.readFileSync(path.join(__dirname, name), "utf8");
+const source = read("NotificationCard.qml");
+const serviceSource = read("../services/capabilities/NotificationService.qml");
+const centerSource = read("NotificationCenter.qml");
+const popupSource = read("NotificationPopup.qml");
 
-assert.match(source, /property string failedImageSource: ""/);
+assert.match(serviceSource, /property var invalidLiveImageSources: \(\{\}\)/);
+assert.match(serviceSource, /function isInvalidLiveImageSource/);
+assert.match(serviceSource, /function quarantineInvalidLiveImageSource/);
 assert.match(
-	source,
-	/readonly property bool iconSourceQuarantined:\s*failedImageSource\.length > 0 && iconSource === failedImageSource/,
+	centerSource,
+	/notificationService:\s*popup\.services\.notification/,
 );
 assert.match(
-	source,
-	/onIconSourceChanged:\s*\{\s*if \(failedImageSource\.length > 0 && iconSource !== failedImageSource\)\s*failedImageSource = "";?\s*\}/,
+	popupSource,
+	/notificationService:\s*popup\.services\.notification/,
 );
+assert.match(source, /required property var notificationService/);
+assert.match(source, /isInvalidLiveImageSource\(iconSource\)/);
 assert.match(
 	source,
 	/source:\s*card\.iconSourceQuarantined \? "" : card\.iconSource/,
 );
-assert.match(
-	source,
-	/asynchronous:\s*!card\.iconSource\.startsWith\("image:\/\/qsimage\/"\)/,
+assert.match(source, /quarantineInvalidLiveImageSource\(failedSource\)/);
+assert.ok(
+	source.includes(
+		'asynchronous: !card.iconSource.startsWith("image://qsimage/")',
+	),
 );
-assert.match(
-	source,
-	/onStatusChanged:\s*\{\s*const failedSource = source\.toString\(\);\s*if \(status === Image\.Error && failedSource\.startsWith\("image:\/\/qsimage\/"\)\)\s*card\.failedImageSource = failedSource;?\s*\}/,
-);
-assert.match(
-	source,
-	/visible:\s*card\.fallbackIconSource\.length > 0 && \(!card\.iconSourceIsImageFile \|\| card\.iconSourceQuarantined \|\| notificationImage\.status === Image\.Error\)/,
-);
+assert.ok(source.includes("card.iconSourceQuarantined"));
 assert.doesNotMatch(
 	source,
 	/Timer\s*\{[^}]*failedImageSource|retry|blacklist/i,

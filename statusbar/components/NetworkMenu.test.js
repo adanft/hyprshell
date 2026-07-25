@@ -3,6 +3,12 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const source = fs.readFileSync(`${__dirname}/NetworkMenu.js`, "utf8");
+const qml = fs.readFileSync(`${__dirname}/NetworkMenu.qml`, "utf8");
+const playbackRowQml = fs.readFileSync(
+	`${__dirname}/AudioPlaybackStreamRow.qml`,
+	"utf8",
+);
+const mixerQml = fs.readFileSync(`${__dirname}/AudioMixerSection.qml`, "utf8");
 const menu = {};
 vm.createContext(menu);
 vm.runInContext(source, menu);
@@ -138,6 +144,220 @@ assert.equal(menu.microphoneSummary(false, false, -1), "Unavailable");
 assert.equal(menu.microphoneSummary(true, true, 58), "Muted");
 assert.equal(menu.microphoneSummary(true, false, 58.4), "58%");
 assert.equal(menu.microphoneSummary(true, false, 140), "100%");
+
+assert.equal(
+	menu.outputAvailable(null, {
+		authoritativePercent: 50,
+		availability: "available",
+	}),
+	false,
+);
+assert.equal(
+	menu.outputAvailable(
+		{ audio: {} },
+		{ authoritativePercent: null, availability: "available" },
+	),
+	false,
+);
+assert.equal(
+	menu.outputAvailable(
+		{ audio: {} },
+		{ authoritativePercent: 50, availability: "unavailable" },
+	),
+	false,
+);
+assert.equal(
+	menu.outputAvailable(
+		{ audio: {} },
+		{ authoritativePercent: 50, availability: "failed" },
+	),
+	true,
+);
+assert.equal(menu.outputSummary(false, false, 0), "Unavailable");
+assert.equal(menu.outputSummary(true, true, 75), "Muted");
+assert.equal(menu.outputSummary(true, false, 0), "0%");
+assert.equal(menu.outputSummary(true, false, 58.6), "59%");
+assert.equal(menu.outputSummary(true, false, 140), "100%");
+assert.equal(menu.outputSummary(true, false, -20), "0%");
+assert.equal(menu.audioOutputLabel(null, "Audio output"), "Audio output");
+assert.equal(
+	menu.audioOutputLabel({
+		nickname: "  Speakers  ",
+		description: "Fallback",
+		name: "node",
+	}),
+	"Speakers",
+);
+assert.equal(
+	menu.audioOutputLabel({
+		nickname: " ",
+		description: "  Desk audio ",
+		name: "node",
+	}),
+	"Desk audio",
+);
+assert.equal(
+	menu.audioOutputLabel({ nickname: "", description: "", name: " sink-1 " }),
+	"sink-1",
+);
+assert.equal(
+	menu.audioOutputLabel({ nickname: "", description: "", name: "" }),
+	"Default output",
+);
+assert.equal(menu.volumeIconKind(false, false, 90), "unavailable");
+assert.equal(menu.volumeIconKind(true, true, 90), "muted");
+assert.equal(menu.volumeIconKind(true, false, 0), "muted");
+assert.equal(menu.volumeIconKind(true, false, 1), "low");
+assert.equal(menu.volumeIconKind(true, false, 33), "low");
+assert.equal(menu.volumeIconKind(true, false, 34), "medium");
+assert.equal(menu.volumeIconKind(true, false, 66), "medium");
+assert.equal(menu.volumeIconKind(true, false, 67), "high");
+assert.equal(menu.audioOutputLabel(null), "Default output");
+assert.equal(
+	menu.audioOutputLabel({ nickname: "  Headphones ", description: "Fallback" }),
+	"Headphones",
+);
+assert.equal(
+	menu.audioOutputLabel({ nickname: "", description: " HDMI " }),
+	"HDMI",
+);
+assert.equal(
+	menu.audioOutputStatus({ audio: { muted: false } }, true),
+	"Active output",
+);
+assert.equal(
+	menu.audioOutputStatus({ audio: { muted: true } }, true),
+	"Active · Muted",
+);
+assert.equal(
+	menu.audioOutputStatus({ audio: { muted: false } }, false),
+	"Available",
+);
+assert.equal(menu.audioNodePercent({ audio: { volume: 0.586 } }), 59);
+assert.equal(menu.audioNodePercent({ audio: { volume: 4 } }), 100);
+assert.equal(menu.audioNodePercent({ audio: { volume: -1 } }), 0);
+assert.equal(menu.audioNodePercent({}), null);
+
+const metadataStream = {
+	properties: { "application.name": "  Firefox ", "media.name": " Video " },
+	nickname: "Fallback",
+	audio: { volume: 0.5, muted: false },
+};
+assert.equal(menu.playbackStreamLabel(metadataStream), "Firefox");
+assert.equal(menu.playbackStreamDescription(metadataStream), "Video");
+assert.equal(
+	menu.playbackStreamDescription({
+		properties: { "application.name": "Player", "media.name": " Player " },
+	}),
+	"Playback stream",
+);
+assert.equal(menu.playbackStreamLabel({ nickname: " Music " }), "Music");
+assert.equal(
+	menu.playbackStreamLabel({ description: " Browser audio " }),
+	"Browser audio",
+);
+assert.equal(menu.playbackStreamLabel(null), "Audio stream");
+assert.equal(
+	menu.audioNodeIconKind({ audio: { volume: 0.2, muted: false } }),
+	"low",
+);
+assert.equal(
+	menu.audioNodeIconKind({ audio: { volume: 0.5, muted: false } }),
+	"medium",
+);
+assert.equal(
+	menu.audioNodeIconKind({ audio: { volume: 0.9, muted: false } }),
+	"high",
+);
+assert.equal(
+	menu.audioNodeIconKind({ audio: { volume: 0.9, muted: true } }),
+	"muted",
+);
+assert.equal(menu.audioNodeIconKind({}), "unavailable");
+assert.match(source, /audioNodeIconKind[\s\S]*return volumeIconKind/);
+assert.doesNotMatch(source, /function outputIconKind|function outputSinkLabel/);
+
+assert.match(qml, /toggleNetworkSection\("output"\)/);
+assert.match(qml, /toggleMute\(false\)/);
+assert.match(
+	qml,
+	/requestSinkVolume\(value, root\.quickControlRequestSequence\)/,
+);
+assert.match(qml, /actionAccessibleName:.*(?:Mute output|Unmute output)/);
+assert.match(
+	qml,
+	/detailAccessibleName:.*(?:Show output volume|Hide output volume)/,
+);
+const mixerSources = `${qml}\n${mixerQml}`;
+assert.doesNotMatch(mixerSources, /sink(?:\?\.)?\.audio\.volume\s*=/);
+assert.doesNotMatch(
+	mixerSources,
+	/modelData(?:\?\.)?\.audio\.(?:volume|muted)\s*=/,
+);
+assert.match(qml, /AudioMixerSection \{/);
+assert.doesNotMatch(
+	qml,
+	/text: "(?:Output volume|Output devices|Playback streams)"/,
+);
+assert.match(
+	mixerQml,
+	/id: outputDevicesList[\s\S]*spacing: root\.theme\.spacing\.space8/,
+);
+assert.match(
+	mixerQml,
+	/id: playbackStreamsList[\s\S]*spacing: root\.theme\.spacing\.space8/,
+);
+assert.match(
+	mixerQml,
+	/id: playbackSectionSpacer[\s\S]*height: root\.theme\.spacing\.space8/,
+);
+assert.match(
+	mixerQml,
+	/ScriptModel \{[\s\S]*id: audioOutputsModel[\s\S]*values: root\.audio\.audioOutputs \?\? \[\]/,
+);
+assert.match(
+	mixerQml,
+	/ScriptModel \{[\s\S]*id: playbackStreamsModel[\s\S]*values: root\.audio\.playbackStreams \?\? \[\]/,
+);
+assert.match(mixerQml, /model: audioOutputsModel/);
+assert.match(mixerQml, /model: playbackStreamsModel/);
+assert.doesNotMatch(
+	mixerQml,
+	/model: root\.audio\.(?:audioOutputs|playbackStreams)/,
+);
+assert.match(mixerQml, /selectAudioSink\(device\)/);
+assert.match(mixerQml, /togglePlaybackStreamMute\(stream\)/);
+assert.match(mixerQml, /requestPlaybackStreamVolume\(stream, value\)/);
+assert.match(mixerQml, /No audio outputs/);
+assert.match(mixerQml, /No active playback streams/);
+assert.match(playbackRowQml, /objectName: "playbackStreamPercentLabel"/);
+assert.match(playbackRowQml, /objectName: "playbackStreamVolumeIcon"/);
+assert.match(playbackRowQml, /objectName: "audioPlaybackMuteAction"/);
+assert.match(
+	playbackRowQml,
+	/id: playbackStreamSliderZone[\s\S]*Row \{[\s\S]*QuickControlSlider \{/,
+);
+assert.match(playbackRowQml, /color: root\.muted[\s\S]*root\.colors\.primary/);
+assert.match(
+	playbackRowQml,
+	/Accessible\.name: `\$\{root\.muted \? "Unmute" : "Mute"\}/,
+);
+assert.doesNotMatch(
+	playbackRowQml,
+	/playbackStreamMuteLabel|text: root\.muted \? "Unmute" : "Mute"/,
+);
+for (const binding of [
+	"volumeUnavailableIcon: root.icons.volumeUnavailable",
+	"volumeMutedIcon: root.icons.volumeMuted",
+	"volumeLowIcon: root.icons.volumeLow",
+	"volumeMediumIcon: root.icons.volumeMedium",
+	"volumeHighIcon: root.icons.volumeHigh",
+])
+	assert.ok(
+		mixerQml.includes(binding),
+		`missing playback volume icon binding: ${binding}`,
+	);
+
 assert.equal(
 	menu.audioSourceLabel({
 		nickname: "Studio Mic",

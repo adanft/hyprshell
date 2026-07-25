@@ -83,6 +83,27 @@ for (const test of [
 	assert.equal(settled.state.wifiActivationPending, false);
 	assert.equal(settled.state.wifiActivationRequested, false);
 }
+{
+	const device = { scannerEnabled: false };
+	const context = {
+		type: "toggleSection",
+		section: "output",
+		menuOpen: true,
+		wifiEnabled: true,
+		wifiHardwareEnabled: true,
+		wifiDevice: device,
+	};
+	let result = run(state(), context);
+	assert.equal(result.state.expandedNetworkSection, "output");
+	assert.equal(effectTypes(result).includes("setScannerEnabled"), false);
+	result = run(result.state, context);
+	assert.equal(result.state.expandedNetworkSection, "");
+	result = run(state({ expandedNetworkSection: "microphone" }), context);
+	assert.equal(result.state.expandedNetworkSection, "output");
+	result = run(result.state, { type: "completeClose" });
+	assert.equal(result.state.expandedNetworkSection, "");
+}
+
 const eligible = {
 	menuOpen: true,
 	expandedNetworkSection: "wifi",

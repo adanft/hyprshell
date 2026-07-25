@@ -129,6 +129,99 @@ function microphoneSummary(available, muted, volume) {
 	return value + "%";
 }
 
+function outputAvailable(sink, quickVolume) {
+	if (!sink || !sink.audio || !quickVolume) return false;
+	var percent = quickVolume.authoritativePercent;
+	return (
+		percent !== null &&
+		percent !== undefined &&
+		Number.isFinite(Number(percent)) &&
+		quickVolume.availability !== "unavailable"
+	);
+}
+
+function outputPercent(authoritativePercent) {
+	var numeric = Number(authoritativePercent);
+	if (!Number.isFinite(numeric)) numeric = 0;
+	return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function outputSummary(available, muted, authoritativePercent) {
+	if (!available) return "Unavailable";
+	if (muted) return "Muted";
+	return outputPercent(authoritativePercent) + "%";
+}
+
+function audioOutputLabel(node, fallback) {
+	var fallbackLabel = normalizedText(fallback) || "Default output";
+	if (!node) return fallbackLabel;
+	for (var value of [node.nickname, node.description, node.name]) {
+		var label = normalizedText(value);
+		if (label.length > 0) return label;
+	}
+	return fallbackLabel;
+}
+
+function audioOutputStatus(node, active) {
+	if (active)
+		return node && node.audio && node.audio.muted
+			? "Active · Muted"
+			: "Active output";
+	return node && node.audio && node.audio.muted ? "Muted" : "Available";
+}
+
+function audioNodePercent(node) {
+	var volume = Number(node && node.audio && node.audio.volume);
+	if (!Number.isFinite(volume)) return null;
+	return Math.max(0, Math.min(100, Math.round(volume * 100)));
+}
+
+function nodeProperty(node, name) {
+	if (!node || !node.properties) return "";
+	try {
+		return normalizedText(node.properties[name]);
+	} catch (_) {
+		return "";
+	}
+}
+
+function playbackStreamLabel(node) {
+	var application = nodeProperty(node, "application.name");
+	if (application) return application;
+	if (node) {
+		for (var value of [node.nickname, node.description, node.name]) {
+			var label = normalizedText(value);
+			if (label) return label;
+		}
+	}
+	return "Audio stream";
+}
+
+function playbackStreamDescription(node) {
+	var media = nodeProperty(node, "media.name");
+	return media && media !== playbackStreamLabel(node)
+		? media
+		: "Playback stream";
+}
+
+function volumeIconKind(available, muted, percentValue) {
+	if (!available) return "unavailable";
+	var percent = outputPercent(percentValue);
+	if (muted || percent === 0) return "muted";
+	if (percent < 34) return "low";
+	if (percent < 67) return "medium";
+	return "high";
+}
+
+function audioNodeIconKind(node) {
+	var percent = audioNodePercent(node);
+	return volumeIconKind(
+		percent !== null,
+		Boolean(node && node.audio && node.audio.muted),
+		percent,
+	);
+}
+
 function audioSourceLabel(node) {
 	if (!node) return "Unknown input";
 	return node.nickname || node.description || node.name || "Unknown input";

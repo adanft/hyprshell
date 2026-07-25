@@ -90,6 +90,8 @@ Scope {
     readonly property alias sink: audioService.sink
     readonly property alias source: audioService.source
     readonly property alias audioSources: audioService.audioSources
+    readonly property alias audioOutputs: audioService.audioOutputs
+    readonly property alias playbackStreams: audioService.playbackStreams
     readonly property alias sinkVolume: audioService.sinkVolume
     readonly property alias sinkMuted: audioService.sinkMuted
     readonly property alias microphoneAvailable: audioService.microphoneAvailable
@@ -190,6 +192,9 @@ Scope {
     function toggleMute(isSource) { return audioService.toggleMute(isSource) }
     function setSourceVolume(percent) { return audioService.setSourceVolume(percent) }
     function selectAudioSource(node) { return audioService.selectAudioSource(node) }
+    function selectAudioSink(node) { return audioService.selectAudioSink(node) }
+    function togglePlaybackStreamMute(node) { return audioService.togglePlaybackStreamMute(node) }
+    function requestPlaybackStreamVolume(node, percent) { return audioService.requestPlaybackStreamVolume(node, percent) }
     function changeVolume(isSource, delta) { return audioService.changeVolume(isSource, delta) }
     function refreshQuickVolume() { return audioService.refreshQuickVolume() }
     function requestSinkVolume(percent, requestId) { return audioService.requestSinkVolume(percent, requestId) }

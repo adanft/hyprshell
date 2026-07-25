@@ -5,7 +5,7 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const owners = {
 	audio:
-		"sink source audioSources sinkVolume sinkMuted microphoneAvailable sourceVolume sourceMuted quickVolume toggleMute setSourceVolume selectAudioSource changeVolume requestSinkVolume".split(
+		"sink source audioSources audioOutputs playbackStreams sinkVolume sinkMuted microphoneAvailable sourceVolume sourceMuted quickVolume toggleMute setSourceVolume selectAudioSource selectAudioSink togglePlaybackStreamMute requestPlaybackStreamVolume changeVolume requestSinkVolume".split(
 			" ",
 		),
 	brightness:

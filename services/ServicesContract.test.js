@@ -70,6 +70,8 @@ const legacyProperties = [
 	"sink",
 	"source",
 	"audioSources",
+	"audioOutputs",
+	"playbackStreams",
 	"batteries",
 	"readyBatteries",
 	"batteryAvailable",
@@ -185,6 +187,9 @@ const legacyMethods = [
 	"toggleMute",
 	"setSourceVolume",
 	"selectAudioSource",
+	"selectAudioSink",
+	"togglePlaybackStreamMute",
+	"requestPlaybackStreamVolume",
 	"changeVolume",
 	"refreshQuickVolume",
 	"requestSinkVolume",
@@ -297,6 +302,47 @@ for (const name of capabilityNames) {
 	for (const marker of ownershipContracts[name])
 		assert.ok(source.includes(marker), `${name} must own ${marker}`);
 }
+const audioSource = fs.readFileSync(
+	path.join(root, "capabilities", "AudioService.qml"),
+	"utf8",
+);
+assert.match(
+	audioSource,
+	/normalizedVolumeRequest\(percent, Boolean\(node\?\.audio\)\)/,
+);
+assert.match(audioSource, /function isWritablePlaybackStream\(node\)/);
+assert.doesNotMatch(
+	audioSource,
+	/recognizedPlaybackStreams|retainKnownPlaybackStreams|rebuildPlaybackStreams/,
+);
+assert.ok(
+	(
+		audioSource.match(
+			/if \(!root\.isWritablePlaybackStream\(node\)\) return false;/g,
+		) || []
+	).length === 2,
+	"each playback control must validate live writable identity immediately before mutation",
+);
+for (const marker of [
+	"objects: root.allAudioNodes",
+	"AudioNodeState.physicalOutputs(root.allAudioNodes, root.sink)",
+	"readonly property var playbackStreams: AudioNodeState.playbackStreams(root.allAudioNodes)",
+	"Pipewire.preferredDefaultAudioSink = node",
+	"const node = root.sink",
+	"isCurrentPhysicalSink(node)",
+	"failMasterWrite(requestId)",
+	"AudioNodeState.canControlPlaybackStream(root.allAudioNodes, node)",
+	"node.audio.muted = false",
+	"node.audio.volume = request.volume",
+	"confirmationTimer.stop()",
+	'root.quickVolume = QuickControlState.unavailableCapability("Volume unavailable")',
+])
+	assert.ok(
+		audioSource.includes(marker),
+		`audio mixer contract missing: ${marker}`,
+	);
+assert.doesNotMatch(facade, /Pipewire\.|PwObjectTracker\s*\{/);
+
 const notificationSource = fs.readFileSync(
 	path.join(root, "capabilities", "NotificationService.qml"),
 	"utf8",

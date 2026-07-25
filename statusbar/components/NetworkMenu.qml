@@ -31,7 +31,23 @@ Item {
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled
             && Networking.wifiEnabled && !wifiActivationPending && services.network.wifiDevice
         ? NetworkMenuLogic.sortedWifiNetworks(services.network.wifiDevice.networks?.values ?? []) : []
-    property int quickControlRequestSequence: 0
+        property int quickControlRequestSequence: 0
+        readonly property var outputQuickVolume: root.services.audio.quickVolume
+        readonly property bool outputAvailable: NetworkMenuLogic.outputAvailable(root.services.audio.sink, root.outputQuickVolume)
+        readonly property string outputSummary: NetworkMenuLogic.outputSummary(root.outputAvailable, root.services.audio.sinkMuted, root.outputQuickVolume?.authoritativePercent)
+        readonly property string outputSinkLabel: NetworkMenuLogic.audioOutputLabel(root.services.audio.sink, "Audio output")
+        readonly property string outputIconKind: NetworkMenuLogic.volumeIconKind(root.outputAvailable, root.services.audio.sinkMuted, root.outputQuickVolume?.authoritativePercent)
+        readonly property string outputIcon: root.outputIconKind === "unavailable"
+            ? root.icons.volumeUnavailable
+            : (root.outputIconKind === "muted"
+                ? root.icons.volumeMuted
+                : (root.outputIconKind === "low"
+                    ? root.icons.volumeLow
+                    : (root.outputIconKind === "medium" ? root.icons.volumeMedium : root.icons.volumeHigh)))
+
+
+
+
 
     NetworkMenuController {
         id: networkController
@@ -42,16 +58,7 @@ Item {
         onCloseRequested: root.menuOpen = false
     }
 
-    function volumeIcon() {
-        if (root.services.audio.quickVolume?.muted)
-            return root.icons.volumeMuted;
-        const percent = root.services.audio.quickVolume?.authoritativePercent;
-        if (percent === null || percent === undefined || percent < 34)
-            return root.icons.volumeLow;
-        if (percent < 67)
-            return root.icons.volumeMedium;
-        return root.icons.volumeHigh;
-    }
+
 
     function toggle(anchorItem) {
         if (menuOpen) {
@@ -263,7 +270,7 @@ Item {
                                             width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                             anchors.verticalCenter: parent.verticalCenter
                                             horizontalAlignment: Text.AlignHCenter
-                                            text: root.volumeIcon()
+                                            text: root.outputIcon
                                             color: volumeSlider.enabled ? root.colors.text : root.colors.textMuted
                                             font.family: root.theme.typography.iconFontFamily
                                             font.pixelSize: root.theme.typography.sizeXl
@@ -276,10 +283,8 @@ Item {
                                             height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                                             anchors.verticalCenter: parent.verticalCenter
                                             trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
-                                            value: root.services.audio.quickVolume?.authoritativePercent ?? 0
-                                            available: root.services.audio.quickVolume?.authoritativePercent !== null
-                                                && root.services.audio.quickVolume?.authoritativePercent !== undefined
-                                                && root.services.audio.quickVolume?.availability !== "unavailable"
+                                            value: root.outputQuickVolume?.authoritativePercent ?? 0
+                                            available: root.outputAvailable
                                             trackColor: root.colors.surface
                                             fillColor: root.colors.primary
                                             handleColor: root.colors.text
@@ -402,6 +407,26 @@ Item {
                                     height: parent.height
                                     colors: root.colors
                                     theme: root.theme
+                                    icon: root.outputIcon
+                                    title: root.outputSinkLabel
+                                    subtitle: root.outputSummary
+                                    active: root.outputAvailable && !root.services.audio.sinkMuted
+                                        && (root.outputQuickVolume?.authoritativePercent ?? 0) > 0
+                                    available: root.outputAvailable
+                                    detailAvailable: true
+                                    expanded: root.expandedNetworkSection === "output"
+                                    actionAccessibleName: root.services.audio.sinkMuted ? "Unmute output" : "Mute output"
+                                    detailAccessibleName: expanded ? "Hide output volume" : "Show output volume"
+                                    stateDescription: subtitle
+                                    onBodyClicked: networkController.toggleNetworkSection("output")
+                                    onToggled: root.services.audio.toggleMute(false)
+                                }
+
+                                NetworkControlCard {
+                                    width: (parent.width - parent.spacing) / 2
+                                    height: parent.height
+                                    colors: root.colors
+                                    theme: root.theme
                                     icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
                                     title: "Microphone"
                                     subtitle: NetworkMenuLogic.microphoneSummary(
@@ -419,30 +444,63 @@ Item {
                                     onBodyClicked: networkController.toggleNetworkSection("microphone")
                                     onToggled: root.services.audio.toggleMute(true)
                                 }
+                            }
+                        }
 
-                                NetworkControlCard {
-                                    width: (parent.width - parent.spacing) / 2
-                                    height: parent.height
+                        NetworkControlCard {
+                            width: parent.width
+                            height: root.theme.sizing.statusBarNetworkQuickControlHeight
+                            colors: root.colors
+                            theme: root.theme
+                            icon: !root.services.bluetooth.bluetoothAvailable
+                                ? root.icons.bluetoothOff
+                                : (root.services.bluetooth.bluetoothConnectedCount > 0
+                                    ? root.icons.bluetoothConnected
+                                    : (root.services.bluetooth.bluetoothPowered ? root.icons.bluetoothOn : root.icons.bluetoothOff))
+                            title: "Bluetooth"
+                            subtitle: NetworkMenuLogic.bluetoothSummary(
+                                root.services.bluetooth.bluetoothAvailable,
+                                root.services.bluetooth.bluetoothPowered,
+                                root.services.bluetooth.bluetoothConnectedCount
+                            )
+                            active: root.services.bluetooth.bluetoothPowered
+                            available: root.services.bluetooth.bluetoothAvailable
+                            actionAccessibleName: root.services.bluetooth.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
+                            stateDescription: subtitle
+                            onToggled: {
+                                if (root.services.bluetooth.bluetoothAdapter)
+                                    root.services.bluetooth.bluetoothAdapter.enabled = !root.services.bluetooth.bluetoothAdapter.enabled;
+                            }
+                        }
+
+                        Rectangle {
+                            id: outputCard
+                            visible: root.expandedNetworkSection === "output"
+                            width: parent.width
+                            height: outputColumn.implicitHeight + root.theme.spacing.space24
+                            color: root.colors.transparent
+                            border.width: 0
+
+                            Column {
+                                id: outputColumn
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: root.theme.spacing.space8
+
+                                AudioMixerSection {
+                                    id: audioMixerSection
+                                    width: parent.width
+                                    audio: root.services.audio
                                     colors: root.colors
                                     theme: root.theme
-                                    icon: !root.services.bluetooth.bluetoothAvailable
-                                        ? root.icons.bluetoothOff
-                                        : (root.services.bluetooth.bluetoothConnectedCount > 0
-                                            ? root.icons.bluetoothConnected
-                                            : (root.services.bluetooth.bluetoothPowered ? root.icons.bluetoothOn : root.icons.bluetoothOff))
-                                    title: "Bluetooth"
-                                    subtitle: NetworkMenuLogic.bluetoothSummary(
-                                        root.services.bluetooth.bluetoothAvailable,
-                                        root.services.bluetooth.bluetoothPowered,
-                                        root.services.bluetooth.bluetoothConnectedCount
-                                    )
-                                    active: root.services.bluetooth.bluetoothPowered
-                                    available: root.services.bluetooth.bluetoothAvailable
-                                    actionAccessibleName: root.services.bluetooth.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
-                                    stateDescription: subtitle
-                                    onToggled: {
-                                        if (root.services.bluetooth.bluetoothAdapter)
-                                            root.services.bluetooth.bluetoothAdapter.enabled = !root.services.bluetooth.bluetoothAdapter.enabled;
+                                    icons: root.icons
+                                    outputQuickVolume: root.outputQuickVolume
+                                    outputAvailable: root.outputAvailable
+                                    outputIcon: root.outputIcon
+                                    onMasterVolumeRequested: value => {
+                                        root.quickControlRequestSequence += 1;
+                                        root.services.audio.requestSinkVolume(value, root.quickControlRequestSequence);
                                     }
                                 }
                             }

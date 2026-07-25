@@ -214,6 +214,25 @@ TestCase {
         compare(foreign.device.scannerEnabled, true);
     }
 
+    function test_outputSectionIsIndependentAndDoesNotOwnScanner() {
+        const f = fixture({});
+        f.controller.menuOpen = true;
+        f.controller.toggleNetworkSection("output");
+        compare(f.controller.expandedNetworkSection, "output");
+        compare(f.device.scannerEnabled, false);
+        compare(f.device.scannerWrites, 0);
+        f.controller.toggleNetworkSection("output");
+        compare(f.controller.expandedNetworkSection, "");
+        f.controller.toggleNetworkSection("microphone");
+        compare(f.controller.expandedNetworkSection, "microphone");
+        f.controller.toggleNetworkSection("output");
+        compare(f.controller.expandedNetworkSection, "output");
+        f.controller.requestClose();
+        f.controller.menuOpen = false;
+        compare(f.controller.expandedNetworkSection, "");
+        compare(f.device.scannerEnabled, false);
+    }
+
     function test_detailSubscriptionAndCleanupAreBalanced() {
         const f = fixture({});
         compare(f.service.detailEnables, 0);

@@ -168,6 +168,7 @@ Scope {
     function pad(value) { return String(value).padStart(2, "0") }
     function safeFileViewText(fileView, label, reloadFile) { return FileViewState.safeText(fileView, label, reloadFile) }
 
+    function toggleWifiEnabled() { return networkService.toggleWifiEnabled() }
     function enableNetworkThroughput() { return networkService.enableNetworkThroughput() }
     function disableNetworkThroughput() { return networkService.disableNetworkThroughput() }
     function enableNetworkDetails() { return networkService.enableNetworkDetails() }
@@ -189,6 +190,7 @@ Scope {
     function focusWorkspace(workspaceId) { return workspaceService.focusWorkspace(workspaceId) }
     function statusWorkspaceIdsForMonitor(monitor) { return workspaceService.statusWorkspaceIdsForMonitor(monitor) }
 
+    function toggleBluetoothPowered() { return bluetoothService.toggleBluetoothPowered() }
     function toggleMute(isSource) { return audioService.toggleMute(isSource) }
     function setSourceVolume(percent) { return audioService.setSourceVolume(percent) }
     function selectAudioSource(node) { return audioService.selectAudioSource(node) }

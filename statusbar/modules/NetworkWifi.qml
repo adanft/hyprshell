@@ -49,4 +49,16 @@ Item {
 
     }
 
+    MouseArea {
+        anchors.fill: parent
+        enabled: Networking.wifiHardwareEnabled
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        activeFocusOnTab: enabled
+        Accessible.role: Accessible.Button
+        Accessible.name: Networking.wifiEnabled ? "Disable Wi-Fi" : "Enable Wi-Fi"
+        onClicked: root.services.network.toggleWifiEnabled()
+        Keys.onSpacePressed: root.services.network.toggleWifiEnabled()
+        Keys.onReturnPressed: root.services.network.toggleWifiEnabled()
+        Keys.onEnterPressed: root.services.network.toggleWifiEnabled()
+    }
 }

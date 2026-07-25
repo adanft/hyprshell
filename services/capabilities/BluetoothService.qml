@@ -6,7 +6,12 @@ Scope {
     readonly property var bluetoothAdapter: Bluetooth.defaultAdapter
     readonly property bool bluetoothAvailable: bluetoothAdapter !== null
     readonly property bool bluetoothPowered: bluetoothAvailable ? bluetoothAdapter.enabled : false
-    readonly property int bluetoothConnectedCount: {
+        function toggleBluetoothPowered() {
+            if (bluetoothAdapter)
+                bluetoothAdapter.enabled = !bluetoothAdapter.enabled
+        }
+
+        readonly property int bluetoothConnectedCount: {
         if (!bluetoothAdapter || !bluetoothAdapter.devices)
             return 0
         let count = 0

@@ -51,7 +51,7 @@ Item {
         }
 
         BarText {
-            visible: root.available && !root.muted
+            visible: root.available
             text: `${root.volume}%`
             color: root.textColor
         }

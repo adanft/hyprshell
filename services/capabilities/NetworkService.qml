@@ -111,7 +111,10 @@ Scope {
         wifiInfoRequestGeneration += 1; wifiInfoRequestedInterface = ""; wifiInfoAvailability = "idle"
         wifiInfo = NetworkState.parseNmcliDeviceInfo(""); Qt.callLater(refreshWifiInfo)
     }
-    function enableNetworkThroughput() { networkThroughputSubscriberCount++; refreshNetwork() }
+        function toggleWifiEnabled() {
+            Networking.wifiEnabled = !Networking.wifiEnabled
+        }
+        function enableNetworkThroughput() { networkThroughputSubscriberCount++; refreshNetwork() }
     function disableNetworkThroughput() {
         networkThroughputSubscriberCount = Math.max(0, networkThroughputSubscriberCount - 1)
         if (!networkThroughputEnabled) refreshNetwork()

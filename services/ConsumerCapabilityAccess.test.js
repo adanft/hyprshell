@@ -13,7 +13,7 @@ const owners = {
 			" ",
 		),
 	network:
-		"wifiDevice lanDevice lanUp wifiUp wifiSignal connectedWifiNetwork wifiInterface wifiInfo wifiInfoAvailability ethernetInfo ethernetProfileBusy ethernetProfilePendingUuid ethernetProfileError activeNetworkInterface activeNetworkTxRate activeNetworkRxRate enableNetworkThroughput disableNetworkThroughput enableNetworkDetails disableNetworkDetails setEthernetProfileEnabled".split(
+		"wifiDevice lanDevice lanUp wifiUp wifiSignal connectedWifiNetwork wifiInterface wifiInfo wifiInfoAvailability ethernetInfo ethernetProfileBusy ethernetProfilePendingUuid ethernetProfileError activeNetworkInterface activeNetworkTxRate activeNetworkRxRate enableNetworkThroughput disableNetworkThroughput enableNetworkDetails disableNetworkDetails setEthernetProfileEnabled toggleWifiEnabled".split(
 			" ",
 		),
 	notification:
@@ -25,7 +25,7 @@ const owners = {
 			" ",
 		),
 	bluetooth:
-		"bluetoothAdapter bluetoothAvailable bluetoothPowered bluetoothConnectedCount".split(
+		"bluetoothAdapter bluetoothAvailable bluetoothPowered bluetoothConnectedCount toggleBluetoothPowered".split(
 			" ",
 		),
 	systemStats:

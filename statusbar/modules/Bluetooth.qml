@@ -51,4 +51,16 @@ Item {
 
     }
 
+    MouseArea {
+        anchors.fill: parent
+        enabled: root.services.bluetooth.bluetoothAvailable
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        activeFocusOnTab: enabled
+        Accessible.role: Accessible.Button
+        Accessible.name: root.services.bluetooth.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
+        onClicked: root.services.bluetooth.toggleBluetoothPowered()
+        Keys.onSpacePressed: root.services.bluetooth.toggleBluetoothPowered()
+        Keys.onReturnPressed: root.services.bluetooth.toggleBluetoothPowered()
+        Keys.onEnterPressed: root.services.bluetooth.toggleBluetoothPowered()
+    }
 }

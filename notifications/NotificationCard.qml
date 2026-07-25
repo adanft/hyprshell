@@ -101,6 +101,8 @@ Item {
     }
     readonly property string iconSource: notificationData?.image || fallbackIconSource
     readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://") || iconSource.startsWith("image://")
+    property string failedImageSource: ""
+    readonly property bool iconSourceQuarantined: failedImageSource.length > 0 && iconSource === failedImageSource
 
     signal layoutChanged()
     signal slotHeightChanged()
@@ -209,12 +211,16 @@ Item {
             layoutChanged();
         });
     }
+    onIconSourceChanged: {
+        if (failedImageSource.length > 0 && iconSource !== failedImageSource)
+            failedImageSource = "";
+    }
     onLayoutHeightChanged: syncLayoutHeight()
     onRenderedLayoutHeightChanged: {
         if (inlineHeightAnimating)
             slotHeightChanged();
-
     }
+
     Component.onCompleted: {
         renderedHeightAnimation.stop();
         renderedLayoutHeight = layoutHeight;
@@ -285,13 +291,18 @@ Item {
                         anchors.centerIn: parent
                         width: card.iconSize
                         height: card.iconSize
-                        source: card.iconSource
-                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile && status !== Image.Error
-                        asynchronous: true
+                        source: card.iconSourceQuarantined ? "" : card.iconSource
+                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile && !card.iconSourceQuarantined && status !== Image.Error
+                        asynchronous: !card.iconSource.startsWith("image://qsimage/")
                         cache: true
                         sourceSize: Qt.size(card.iconSize, card.iconSize)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                        onStatusChanged: {
+                            const failedSource = source.toString();
+                            if (status === Image.Error && failedSource.startsWith("image://qsimage/"))
+                                card.failedImageSource = failedSource;
+                        }
                     }
 
                     IconImage {
@@ -300,7 +311,7 @@ Item {
                         height: card.iconSize
                         implicitSize: card.iconSize
                         source: card.iconSourceIsImageFile ? card.fallbackIconSource : card.iconSource
-                        visible: card.fallbackIconSource.length > 0 && (!card.iconSourceIsImageFile || notificationImage.status === Image.Error)
+                        visible: card.fallbackIconSource.length > 0 && (!card.iconSourceIsImageFile || card.iconSourceQuarantined || notificationImage.status === Image.Error)
                     }
 
                     Text {

@@ -13,6 +13,141 @@ const menu = {};
 vm.createContext(menu);
 vm.runInContext(source, menu);
 
+function objectBlockById(text, id) {
+	const idIndex = text.indexOf(`id: ${id}`);
+	assert.notEqual(idIndex, -1, `missing object id: ${id}`);
+	const openIndex = text.lastIndexOf("{", idIndex);
+	let depth = 0;
+	for (let index = openIndex; index < text.length; index += 1) {
+		if (text[index] === "{") depth += 1;
+		if (text[index] === "}") depth -= 1;
+		if (depth === 0) return text.slice(openIndex + 1, index);
+	}
+	assert.fail(`unterminated object id: ${id}`);
+}
+
+const detailBootstrapHeight = 64;
+assert.equal(
+	menu.detailViewportHeight(false, 200, 100, detailBootstrapHeight),
+	0,
+);
+assert.equal(
+	menu.detailViewportHeight(true, 0, 100, detailBootstrapHeight),
+	detailBootstrapHeight,
+);
+assert.equal(menu.detailViewportHeight(true, 0, 20, detailBootstrapHeight), 20);
+assert.equal(menu.detailViewportHeight(true, 80, 0, detailBootstrapHeight), 0);
+assert.equal(
+	menu.detailViewportHeight(true, 80, -20, detailBootstrapHeight),
+	0,
+);
+assert.equal(menu.detailViewportHeight(true, 1, 100, detailBootstrapHeight), 1);
+assert.equal(
+	menu.detailViewportHeight(true, 80, 100, detailBootstrapHeight),
+	80,
+);
+assert.equal(
+	menu.detailViewportHeight(true, 180, 100, detailBootstrapHeight),
+	100,
+);
+assert.equal(
+	menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, false, 0, 64),
+	424,
+);
+assert.equal(
+	menu.menuCenterHeight(1000, 16, 360, 24, 200, 8, false, 0, 64),
+	360,
+);
+assert.equal(
+	menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 0, 64),
+	496,
+);
+assert.equal(
+	menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 80, 64),
+	512,
+);
+assert.equal(
+	menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 600, 64),
+	700,
+);
+assert.equal(menu.menuCenterHeight(40, 16, 360, 24, 400, 8, true, 600, 64), 24);
+assert.equal(menu.menuCenterHeight(0, 16, 360, 24, 400, 8, true, 80, 64), 0);
+assert.equal(menu.menuCenterHeight(-10, 16, 360, 24, 400, 8, true, 80, 64), 0);
+assert.equal(menu.menuOuterHeight(500, 360, 200), 360);
+assert.equal(menu.menuOuterHeight(500, 360, 420), 420);
+assert.equal(menu.menuOuterHeight(400, 360, 520), 400);
+assert.equal(menu.menuOuterHeight(-10, 360, 200), 0);
+assert.equal(menu.clampDetailContentY(false, 40, 200, 100), 0);
+assert.equal(menu.clampDetailContentY(true, -10, 200, 100), 0);
+assert.equal(menu.clampDetailContentY(true, 40, 200, 100), 40);
+assert.equal(menu.clampDetailContentY(true, 180, 200, 100), 100);
+assert.equal(menu.clampDetailContentY(true, 180, 120, 100), 20);
+assert.equal(menu.clampDetailContentY(true, 40, 100, 0), 0);
+
+const flickables = qml.match(/\bFlickable\s*\{/g) || [];
+assert.equal(flickables.length, 1);
+assert.doesNotMatch(qml, /id: menuFlickable/);
+const menuLayoutBlock = objectBlockById(qml, "menuLayout");
+const fixedShellBlock = objectBlockById(qml, "fixedShell");
+const detailFlickableBlock = objectBlockById(qml, "detailFlickable");
+const detailContentBlock = objectBlockById(qml, "detailContent");
+for (const id of [
+	"userCard",
+	"quickControlsRow",
+	"networkControlsRow",
+	"audioControlsRow",
+	"bluetoothCard",
+])
+	assert.ok(fixedShellBlock.includes(`id: ${id}`), `${id} must be fixed`);
+for (const id of ["outputCard", "microphoneCard", "lanCard", "wifiCard"])
+	assert.ok(!fixedShellBlock.includes(`id: ${id}`), `${id} must not be fixed`);
+assert.ok(menuLayoutBlock.includes("id: fixedShell"));
+assert.ok(menuLayoutBlock.includes("id: detailFlickable"));
+let previousDetailIndex = -1;
+for (const section of ["output", "microphone", "ethernet", "wifi"]) {
+	const cardId = section === "ethernet" ? "lanCard" : `${section}Card`;
+	const cardIndex = detailContentBlock.indexOf(`id: ${cardId}`);
+	assert.ok(cardIndex > previousDetailIndex, `${cardId} detail order`);
+	previousDetailIndex = cardIndex;
+	assert.ok(
+		detailContentBlock.includes(
+			`visible: root.expandedNetworkSection === "${section}"`,
+		),
+		`${section} visibility predicate`,
+	);
+}
+for (const binding of [
+	"clip: true",
+	"boundsBehavior: Flickable.StopAtBounds",
+	"flickableDirection: Flickable.VerticalFlick",
+	"contentHeight: detailContent.implicitHeight",
+	"onContentHeightChanged: root.clampDetailContentY()",
+	"onHeightChanged: root.clampDetailContentY()",
+])
+	assert.ok(detailFlickableBlock.includes(binding), `missing ${binding}`);
+assert.match(
+	detailFlickableBlock,
+	/interactive: root\.activeDetail[\s\S]*contentHeight > height/,
+);
+assert.match(
+	qml,
+	/menuCenterHeight\([\s\S]*statusBarNetworkQuickControlHeight/,
+);
+assert.doesNotMatch(qml, /\b0\.7\b/);
+assert.match(
+	detailFlickableBlock,
+	/detailViewportHeight\([\s\S]*statusBarNetworkQuickControlHeight/,
+);
+assert.match(
+	detailFlickableBlock,
+	/Controls\.ScrollBar\.vertical:[\s\S]*AlwaysOn[\s\S]*AlwaysOff/,
+);
+assert.match(
+	qml,
+	/onExpandedNetworkSectionChanged: detailFlickable\.contentY = 0/,
+);
+assert.match(qml, /onMenuOpenChanged:[\s\S]*detailFlickable\.contentY = 0/);
+
 assert.equal(menu.userInitial("dioby"), "D");
 assert.equal(menu.userInitial(""), "U");
 assert.equal(menu.userInitial(null), "U");

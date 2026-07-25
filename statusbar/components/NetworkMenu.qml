@@ -27,6 +27,10 @@ Item {
     readonly property bool wifiActivationPending: networkController.wifiActivationPending
     readonly property string connectionError: networkController.connectionError
     readonly property string expandedNetworkSection: networkController.expandedNetworkSection
+    readonly property bool activeDetail: expandedNetworkSection === "output"
+        || expandedNetworkSection === "microphone"
+        || expandedNetworkSection === "ethernet"
+        || expandedNetworkSection === "wifi"
     readonly property real uptimeSeconds: networkController.uptimeSeconds
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled
             && Networking.wifiEnabled && !wifiActivationPending && services.network.wifiDevice
@@ -82,6 +86,21 @@ Item {
 
     function close() { networkController.requestClose(); }
 
+    function clampDetailContentY() {
+        detailFlickable.contentY = NetworkMenuLogic.clampDetailContentY(
+            root.activeDetail,
+            detailFlickable.contentY,
+            detailFlickable.contentHeight,
+            detailFlickable.height
+        );
+    }
+
+    onExpandedNetworkSectionChanged: detailFlickable.contentY = 0
+    onMenuOpenChanged: {
+        if (!menuOpen)
+            detailFlickable.contentY = 0;
+    }
+
     FileView {
         id: hostnameFile
         path: "/etc/hostname"
@@ -121,10 +140,17 @@ Item {
             id: menuContainer
 
             width: Math.max(0, Math.min(root.theme.sizing.statusBarNetworkMenuWidth, menuWindow.width - root.theme.spacing.space16))
-            height: Math.max(0, Math.min(
-                menuWindow.height - root.theme.spacing.space16,
-                Math.max(360, menuColumn.implicitHeight + root.theme.spacing.space24)
-            ))
+            height: NetworkMenuLogic.menuCenterHeight(
+                menuWindow.height,
+                root.theme.spacing.space16,
+                360,
+                root.theme.spacing.space24,
+                fixedShell.implicitHeight,
+                root.theme.spacing.space8,
+                root.activeDetail,
+                detailContent.implicitHeight,
+                root.theme.sizing.statusBarNetworkQuickControlHeight
+            )
             x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX - width / 2))
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8, root.menuAnchorY))
             radius: root.theme.shape.radius16
@@ -137,23 +163,14 @@ Item {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
             }
 
-            Flickable {
-                id: menuFlickable
+            Column {
+                id: menuLayout
                 anchors.fill: parent
                 anchors.margins: root.theme.spacing.space12
-                contentWidth: width
-                contentHeight: menuColumn.implicitHeight
-                boundsBehavior: Flickable.StopAtBounds
-                clip: true
-
-                Controls.ScrollBar.vertical: Controls.ScrollBar {
-                    policy: menuFlickable.contentHeight > menuFlickable.height
-                        ? Controls.ScrollBar.AlwaysOn
-                        : Controls.ScrollBar.AlwaysOff
-                }
+                spacing: root.theme.spacing.space8
 
                 Column {
-                    id: menuColumn
+                    id: fixedShell
                     width: parent.width
                     spacing: root.theme.spacing.space8
 
@@ -395,6 +412,7 @@ Item {
                         }
 
                         Item {
+                            id: audioControlsRow
                             width: parent.width
                             height: root.theme.sizing.statusBarNetworkQuickControlHeight
 
@@ -448,6 +466,7 @@ Item {
                         }
 
                         NetworkControlCard {
+                            id: bluetoothCard
                             width: parent.width
                             height: root.theme.sizing.statusBarNetworkQuickControlHeight
                             colors: root.colors
@@ -472,6 +491,41 @@ Item {
                                     root.services.bluetooth.bluetoothAdapter.enabled = !root.services.bluetooth.bluetoothAdapter.enabled;
                             }
                         }
+
+                }
+
+                Flickable {
+                    id: detailFlickable
+                    width: parent.width
+                    height: NetworkMenuLogic.detailViewportHeight(
+                        root.activeDetail,
+                        detailContent.implicitHeight,
+                        menuContainer.height - root.theme.spacing.space24
+                            - fixedShell.implicitHeight
+                            - (root.activeDetail ? root.theme.spacing.space8 : 0),
+                        root.theme.sizing.statusBarNetworkQuickControlHeight
+                    )
+                    visible: root.activeDetail && height > 0
+                    contentWidth: width
+                    contentHeight: detailContent.implicitHeight
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    flickableDirection: Flickable.VerticalFlick
+                    interactive: root.activeDetail && height > 0 && contentHeight > height
+                    onContentHeightChanged: root.clampDetailContentY()
+                    onHeightChanged: root.clampDetailContentY()
+                    Component.onCompleted: root.clampDetailContentY()
+
+                    Controls.ScrollBar.vertical: Controls.ScrollBar {
+                        policy: root.activeDetail && detailFlickable.height > 0
+                                && detailFlickable.contentHeight > detailFlickable.height
+                            ? Controls.ScrollBar.AlwaysOn
+                            : Controls.ScrollBar.AlwaysOff
+                    }
+
+                    Column {
+                        id: detailContent
+                        width: detailFlickable.width
 
                         Rectangle {
                             id: outputCard
@@ -893,6 +947,8 @@ Item {
                 }
             }
         }
+    }
+
     }
 
         WifiPasswordModal {

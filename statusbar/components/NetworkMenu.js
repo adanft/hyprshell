@@ -1,3 +1,81 @@
+function menuOuterHeight(availableHeight, preferredMinimum, naturalHeight) {
+	return Math.max(
+		0,
+		Math.min(
+			Math.max(0, Number(availableHeight) || 0),
+			Math.max(
+				Math.max(0, Number(preferredMinimum) || 0),
+				Math.max(0, Number(naturalHeight) || 0),
+			),
+		),
+	);
+}
+
+function detailViewportHeight(
+	active,
+	detailHeight,
+	remainingCapacity,
+	bootstrapHeight,
+) {
+	if (!active) return 0;
+	var capacity = Math.max(0, Number(remainingCapacity) || 0);
+	var measuredDetail = Math.max(0, Number(detailHeight) || 0);
+	var desiredHeight =
+		measuredDetail > 0
+			? measuredDetail
+			: Math.max(0, Number(bootstrapHeight) || 0);
+	return Math.min(desiredHeight, capacity);
+}
+
+function menuCenterHeight(
+	monitorHeight,
+	safetyMargin,
+	preferredInactiveMinimum,
+	padding,
+	fixedShellHeight,
+	detailGap,
+	active,
+	detailHeight,
+	bootstrapHeight,
+) {
+	var windowHeight = Math.max(0, Number(monitorHeight) || 0);
+	var margin = Math.max(0, Number(safetyMargin) || 0);
+	var safeAvailable = Math.max(0, windowHeight - margin);
+	var outerPadding = Math.max(0, Number(padding) || 0);
+	var fixedHeight = Math.max(0, Number(fixedShellHeight) || 0);
+	if (!active)
+		return menuOuterHeight(
+			safeAvailable,
+			preferredInactiveMinimum,
+			outerPadding + fixedHeight,
+		);
+
+	var gap = Math.max(0, Number(detailGap) || 0);
+	var activeTotalCap = Math.min(safeAvailable, windowHeight * 0.7);
+	var detailCapacity = Math.max(
+		0,
+		activeTotalCap - outerPadding - fixedHeight - gap,
+	);
+	var detailAllocation = detailViewportHeight(
+		true,
+		detailHeight,
+		detailCapacity,
+		bootstrapHeight,
+	);
+	return menuOuterHeight(
+		activeTotalCap,
+		0,
+		outerPadding + fixedHeight + gap + detailAllocation,
+	);
+}
+
+function clampDetailContentY(active, contentY, contentHeight, viewportHeight) {
+	var viewport = Math.max(0, Number(viewportHeight) || 0);
+	if (!active || viewport <= 0) return 0;
+	var maximum = Math.max(0, (Number(contentHeight) || 0) - viewport);
+	return Math.min(Math.max(0, Number(contentY) || 0), maximum);
+}
+
 function normalizedText(value) {
 	return value === undefined || value === null ? "" : String(value).trim();
 }

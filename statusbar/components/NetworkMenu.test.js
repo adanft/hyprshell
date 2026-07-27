@@ -509,7 +509,20 @@ assert.equal(
 	}),
 	"USB microphone",
 );
-assert.equal(menu.audioSourceLabel(null), "Unknown input");
+assert.equal(menu.audioSourceLabel(null), "Microphone");
+assert.equal(menu.audioSourceLabel(null, "  Input device  "), "Input device");
+assert.equal(
+	menu.audioSourceLabel({
+		nickname: " ",
+		description: " ",
+		name: " source-1 ",
+	}),
+	"source-1",
+);
+assert.equal(
+	menu.audioSourceLabel({ nickname: " ", description: " ", name: " " }),
+	"Microphone",
+);
 const activeSource = { audio: { muted: false } };
 assert.equal(
 	menu.audioSourceStatus(activeSource, activeSource),

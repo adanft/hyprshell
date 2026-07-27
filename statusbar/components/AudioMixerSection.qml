@@ -88,6 +88,7 @@ Column {
             text: "Output devices"
             color: root.colors.textSubtle
             font.pixelSize: root.theme.typography.sizeMd
+            font.styleName: root.theme.typography.styleRegular
         }
 
         Column {
@@ -139,6 +140,7 @@ Column {
             text: "Playback streams"
             color: root.colors.textSubtle
             font.pixelSize: root.theme.typography.sizeMd
+            font.styleName: root.theme.typography.styleRegular
         }
 
         Column {

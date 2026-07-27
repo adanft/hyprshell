@@ -275,7 +275,7 @@ Item {
                                     width: (parent.width - parent.spacing) / 2
                                     height: parent.height
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.transparent
+                                    color: root.colors.surface
                                     border.width: 0
 
                                     Row {
@@ -319,7 +319,7 @@ Item {
                                     width: (parent.width - parent.spacing) / 2
                                     height: parent.height
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.transparent
+                                    color: root.colors.surface
                                     border.width: 0
 
                                     Row {
@@ -446,7 +446,7 @@ Item {
                                     colors: root.colors
                                     theme: root.theme
                                     icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
-                                    title: "Microphone"
+                                    title: NetworkMenuLogic.audioSourceLabel(root.services.audio.source, "Microphone")
                                     subtitle: NetworkMenuLogic.microphoneSummary(
                                         root.services.audio.microphoneAvailable,
                                         root.services.audio.sourceMuted,
@@ -467,7 +467,7 @@ Item {
 
                         NetworkControlCard {
                             id: bluetoothCard
-                            width: parent.width
+                            width: (parent.width - root.theme.spacing.space8) / 2
                             height: root.theme.sizing.statusBarNetworkQuickControlHeight
                             colors: root.colors
                             theme: root.theme
@@ -634,25 +634,32 @@ Item {
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
-                                Repeater {
-                                    model: root.services.audio.audioSources ?? []
-
-                                    MicrophoneSourceRow {
-                                        required property var modelData
+                                    Column {
+                                        id: microphoneDevicesSection
                                         x: root.theme.spacing.space12
-                                        width: microphoneColumn.width - root.theme.spacing.space24
-                                        source: modelData
-                                        active: modelData === root.services.audio.source
-                                        colors: root.colors
-                                        theme: root.theme
-                                        onSelectRequested: source => root.services.audio.selectAudioSource(source)
-                                    }
-                                }
+                                        width: parent.width - root.theme.spacing.space24
+                                        spacing: root.theme.spacing.space8
 
-                                ControlEmptyState {
+                                        Repeater {
+                                            model: root.services.audio.audioSources ?? []
+
+                                            MicrophoneSourceRow {
+                                                required property var modelData
+                                                width: microphoneDevicesSection.width
+                                                source: modelData
+                                                icon: root.services.audio.sourceMuted
+                                                    ? root.icons.microphoneMuted
+                                                    : root.icons.microphone
+                                                active: modelData === root.services.audio.source
+                                                colors: root.colors
+                                                theme: root.theme
+                                                onSelectRequested: source => root.services.audio.selectAudioSource(source)
+                                            }
+                                        }
+
+                                        ControlEmptyState {
                                     visible: (root.services.audio.audioSources?.length ?? 0) === 0
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     colors: root.colors
                                     theme: root.theme
                                     title: root.services.audio.microphoneAvailable
@@ -661,12 +668,13 @@ Item {
                                     description: root.services.audio.microphoneAvailable
                                         ? "The active microphone is already selected"
                                         : "Connect an input device to control it here"
+                                    }
                                 }
                             }
                         }
 
-                            Rectangle {
-                                id: lanCard
+                                Rectangle {
+                                    id: lanCard
                                 visible: root.expandedNetworkSection === "ethernet"
                             width: parent.width
                         height: lanColumn.implicitHeight + root.theme.spacing.space24

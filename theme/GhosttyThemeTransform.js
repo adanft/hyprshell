@@ -1,4 +1,5 @@
-var managedMarker = "# qscomponents managed theme"
+var managedMarker = "# qsrice managed theme"
+var legacyManagedMarker = "# qscomponents managed theme"
 
 var nativeThemes = {
     "catppuccin": "Catppuccin Mocha",
@@ -37,18 +38,18 @@ function appendManagedTheme(config, nativeTheme) {
 function updateManagedTheme(config, nativeTheme) {
     var markerIndexes = []
     for (var index = 0; index < config.lines.length; index++) {
-        if (config.lines[index].trim() === managedMarker)
+        if (config.lines[index].trim() === managedMarker || config.lines[index].trim() === legacyManagedMarker)
             markerIndexes.push(index)
     }
 
     if (markerIndexes.length === 0)
         return false
     if (markerIndexes.length !== 1)
-        throw new Error("multiple qscomponents managed Ghostty theme markers")
+        throw new Error("multiple qsrice managed Ghostty theme markers")
 
     var themeLineIndex = markerIndexes[0] + 1
     if (themeLineIndex >= config.lines.length || !/^[\t ]*theme[\t ]*=[\t ]*[^#\r\n]+[\t ]*$/.test(config.lines[themeLineIndex]))
-        throw new Error("qscomponents managed Ghostty theme marker is not followed by a theme assignment")
+        throw new Error("qsrice managed Ghostty theme marker is not followed by a theme assignment")
 
     config.lines[themeLineIndex] = "theme = " + nativeTheme
     return true

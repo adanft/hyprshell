@@ -29,23 +29,24 @@ function apply(input, themeId = "catppuccin") {
 }
 
 for (const [input, expected] of [
-    ["", "# qscomponents managed theme\ntheme = Catppuccin Mocha"],
-    ["font-family = Keep This\n", "font-family = Keep This\n# qscomponents managed theme\ntheme = Catppuccin Mocha\n"],
-    ["font-family = Keep This\r\n", "font-family = Keep This\r\n# qscomponents managed theme\r\ntheme = Catppuccin Mocha\r\n"],
-    ["font-family = Keep This", "font-family = Keep This\n# qscomponents managed theme\ntheme = Catppuccin Mocha"]
+    ["", "# qsrice managed theme\ntheme = Catppuccin Mocha"],
+    ["font-family = Keep This\n", "font-family = Keep This\n# qsrice managed theme\ntheme = Catppuccin Mocha\n"],
+    ["font-family = Keep This\r\n", "font-family = Keep This\r\n# qsrice managed theme\r\ntheme = Catppuccin Mocha\r\n"],
+    ["font-family = Keep This", "font-family = Keep This\n# qsrice managed theme\ntheme = Catppuccin Mocha"]
 ])
     assert.equal(apply(input), expected, "inserts a managed native theme while preserving newline style")
 
-const managed = "theme = User Theme\n# qscomponents managed theme\ntheme = Old Theme\nforeground = #abcdef\n"
+const managed = "theme = User Theme\n# qsrice managed theme\ntheme = Old Theme\nforeground = #abcdef\n"
 const updated = apply(managed, "rose-pine")
-assert.equal(updated, "theme = User Theme\n# qscomponents managed theme\ntheme = Rose Pine\nforeground = #abcdef\n")
+assert.equal(updated, "theme = User Theme\n# qsrice managed theme\ntheme = Rose Pine\nforeground = #abcdef\n")
 assert.equal(apply(updated, "rose-pine"), updated, "managed theme updates are idempotent")
 assert.equal((updated.match(/^theme = /gm) || []).length, 2, "only the marker-owned theme line is changed")
-assert.throws(() => apply("# qscomponents managed theme\nfont-family = Mono\n"), /not followed by a theme assignment/)
-assert.throws(() => apply("# qscomponents managed theme\ntheme = One\n# qscomponents managed theme\ntheme = Two\n"), /multiple qscomponents/)
-assert.equal(apply("theme = User Theme\n"), "theme = User Theme\n# qscomponents managed theme\ntheme = Catppuccin Mocha\n")
+assert.throws(() => apply("# qsrice managed theme\nfont-family = Mono\n"), /not followed by a theme assignment/)
+assert.equal(apply("# qscomponents managed theme\ntheme = Old Theme\n", "rose-pine"), "# qscomponents managed theme\ntheme = Rose Pine\n")
+assert.throws(() => apply("# qsrice managed theme\ntheme = One\n# qsrice managed theme\ntheme = Two\n"), /multiple qsrice/)
+assert.equal(apply("theme = User Theme\n"), "theme = User Theme\n# qsrice managed theme\ntheme = Catppuccin Mocha\n")
 const existingColors = "foreground = #abcdef\npalette = 0 = not-a-color\nselection-background = custom-value\n"
-assert.equal(apply(existingColors), existingColors + "# qscomponents managed theme\ntheme = Catppuccin Mocha\n",
+assert.equal(apply(existingColors), existingColors + "# qsrice managed theme\ntheme = Catppuccin Mocha\n",
     "existing color assignments are preserved without parsing or migration")
 
 console.log("GhosttyThemeTransform: native mapping and managed assignment for 6 themes passed")

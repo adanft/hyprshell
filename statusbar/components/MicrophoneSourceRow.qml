@@ -7,28 +7,42 @@ Rectangle {
     required property var source
     required property var colors
     required property var theme
+    required property string icon
     property bool active: false
 
     signal selectRequested(var source)
 
     function requestSelect() {
-        if (!active)
-            selectRequested(source);
+        if (!root.active)
+            root.selectRequested(root.source);
     }
 
-    height: theme.sizing.statusBarNetworkDeviceRowHeight
-    radius: theme.shape.radius12
-    color: colors.surface
-    border.width: 0
+    height: root.theme.sizing.statusBarNetworkDeviceRowHeight
+    radius: root.theme.shape.radius12
+    color: root.colors.surface
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: `${NetworkMenuLogic.audioSourceLabel(source)}, ${active ? "Active input" : "Available"}`
+    Accessible.name: `${NetworkMenuLogic.audioSourceLabel(root.source)}, ${NetworkMenuLogic.audioSourceStatus(root.source, root.active ? root.source : null)}`
+
+    Text {
+        id: sourceIcon
+
+        width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+        anchors.left: parent.left
+        anchors.leftMargin: root.theme.spacing.space12
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.icon
+        color: root.active ? root.colors.primary : root.colors.text
+        horizontalAlignment: Text.AlignHCenter
+        font.family: root.theme.typography.iconFontFamily
+        font.pixelSize: root.theme.typography.sizeLg
+    }
 
     Column {
-        anchors.left: parent.left
+        anchors.left: sourceIcon.right
         anchors.right: actionButton.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: root.theme.spacing.space12
+        anchors.leftMargin: root.theme.spacing.space8
         anchors.rightMargin: root.theme.spacing.space8
         spacing: root.theme.spacing.space2
 
@@ -38,7 +52,6 @@ Rectangle {
             color: root.active ? root.colors.primary : root.colors.text
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
-            font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
 
@@ -48,13 +61,13 @@ Rectangle {
             color: root.active ? root.colors.primary : root.colors.textSubtle
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
-            font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
     }
 
     Rectangle {
         id: actionButton
+
         width: actionLabel.implicitWidth + root.theme.spacing.space16
         height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
         anchors.right: parent.right
@@ -64,28 +77,32 @@ Rectangle {
         color: actionInput.containsMouse || actionInput.activeFocus
             ? root.colors.surfaceHover
             : root.colors.transparent
-        opacity: root.active ? root.theme.motion.opacityInactive : 1
 
         Text {
             id: actionLabel
+
             anchors.centerIn: parent
             text: root.active ? "Active" : "Use"
             color: root.active ? root.colors.textSubtle : root.colors.primary
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
-            font.styleName: root.theme.typography.styleRegular
         }
 
         MouseArea {
             id: actionInput
+
             objectName: "microphoneSourceAction"
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
             enabled: !root.active
+            hoverEnabled: true
             activeFocusOnTab: enabled
+            cursorShape: actionInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+
             Accessible.role: Accessible.Button
-            Accessible.name: `Use ${NetworkMenuLogic.audioSourceLabel(root.source)} as microphone`
+            Accessible.name: root.active
+                ? `${NetworkMenuLogic.audioSourceLabel(root.source)} is active`
+                : `Use ${NetworkMenuLogic.audioSourceLabel(root.source)} as microphone`
+
             onClicked: root.requestSelect()
             Keys.onSpacePressed: root.requestSelect()
             Keys.onReturnPressed: root.requestSelect()

@@ -300,9 +300,14 @@ function audioNodeIconKind(node) {
 	);
 }
 
-function audioSourceLabel(node) {
-	if (!node) return "Unknown input";
-	return node.nickname || node.description || node.name || "Unknown input";
+function audioSourceLabel(node, fallback) {
+	var fallbackLabel = normalizedText(fallback) || "Microphone";
+	if (!node) return fallbackLabel;
+	for (var value of [node.nickname, node.description, node.name]) {
+		var label = normalizedText(value);
+		if (label.length > 0) return label;
+	}
+	return fallbackLabel;
 }
 
 function audioSourceStatus(node, activeNode) {

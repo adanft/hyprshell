@@ -25,7 +25,7 @@ const owners = {
 			" ",
 		),
 	bluetooth:
-		"bluetoothAdapter bluetoothAvailable bluetoothPowered bluetoothConnectedCount toggleBluetoothPowered".split(
+		"bluetoothAdapter bluetoothAvailable bluetoothPowered bluetoothConnectedCount bluetoothDiscovering bluetoothDevices bluetoothBusy bluetoothError bluetoothPendingRevision toggleBluetoothPowered scanBluetooth connectBluetoothDevice disconnectBluetoothDevice pairBluetoothDevice forgetBluetoothDevice bluetoothDevicePending".split(
 			" ",
 		),
 	systemStats:

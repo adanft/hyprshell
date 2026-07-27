@@ -31,6 +31,7 @@ Item {
         || expandedNetworkSection === "microphone"
         || expandedNetworkSection === "ethernet"
         || expandedNetworkSection === "wifi"
+        || expandedNetworkSection === "bluetooth"
     readonly property real uptimeSeconds: networkController.uptimeSeconds
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled
             && Networking.wifiEnabled && !wifiActivationPending && services.network.wifiDevice
@@ -485,11 +486,16 @@ Item {
                             active: root.services.bluetooth.bluetoothPowered
                             available: root.services.bluetooth.bluetoothAvailable
                             actionAccessibleName: root.services.bluetooth.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
-                            stateDescription: subtitle
-                            onToggled: {
-                                if (root.services.bluetooth.bluetoothAdapter)
-                                    root.services.bluetooth.bluetoothAdapter.enabled = !root.services.bluetooth.bluetoothAdapter.enabled;
-                            }
+                                stateDescription: subtitle
+                                detailAvailable: root.services.bluetooth.bluetoothAvailable
+                                expanded: root.expandedNetworkSection === "bluetooth"
+                                detailAccessibleName: expanded ? "Hide Bluetooth devices" : "Show Bluetooth devices"
+                                onBodyClicked: networkController.toggleNetworkSection("bluetooth")
+                                onToggled: {
+                                    if (root.services.bluetooth.bluetoothAdapter)
+                                        root.services.bluetooth.bluetoothAdapter.enabled = !root.services.bluetooth.bluetoothAdapter.enabled;
+                                }
+
                         }
 
                 }
@@ -784,8 +790,155 @@ Item {
                     }
 
                     Rectangle {
-                        id: wifiCard
-                        visible: root.expandedNetworkSection === "wifi"
+                        id: bluetoothDetails
+                        visible: root.expandedNetworkSection === "bluetooth"
+                        width: parent.width
+                        height: bluetoothDetailsColumn.implicitHeight + root.theme.spacing.space24
+                        color: root.colors.transparent
+                        Column {
+id: bluetoothDetailsColumn
+                            readonly property var bluetoothDevices: NetworkMenuLogic.bluetoothUniqueDevices(root.services.bluetooth.bluetoothDevices)
+                            readonly property var connectedDevices: bluetoothDevices.filter(device => NetworkMenuLogic.bluetoothDeviceCategory(device) === "connected")
+                            readonly property var knownDevices: bluetoothDevices.filter(device => NetworkMenuLogic.bluetoothDeviceCategory(device) === "known-disconnected")
+                            readonly property var availableDevices: bluetoothDevices.filter(device => NetworkMenuLogic.bluetoothDeviceCategory(device) === "available" && !device.blocked && root.services.bluetooth.bluetoothDiscovering)
+                            anchors.left: parent.left; anchors.right: parent.right
+                            anchors.margins: root.theme.spacing.space12
+                            spacing: root.theme.spacing.space8
+                            Item {
+width: parent.width
+height: root.theme.sizing.statusBarNetworkQuickControlHeight
+
+BarText {
+anchors.left: parent.left
+anchors.verticalCenter: parent.verticalCenter
+text: "Bluetooth"
+color: root.colors.textSubtle
+font.pixelSize: root.theme.typography.sizeMd
+font.styleName: root.theme.typography.styleRegular
+}
+
+Rectangle {
+id: scanButton
+visible: root.services.bluetooth.bluetoothPowered
+width: scanContent.implicitWidth + root.theme.spacing.space12
+height: scanContent.implicitHeight + root.theme.spacing.space8
+anchors.right: parent.right
+anchors.verticalCenter: parent.verticalCenter
+radius: height / 2
+color: scanInput.containsMouse || scanInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+
+Row {
+id: scanContent
+anchors.centerIn: parent
+spacing: root.theme.spacing.space4
+
+Text {
+text: root.icons.bluetoothOn
+color: root.colors.primary
+font.family: root.theme.typography.iconFontFamily
+font.pixelSize: root.theme.typography.sizeMd
+}
+
+Text {
+text: root.services.bluetooth.bluetoothDiscovering ? "Scanning…" : "Scan"
+color: root.colors.primary
+font.family: root.theme.typography.textFontFamily
+font.pixelSize: root.theme.typography.sizeSm
+font.styleName: root.theme.typography.styleRegular
+}
+}
+
+MouseArea {
+id: scanInput
+anchors.fill: parent
+enabled: root.services.bluetooth.bluetoothPowered
+hoverEnabled: true
+cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+activeFocusOnTab: enabled
+Accessible.role: Accessible.Button
+Accessible.name: root.services.bluetooth.bluetoothDiscovering ? "Scanning Bluetooth" : "Scan Bluetooth"
+onClicked: root.services.bluetooth.scanBluetooth()
+Keys.onSpacePressed: root.services.bluetooth.scanBluetooth()
+Keys.onReturnPressed: root.services.bluetooth.scanBluetooth()
+Keys.onEnterPressed: root.services.bluetooth.scanBluetooth()
+}
+}
+                            }
+                                BarText {
+                                    visible: root.services.bluetooth.bluetoothError.length > 0
+                                    width: parent.width
+                                    text: root.services.bluetooth.bluetoothError
+                                    color: root.colors.danger
+                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.styleName: root.theme.typography.styleRegular
+                                    wrapMode: Text.Wrap
+                                }
+BarText { visible: bluetoothDetailsColumn.connectedDevices.length > 0; text: "Connected devices"; color: root.colors.textSubtle; font.pixelSize: root.theme.typography.sizeMd; font.styleName: root.theme.typography.styleRegular }
+                            Repeater {
+                                model: bluetoothDetailsColumn.connectedDevices
+
+                                delegate: BluetoothDeviceRow {
+                                    required property var modelData
+
+                                    width: bluetoothDetailsColumn.width
+                                    device: modelData
+                                    colors: root.colors
+                                    theme: root.theme
+                                    primaryActionVisible: true
+                                    pending: {
+                                        root.services.bluetooth.bluetoothPendingRevision
+                                        return root.services.bluetooth.bluetoothDevicePending(device)
+                                    }
+                                    onPrimaryActionRequested: root.services.bluetooth.disconnectBluetoothDevice(device)
+                                    onForgetRequested: root.services.bluetooth.forgetBluetoothDevice(device)
+                                }
+                            }
+                            BarText { visible: bluetoothDetailsColumn.knownDevices.length > 0; text: "Known devices"; color: root.colors.textSubtle; font.pixelSize: root.theme.typography.sizeMd; font.styleName: root.theme.typography.styleRegular }
+                            Repeater {
+                                model: bluetoothDetailsColumn.knownDevices
+
+                                delegate: BluetoothDeviceRow {
+                                    required property var modelData
+
+                                    width: bluetoothDetailsColumn.width
+                                    device: modelData
+                                    colors: root.colors
+                                    theme: root.theme
+                                    primaryActionVisible: root.services.bluetooth.bluetoothPowered
+                                    pending: {
+                                        root.services.bluetooth.bluetoothPendingRevision
+                                        return root.services.bluetooth.bluetoothDevicePending(device)
+                                    }
+                                    onPrimaryActionRequested: root.services.bluetooth.connectBluetoothDevice(device)
+                                    onForgetRequested: root.services.bluetooth.forgetBluetoothDevice(device)
+                                }
+                            }
+                            BarText { visible: root.services.bluetooth.bluetoothDiscovering && bluetoothDetailsColumn.availableDevices.length > 0; text: "Available devices"; color: root.colors.textSubtle; font.pixelSize: root.theme.typography.sizeMd; font.styleName: root.theme.typography.styleRegular }
+                            Repeater {
+                                model: bluetoothDetailsColumn.availableDevices
+
+                                delegate: BluetoothDeviceRow {
+                                    required property var modelData
+
+                                    width: bluetoothDetailsColumn.width
+                                    device: modelData
+                                    colors: root.colors
+                                    theme: root.theme
+                                    primaryActionVisible: root.services.bluetooth.bluetoothPowered
+                                    pending: {
+                                        root.services.bluetooth.bluetoothPendingRevision
+                                        return root.services.bluetooth.bluetoothDevicePending(device)
+                                    }
+                                    onPrimaryActionRequested: root.services.bluetooth.pairBluetoothDevice(device)
+                                }
+                            }
+                            BarText { visible: root.services.bluetooth.bluetoothDiscovering && bluetoothDetailsColumn.availableDevices.length === 0; text: "Scanning for Bluetooth devices…"; color: root.colors.textSubtle; font.pixelSize: root.theme.typography.sizeSm; font.styleName: root.theme.typography.styleRegular }
+                        }
+                    }
+
+                    Rectangle {
+                            id: wifiCard
+                            visible: root.expandedNetworkSection === "wifi"
                         width: parent.width
                         height: wifiColumn.implicitHeight + root.theme.spacing.space24
                         color: root.colors.transparent
@@ -958,6 +1111,7 @@ Item {
     }
 
     }
+
 
         WifiPasswordModal {
             screen: root.barWindow.screen

@@ -200,6 +200,86 @@ function bluetoothSummary(available, powered, connectedCount) {
 	return count > 0 ? count + " connected" : "Enabled";
 }
 
+function bluetoothDeviceState(device) {
+	if (!device) return "Unavailable";
+	if (device.blocked) return "Blocked";
+	if (device.pairing) return "Pairing…";
+	if (device.state === "Connecting") return "Connecting…";
+	if (device.state === "Disconnecting") return "Disconnecting…";
+	if (device.connected) return "Connected";
+	return device.paired || device.trusted
+		? "Paired · Disconnected"
+		: "Available";
+}
+
+function bluetoothDeviceCategory(device) {
+	if (!device) return "unknown";
+	if (device.connected) return "connected";
+	if (device.paired || device.trusted) return "known-disconnected";
+	return "available";
+}
+
+function bluetoothDeviceAction(device) {
+	if (
+		!device ||
+		device.blocked ||
+		device.pairing ||
+		device.state === "Connecting" ||
+		device.state === "Disconnecting"
+	)
+		return "busy";
+	var category = bluetoothDeviceCategory(device);
+	if (category === "connected") return "disconnect";
+	if (category === "known-disconnected") return "connect";
+	return "pair";
+}
+
+function bluetoothUniqueDevices(devices) {
+	var seen = {};
+	return Array.from(devices || []).filter((device) => {
+		var key =
+			device &&
+			(device.address || device.dbusPath || device.name || device.deviceName);
+		if (!key || seen[key]) return false;
+		seen[key] = true;
+		return true;
+	});
+}
+
+function bluetoothBatteryText(device) {
+	if (!device || !device.batteryAvailable) return "";
+	var battery = Number(device.battery);
+	if (!Number.isFinite(battery) || battery < 0 || battery > 100) return "";
+	var percentage = battery <= 1 ? battery * 100 : battery;
+	return Math.round(percentage) + "% battery";
+}
+
+function bluetoothDeviceIcon(device) {
+	var metadata = String((device && device.icon) || "").toLowerCase();
+	var fallback = String(
+		(device && (device.name || device.deviceName)) || "",
+	).toLowerCase();
+	var value = metadata || fallback;
+	if (/headphone|headset|airpod|audio/.test(value)) return "󰋋";
+	if (/phone|android|iphone|samsung/.test(value)) return "󰏲";
+	if (/computer|laptop|desktop|pc/.test(value)) return "󰊠";
+	if (/keyboard/.test(value)) return "󰌌";
+	if (/mouse/.test(value)) return "󰍽";
+	if (/watch/.test(value)) return "󰥔";
+	if (/speaker/.test(value)) return "󰓃";
+	if (/tv|display/.test(value)) return "󰍹";
+	return "󰂯";
+}
+
+function bluetoothDevicesVisible(scanning, devices) {
+	return (
+		Boolean(scanning) &&
+		Array.from(devices || []).some(
+			(device) => device && bluetoothDeviceCategory(device) === "available",
+		)
+	);
+}
+
 function microphoneSummary(available, muted, volume) {
 	if (!available) return "Unavailable";
 	if (muted) return "Muted";

@@ -103,6 +103,12 @@ Scope {
     readonly property alias bluetoothAvailable: bluetoothService.bluetoothAvailable
     readonly property alias bluetoothPowered: bluetoothService.bluetoothPowered
     readonly property alias bluetoothConnectedCount: bluetoothService.bluetoothConnectedCount
+    readonly property alias bluetoothDiscovering: bluetoothService.bluetoothDiscovering
+    readonly property alias bluetoothDevices: bluetoothService.bluetoothDevices
+    readonly property alias bluetoothBusy: bluetoothService.bluetoothBusy
+    readonly property alias bluetoothError: bluetoothService.bluetoothError
+    readonly property alias bluetoothPendingRevision: bluetoothService.bluetoothPendingRevision
+    function bluetoothDevicePending(device) { return bluetoothService.bluetoothDevicePending(device) }
 
     readonly property alias notificationCount: notificationService.notificationCount
     readonly property alias hasNotifications: notificationService.hasNotifications
@@ -191,6 +197,11 @@ Scope {
     function statusWorkspaceIdsForMonitor(monitor) { return workspaceService.statusWorkspaceIdsForMonitor(monitor) }
 
     function toggleBluetoothPowered() { return bluetoothService.toggleBluetoothPowered() }
+    function scanBluetooth() { return bluetoothService.scanBluetooth() }
+    function connectBluetoothDevice(device) { return bluetoothService.connectBluetoothDevice(device) }
+    function disconnectBluetoothDevice(device) { return bluetoothService.disconnectBluetoothDevice(device) }
+    function pairBluetoothDevice(device) { return bluetoothService.pairBluetoothDevice(device) }
+    function forgetBluetoothDevice(device) { return bluetoothService.forgetBluetoothDevice(device) }
     function toggleMute(isSource) { return audioService.toggleMute(isSource) }
     function setSourceVolume(percent) { return audioService.setSourceVolume(percent) }
     function selectAudioSource(node) { return audioService.selectAudioSource(node) }

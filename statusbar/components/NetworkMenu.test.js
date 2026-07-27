@@ -9,6 +9,14 @@ const playbackRowQml = fs.readFileSync(
 	"utf8",
 );
 const mixerQml = fs.readFileSync(`${__dirname}/AudioMixerSection.qml`, "utf8");
+const bluetoothRowQml = fs.readFileSync(
+	`${__dirname}/BluetoothDeviceRow.qml`,
+	"utf8",
+);
+const bluetoothServiceQml = fs.readFileSync(
+	`${__dirname}/../../services/capabilities/BluetoothService.qml`,
+	"utf8",
+);
 const menu = {};
 vm.createContext(menu);
 vm.runInContext(source, menu);
@@ -91,6 +99,172 @@ const menuLayoutBlock = objectBlockById(qml, "menuLayout");
 const fixedShellBlock = objectBlockById(qml, "fixedShell");
 const detailFlickableBlock = objectBlockById(qml, "detailFlickable");
 const detailContentBlock = objectBlockById(qml, "detailContent");
+assert.match(detailContentBlock, /id: bluetoothDetails/);
+assert.match(
+	detailContentBlock,
+	/visible: root\.expandedNetworkSection === "bluetooth"/,
+);
+assert.match(
+	detailContentBlock,
+	/height: bluetoothDetailsColumn\.implicitHeight \+ root\.theme\.spacing\.space24/,
+);
+assert.equal((qml.match(/BluetoothDeviceRow\s*\{/g) || []).length, 3);
+assert.doesNotMatch(
+	qml,
+	/bluetoothDetailsLegacy|bluetoothDeviceDelegateLegacy|width: parent\.width - 180|width: 90/,
+);
+assert.match(detailContentBlock, /BluetoothDeviceRow/);
+assert.match(detailContentBlock, /text: root\.icons\.bluetoothOn/);
+assert.match(
+	detailContentBlock,
+	/width: scanContent\.implicitWidth \+ root\.theme\.spacing\.space12/,
+);
+assert.match(
+	detailContentBlock,
+	/height: scanContent\.implicitHeight \+ root\.theme\.spacing\.space8/,
+);
+assert.match(detailContentBlock, /radius: height \/ 2/);
+assert.match(detailContentBlock, /root\.colors\.transparent/);
+assert.match(detailContentBlock, /id: scanButton/);
+assert.match(
+	detailContentBlock,
+	/font\.family: root\.theme\.typography\.textFontFamily/,
+);
+assert.match(bluetoothRowQml, /signal primaryActionRequested/);
+assert.match(bluetoothRowQml, /property bool primaryActionVisible: true/);
+assert.match(bluetoothRowQml, /visible: root\.primaryActionVisible/);
+assert.match(
+	qml,
+	/primaryActionVisible: root\.services\.bluetooth\.bluetoothPowered/,
+);
+assert.match(qml, /primaryActionVisible: true/);
+assert.match(
+	bluetoothServiceQml,
+	/function connectBluetoothDevice[\s\S]*!bluetoothPowered/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function pairBluetoothDevice[\s\S]*!bluetoothPowered/,
+);
+assert.match(bluetoothServiceQml, /bluetoothPairStabilityWindowMs: 1750/);
+assert.match(bluetoothServiceQml, /pairingObserved: false, stableSince: undefined/);
+assert.match(bluetoothServiceQml, /const pairing = Boolean\(device\.pairing\)/);
+assert.match(bluetoothServiceQml, /const ready = !pairing && Boolean\(device\.paired\) && Boolean\(device\.bonded\)/);
+assert.match(bluetoothServiceQml, /const observed = pending\.pairingObserved \|\| pairing/);
+assert.match(bluetoothServiceQml, /if \(pairing \|\| !ready\)/);
+assert.match(bluetoothServiceQml, /stableSince: now/);
+assert.match(bluetoothServiceQml, /now - nextPending\.stableSince >= bluetoothPairStabilityWindowMs/);
+assert.match(bluetoothServiceQml, /if \(observed && !pairing && \(!device\.paired \|\| !device\.bonded\)\)/);
+assert.match(bluetoothServiceQml, /if \(device\.connected\)[\s\S]*finishBluetoothOperation\(key, ""\)/);
+assert.match(
+	bluetoothServiceQml,
+	/function chainPairToConnect\(key, device, now\)[\s\S]*next\[key\] = \{ operation: "connect", startedAt: now \}[\s\S]*replacePending\(next\)[\s\S]*device\.connect\(\)/,
+);
+assert.match(bluetoothServiceQml, /pending\.operation === "pair" && device/);
+assert.match(bluetoothServiceQml, /operationError\("pair"\)/);
+assert.match(bluetoothServiceQml, /now - pending\.startedAt >= bluetoothOperationTimeoutMs/);
+assert.equal(
+	(bluetoothServiceQml.match(/device\.connect\(\)/g) || []).length,
+	2,
+	"connect is invoked only by direct connect and the pair chain",
+);
+assert.match(
+	bluetoothServiceQml,
+	/catch \(error\) \{[\s\S]*finishBluetoothOperation\(key, "Could not connect to device"\)/,
+);
+assert.doesNotMatch(
+	bluetoothServiceQml,
+	/on.*(?:ConnectedChanged|connectedChanged)[\s\S]*connectBluetoothDevice/,
+	"connection drops must not trigger auto-reconnect",
+);
+assert.match(
+	bluetoothServiceQml,
+	/function forgetBluetoothDevice\(device\)[\s\S]*if \(!device\.connected\)[\s\S]*startBluetoothOperation\(device, "forget", \(\) => device\.forget\(\)\)[\s\S]*startBluetoothOperation\(device, "disconnect-before-forget", \(\) => device\.disconnect\(\)\)/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/pending\.operation === "disconnect-before-forget" && device && !device\.connected[\s\S]*chainDisconnectToForget\(key, device, now\)/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function chainDisconnectToForget\(key, device, now\)[\s\S]*next\[key\] = \{ operation: "forget", startedAt: now \}[\s\S]*replacePending\(next\)[\s\S]*device\.forget\(\)/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/if \(operation === "disconnect-before-forget"\) return false/,
+	"disconnect-before-forget must not fall through to generic forget success",
+);
+assert.match(
+	bluetoothServiceQml,
+	/if \(operation === "disconnect-before-forget"\) return "Could not disconnect from device"/,
+);
+assert.doesNotMatch(
+	bluetoothServiceQml,
+	/BlueZ|RSSI|bluetoothctl|dbus-send|Process/,
+);
+assert.match(bluetoothRowQml, /signal forgetRequested/);
+assert.match(bluetoothRowQml, /Accessible\.role: Accessible\.Button/);
+assert.match(bluetoothRowQml, /bluetoothBatteryText/);
+assert.match(
+	bluetoothRowQml,
+	/forgetAvailable: Boolean\(device && \(device\.connected \|\| device\.paired \|\| device\.trusted\)\)/,
+);
+assert.match(
+	bluetoothRowQml,
+	/root\.action === "connect" \? "Connect" : "Disconnect"/,
+);
+assert.match(bluetoothRowQml, /Keys\.onSpacePressed/);
+assert.match(qml, /expandedNetworkSection === "bluetooth"/);
+assert.match(
+	qml,
+	/onBodyClicked: networkController\.toggleNetworkSection\("bluetooth"\)/,
+);
+assert.match(qml, /text: "Known devices"/);
+assert.match(qml, /model: bluetoothDetailsColumn\.connectedDevices/);
+assert.match(qml, /model: bluetoothDetailsColumn\.knownDevices/);
+assert.match(qml, /model: bluetoothDetailsColumn\.availableDevices/);
+assert.equal(
+	(
+		detailContentBlock.match(
+			/delegate: BluetoothDeviceRow \{\s+required property var modelData/g,
+		) || []
+	).length,
+	3,
+	"each Bluetooth repeater must bind its own modelData instead of the outer screen model",
+);
+assert.match(qml, /bluetoothDetailsColumn\.availableDevices\.length === 0/);
+assert.doesNotMatch(
+	qml,
+	/(?:visible:|model:) (?:connectedDevices|knownDevices|availableDevices)\b/,
+);
+assert.match(
+	detailContentBlock,
+	/id: scanInput[\s\S]*enabled: root\.services\.bluetooth\.bluetoothPowered[\s\S]*cursorShape: enabled \? Qt\.PointingHandCursor : Qt\.ArrowCursor/,
+);
+assert.equal(
+	(
+		detailContentBlock.match(
+			/root\.services\.bluetooth\.bluetoothPendingRevision/g,
+		) || []
+	).length,
+	3,
+	"every Bluetooth device section must react to pending-map revisions",
+);
+assert.match(qml, /device\.blocked/);
+assert.match(
+	qml,
+	/text: root\.services\.bluetooth\.bluetoothError[\s\S]*font\.pixelSize: root\.theme\.typography\.sizeSm/,
+);
+assert.match(bluetoothServiceQml, /id: errorClearTimer[\s\S]*interval: 5000/);
+assert.match(
+	bluetoothServiceQml,
+	/onBluetoothErrorChanged:[\s\S]*errorClearTimer\.restart\(\)/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/onBluetoothErrorChanged:[\s\S]*else[\s\S]*errorClearTimer\.stop\(\)/,
+);
+assert.match(bluetoothServiceQml, /onTriggered: root\.bluetoothError = ""/);
 for (const id of [
 	"userCard",
 	"quickControlsRow",
@@ -275,6 +449,89 @@ assert.equal(menu.bluetoothSummary(false, false, 0), "Unavailable");
 assert.equal(menu.bluetoothSummary(true, false, 0), "Off");
 assert.equal(menu.bluetoothSummary(true, true, 0), "Enabled");
 assert.equal(menu.bluetoothSummary(true, true, 2), "2 connected");
+assert.equal(menu.bluetoothDeviceCategory({ connected: true }), "connected");
+assert.equal(
+	menu.bluetoothDeviceCategory({ paired: true }),
+	"known-disconnected",
+);
+assert.equal(
+	menu.bluetoothDeviceCategory({ trusted: true }),
+	"known-disconnected",
+);
+assert.equal(menu.bluetoothDeviceCategory({}), "available");
+assert.equal(menu.bluetoothDeviceState({ connected: true }), "Connected");
+assert.equal(
+	menu.bluetoothDeviceState({ paired: true, connected: false }),
+	"Paired · Disconnected",
+);
+assert.equal(menu.bluetoothDeviceState({ pairing: true }), "Pairing…");
+assert.equal(menu.bluetoothDeviceState({ state: "Connecting" }), "Connecting…");
+assert.equal(menu.bluetoothDeviceState({ blocked: true }), "Blocked");
+assert.equal(menu.bluetoothDeviceAction({ connected: true }), "disconnect");
+assert.equal(menu.bluetoothDeviceAction({ paired: true }), "connect");
+assert.equal(menu.bluetoothDeviceAction({}), "pair");
+assert.equal(menu.bluetoothDeviceAction({ pairing: true }), "busy");
+assert.equal(menu.bluetoothDeviceAction({ blocked: true }), "busy");
+assert.equal(
+	menu.bluetoothBatteryText({ batteryAvailable: true, battery: 0.4 }),
+	"40% battery",
+);
+assert.equal(
+	menu.bluetoothBatteryText({ batteryAvailable: true, battery: 1 }),
+	"100% battery",
+);
+assert.equal(
+	menu.bluetoothBatteryText({ batteryAvailable: true, battery: 40 }),
+	"40% battery",
+);
+assert.equal(
+	menu.bluetoothBatteryText({ batteryAvailable: true, battery: 0 }),
+	"0% battery",
+);
+for (const battery of [Number.NaN, Number.POSITIVE_INFINITY, -1, 101])
+	assert.equal(
+		menu.bluetoothBatteryText({ batteryAvailable: true, battery }),
+		"",
+	);
+assert.equal(
+	menu.bluetoothBatteryText({ batteryAvailable: false, battery: 0.4 }),
+	"",
+);
+assert.equal(menu.bluetoothDevicesVisible(false, []), false);
+assert.equal(menu.bluetoothDevicesVisible(true, []), false);
+assert.equal(menu.bluetoothDevicesVisible(false, [{ name: "Mouse" }]), false);
+assert.equal(menu.bluetoothDevicesVisible(true, [{ name: "Mouse" }]), true);
+assert.equal(
+	menu.bluetoothDevicesVisible(false, [{ name: "Headset", connected: true }]),
+	false,
+);
+assert.equal(
+	menu.bluetoothDevicesVisible(true, [{ name: "Headset", connected: true }]),
+	false,
+);
+assert.equal(
+	menu.bluetoothUniqueDevices([
+		{ address: "a" },
+		{ address: "a" },
+		{ address: "b" },
+	]).length,
+	2,
+);
+assert.equal(
+	menu.bluetoothDeviceAction({ connected: true, paired: true }),
+	"disconnect",
+);
+assert.equal(menu.bluetoothDeviceAction({ trusted: true }), "connect");
+assert.equal(
+	menu.bluetoothDeviceAction({ paired: false, trusted: false }),
+	"pair",
+);
+assert.equal(
+	menu.bluetoothDeviceIcon({ icon: "computer", name: "Mouse" }),
+	"󰊠",
+);
+assert.equal(menu.bluetoothDeviceIcon({ name: "Samsung phone" }), "󰏲");
+assert.equal(menu.bluetoothDeviceIcon({ name: "TV display" }), "󰍹");
 assert.equal(menu.microphoneSummary(false, false, -1), "Unavailable");
 assert.equal(menu.microphoneSummary(true, true, 58), "Muted");
 assert.equal(menu.microphoneSummary(true, false, 58.4), "58%");

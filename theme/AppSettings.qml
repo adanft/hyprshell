@@ -7,11 +7,14 @@ Item {
 
     property string currentTheme: ""
     property string currentWallpaper: ""
+    property bool startupReady: false
 
     Component.onCompleted: persistence.start()
 
     AppSettingsPersistence {
         id: persistence
+
+        onStartupSettled: appSettings.startupReady = true
 
         onLoaded: function (nextTheme, nextWallpaper) {
             if (appSettings.currentTheme !== nextTheme)

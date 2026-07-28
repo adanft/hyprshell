@@ -1,9 +1,11 @@
 pragma Singleton
 
 import QtQuick
+import QtQml
 import Quickshell
 import Quickshell.Io
 import "HyprlandThemeCommand.js" as HyprlandThemeCommand
+import "ThemeSyncState.js" as ThemeSyncState
 
 QtObject {
     id: stockThemes
@@ -12,6 +14,7 @@ QtObject {
     readonly property string currentTheme: normalizeName(AppSettings.currentTheme)
     property var pendingHyprlandTheme: null
     property bool hyprlandSyncBusy: false
+    property var hyprlandState: ThemeSyncState.createHyprlandState()
     property bool externalThemeSyncReady: false
 
     readonly property string sourceFile: `${Quickshell.shellDir}/theme/themes.json`
@@ -57,22 +60,36 @@ QtObject {
         path: stockThemes.sourceFile
         printErrors: false
         watchChanges: true
-        onLoaded: stockThemes.load()
-        onLoadFailed: stockThemes.themes = stockThemes.fallbackThemes
+        onLoaded: {
+            stockThemes.load()
+            stockThemes.startupCoordinator.themeSourceReady = true
+        }
+        onLoadFailed: {
+            stockThemes.themes = stockThemes.fallbackThemes
+            stockThemes.startupCoordinator.themeSourceReady = true
+        }
         onFileChanged: reload()
     }
 
-    Component.onCompleted: {
-        externalThemeSyncReady = true
-        scheduleExternalThemeSync()
+    Component.onCompleted: startupCoordinator.request(false)
+    Connections {
+        target: AppSettings
+        function onStartupReadyChanged() {
+            startupCoordinator.settingsReady = AppSettings.startupReady
+        }
     }
-    onCurrentThemeChanged: scheduleExternalThemeSync()
-    onThemesChanged: scheduleExternalThemeSync()
+    readonly property var startupCoordinator: ThemeStartupCoordinator {
+        currentTheme: stockThemes.currentTheme
+        settingsReady: AppSettings.startupReady
+        onSyncRequested: function (themeId, force) {
+            stockThemes.syncExternalTheme(themeId, force)
+        }
+    }
 
     readonly property var externalThemeSyncTimer: Timer {
         interval: 0
         repeat: false
-        onTriggered: stockThemes.syncExternalTheme(stockThemes.currentTheme)
+        onTriggered: startupCoordinator.request(false)
     }
 
     function defaultName() {
@@ -112,59 +129,73 @@ QtObject {
         const nextTheme = normalizeName(name)
         const changed = AppSettings.setCurrentTheme(nextTheme)
         if (!changed)
-        scheduleExternalThemeSync()
+        scheduleExternalThemeSync(true)
         return changed
     }
 
-        function scheduleExternalThemeSync() {
-        if (externalThemeSyncReady)
-        externalThemeSyncTimer.restart()
+        function scheduleExternalThemeSync(force) {
+        externalThemeSyncReady = true
+        startupCoordinator.request(force)
     }
 
-        function syncExternalTheme(themeId) {
+        function syncExternalTheme(themeId, force) {
         const normalizedTheme = normalizeName(themeId)
         const nextTheme = theme(normalizedTheme)
-        GhosttyTheme.sync(normalizedTheme)
-        syncHyprlandTheme(nextTheme)
+        GhosttyTheme.sync(normalizedTheme, force)
+        syncHyprlandTheme(nextTheme, force)
     }
 
-        function syncHyprlandTheme(nextTheme) {
-        pendingHyprlandTheme = nextTheme
-        if (hyprlandSyncBusy)
+        function syncHyprlandTheme(nextTheme, force) {
+        const decision = ThemeSyncState.requestHyprland(hyprlandState, nextTheme, force)
+        if (decision.action !== "start")
         return
         let processArgs
         try {
-        processArgs = HyprlandThemeCommand.processArguments(nextTheme)
+        processArgs = HyprlandThemeCommand.processArguments(decision.request.theme)
     } catch (error) {
-        pendingHyprlandTheme = null
+        hyprlandState.busy = false
+        hyprlandState.pending = null
         console.warn(`Failed to build Hyprland theme command: ${error}`)
         return
     }
-
         hyprlandSyncBusy = true
-        const process = hyprlandProcessComponent.createObject(stockThemes)
-        if (!process) {
-        pendingHyprlandTheme = null
-        hyprlandSyncBusy = false
-        console.warn("Failed to create Hyprland theme process")
+        let process
+        try {
+        process = hyprlandProcessComponent.createObject(stockThemes)
+    } catch (error) {
+        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, false)
+        hyprlandSyncBusy = hyprlandState.busy
+        console.warn(`Failed to create Hyprland theme process: ${error}`)
+        if (next.action === "start")
+        syncHyprlandTheme(next.request.theme, next.request.force)
         return
     }
-
+        if (!process) {
+        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, false)
+        hyprlandSyncBusy = hyprlandState.busy
+        console.warn("Failed to create Hyprland theme process")
+        if (next.action === "start")
+        syncHyprlandTheme(next.request.theme, next.request.force)
+        return
+    }
         process.onExited.connect(function (exitCode) {
+        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, exitCode === 0)
         if (exitCode !== 0)
         console.warn(`Failed to apply Hyprland theme (exit ${exitCode})`)
         process.destroy()
-        hyprlandSyncBusy = false
-        if (pendingHyprlandTheme !== nextTheme)
-        syncHyprlandTheme(pendingHyprlandTheme)
+        hyprlandSyncBusy = hyprlandState.busy
+        if (next.action === "start")
+        syncHyprlandTheme(next.request.theme, next.request.force)
     })
         try {
         process.exec(processArgs)
     } catch (error) {
+        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, false)
         process.destroy()
-        pendingHyprlandTheme = null
-        hyprlandSyncBusy = false
+        hyprlandSyncBusy = hyprlandState.busy
         console.warn(`Failed to start Hyprland theme process: ${error}`)
+        if (next.action === "start")
+        syncHyprlandTheme(next.request.theme, next.request.force)
     }
     }
 

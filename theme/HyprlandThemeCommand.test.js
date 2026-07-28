@@ -49,10 +49,8 @@ assert.throws(
 const stockThemes = fs.readFileSync(`${__dirname}/StockThemes.qml`, "utf8");
 assert.equal(stockThemes.includes("apply_hyprland_theme.sh"), false);
 assert.match(stockThemes, /process\.exec\(processArgs\)/);
-assert.match(
-	stockThemes,
-	/catch \(error\)\s*{\s*process\.destroy\(\)\s*pendingHyprlandTheme = null\s*hyprlandSyncBusy = false/,
-);
+assert.match(stockThemes, /ThemeSyncState\.requestHyprland/);
+assert.match(stockThemes, /ThemeSyncState\.finishHyprland/);
 
 console.log(
 	"HyprlandThemeCommand: validation and direct hyprctl arguments passed",

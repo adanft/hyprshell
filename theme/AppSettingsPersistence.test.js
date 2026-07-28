@@ -56,6 +56,12 @@ assert.match(persistence, /\["cp", "-n", "--", legacyFile, configFile\]/);
 assert.match(persistence, /property string currentTheme: ""/);
 assert.match(persistence, /property string currentWallpaper: ""/);
 assert.match(persistence, /settingsFileView\.writeAdapter\(\)/);
-assert.doesNotMatch(persistence, /onLoadFailed|console\.|retry|timeout/i);
+assert.match(
+	persistence,
+	/onLoadFailed: persistence\.deliverLoadFailed\(error\)/,
+);
+assert.match(persistence, /signal startupSettled/);
+assert.match(persistence, /startupSettled\(\)/);
+assert.match(persistence, /FileViewError\.FileNotFound/);
 
 console.log("AppSettings persistence extraction contract: PASS");

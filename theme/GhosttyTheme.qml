@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "GhosttyThemeTransform.js" as GhosttyTransform
+import "ThemeSyncState.js" as ThemeSyncState
 
 QtObject {
     id: ghosttyTheme
@@ -12,8 +13,11 @@ QtObject {
     readonly property string configFile: configDirectory + "/ghostty/config.ghostty"
 
     property var pendingTheme: null
+    property bool pendingForce: false
     property bool busy: false
     property int lastLoadError: FileViewError.Success
+    property var reloadState: ThemeSyncState.createGhosttyState()
+    property bool pendingReloadForce: false
 
     readonly property var configView: FileView {
         path: ghosttyTheme.configFile
@@ -22,7 +26,8 @@ QtObject {
         atomicWrites: true
         onLoadFailed: error => ghosttyTheme.lastLoadError = error
         onSaved: {
-            ghosttyTheme.reload()
+            ghosttyTheme.reload(ghosttyTheme.pendingReloadForce)
+            ghosttyTheme.pendingReloadForce = false
             ghosttyTheme.finish()
         }
         onSaveFailed: error => {
@@ -31,8 +36,10 @@ QtObject {
         }
     }
 
-    function sync(themeId) {
+    function sync(themeId, force) {
         pendingTheme = themeId
+        pendingForce = pendingForce || Boolean(force)
+
         if (!busy)
             processNext()
     }
@@ -45,26 +52,37 @@ QtObject {
 
         busy = true
         const theme = pendingTheme
+        const force = pendingForce
         pendingTheme = null
-        ensureConfigDir(theme)
+        pendingForce = false
+        ensureConfigDir(theme, force)
     }
 
-    function ensureConfigDir(theme) {
+    function ensureConfigDir(theme, force) {
         const configDirectory = configFile.substring(0, configFile.lastIndexOf("/"))
-        const mkdir = mkdirComponent.createObject(ghosttyTheme)
-        mkdir.onExited.connect(function (exitCode) {
-            mkdir.destroy()
-            if (exitCode !== 0) {
-                console.warn(`Failed to create Ghostty config directory: ${configDirectory}`)
-                finish()
-                return
-            }
-            synchronize(theme)
-        })
-        mkdir.exec(["mkdir", "-p", "--", configDirectory])
+        let mkdir
+        try {
+            mkdir = mkdirComponent.createObject(ghosttyTheme)
+            if (!mkdir)
+                throw new Error("process creation returned null")
+            mkdir.onExited.connect(function (exitCode) {
+                mkdir.destroy()
+                if (exitCode !== 0)
+                    console.warn(`Failed to create Ghostty config directory: ${configDirectory}`)
+                if (exitCode !== 0)
+                    return finish()
+                synchronize(theme, force)
+            })
+            mkdir.exec(["mkdir", "-p", "--", configDirectory])
+        } catch (error) {
+            if (mkdir)
+                mkdir.destroy()
+            console.warn(`Failed to start Ghostty config directory process: ${error}`)
+            finish()
+        }
     }
 
-    function synchronize(theme) {
+    function synchronize(theme, force) {
         try {
             lastLoadError = FileViewError.Success
             configView.reload()
@@ -73,11 +91,11 @@ QtObject {
                 throw new Error("config file could not be loaded")
             const currentText = loaded ? configView.text() : ""
             const nextText = GhosttyTransform.transform(currentText, theme)
-            if (nextText === currentText) {
-                reload()
+            if (!ThemeSyncState.ghosttyNeedsReload(nextText !== currentText, force)) {
                 finish()
                 return
             }
+            pendingReloadForce = force
             configView.setText(nextText)
         } catch (error) {
             console.warn(`Failed to synchronize Ghostty theme: ${error}`)
@@ -91,14 +109,29 @@ QtObject {
             processNext()
     }
 
-    function reload() {
-        const process = reloadProcessComponent.createObject(ghosttyTheme)
-        process.onExited.connect(function (exitCode) {
-            if (exitCode !== 0)
-                console.warn(`Failed to reload Ghostty after theme synchronization (exit ${exitCode})`)
-            process.destroy()
-        })
-        process.exec(["gapplication", "action", "com.mitchellh.ghostty", "reload-config"])
+    function reload(force) {
+        const decision = ThemeSyncState.requestGhostty(reloadState, force)
+        if (decision.action !== "start")
+            return
+        try {
+            const process = reloadProcessComponent.createObject(ghosttyTheme)
+            if (!process)
+                throw new Error("process creation returned null")
+            process.onExited.connect(function (exitCode) {
+                const next = ThemeSyncState.finishGhostty(reloadState, exitCode === 0)
+                if (exitCode !== 0)
+                    console.warn(`Failed to reload Ghostty after theme synchronization (exit ${exitCode})`)
+                process.destroy()
+                if (next.action === "start")
+                    reload(next.force)
+            })
+            process.exec(["gapplication", "action", "com.mitchellh.ghostty", "reload-config"])
+        } catch (error) {
+            const next = ThemeSyncState.finishGhostty(reloadState, false)
+            console.warn(`Failed to start Ghostty reload process: ${error}`)
+            if (next.action === "start")
+                reload(next.force)
+        }
     }
 
     readonly property Component reloadProcessComponent: Component {

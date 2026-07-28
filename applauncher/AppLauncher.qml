@@ -1,5 +1,6 @@
 import "../shared/components" as Shared
 import "../theme"
+import "AppLauncherOpenWorkflow.js" as AppLauncherOpenWorkflow
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -22,15 +23,12 @@ Scope {
     readonly property var contentItem: contentLoader.item
 
     function open() {
-        refreshApplications()
-        if (searchText !== "")
-            searchText = ""
-
-        applySearchFilter(false)
-        selectedIndex = 0
-        panel.visible = true
-        Qt.callLater(() => {
-            return contentItem?.searchField?.forceActiveFocus()
+        AppLauncherOpenWorkflow.open(searchText, {
+            clearSearch: () => searchText = "",
+            refreshApplications: () => refreshApplications(),
+            resetSelection: () => selectedIndex = 0,
+            show: () => panel.visible = true,
+            scheduleFocus: () => Qt.callLater(() => contentItem?.searchField?.forceActiveFocus())
         })
     }
 

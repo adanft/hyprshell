@@ -1,5 +1,20 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const activitySource = fs.readFileSync(
+	`${__dirname}/NotificationTimeActivity.js`,
+	"utf8",
+);
 const activity = require("./NotificationTimeActivity.js");
+
+assert.match(
+	activitySource,
+	/if \(typeof module !== "undefined"\) \{\s*module\.exports\s*=\s*\{/s,
+);
+const unguardedSource = activitySource.replace(
+	/if \(typeof module !== "undefined"\) \{[\s\S]*?\n\}/,
+	"",
+);
+assert.doesNotMatch(unguardedSource, /module\.exports\s*=/);
 
 assert.equal(activity.shouldUpdateNotificationTime({}), false);
 assert.equal(activity.shouldUpdateNotificationTime({ history: true }), false);

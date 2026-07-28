@@ -4,6 +4,8 @@ function shouldUpdateNotificationTime(state) {
 	);
 }
 
-module.exports = {
-	shouldUpdateNotificationTime,
-};
+if (typeof module !== "undefined") {
+	module.exports = {
+		shouldUpdateNotificationTime,
+	};
+}

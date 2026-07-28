@@ -20,9 +20,17 @@ Item {
     readonly property real borderWidth: theme.shape.appLauncherCardBorderWidth
     readonly property real pathInset: borderWidth / 2
     readonly property real innerHeight: Math.max(1, height - 2 * pathInset)
-    readonly property real cornerRadius: Math.max(0, Math.min(theme.shape.wallpaperCardRadius, (width - slant - 2 * pathInset) / 2, innerHeight / 2))
+    readonly property real cornerRadius: Math.max(0, Math.min(theme.shape.wallpaperCardRadius, (width - slant - 2
+                                                                                                * pathInset) / 2,
+                                                              innerHeight / 2))
     readonly property real slopeOffset: slant * cornerRadius / innerHeight
-    readonly property color borderColor: Qt.rgba(theme.colors.border.r + (theme.colors.focus.r - theme.colors.border.r) * focusWeight, theme.colors.border.g + (theme.colors.focus.g - theme.colors.border.g) * focusWeight, theme.colors.border.b + (theme.colors.focus.b - theme.colors.border.b) * focusWeight, theme.colors.border.a + (theme.colors.focus.a - theme.colors.border.a) * focusWeight)
+    readonly property color borderColor: Qt.rgba(theme.colors.border.r + (theme.colors.focus.r - theme.colors.border.r)
+                                                 * focusWeight, theme.colors.border.g + (theme.colors.focus.g
+                                                                                         - theme.colors.border.g)
+                                                 * focusWeight, theme.colors.border.b + (theme.colors.focus.b - theme.colors.border.b)
+                                                 * focusWeight, theme.colors.border.a + (theme.colors.focus.a
+                                                                                         - theme.colors.border.a)
+                                                 * focusWeight)
 
     signal activated
     signal wheelStepped(int direction)
@@ -39,7 +47,8 @@ Item {
         retainWhileLoading: true
         fillMode: Image.PreserveAspectCrop
         smooth: true
-        sourceSize: Qt.size(Math.max(1, card.renderWidth * card.previewScale), Math.max(1, card.height * card.previewScale))
+        sourceSize: Qt.size(Math.max(1, card.renderWidth * card.previewScale), Math.max(1, card.height
+                                                                                        * card.previewScale))
         layer.enabled: true
 
         layer.effect: MultiEffect {

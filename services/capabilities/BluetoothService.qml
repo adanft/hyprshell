@@ -12,7 +12,12 @@ Scope {
     readonly property bool bluetoothDiscovering: bluetoothAvailable ? bluetoothAdapter.discovering : false
     readonly property var bluetoothDevices: bluetoothAdapter?.devices?.values ?? []
     readonly property int bluetoothConnectedCount: bluetoothDevices.filter(device => device && device.connected).length
-    readonly property bool bluetoothBusy: bluetoothPairProcess.running || bluetoothDevices.some(device => device && (device.pairing || device.state === BluetoothDeviceState.Connecting || device.state === BluetoothDeviceState.Disconnecting))
+    readonly property bool bluetoothBusy: bluetoothPairProcess.running || bluetoothDevices.some(device => device && (
+                                                                                                              device.pairing
+                                                                                                              || device.state
+                                                                                                              === BluetoothDeviceState.Connecting
+                                                                                                              || device.state
+                                                                                                              === BluetoothDeviceState.Disconnecting))
     property string bluetoothError: ""
     property string bluetoothPendingAddress: ""
     property int bluetoothPendingRevision: 0
@@ -111,7 +116,8 @@ Scope {
 
     function setBluetoothScanning(enabled) {
         const desired = Boolean(enabled)
-        if (!bluetoothAdapter || !bluetoothPowered || bluetoothDiscovering === desired || bluetoothDiscoveryChangePending)
+        if (!bluetoothAdapter || !bluetoothPowered || bluetoothDiscovering === desired
+                || bluetoothDiscoveryChangePending)
             return false
         bluetoothDiscoveryChangePending = true
         bluetoothDiscoveryTransitionTimer.restart()
@@ -120,7 +126,8 @@ Scope {
     }
 
     function connectBluetoothDevice(device) {
-        if (!bluetoothPowered || !device || device.connected || device.blocked || (!device.paired && !device.trusted) || bluetoothDeviceBusy(device))
+        if (!bluetoothPowered || !device || device.connected || device.blocked || (!device.paired && !device.trusted) || bluetoothDeviceBusy(
+                    device))
             return false
         try {
             device.connect()
@@ -145,13 +152,16 @@ Scope {
 
     function pairBluetoothDevice(device) {
         const address = device?.address || ""
-        if (!bluetoothPowered || !device || !address || device.paired || device.blocked || bluetoothDeviceBusy(device) || bluetoothPairProcess.running)
+        if (!bluetoothPowered || !device || !address || device.paired || device.blocked || bluetoothDeviceBusy(device)
+                || bluetoothPairProcess.running)
             return false
 
         bluetoothError = ""
         bluetoothPendingAddress = address
         bluetoothPendingRevision += 1
-        bluetoothPairProcess.exec(["sh", "-c", "timeout 30 bluetoothctl pair \"$1\" && bluetoothctl trust \"$1\" && timeout 30 bluetoothctl connect \"$1\"", "bluetooth-pair", address,])
+        bluetoothPairProcess.exec(["sh", "-c",
+                                   "timeout 30 bluetoothctl pair \"$1\" && bluetoothctl trust \"$1\" && timeout 30 bluetoothctl connect \"$1\"",
+                                   "bluetooth-pair", address,])
         return true
     }
 
@@ -182,6 +192,8 @@ Scope {
     }
 
     function bluetoothDeviceBusy(device) {
-        return Boolean(device && (bluetoothDevicePending(device) || device.pairing || device.state === BluetoothDeviceState.Connecting || device.state === BluetoothDeviceState.Disconnecting))
+        return Boolean(device && (bluetoothDevicePending(device) || device.pairing || device.state
+                                  === BluetoothDeviceState.Connecting || device.state
+                                  === BluetoothDeviceState.Disconnecting))
     }
 }

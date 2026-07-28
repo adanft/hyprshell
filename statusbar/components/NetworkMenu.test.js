@@ -167,7 +167,7 @@ for (const id of [
 }
 assert.match(
 	detailContentBlock,
-	/height: Math\.max\(bluetoothDetailTitle\.implicitHeight, scanButton\.visible \? scanButton\.height : 0\)/,
+	/height: Math\.max\(bluetoothDetailTitle\.implicitHeight, scanButton\.visible\s*\?\s*scanButton\.height\s*:\s*0\)/,
 );
 assert.match(
 	detailContentBlock,
@@ -267,7 +267,7 @@ assert.match(
 );
 assert.match(
 	bluetoothServiceQml,
-	/bluetoothDiscovering === desired \|\| bluetoothDiscoveryChangePending[\s\S]*return false[\s\S]*bluetoothDiscoveryChangePending = true/,
+	/bluetoothDiscovering\s*===\s*desired\s*\|\|\s*bluetoothDiscoveryChangePending[\s\S]*return false[\s\S]*bluetoothDiscoveryChangePending\s*=\s*true/,
 );
 assert.match(
 	qml,
@@ -300,7 +300,7 @@ assert.match(bluetoothRowQml, /Accessible\.role: Accessible\.Button/);
 assert.match(bluetoothRowQml, /bluetoothBatteryText/);
 assert.match(
 	bluetoothRowQml,
-	/forgetAvailable: Boolean\(powered && device && \(device\.connected \|\| device\.paired \|\| device\.trusted\)\)/,
+	/forgetAvailable:\s*Boolean\(powered\s*&&\s*device\s*&&\s*\(device\.connected\s*\|\|\s*device\.paired\s*\|\|\s*device\.trusted\)\)/,
 );
 assert.match(
 	qml,
@@ -316,7 +316,7 @@ assert.match(
 );
 assert.match(
 	bluetoothRowQml,
-	/root\.action === "connect" \? "Connect" : "Disconnect"/,
+	/root\.action\s*===\s*"connect"\s*\?\s*"Connect"\s*:\s*"Disconnect"/,
 );
 assert.match(bluetoothRowQml, /Keys\.onSpacePressed/);
 assert.match(qml, /expandedNetworkSection === "bluetooth"/);
@@ -837,7 +837,7 @@ assert.match(
 assert.match(playbackRowQml, /color: root\.muted[\s\S]*root\.colors\.primary/);
 assert.match(
 	playbackRowQml,
-	/Accessible\.name: `\$\{root\.muted \? "Unmute" : "Mute"\}/,
+	/Accessible\.name:\s*\[\s*root\.muted\s*\?\s*"Unmute"\s*:\s*"Mute"\s*,\s*" "\s*,\s*NetworkMenuLogic\.playbackStreamLabel\s*\(\s*root\.stream\s*\)\s*\]\.join\(\s*""\s*\)/,
 );
 assert.doesNotMatch(
 	playbackRowQml,

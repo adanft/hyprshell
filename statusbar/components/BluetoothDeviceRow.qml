@@ -14,12 +14,14 @@ Rectangle {
 
     readonly property string action: NetworkMenuLogic.bluetoothDeviceAction(device)
     readonly property bool busy: pending || action === "busy"
-    readonly property bool forgetAvailable: Boolean(powered && device && (device.connected || device.paired || device.trusted))
+    readonly property bool forgetAvailable: Boolean(powered && device && (device.connected || device.paired
+                                                                          || device.trusted))
     height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
     color: colors.surface
     Accessible.role: Accessible.ListItem
-    Accessible.name: device ? `${device.name || device.deviceName || "Bluetooth device"}, ${NetworkMenuLogic.bluetoothDeviceState(device)}` : "Bluetooth device"
+    Accessible.name: device ? [device.name || device.deviceName || "Bluetooth device", ", ", NetworkMenuLogic.bluetoothDeviceState(
+                                   device)].join("") : "Bluetooth device"
 
     function requestPrimaryAction() {
         if (!busy)
@@ -61,7 +63,11 @@ Rectangle {
         }
         Text {
             width: parent.width
-            text: root.busy ? "Working…" : NetworkMenuLogic.bluetoothDeviceState(root.device) + (NetworkMenuLogic.bluetoothBatteryText(root.device) ? " · " + NetworkMenuLogic.bluetoothBatteryText(root.device) : "")
+            text: root.busy ? "Working…" : NetworkMenuLogic.bluetoothDeviceState(root.device) + (NetworkMenuLogic.bluetoothBatteryText(
+                                                                                                     root.device)
+                                                                                                 ? " · " + NetworkMenuLogic.bluetoothBatteryText(
+                                                                                                       root.device) :
+                                                                                                   "")
             color: root.colors.textSubtle
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
@@ -79,10 +85,12 @@ Rectangle {
             id: primaryButton
             objectName: "primaryActionButton"
             visible: root.primaryActionVisible
-            label: root.busy ? "Working…" : (root.action === "pair" ? "Pair" : root.action === "connect" ? "Connect" : "Disconnect")
+            label: root.busy ? "Working…" : (root.action === "pair" ? "Pair" : root.action === "connect" ? "Connect" :
+                                                                                                           "Disconnect")
             danger: root.action === "disconnect"
             enabled: root.primaryActionVisible && !root.busy
-            accessibleName: root.device ? primaryButton.label + " " + (root.device.name || root.device.deviceName || "device") : "Bluetooth action"
+            accessibleName: root.device ? primaryButton.label + " " + (root.device.name || root.device.deviceName || "device") :
+                                          "Bluetooth action"
             onTriggered: root.requestPrimaryAction()
         }
         BluetoothActionButton {
@@ -92,7 +100,8 @@ Rectangle {
             label: "Forget"
             danger: true
             enabled: root.forgetAvailable && !root.busy
-            accessibleName: root.device ? "Forget " + (root.device.name || root.device.deviceName || "device") : "Forget device"
+            accessibleName: root.device ? "Forget " + (root.device.name || root.device.deviceName || "device") :
+                                          "Forget device"
             onTriggered: root.requestForget()
         }
     }

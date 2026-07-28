@@ -8,7 +8,9 @@ import "GhosttyThemeTransform.js" as GhosttyTransform
 QtObject {
     id: ghosttyTheme
 
-    readonly property string configFile: `${Quickshell.env("XDG_CONFIG_HOME") || `${Quickshell.env("HOME")}/.config`}/ghostty/config.ghostty`
+    readonly property string configDirectory: Quickshell.env("XDG_CONFIG_HOME") || `${Quickshell.env("HOME")}/.config`
+    readonly property string configFile: configDirectory + "/ghostty/config.ghostty"
+
     property var pendingTheme: null
     property bool busy: false
     property int lastLoadError: FileViewError.Success

@@ -84,7 +84,8 @@ Rectangle {
             enabled: !root.busy
             activeFocusOnTab: enabled
             Accessible.role: Accessible.Button
-            Accessible.name: `${root.active ? "Disable" : "Enable"} ${NetworkMenuLogic.ethernetProfileLabel(root.profile)}`
+            Accessible.name: [root.active ? "Disable" : "Enable", " ", NetworkMenuLogic.ethernetProfileLabel(
+                    root.profile)].join("")
             onClicked: root.requestToggle()
             Keys.onSpacePressed: root.requestToggle()
             Keys.onReturnPressed: root.requestToggle()

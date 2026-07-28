@@ -45,13 +45,15 @@ Rectangle {
         root.volumeRequested(root.stream, percent)
     }
 
-    height: root.theme.spacing.space12 + playbackStreamHeader.height + root.theme.spacing.space8 + playbackStreamSliderZone.height + root.theme.spacing.space12
+    height: root.theme.spacing.space12 + playbackStreamHeader.height + root.theme.spacing.space8 + playbackStreamSliderZone.height
+            + root.theme.spacing.space12
     radius: root.theme.shape.radius12
     color: root.colors.surface
     opacity: root.available ? 1 : root.theme.motion.opacityDisabled
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: `${NetworkMenuLogic.playbackStreamLabel(root.stream)}, ${root.muted ? "Muted" : root.percent + "%"}`
+    Accessible.name: [NetworkMenuLogic.playbackStreamLabel(root.stream), ", ", root.muted ? "Muted" : root.percent + "%"].join(
+        "")
 
     Item {
         id: playbackStreamHeader
@@ -137,7 +139,8 @@ Rectangle {
                 width: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                 height: parent.height
                 radius: root.theme.shape.radius8
-                color: root.muted ? root.colors.primary : (muteInput.containsMouse || muteInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent)
+                color: root.muted ? root.colors.primary : (muteInput.containsMouse || muteInput.activeFocus
+                                                           ? root.colors.surfaceHover : root.colors.transparent)
 
                 Text {
                     objectName: "playbackStreamVolumeIcon"
@@ -158,7 +161,8 @@ Rectangle {
                     cursorShape: muteInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
                     Accessible.role: Accessible.Button
-                    Accessible.name: `${root.muted ? "Unmute" : "Mute"} ${NetworkMenuLogic.playbackStreamLabel(root.stream)}`
+                    Accessible.name: [root.muted ? "Unmute" : "Mute", " ", NetworkMenuLogic.playbackStreamLabel(
+                            root.stream)].join("")
 
                     onClicked: root.requestMute()
                     Keys.onSpacePressed: root.requestMute()

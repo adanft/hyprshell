@@ -15,11 +15,15 @@ Scope {
     readonly property int minVisibleNotifications: 1
     readonly property int notificationPopupEstimatedHeight: root.theme.sizing.notificationPopupEstimatedHeight
     readonly property int maxNotificationHistory: 100
-    readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/statusbar-notifications.json`
-    readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length > 0 ? Quickshell.screens[0].name : "")
+    readonly property string notificationHistoryFile: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")
+                                                      }/.cache`}/statusbar-notifications.json`
+    readonly property string focusedNotificationScreenName: Hyprland.focusedMonitor?.name || (Quickshell.screens.length
+                                                                                              > 0 ? Quickshell.screens[0].name :
+                                                                                                    "")
     readonly property int maxPopupIngressPerSecond: 6
     readonly property int maxNotificationQueueSize: 32
-    readonly property string notificationImageCacheDirectory: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME")}/.cache`}/qsrice/notification-images`
+    readonly property string notificationImageCacheDirectory: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env(
+                                                                  "HOME")}/.cache`}/qsrice/notification-images`
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 10000
     property int notificationTimeoutCritical: 0
@@ -121,7 +125,8 @@ Scope {
 
     Timer {
         interval: 30000
-        running: root.notificationCenterOpen || root.notificationHistory.length > 0 || root.visibleNotifications.length > 0 || root.notificationQueue.length > 0
+        running: root.notificationCenterOpen || root.notificationHistory.length > 0 || root.visibleNotifications.length
+                 > 0 || root.notificationQueue.length > 0
         repeat: true
         onTriggered: root.notificationTimeUpdateTick = !root.notificationTimeUpdateTick
     }
@@ -287,7 +292,8 @@ Scope {
         if (!entryId || !imageItem)
             return
         const entry = root.notificationHistory.find(item => item && item.id === entryId)
-        if (!NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, imageItem.status === Image.Ready))
+        if (!NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, imageItem.status
+                                                         === Image.Ready))
             return
         const path = NotificationImagePersistence.notificationImagePath(entry, root.notificationImageCacheDirectory)
         NotificationImagePersistence.begin(root.notificationImagePersistence, entryId, path)
@@ -315,7 +321,8 @@ Scope {
 
     function handleNotificationImageSaveResult(entryId, imageItem, path, saved) {
         const current = root.notificationHistory.find(item => item && item.id === entryId)
-        const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved, Boolean(current), root.notificationImageLifecycleActive)
+        const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved,
+                                                              Boolean(current), root.notificationImageLifecycleActive)
         if (outcome.orphan)
             root.deleteOwnedNotificationImage(outcome.orphan, true)
         if (outcome.persisted) {
@@ -337,12 +344,14 @@ Scope {
         if (!root.notificationImageLifecycleActive)
             return
         const sweep = notificationImageSweepComponent.createObject(root)
-        sweep.exec(["find", root.notificationImageCacheDirectory, "-maxdepth", "1", "-type", "f", "-name", "notif_*.png", "-print",])
+        sweep.exec(["find", root.notificationImageCacheDirectory, "-maxdepth", "1", "-type", "f", "-name", "notif_*.png",
+                    "-print",])
     }
 
     function removeNotificationImageOrphans(output) {
         const paths = String(output || "").split("\n").filter(path => path.length > 0)
-        const orphans = NotificationImagePersistence.orphanPaths(paths, root.notificationHistory, root.notificationImageCacheDirectory)
+        const orphans = NotificationImagePersistence.orphanPaths(paths, root.notificationHistory,
+                                                                 root.notificationImageCacheDirectory)
         orphans.forEach(path => root.deleteOwnedNotificationImage(path, true))
     }
 
@@ -371,41 +380,41 @@ Scope {
     function saveNotificationHistory() {
         saveTimer.stop()
         historyAdapter.notifications = root.notificationHistory.map(item => ({
-                    id: item.id,
-                    summary: item.summary || "Notification",
-                    body: item.body || "",
-                    htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
-                    appName: item.appName || "App",
-                    appIcon: item.appIcon || "",
-                    desktopEntry: item.desktopEntry || "",
-                    image: NotificationImagePersistence.historyImageSource(item.image),
-                    persistedImagePath: item.ownedImage ? item.persistedImagePath || "" : "",
-                    ownedImage: item.ownedImage === true,
-                    urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-                    actions: [],
-                    createdAt: item.createdAt || item.timestamp || Date.now(),
-                    timestamp: item.timestamp || item.createdAt || Date.now()
-                }))
+            id: item.id,
+            summary: item.summary || "Notification",
+            body: item.body || "",
+            htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
+            appName: item.appName || "App",
+            appIcon: item.appIcon || "",
+            desktopEntry: item.desktopEntry || "",
+            image: NotificationImagePersistence.historyImageSource(item.image),
+            persistedImagePath: item.ownedImage ? item.persistedImagePath || "" : "",
+            ownedImage: item.ownedImage === true,
+            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+            actions: [],
+            createdAt: item.createdAt || item.timestamp || Date.now(),
+            timestamp: item.timestamp || item.createdAt || Date.now()
+        }))
         historyFileView.writeAdapter()
     }
 
     function loadNotificationHistory() {
         root.notificationHistory = (historyAdapter.notifications || []).map(item => ({
-                    id: item.id || `${item.timestamp || Date.now()}-${Math.random()}`,
-                    summary: item.summary || "Notification",
-                    body: item.body || "",
-                    htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
-                    appName: item.appName || "App",
-                    appIcon: item.appIcon || "",
-                    desktopEntry: item.desktopEntry || "",
-                    image: NotificationImagePersistence.historyImageSource(item.image),
-                    persistedImagePath: item.ownedImage === true ? item.persistedImagePath || "" : "",
-                    ownedImage: item.ownedImage === true,
-                    urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-                    actions: [],
-                    createdAt: item.createdAt || item.timestamp || Date.now(),
-                    timestamp: item.timestamp || item.createdAt || Date.now()
-                }))
+            id: item.id || `${item.timestamp || Date.now()}-${Math.random()}`,
+            summary: item.summary || "Notification",
+            body: item.body || "",
+            htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
+            appName: item.appName || "App",
+            appIcon: item.appIcon || "",
+            desktopEntry: item.desktopEntry || "",
+            image: NotificationImagePersistence.historyImageSource(item.image),
+            persistedImagePath: item.ownedImage === true ? item.persistedImagePath || "" : "",
+            ownedImage: item.ownedImage === true,
+            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+            actions: [],
+            createdAt: item.createdAt || item.timestamp || Date.now(),
+            timestamp: item.timestamp || item.createdAt || Date.now()
+        }))
     }
 
     function processNotificationPopupQueue() {
@@ -423,7 +432,8 @@ Scope {
     function setNotificationPopupAvailableHeight(height) {
         const availableHeight = Math.max(0, height || 0)
         const popupSpacing = root.theme.spacing.notificationPopupSpacing
-        const capacity = Math.max(root.minVisibleNotifications, Math.floor((availableHeight + popupSpacing) / (root.notificationPopupEstimatedHeight + popupSpacing)))
+        const capacity = Math.max(root.minVisibleNotifications, Math.floor((availableHeight + popupSpacing) / (root.notificationPopupEstimatedHeight
+                                                                                                               + popupSpacing)))
         if (root.notificationPopupCapacity === capacity)
             return
         root.notificationPopupCapacity = capacity
@@ -467,7 +477,11 @@ Scope {
 
         const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         const timeDate = new Date(time.getFullYear(), time.getMonth(), time.getDate())
-        return Math.floor((nowDate - timeDate) / 86400000) === 0 ? root.formatNotificationTime(time) : `${time.toLocaleDateString(Qt.locale(), "dddd")}, ${root.formatNotificationTime(time)}`
+        const dateText = time.toLocaleDateString(Qt.locale(), "dddd")
+        return Math.floor((nowDate - timeDate) / 86400000) === 0 ? root.formatNotificationTime(time) : [dateText, ", ",
+                                                                                                        root.formatNotificationTime(
+                                                                                                            time)].join(
+                                                                       "")
     }
 
     function formatNotificationTime(date) {
@@ -545,7 +559,9 @@ Scope {
     }
 
     function escapeHtml(text) {
-        return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;")
+        return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g,
+                                                                                                             "&quot;").replace(
+                    /'/g, "&#39;")
     }
 
     function resolveHtmlBody(body) {

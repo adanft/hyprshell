@@ -92,7 +92,11 @@ Scope {
     }
 
     function searchableText(app) {
-        return [appName(app), app ? (app.genericName || "") : "", app ? (app.comment || "") : "", app ? (app.id || "") : "", app ? (app.desktopEntry || "") : ""].map(normalizeText).join(" ")
+        return [appName(app), app ? (app.genericName || "") : "", app ? (app.comment || "") : "", app ? (app.id || "") :
+                                                                                                        "", app ? (
+                                                                                                                      app.desktopEntry
+                                                                                                                      || "") : ""].map(
+                    normalizeText).join(" ")
     }
 
     function normalizeText(value) {
@@ -172,7 +176,8 @@ Scope {
 
             property alias searchField: searchInput
             property alias appGrid: grid
-            readonly property int columns: Math.min(4, Math.max(1, Math.floor(width / launcher.theme.sizing.appLauncherGridCellWidth)))
+            readonly property int columns: Math.min(4, Math.max(1, Math.floor(width
+                                                                              / launcher.theme.sizing.appLauncherGridCellWidth)))
             readonly property int gridWidth: columns * launcher.theme.sizing.appLauncherGridCellWidth
 
             anchors.fill: parent
@@ -203,7 +208,8 @@ Scope {
 
                 Shared.AppText {
                     anchors.left: parent.left
-                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                                        + launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     anchors.verticalCenter: parent.verticalCenter
                     visible: searchInput.text.length === 0
                     text: "Search Apps"
@@ -216,7 +222,8 @@ Scope {
                     id: searchInput
 
                     anchors.fill: parent
-                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                                        + launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     anchors.rightMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
                     clip: true
                     color: launcher.theme.colors.text
@@ -335,8 +342,10 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - launcher.theme.spacing.appLauncherScreenMargin, launcher.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - launcher.theme.spacing.appLauncherScreenMargin, launcher.theme.sizing.appLauncherMaxHeight)
+                width: Math.min(parent.width - launcher.theme.spacing.appLauncherScreenMargin,
+                                launcher.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - launcher.theme.spacing.appLauncherScreenMargin,
+                                 launcher.theme.sizing.appLauncherMaxHeight)
                 radius: launcher.theme.shape.appLauncherRadius
                 color: launcher.theme.colors.panel
                 border.width: launcher.theme.shape.appLauncherBorderWidth

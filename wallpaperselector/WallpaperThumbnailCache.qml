@@ -5,7 +5,9 @@ import Quickshell.Io
 Item {
     id: cache
 
-    readonly property string cacheRoot: (Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME") || ""}/.cache`) + "/qsrice/wallpapers"
+    readonly property string cacheRoot: (Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME") || ""}/.cache`)
+                                        + "/qsrice/wallpapers"
+
     readonly property int maxJobs: 1
     property bool cacheReady: false
     property var pending: []
@@ -35,7 +37,8 @@ Item {
                 cache.cacheReady = true
                 cache.pump()
             })
-            cleanup.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f", "(", "-name", "*.tmp-*", "-o", "(", "-name", "*.jpg", "-mtime", "+30", ")", ")", "-delete"])
+            cleanup.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f", "(", "-name", "*.tmp-*", "-o", "(", "-name",
+                          "*.jpg", "-mtime", "+30", ")", ")", "-delete"])
             mkdir.destroy()
         })
         mkdir.exec(["mkdir", "-p", cacheRoot])
@@ -78,9 +81,9 @@ Item {
             return
         }
         pending.push({
-            path: path,
-            token: token
-        })
+                         path: path,
+                         token: token
+                     })
         pump()
     }
 
@@ -113,8 +116,8 @@ Item {
             return
         }
         const stat = statComponent.createObject(cache, {
-            sourcePath: item.path
-        })
+                                                    sourcePath: item.path
+                                                })
         stat.exec(["stat", "-c", "%Y:%s", "--", item.path])
     }
 
@@ -162,7 +165,8 @@ Item {
             }
             process.destroy()
         })
-        process.exec(["magick", `${currentPath}[0]`, "-auto-orient", "-thumbnail", "512x512", "-quality", "88", "jpeg:" + currentTemporary])
+        process.exec(["magick", `${currentPath}[0]`, "-auto-orient", "-thumbnail", "512x512", "-quality", "88", "jpeg:"
+                      + currentTemporary])
     }
 
     function publish(path, destinationPath) {
@@ -184,7 +188,8 @@ Item {
             old.destroy()
             cache.pump()
         })
-        old.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f", "-name", `${hash(path)}-*.jpg`, "!", "-name", destinationPath.split('/').pop(), "-delete"])
+        old.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f", "-name", `${hash(path)}-*.jpg`, "!", "-name",
+                  destinationPath.split('/').pop(), "-delete"])
     }
 
     function failJob() {

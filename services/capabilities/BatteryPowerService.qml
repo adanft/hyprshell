@@ -9,10 +9,12 @@ Scope {
     readonly property bool batteryAvailable: batteries.length > 0
     readonly property bool batteryCharging: hasBatteryState(UPowerDeviceState.Charging)
     readonly property bool batteryEmpty: hasBatteryState(UPowerDeviceState.Empty)
-    readonly property bool batteryFull: readyBatteries.length > 0 && readyBatteries.every(device => device.state === UPowerDeviceState.FullyCharged)
+    readonly property bool batteryFull: readyBatteries.length > 0 && readyBatteries.every(device => device.state
+                                                                                                    === UPowerDeviceState.FullyCharged)
     readonly property bool batteryPendingCharge: hasBatteryState(UPowerDeviceState.PendingCharge)
     readonly property bool batteryPendingDischarge: hasBatteryState(UPowerDeviceState.PendingDischarge)
-    readonly property bool batteryUnknown: !batteryAvailable || readyBatteries.length === 0 || readyBatteries.every(device => device.state === UPowerDeviceState.Unknown)
+    readonly property bool batteryUnknown: !batteryAvailable || readyBatteries.length === 0 || readyBatteries.every(
+                                               device => device.state === UPowerDeviceState.Unknown)
     readonly property bool batteryLow: !batteryUnknown && batteryLevel <= 30
     readonly property bool batteryCritical: !batteryUnknown && batteryLevel <= 15
     readonly property int batteryLevel: computeBatteryLevel()
@@ -27,7 +29,8 @@ Scope {
             const energy = readyBatteries.reduce((sum, device) => sum + device.energy, 0)
             level = Math.round((energy * 100) / capacity)
         } else {
-            const percentage = readyBatteries.reduce((sum, device) => sum + normalizePercentage(device.percentage), 0) / readyBatteries.length
+            const percentage = readyBatteries.reduce((sum, device) => sum + normalizePercentage(device.percentage), 0)
+                  / readyBatteries.length
             level = Math.round(percentage)
         }
         return Math.max(0, Math.min(100, level))

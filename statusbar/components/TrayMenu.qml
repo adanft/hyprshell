@@ -81,8 +81,8 @@ Item {
 
     function openSubmenu(entry) {
         submenuStack.append({
-            "handle": entry
-        })
+                                "handle": entry
+                            })
     }
 
     function closeSubmenu() {
@@ -139,12 +139,15 @@ Item {
         Rectangle {
             id: menuContainer
 
-            readonly property real desiredHeight: Math.max(root.theme.sizing.statusBarTrayMenuMinHeight, menuColumn.implicitHeight + root.theme.spacing.space8 * 2)
+            readonly property real desiredHeight: Math.max(root.theme.sizing.statusBarTrayMenuMinHeight,
+                                                           menuColumn.implicitHeight + root.theme.spacing.space8 * 2)
 
             width: root.theme.sizing.statusBarTrayMenuWidth
             height: desiredHeight
-            x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX))
-            y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8, root.menuAnchorY))
+            x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8,
+                                                            root.menuAnchorX))
+            y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8,
+                                                            root.menuAnchorY))
             radius: root.theme.shape.radius12
             color: root.colors.background
             border.color: root.colors.border
@@ -216,7 +219,8 @@ Item {
                         width: menuColumn.width
                         height: separator ? root.theme.shape.borderThin : root.theme.sizing.statusBarTrayMenuItemHeight
                         radius: separator ? 0 : root.theme.shape.radius8
-                        color: separator ? root.colors.border : entryMouseArea.containsMouse ? root.colors.surfaceHover : root.colors.transparent
+                        color: separator ? root.colors.border : entryMouseArea.containsMouse ? root.colors.surfaceHover :
+                                                                                               root.colors.transparent
 
                         MouseArea {
                             id: entryMouseArea
@@ -254,8 +258,10 @@ Item {
                                 width: root.theme.sizing.statusBarTrayMenuCheckSize
                                 height: root.theme.sizing.statusBarTrayMenuCheckSize
                                 anchors.verticalCenter: parent.verticalCenter
-                                visible: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType !== undefined && menuEntryRoot.modelData.buttonType !== 0
-                                radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 : root.theme.shape.radius3
+                                visible: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType !== undefined
+                                         && menuEntryRoot.modelData.buttonType !== 0
+                                radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 :
+                                                                                                              root.theme.shape.radius3
                                 border.width: root.theme.shape.borderThin
                                 border.color: root.colors.borderStrong
                                 color: root.colors.transparent
@@ -279,7 +285,8 @@ Item {
                             }
 
                             BarText {
-                                width: Math.max(root.theme.sizing.statusBarTrayMenuTextMinWidth, parent.width - root.theme.sizing.statusBarTrayMenuTextRightReserve)
+                                width: Math.max(root.theme.sizing.statusBarTrayMenuTextMinWidth, parent.width
+                                                - root.theme.sizing.statusBarTrayMenuTextRightReserve)
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: menuEntryRoot.modelData ? (menuEntryRoot.modelData.text || "") : ""
                                 color: menuEntryRoot.enabledEntry ? root.colors.text : root.colors.textSubtle

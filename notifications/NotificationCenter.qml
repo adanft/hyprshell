@@ -53,12 +53,14 @@ PopupWindow {
     }
 
     implicitWidth: cardWidth + contentPadding * 2
-    implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height : theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
+    implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height :
+                                                   theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
     visible: false
     grabFocus: true
     color: popup.colors.transparent
     anchor.window: barWindow
-    anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - theme.spacing.notificationCenterScreenMargin)
+    anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width
+                            - theme.spacing.notificationCenterScreenMargin)
     anchor.rect.y: theme.sizing.notificationCenterTopOffset
     onVisibleChanged: popup.services.notification.setNotificationCenterOpen(visible)
 
@@ -111,7 +113,8 @@ PopupWindow {
                 }
 
                 Item {
-                    width: Math.max(0, parent.width - headerTitle.implicitWidth - headerIcon.implicitWidth - headerCount.implicitWidth - clearButton.width - parent.spacing * 4)
+                    width: Math.max(0, parent.width - headerTitle.implicitWidth - headerIcon.implicitWidth
+                                    - headerCount.implicitWidth - clearButton.width - parent.spacing * 4)
                     height: popup.theme.sizing.notificationCenterSpacerHeight
                 }
 
@@ -179,7 +182,8 @@ PopupWindow {
                     width: popup.theme.sizing.notificationCenterDndSwitchWidth
                     height: popup.theme.sizing.notificationCenterDndSwitchHeight
                     radius: height / 2
-                    color: popup.services.notification.notificationDnd ? popup.colors.primary : popup.colors.surfaceHover
+                    color: popup.services.notification.notificationDnd ? popup.colors.primary :
+                                                                         popup.colors.surfaceHover
                     border.width: 0
 
                     Rectangle {
@@ -187,8 +191,11 @@ PopupWindow {
                         height: popup.theme.sizing.notificationCenterDndKnobSize
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
-                        x: popup.services.notification.notificationDnd ? parent.width - width - popup.theme.spacing.notificationCenterDndKnobMargin : popup.theme.spacing.notificationCenterDndKnobMargin
-                        color: popup.services.notification.notificationDnd ? popup.colors.background : popup.colors.textSubtle
+                        x: popup.services.notification.notificationDnd ? parent.width - width
+                                                                         - popup.theme.spacing.notificationCenterDndKnobMargin :
+                                                                         popup.theme.spacing.notificationCenterDndKnobMargin
+                        color: popup.services.notification.notificationDnd ? popup.colors.background :
+                                                                             popup.colors.textSubtle
 
                         Behavior on x {
                             NumberAnimation {
@@ -243,7 +250,8 @@ PopupWindow {
                     spacing: popup.theme.spacing.notificationCenterListSpacing
                     cacheBuffer: Math.max(0, height * 2)
                     reuseItems: false
-                    model: popup.visible && popup.services.notification.hasNotifications ? popup.services.notification.notifications : []
+                    model: popup.visible && popup.services.notification.hasNotifications
+                           ? popup.services.notification.notifications : []
                     onModelChanged: popup.pruneExpandedNotifications()
 
                     delegate: NotificationCard {

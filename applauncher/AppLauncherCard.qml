@@ -12,7 +12,8 @@ Rectangle {
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
     readonly property string fallbackIcon: "application-x-executable"
-    readonly property string iconSource: app && app.icon ? Quickshell.iconPath(app.icon, fallbackIcon) : Quickshell.iconPath(fallbackIcon)
+    readonly property string iconSource: app && app.icon ? Quickshell.iconPath(app.icon, fallbackIcon) : Quickshell.iconPath(
+                                                               fallbackIcon)
 
     signal activated
 

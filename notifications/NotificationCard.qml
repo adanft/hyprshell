@@ -52,10 +52,19 @@ Item {
     readonly property bool hasActions: actionCount > 0
     readonly property real headerHeight: Math.ceil(labelFontSize * bodyLineHeight)
     readonly property real titleHeight: Math.ceil(titleFontSize * bodyLineHeight)
-    readonly property string bodyHtml: notificationData ? (notificationData.htmlBody || notificationData.body || "") : ""
+    readonly property string bodyHtml: notificationData ? (notificationData.htmlBody || notificationData.body || "") :
+                                                          ""
+
     readonly property real visibleBodyHeight: expanded ? bodyTargetHeight(true) : bodyTargetHeight(false)
-    readonly property real contentLayoutHeight: headerHeight + spacing + titleHeight + (visibleBodyHeight > 0 ? spacing + visibleBodyHeight : 0) + (hasActions ? spacing + actionButtonHeight : 0)
-    readonly property real layoutHeight: notificationData ? Math.ceil(contentInset * 2 + Math.max(iconSlotSize, contentLayoutHeight)) : 0
+    readonly property real contentLayoutHeight: headerHeight + spacing + titleHeight + (visibleBodyHeight > 0 ? spacing
+                                                                                                                + visibleBodyHeight :
+                                                                                                                0) + (hasActions
+                                                                                                                      ? spacing
+                                                                                                                        + actionButtonHeight :
+                                                                                                                        0)
+    readonly property real layoutHeight: notificationData ? Math.ceil(contentInset * 2 + Math.max(iconSlotSize,
+                                                                                                  contentLayoutHeight)) :
+                                                            0
     readonly property real viewportHeight: Math.max(0, renderedLayoutHeight - contentInset * 2)
     readonly property real bodyViewportHeight: {
         if (bodyHtml.length === 0)
@@ -103,9 +112,15 @@ Item {
             return fallbackIconSource
         return image || fallbackIconSource
     }
-    readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://") || iconSource.startsWith("image://")
+    readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://")
+                                                  || iconSource.startsWith("https://") || iconSource.startsWith(
+                                                      "image://")
     property string failedImageSource: ""
-    readonly property bool iconSourceQuarantined: (notificationService && typeof notificationService.isInvalidLiveImageSource === "function" && notificationService.isInvalidLiveImageSource(iconSource)) || (failedImageSource.length > 0 && iconSource === failedImageSource)
+    readonly property bool iconSourceQuarantined: (notificationService
+                                                   && typeof notificationService.isInvalidLiveImageSource
+                                                   === "function" && notificationService.isInvalidLiveImageSource(
+                                                       iconSource)) || (failedImageSource.length > 0 && iconSource
+                                                                        === failedImageSource)
 
     signal layoutChanged
     signal slotHeightChanged
@@ -290,20 +305,27 @@ Item {
                         width: card.iconSize
                         height: card.iconSize
                         source: card.iconSourceQuarantined ? "" : card.iconSource
-                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile && !card.iconSourceQuarantined && status !== Image.Error
+                        visible: card.iconSource.length > 0 && card.iconSourceIsImageFile &&
+                                 !card.iconSourceQuarantined && status !== Image.Error
                         asynchronous: !card.iconSource.startsWith("image://qsimage/")
                         cache: true
                         sourceSize: Qt.size(card.iconSize, card.iconSize)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                         onStatusChanged: {
-                            if (status === Image.Ready && card.allowLiveImage && card.notificationData?.historyEntryId && card.notificationService && typeof card.notificationService.materializeNotificationImage === "function")
-                                card.notificationService.materializeNotificationImage(card.notificationData.historyEntryId, notificationImage)
+                            if (status === Image.Ready && card.allowLiveImage && card.notificationData?.historyEntryId
+                                    && card.notificationService
+                                    && typeof card.notificationService.materializeNotificationImage === "function")
+                                card.notificationService.materializeNotificationImage(
+                                            card.notificationData.historyEntryId, notificationImage)
 
                             const failedSource = source.toString()
-                            if (status === Image.Error && card.allowLiveImage && failedSource.startsWith("image://qsimage/")) {
+                            if (status === Image.Error && card.allowLiveImage && failedSource.startsWith(
+                                        "image://qsimage/")) {
                                 card.failedImageSource = failedSource
-                                if (card.notificationService && typeof card.notificationService.quarantineInvalidLiveImageSource === "function")
+                                if (card.notificationService
+                                        && typeof card.notificationService.quarantineInvalidLiveImageSource
+                                        === "function")
                                     card.notificationService.quarantineInvalidLiveImageSource(failedSource)
                             }
                         }
@@ -315,7 +337,9 @@ Item {
                         height: card.iconSize
                         implicitSize: card.iconSize
                         source: card.iconSourceIsImageFile ? card.fallbackIconSource : card.iconSource
-                        visible: card.fallbackIconSource.length > 0 && (!card.iconSourceIsImageFile || card.iconSourceQuarantined || notificationImage.status === Image.Error)
+                        visible: card.fallbackIconSource.length > 0 && (!card.iconSourceIsImageFile
+                                                                        || card.iconSourceQuarantined
+                                                                        || notificationImage.status === Image.Error)
                     }
 
                     Text {
@@ -341,7 +365,8 @@ Item {
                         spacing: card.spacing
 
                         Text {
-                            width: Math.min(implicitWidth, parent.width - timeSeparator.implicitWidth - timeLabel.implicitWidth - parent.spacing * 2)
+                            width: Math.min(implicitWidth, parent.width - timeSeparator.implicitWidth
+                                            - timeLabel.implicitWidth - parent.spacing * 2)
                             text: card.notificationData ? (card.notificationData.appName || "App") : "App"
                             color: card.colors.textSubtle
                             font.family: card.textFont
@@ -382,7 +407,8 @@ Item {
                     Item {
                         id: bodyContainer
 
-                        readonly property real collapsedHeight: bodyText.font.pixelSize * card.bodyLineHeight * card.collapsedBodyLines
+                        readonly property real collapsedHeight: bodyText.font.pixelSize * card.bodyLineHeight
+                                                                * card.collapsedBodyLines
                         readonly property bool canExpand: bodyMeasure.implicitHeight > collapsedHeight + 1
 
                         width: parent.width
@@ -448,7 +474,8 @@ Item {
                                 required property int index
                                 readonly property var action: card.invokableActionAt(index)
 
-                                width: Math.max(actionText.implicitWidth + card.actionButtonHorizontalPadding, card.actionButtonMinWidth)
+                                width: Math.max(actionText.implicitWidth + card.actionButtonHorizontalPadding,
+                                                card.actionButtonMinWidth)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
                                 color: card.colors.surfaceInverse

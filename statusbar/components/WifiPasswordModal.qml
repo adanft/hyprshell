@@ -94,7 +94,8 @@ Scope {
             Rectangle {
                 id: dialog
 
-                width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth, parent.width - root.theme.spacing.space16 * 2)
+                width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth, parent.width
+                                - root.theme.spacing.space16 * 2)
                 height: dialogContent.implicitHeight + root.theme.spacing.space16 * 2
                 anchors.centerIn: parent
                 radius: root.theme.shape.appLauncherRadius
@@ -156,7 +157,8 @@ Scope {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             radius: root.theme.shape.radius8
-                            color: closeInput.containsMouse || closeInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+                            color: closeInput.containsMouse || closeInput.activeFocus ? root.colors.surfaceHover :
+                                                                                        root.colors.transparent
 
                             Text {
                                 anchors.centerIn: parent
@@ -222,7 +224,8 @@ Scope {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: passwordInput.echoMode === TextInput.Password ? root.icons.passwordHidden : root.icons.passwordVisible
+                                text: passwordInput.echoMode === TextInput.Password ? root.icons.passwordHidden :
+                                                                                      root.icons.passwordVisible
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
@@ -235,7 +238,8 @@ Scope {
                                 cursorShape: Qt.PointingHandCursor
                                 activeFocusOnTab: true
                                 Accessible.role: Accessible.Button
-                                Accessible.name: passwordInput.echoMode === TextInput.Password ? "Show password" : "Hide password"
+                                Accessible.name: passwordInput.echoMode === TextInput.Password ? "Show password" :
+                                                                                                 "Hide password"
                                 onClicked: root.togglePasswordVisibility()
                                 Keys.onSpacePressed: root.togglePasswordVisibility()
                                 Keys.onReturnPressed: root.togglePasswordVisibility()
@@ -263,7 +267,8 @@ Scope {
                             width: cancelLabel.implicitWidth + root.theme.spacing.space24
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
-                            color: cancelInput.containsMouse || cancelInput.activeFocus ? root.colors.surfaceHover : root.colors.surface
+                            color: cancelInput.containsMouse || cancelInput.activeFocus ? root.colors.surfaceHover :
+                                                                                          root.colors.surface
 
                             Text {
                                 id: cancelLabel

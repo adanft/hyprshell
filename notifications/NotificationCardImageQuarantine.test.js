@@ -20,7 +20,7 @@ assert.match(
 	/notificationService:\s*popup\.services\.notification/,
 );
 assert.match(source, /required property var notificationService/);
-assert.match(source, /isInvalidLiveImageSource\(iconSource\)/);
+assert.match(source, /isInvalidLiveImageSource\s*\(\s*iconSource\s*\)/);
 assert.match(
 	source,
 	/source:\s*card\.iconSourceQuarantined \? "" : card\.iconSource/,

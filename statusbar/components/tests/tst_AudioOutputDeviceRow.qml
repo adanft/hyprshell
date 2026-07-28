@@ -9,11 +9,11 @@ TestCase {
     width: 400
     height: 120
     property var node: ({
-            nickname: "Desk speakers",
-            audio: {
-                muted: false
-            }
-        })
+                            nickname: "Desk speakers",
+                            audio: {
+                                muted: false
+                            }
+                        })
     Component {
         id: component
         AudioOutputDeviceRow {
@@ -25,40 +25,40 @@ TestCase {
         }
     }
     property var colors: ({
-            primary: "#88aaff",
-            surface: "#202020",
-            surfaceHover: "#303030",
-            transparent: "transparent",
-            text: "#fff",
-            textSubtle: "#aaa"
-        })
+                              primary: "#88aaff",
+                              surface: "#202020",
+                              surfaceHover: "#303030",
+                              transparent: "transparent",
+                              text: "#fff",
+                              textSubtle: "#aaa"
+                          })
     property var theme: ({
-            motion: {
-                opacityDisabled: 0.5
-            },
-            shape: {
-                radius12: 12,
-                radius8: 8
-            },
-            spacing: {
-                space16: 16,
-                space12: 12,
-                space8: 8,
-                space2: 2
-            },
-            sizing: {
-                statusBarNetworkDeviceRowHeight: 48,
-                statusBarTrayMenuItemHeight: 36,
-                statusBarNetworkQuickControlIconWidth: 22
-            },
-            typography: {
-                sizeLg: 16,
-                sizeMd: 14,
-                sizeSm: 11,
-                textFontFamily: "sans",
-                iconFontFamily: "sans"
-            }
-        })
+                             motion: {
+                                 opacityDisabled: 0.5
+                             },
+                             shape: {
+                                 radius12: 12,
+                                 radius8: 8
+                             },
+                             spacing: {
+                                 space16: 16,
+                                 space12: 12,
+                                 space8: 8,
+                                 space2: 2
+                             },
+                             sizing: {
+                                 statusBarNetworkDeviceRowHeight: 48,
+                                 statusBarTrayMenuItemHeight: 36,
+                                 statusBarNetworkQuickControlIconWidth: 22
+                             },
+                             typography: {
+                                 sizeLg: 16,
+                                 sizeMd: 14,
+                                 sizeSm: 11,
+                                 textFontFamily: "sans",
+                                 iconFontFamily: "sans"
+                             }
+                         })
     SignalSpy {
         id: spy
         signalName: "selectRequested"
@@ -78,13 +78,13 @@ TestCase {
     }
     function test_activeAndUnavailableAreSafe() {
         let value = row({
-            active: true
-        })
+                            active: true
+                        })
         value.requestSelect()
         compare(spy.count, 0)
         value = row({
-            available: false
-        })
+                        available: false
+                    })
         value.requestSelect()
         compare(spy.count, 0)
     }

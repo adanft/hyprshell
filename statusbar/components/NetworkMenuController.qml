@@ -62,20 +62,20 @@ QtObject {
 
     function prepareOpen() {
         root.dispatch({
-            type: "prepareOpen"
-        })
+                          type: "prepareOpen"
+                      })
         root.refreshUptime()
     }
 
     function context(type, values) {
         return Object.assign({
-            type,
-            menuOpen: root.menuOpen,
-            expandedNetworkSection: root.expandedNetworkSection,
-            wifiEnabled: Boolean(root.networking?.wifiEnabled),
-            wifiHardwareEnabled: Boolean(root.networking?.wifiHardwareEnabled),
-            wifiDevice: root.networkService?.wifiDevice ?? null
-        }, values || {})
+                                 type,
+                                 menuOpen: root.menuOpen,
+                                 expandedNetworkSection: root.expandedNetworkSection,
+                                 wifiEnabled: Boolean(root.networking?.wifiEnabled),
+                                 wifiHardwareEnabled: Boolean(root.networking?.wifiHardwareEnabled),
+                                 wifiDevice: root.networkService?.wifiDevice ?? null
+                             }, values || {})
     }
 
     function dispatch(event) {
@@ -136,46 +136,46 @@ QtObject {
 
     function toggleNetworkSection(section) {
         root.dispatch(root.context("toggleSection", {
-            section
-        }))
+                                       section
+                                   }))
     }
 
     function requestClose() {
         root.dispatch({
-            type: "requestClose"
-        })
+                          type: "requestClose"
+                      })
         root.closeRequested()
         root.dispatch({
-            type: "completeClose"
-        })
+                          type: "completeClose"
+                      })
     }
 
     function connectNetwork(network) {
         root.dispatch({
-            type: "connectRequested",
-            network,
-            openSecurityValue: root.openSecurityValue
-        })
+                          type: "connectRequested",
+                          network,
+                          openSecurityValue: root.openSecurityValue
+                      })
     }
 
     function submitPassword(password) {
         root.dispatch({
-            type: "submitPassword",
-            password
-        })
+                          type: "submitPassword",
+                          password
+                      })
     }
 
     function cancelPasswordEntry() {
         root.dispatch({
-            type: "cancelPassword"
-        })
+                          type: "cancelPassword"
+                      })
     }
 
     function forgetNetwork(network) {
         root.dispatch({
-            type: "forgetRequested",
-            network
-        })
+                          type: "forgetRequested",
+                          network
+                      })
     }
 
     function toggleEthernet() {
@@ -194,33 +194,33 @@ QtObject {
 
     function handleWifiNetworkConnectedChanged(network) {
         root.dispatch({
-            type: "wifiConnectedChanged",
-            network
-        })
+                          type: "wifiConnectedChanged",
+                          network
+                      })
     }
 
     function handleWifiNetworkConnectionFailed(network, reason) {
         root.dispatch({
-            type: "wifiConnectionFailed",
-            network,
-            reason,
-            noSecretsValue: root.noSecretsValue,
-            errorText: root.errorText(network, reason)
-        })
+                          type: "wifiConnectionFailed",
+                          network,
+                          reason,
+                          noSecretsValue: root.noSecretsValue,
+                          errorText: root.errorText(network, reason)
+                      })
     }
 
     function handleScannerDelayElapsed(device, generation) {
         root.dispatch(root.context("scannerDelayElapsed", {
-            scheduledDevice: device,
-            scheduledGeneration: generation
-        }))
+                                       scheduledDevice: device,
+                                       scheduledGeneration: generation
+                                   }))
     }
 
     function handleActivationSettleElapsed(generation) {
         root.dispatch({
-            type: "activationSettleElapsed",
-            generation
-        })
+                          type: "activationSettleElapsed",
+                          generation
+                      })
     }
 
     onMenuOpenChanged: root.dispatch(root.context("menuOpenChanged"))
@@ -249,16 +249,16 @@ QtObject {
         ignoreUnknownSignals: true
         function onConnectedChanged() {
             root.dispatch({
-                type: "pendingConnectedChanged"
-            })
+                              type: "pendingConnectedChanged"
+                          })
         }
         function onConnectionFailed(reason) {
             const network = root.pendingNetwork
             if (network)
                 root.dispatch({
-                    type: "pendingConnectionFailed",
-                    errorText: root.errorText(network, reason)
-                })
+                                  type: "pendingConnectionFailed",
+                                  errorText: root.errorText(network, reason)
+                              })
         }
     }
 
@@ -267,9 +267,9 @@ QtObject {
         ignoreUnknownSignals: true
         function onConnectionFailed(reason) {
             root.dispatch({
-                type: "ethernetConnectionFailed",
-                errorText: `Ethernet: ${root.failureReasonText(reason)}`
-            })
+                              type: "ethernetConnectionFailed",
+                              errorText: `Ethernet: ${root.failureReasonText(reason)}`
+                          })
         }
     }
 
@@ -278,6 +278,6 @@ QtObject {
         root.refreshUptime()
     }
     Component.onDestruction: root.dispatch({
-        type: "destroy"
-    })
+                                               type: "destroy"
+                                           })
 }

@@ -31,7 +31,7 @@ for (const contract of [
 	/active: false/,
 	/function open\(\)[\s\S]*requestedVisible = true;?[\s\S]*_openingPending = true;?[\s\S]*active = true;?[\s\S]*const generation = \+\+_lifecycleGeneration;?[\s\S]*_scheduleOpen\(generation, item\);?/,
 	/function toggle\(\)[\s\S]*if \(!requestedVisible\)[\s\S]*open\(\);?[\s\S]*const loadedItem = item;?[\s\S]*!_openingPending && \(!loadedItem \|\| !loadedItem\.visible\)[\s\S]*open\(\);?[\s\S]*requestedVisible = false;?[\s\S]*_openingPending = false;?[\s\S]*_lifecycleGeneration\+\+;?/,
-	/function _scheduleOpen\(generation, loadedItem\)[\s\S]*if \(!loadedItem\)[\s\S]*_scheduledItem === loadedItem[\s\S]*_dispatchedItem === loadedItem[\s\S]*Qt\.callLater/,
+	/function _scheduleOpen\(generation, loadedItem\)[\s\S]*if \(!loadedItem\)[\s\S]*_scheduledItem\s*===\s*loadedItem[\s\S]*_dispatchedItem\s*===\s*loadedItem[\s\S]*Qt\.callLater/,
 	/root\._scheduledGeneration !== generation \|\| root\._scheduledItem !== loadedItem[\s\S]*return;?/,
 	/generation !== root\._lifecycleGeneration[\s\S]*!root\.requestedVisible[\s\S]*root\.item !== loadedItem[\s\S]*return;?/,
 	/root\._openingPending = false;?[\s\S]*root\.directVisibility[\s\S]*loadedItem\.visible = true;?[\s\S]*loadedItem\.open\(\);?/,

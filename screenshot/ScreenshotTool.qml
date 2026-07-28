@@ -16,7 +16,8 @@ Scope {
     property int selectedActionIndex: 0
     property int delaySeconds: 0
     readonly property int maximumDelaySeconds: 60
-    readonly property string captureSuccessCommand: "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
+    readonly property string captureSuccessCommand:
+        "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
     function open() {
         selectedActionIndex = 0
@@ -45,16 +46,20 @@ Scope {
         const grimCursorArg = includeCursor ? "-c " : ""
         const delay = normalizedDelaySeconds()
         const initialDelay = mode === "area" ? 0.2 : delay + 0.2
+        const windowGrimCommand = `grim ${grimCursorArg}-T "$id"`
+        const areaGrimCommand = `grim ${grimCursorArg}-g "$geometry"`
         let command = ""
         switch (mode) {
         case "monitor":
             command = captureCommand(`grim ${grimCursorArg}-o "${panel.screen.name}"`)
             break
         case "window":
-            command = `id=$(hyprctl activewindow -j | jq -r 'select(.stableId != null) | .stableId') && if [ -n "$id" ]; then sleep 0.5; ${captureCommand(`grim ${grimCursorArg}-T "$id"`)}; fi`
+            command = [`id=$(hyprctl activewindow -j | jq -r 'select(.stableId != null) | .stableId') && if [ -n "$id" ]; then sleep 0.5; `,
+                       captureCommand(windowGrimCommand), "; fi"].join("")
             break
         case "area":
-            command = `geometry=$(slurp) && if [ -n "$geometry" ]; then sleep ${delay}; ${captureCommand(`grim ${grimCursorArg}-g "$geometry"`)}; fi`
+            command = [`geometry=$(slurp) && if [ -n "$geometry" ]; then sleep ${delay}; `, captureCommand(
+                           areaGrimCommand), "; fi"].join("")
             break
         case "all":
         default:
@@ -63,17 +68,20 @@ Scope {
         }
         close()
         Qt.callLater(() => {
-            Quickshell.execDetached(["sh", "-c", `mkdir -p "$HOME/Pictures/Screenshots" && sleep ${initialDelay} && ${command}`])
+            Quickshell.execDetached(["sh", "-c", ["mkdir -p \"$HOME/Pictures/Screenshots\" && sleep ", initialDelay,
+                                                  " && ", command].join("")])
         })
     }
 
     function captureCommand(grimCommand) {
-        return `file="$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png"; ${grimCommand} "$file" && ${captureSuccessCommand}`
+        return ["file=\"$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png\"; ", grimCommand,
+                " \"$file\" && ", captureSuccessCommand].join("")
     }
 
     function pathToFileUrl(path) {
         const value = String(path || "")
-        return value.length > 0 ? "file://" + value.split('/').map(segment => encodeURIComponent(segment)).join('/') : ""
+        return value.length > 0 ? "file://" + value.split('/').map(segment => encodeURIComponent(segment)).join('/') :
+                                  ""
     }
 
     function actionIcon(index) {
@@ -153,13 +161,16 @@ Scope {
 
             anchors.fill: parent
             anchors.margins: tool.theme.spacing.screenshotToolPadding
-            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - preview.height - cursorRowHeight - timerRowHeight - actionRowHeight) / 3))
+            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - preview.height - cursorRowHeight
+                                                                  - timerRowHeight - actionRowHeight) / 3))
 
             Rectangle {
                 id: preview
 
                 readonly property int preferredHeight: Math.round(width * 9 / 16)
-                readonly property int minimumControlsHeight: content.cursorRowHeight + content.timerRowHeight + content.actionRowHeight + content.minimumVerticalSpacing * 3
+                readonly property int minimumControlsHeight: content.cursorRowHeight + content.timerRowHeight
+                                                             + content.actionRowHeight + content.minimumVerticalSpacing
+                                                             * 3
 
                 width: parent.width
                 height: Math.min(preferredHeight, Math.max(0, parent.height - minimumControlsHeight))
@@ -231,7 +242,9 @@ Scope {
                         height: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
-                        x: tool.includeCursor ? parent.width - width - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin : tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
+                        x: tool.includeCursor ? parent.width - width
+                                                - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin :
+                                                tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
                         color: tool.includeCursor ? tool.theme.colors.primaryText : tool.theme.colors.textMuted
 
                         Behavior on x {
@@ -414,8 +427,10 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin, tool.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin, tool.theme.sizing.appLauncherMaxHeight)
+                width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin,
+                                tool.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin,
+                                 tool.theme.sizing.appLauncherMaxHeight)
                 radius: tool.theme.shape.screenshotToolRadius
                 color: tool.theme.colors.panel
                 border.width: tool.theme.shape.screenshotToolBorderWidth

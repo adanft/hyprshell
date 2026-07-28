@@ -33,12 +33,12 @@ PopupWindow {
 
     function createPopupItem(popupData) {
         const item = popupComponent.createObject(popupLayer, {
-            "colors": root.colors,
-            "services": root.services,
-            "popupData": popupData,
-            "active": root.isFocusedScreen,
-            "width": root.popupWidth
-        })
+                                                     "colors": root.colors,
+                                                     "services": root.services,
+                                                     "popupData": popupData,
+                                                     "active": root.isFocusedScreen,
+                                                     "width": root.popupWidth
+                                                 })
         if (item && item.layoutChanged)
             item.layoutChanged.connect(root.handlePopupLayoutChanged)
 
@@ -120,10 +120,12 @@ PopupWindow {
     }
 
     function updatePopupCapacity() {
-        if (!root.isFocusedScreen || !root.services || typeof root.services.notification.setNotificationPopupAvailableHeight !== "function")
+        if (!root.isFocusedScreen || !root.services
+                || typeof root.services.notification.setNotificationPopupAvailableHeight !== "function")
             return
         const screenHeight = root.barWindow.screen ? root.barWindow.screen.height : root.barWindow.height
-        root.services.notification.setNotificationPopupAvailableHeight(screenHeight - root.topMargin - root.bottomMargin)
+        root.services.notification.setNotificationPopupAvailableHeight(screenHeight - root.topMargin
+                                                                       - root.bottomMargin)
     }
 
     function finishPopupExit(item) {

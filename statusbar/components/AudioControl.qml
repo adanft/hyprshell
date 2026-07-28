@@ -69,7 +69,9 @@ Item {
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         activeFocusOnTab: enabled
         Accessible.role: Accessible.Button
-        Accessible.name: root.source ? (root.muted ? "Unmute microphone" : "Mute microphone") : (root.muted ? "Unmute audio" : "Mute audio")
+        Accessible.name: root.source ? (root.muted ? "Unmute microphone" : "Mute microphone") : (root.muted
+                                                                                                 ? "Unmute audio" :
+                                                                                                   "Mute audio")
         Accessible.description: root.available ? (root.muted ? "Muted" : `${root.volume}%`) : "Unavailable"
         onClicked: root.services.audio.toggleMute(root.source)
         Keys.onSpacePressed: root.services.audio.toggleMute(root.source)

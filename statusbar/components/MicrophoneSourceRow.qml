@@ -22,7 +22,8 @@ Rectangle {
     color: root.colors.surface
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: `${NetworkMenuLogic.audioSourceLabel(root.source)}, ${NetworkMenuLogic.audioSourceStatus(root.source, root.active ? root.source : null)}`
+    Accessible.name: [NetworkMenuLogic.audioSourceLabel(root.source), ", ", NetworkMenuLogic.audioSourceStatus(
+            root.source, root.active ? root.source : null)].join("")
 
     Text {
         id: sourceIcon
@@ -97,7 +98,9 @@ Rectangle {
             cursorShape: actionInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
             Accessible.role: Accessible.Button
-            Accessible.name: root.active ? `${NetworkMenuLogic.audioSourceLabel(root.source)} is active` : `Use ${NetworkMenuLogic.audioSourceLabel(root.source)} as microphone`
+            Accessible.name: root.active ? [NetworkMenuLogic.audioSourceLabel(root.source), " is active"].join("") :
+                                           ["Use ", NetworkMenuLogic.audioSourceLabel(root.source),
+                                            " as microphone"].join("")
 
             onClicked: root.requestSelect()
             Keys.onSpacePressed: root.requestSelect()

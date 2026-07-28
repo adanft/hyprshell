@@ -11,12 +11,16 @@ Scope {
     property int brightnessLevel: 0
     property int pendingBrightnessLevel: -1
     readonly property int brightnessWriteDebounceMs: 100
-    readonly property string brightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/brightness` : ""
-    readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? `/sys/class/backlight/${brightnessDevice}/max_brightness` : ""
+    readonly property string brightnessPath: brightnessDevice.length > 0 ? "/sys/class/backlight/" + brightnessDevice
+                                                                           + "/brightness" : ""
+    readonly property string maxBrightnessPath: brightnessDevice.length > 0 ? "/sys/class/backlight/"
+                                                                              + brightnessDevice + "/max_brightness" :
+                                                                              ""
     property string brightnessDevicePath: ""
     readonly property bool quickBrightnessPathValid: QuickControlState.validBrightnessDevicePath(brightnessDevicePath)
     readonly property string quickBrightnessPath: quickBrightnessPathValid ? `${brightnessDevicePath}/brightness` : ""
-    readonly property string quickMaxBrightnessPath: quickBrightnessPathValid ? `${brightnessDevicePath}/max_brightness` : ""
+    readonly property string quickMaxBrightnessPath: quickBrightnessPathValid ? brightnessDevicePath
+                                                                                + "/max_brightness" : ""
     property var quickBrightness: QuickControlState.unavailableCapability("Brightness unavailable")
     property int quickBrightnessMaximum: 0
     property int quickBrightnessRequestId: 0
@@ -177,7 +181,9 @@ Scope {
             return
         const currentText = FileViewState.safeText(quickBrightnessValueFile, "quick brightness", reloadFiles)
         const maximumText = FileViewState.safeText(quickMaxBrightnessValueFile, "quick max brightness", reloadFiles)
-        const readback = currentText === null || maximumText === null ? null : QuickControlState.normalizedReadback(currentText, maximumText)
+        const readback = currentText === null || maximumText === null ? null : QuickControlState.normalizedReadback(currentText,
+                                                                                                                    maximumText)
+
         if (!readback) {
             failQuickBrightnessRead("Brightness unavailable")
             return
@@ -185,30 +191,38 @@ Scope {
         quickBrightnessMaximum = readback.rawMaximum
         if (quickBrightness.activeRequestId !== null && readback.percent !== quickBrightness.draftPercent)
             return
-        quickBrightness = quickBrightness.activeRequestId !== null ? QuickControlState.confirmRequest(quickBrightness, quickBrightness.activeRequestId, readback.percent).state : QuickControlState.syncConfirmed(quickBrightness, readback.percent).state
+        quickBrightness = quickBrightness.activeRequestId !== null ? QuickControlState.confirmRequest(quickBrightness,
+                                                                                                      quickBrightness.activeRequestId,
+                                                                                                      readback.percent).state :
+                                                                     QuickControlState.syncConfirmed(quickBrightness,
+                                                                                                     readback.percent).state
         quickBrightnessConfirmationTimer.stop()
     }
     function failQuickBrightnessRead(message) {
         quickBrightness = quickBrightness.lastKnownPercent !== null ? Object.assign({}, quickBrightness, {
-            availability: "failed",
-            authoritativePercent: quickBrightness.lastKnownPercent,
-            errorCode: "invalid_native_value",
-            errorText: message
-        }) : QuickControlState.unavailableCapability(message)
+                                                                                        availability: "failed",
+                                                                                        authoritativePercent:
+                                                                                        quickBrightness.lastKnownPercent,
+                                                                                        errorCode:
+                                                                                        "invalid_native_value",
+                                                                                        errorText: message
+                                                                                    }) : QuickControlState.unavailableCapability(
+                                                                          message)
     }
     function requestBrightness(percent, requestId) {
         const raw = QuickControlState.rawForPercent(percent, quickBrightnessMaximum)
-        if (!quickBrightnessPathValid || raw === null || !Number.isSafeInteger(requestId) || requestId < 1 || quickBrightness.availability === "unavailable")
+        if (!quickBrightnessPathValid || raw === null || !Number.isSafeInteger(requestId) || requestId < 1
+                || quickBrightness.availability === "unavailable")
             return
         const expectedPercent = Math.round((raw * 100) / quickBrightnessMaximum)
         quickBrightnessRequestId = requestId
         quickBrightness = Object.assign({}, quickBrightness, {
-            availability: "pending_confirmation",
-            draftPercent: expectedPercent,
-            activeRequestId: requestId,
-            errorCode: null,
-            errorText: null
-        })
+                                            availability: "pending_confirmation",
+                                            draftPercent: expectedPercent,
+                                            activeRequestId: requestId,
+                                            errorCode: null,
+                                            errorText: null
+                                        })
         try {
             quickBrightnessValueFile.setText(String(raw))
             quickBrightnessConfirmationTimer.restart()

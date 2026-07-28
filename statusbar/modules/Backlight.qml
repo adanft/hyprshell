@@ -12,7 +12,9 @@ Item {
     required property var services
 
     readonly property int level: services.brightness.brightnessLevel
-    readonly property int iconIndex: Math.max(0, Math.min(icons.backlightLevels.length - 1, Math.floor(level / 100 * (icons.backlightLevels.length - 1))))
+    readonly property int iconIndex: Math.max(0, Math.min(icons.backlightLevels.length - 1, Math.floor(level / 100 * (
+                                                                                                           icons.backlightLevels.length
+                                                                                                           - 1))))
 
     visible: services.brightness.brightnessAvailable
     implicitWidth: visible ? content.implicitWidth : 0

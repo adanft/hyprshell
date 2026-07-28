@@ -12,7 +12,8 @@ Row {
 
     readonly property var activeToplevel: {
         const toplevel = Hyprland.activeToplevel
-        return (toplevel?.workspace?.name?.startsWith("special:") || Hyprland.focusedWorkspace?.toplevels.values.length > 0) ? toplevel : null
+        return (toplevel?.workspace?.name?.startsWith("special:") || Hyprland.focusedWorkspace?.toplevels.values.length
+                > 0) ? toplevel : null
     }
 
     width: theme.sizing.statusBarWindowTitleWidth

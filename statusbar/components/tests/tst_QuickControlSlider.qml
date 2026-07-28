@@ -60,8 +60,8 @@ TestCase {
 
     function test_cancelDiscardsDraftWithoutWriting() {
         const slider = createSlider({
-            value: 35
-        })
+                                        value: 35
+                                    })
 
         slider.draftActive = true
         slider.draftValue = 80
@@ -76,9 +76,9 @@ TestCase {
 
     function test_unavailableShowsZeroWithoutInteraction() {
         const slider = createSlider({
-            available: false,
-            value: 0
-        })
+                                        available: false,
+                                        value: 0
+                                    })
 
         compare(slider.enabled, false)
         compare(slider.visualPosition, 0)

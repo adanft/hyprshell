@@ -97,14 +97,14 @@ TestCase {
         verify(networking !== null && service !== null && device !== null && uptime !== null)
         service.wifiDevice = device
         const controller = controllerComponent.createObject(testCase, {
-            networkService: service,
-            networking,
-            menuOpen: values?.menuOpen || false,
-            uptimeSource: uptime,
-            failureReasonText: reason => String(reason),
-            openSecurityValue: 0,
-            noSecretsValue: 7
-        })
+                                                                networkService: service,
+                                                                networking,
+                                                                menuOpen: values?.menuOpen || false,
+                                                                uptimeSource: uptime,
+                                                                failureReasonText: reason => String(reason),
+                                                                openSecurityValue: 0,
+                                                                noSecretsValue: 7
+                                                            })
         verify(controller !== null)
         const result = {
             controller,
@@ -178,10 +178,10 @@ TestCase {
 
     function test_timerMetadataAndActivationGeneration() {
         const f = fixture({
-            networking: {
-                wifiEnabled: false
-            }
-        })
+                              networking: {
+                                  wifiEnabled: false
+                              }
+                          })
         compare(f.controller.scannerStartDelayMs, 300)
         compare(f.controller.activationSettleDelayMs, 900)
         compare(f.controller.wifiScannerStartTimer.interval, 300)
@@ -232,10 +232,10 @@ TestCase {
         compare(closed.device.scannerEnabled, false)
         compare(closed.controller.wifiScannerStartTimer.running, false)
         const activation = fixture({
-            networking: {
-                wifiEnabled: false
-            }
-        })
+                                       networking: {
+                                           wifiEnabled: false
+                                       }
+                                   })
         activation.controller.toggleWifiEnabled()
         compare(activation.controller.wifiActivationSettleTimer.running, true)
         activation.controller.menuOpen = true
@@ -254,10 +254,10 @@ TestCase {
         compare(f.device.scannerEnabled, false)
         compare(f.controller.scannerDevice, replacement)
         const foreign = fixture({
-            device: {
-                scannerEnabled: true
-            }
-        })
+                                    device: {
+                                        scannerEnabled: true
+                                    }
+                                })
         compare(foreign.controller.scannerOwnedDevice, null)
         destroyController(foreign)
         compare(foreign.device.scannerEnabled, true)
@@ -314,20 +314,20 @@ TestCase {
     function test_connectionCommandsDispatchExactlyOnce() {
         const f = fixture({})
         const connected = network(f, {
-            connected: true
-        })
+                                      connected: true
+                                  })
         const known = network(f, {
-            known: true
-        })
+                                  known: true
+                              })
         const open = network(f, {
-            security: 0
-        })
+                                 security: 0
+                             })
         const secured = network(f, {
-            name: "Secured"
-        })
+                                    name: "Secured"
+                                })
         const saved = network(f, {
-            known: true
-        })
+                                  known: true
+                              })
         f.controller.connectNetwork(connected)
         f.controller.connectNetwork(known)
         f.controller.connectNetwork(open)
@@ -351,12 +351,12 @@ TestCase {
         f.controller.forgetNetwork(saved)
         compare(saved.forgets, 1)
         const invalid = network(f, {
-            known: false
-        })
+                                    known: false
+                                })
         const busyForget = network(f, {
-            known: true,
-            stateChanging: true
-        })
+                                       known: true,
+                                       stateChanging: true
+                                   })
         f.controller.forgetNetwork(invalid)
         f.controller.forgetNetwork(busyForget)
         compare(invalid.forgets, 0)
@@ -378,8 +378,8 @@ TestCase {
     function test_cancelAndClosePreserveSuppressionOrder() {
         const f = fixture({})
         const target = network(f, {
-            name: "Same"
-        })
+                                   name: "Same"
+                               })
         f.controller.connectNetwork(target)
         target.stateChanging = true
         let observed = null
@@ -397,11 +397,11 @@ TestCase {
     function test_failuresSuccessAndStrictIdentity() {
         const f = fixture({})
         const pending = network(f, {
-            name: "Same"
-        })
+                                    name: "Same"
+                                })
         const sameName = network(f, {
-            name: "Same"
-        })
+                                     name: "Same"
+                                 })
         f.controller.connectNetwork(pending)
         f.controller.handleWifiNetworkConnectionFailed(pending, 2)
         compare(f.controller.connectionError, "")

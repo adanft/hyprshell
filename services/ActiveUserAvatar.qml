@@ -37,7 +37,8 @@ Item {
 
         internal.state = "finding_account"
         internal.accountGeneration = internal.generation
-        accountProcess.exec(["busctl", "--system", "--json=short", "--timeout=2", "call", "org.freedesktop.Accounts", "/org/freedesktop/Accounts", "org.freedesktop.Accounts", "FindUserByName", "s", username])
+        accountProcess.exec(["busctl", "--system", "--json=short", "--timeout=2", "call", "org.freedesktop.Accounts",
+                             "/org/freedesktop/Accounts", "org.freedesktop.Accounts", "FindUserByName", "s", username])
     }
 
     Process {
@@ -62,7 +63,8 @@ Item {
 
             internal.state = "reading_icon"
             internal.iconGeneration = internal.generation
-            iconProcess.exec(["busctl", "--system", "--json=short", "--timeout=2", "get-property", "org.freedesktop.Accounts", objectPath, "org.freedesktop.Accounts.User", "IconFile"])
+            iconProcess.exec(["busctl", "--system", "--json=short", "--timeout=2", "get-property",
+                              "org.freedesktop.Accounts", objectPath, "org.freedesktop.Accounts.User", "IconFile"])
         }
     }
 

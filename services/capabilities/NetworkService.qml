@@ -40,7 +40,8 @@ Scope {
     readonly property bool lanUp: lanDevice?.connected ?? false
     readonly property bool wifiUp: wifiDevice?.connected ?? false
     readonly property string activeNetworkInterface: lanUp ? lanInterface : (wifiUp ? wifiInterface : "")
-    readonly property var connectedWifiNetwork: (wifiDevice?.networks?.values ?? []).find(network => network.connected) ?? null
+    readonly property var connectedWifiNetwork: (wifiDevice?.networks?.values ?? []).find(network => network.connected)
+                                                ?? null
     readonly property int wifiSignal: Math.round((connectedWifiNetwork?.signalStrength ?? 0) * 100)
     property string previousNetworkInterface: ""
     property real previousNetworkSampleMs: 0
@@ -105,12 +106,14 @@ Scope {
         id: ethernetInfoProcess
         stdout: StdioCollector {
             onStreamFinished: {
-                if (root.ethernetInfoProcessGeneration === root.ethernetInfoRequestGeneration && root.ethernetInfoRequestedInterface === root.lanInterface)
+                if (root.ethernetInfoProcessGeneration === root.ethernetInfoRequestGeneration
+                        && root.ethernetInfoRequestedInterface === root.lanInterface)
                     root.ethernetInfo = NetworkState.parseNmcliDeviceInfo(this.text)
             }
         }
         onExited: (exitCode, exitStatus) => {
-            const current = root.ethernetInfoProcessGeneration === root.ethernetInfoRequestGeneration && root.ethernetInfoRequestedInterface === root.lanInterface
+            const current = root.ethernetInfoProcessGeneration === root.ethernetInfoRequestGeneration
+                  && root.ethernetInfoRequestedInterface === root.lanInterface
             if (current && root.ethernetInfoProcessRefreshesProfile && root.ethernetProfileAwaitingRefresh) {
                 root.ethernetProfileAwaitingRefresh = false
                 root.ethernetProfileBusy = false
@@ -118,7 +121,8 @@ Scope {
                 if (exitCode !== 0 && root.ethernetProfileError.length === 0)
                     root.ethernetProfileError = `Ethernet refresh failed (${exitCode})`
             }
-            if ((!current || (root.ethernetProfileAwaitingRefresh && !root.ethernetInfoProcessRefreshesProfile)) && root.lanInterface.length > 0)
+            if ((!current || (root.ethernetProfileAwaitingRefresh && !root.ethernetInfoProcessRefreshesProfile))
+                    && root.lanInterface.length > 0)
                 Qt.callLater(root.refreshEthernetInfo)
         }
     }
@@ -126,14 +130,16 @@ Scope {
         id: wifiInfoProcess
         stdout: StdioCollector {
             onStreamFinished: {
-                if (root.wifiInfoProcessGeneration === root.wifiInfoRequestGeneration && root.wifiInfoRequestedInterface === root.wifiInterface) {
+                if (root.wifiInfoProcessGeneration === root.wifiInfoRequestGeneration
+                        && root.wifiInfoRequestedInterface === root.wifiInterface) {
                     root.wifiInfo = NetworkState.parseNmcliDeviceInfo(this.text)
                     root.wifiInfoAvailability = "available"
                 }
             }
         }
         onExited: (exitCode, exitStatus) => {
-            const current = root.wifiInfoProcessGeneration === root.wifiInfoRequestGeneration && root.wifiInfoRequestedInterface === root.wifiInterface
+            const current = root.wifiInfoProcessGeneration === root.wifiInfoRequestGeneration
+                  && root.wifiInfoRequestedInterface === root.wifiInterface
             if (exitCode !== 0 && current) {
                 root.wifiInfo = NetworkState.parseNmcliDeviceInfo("")
                 root.wifiInfoAvailability = "unavailable"
@@ -212,7 +218,8 @@ Scope {
         ethernetInfoRequestedInterface = lanInterface
         ethernetInfoProcessGeneration = ethernetInfoRequestGeneration
         ethernetInfoProcessRefreshesProfile = ethernetProfileAwaitingRefresh
-        ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS", "device", "show", lanInterface])
+        ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
+                                  "device", "show", lanInterface])
     }
     function refreshWifiInfo() {
         if (wifiInfoProcess.running)
@@ -227,7 +234,8 @@ Scope {
             wifiInfoAvailability = "loading"
         wifiInfoRequestedInterface = wifiInterface
         wifiInfoProcessGeneration = wifiInfoRequestGeneration
-        wifiInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS", "device", "show", wifiInterface])
+        wifiInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
+                              "device", "show", wifiInterface])
     }
     function setEthernetProfileEnabled(profile) {
         const uuid = String(profile?.uuid || "")
@@ -241,7 +249,8 @@ Scope {
         ethernetProfilePendingUuid = uuid
         ethernetProfileError = ""
         ethernetProfileActionProcessGeneration = ethernetProfileActionGeneration
-        ethernetProfileActionProcess.exec(["timeout", "10s", "nmcli", "connection", action === "disable" ? "down" : "up", "uuid", uuid])
+        ethernetProfileActionProcess.exec(["timeout", "10s", "nmcli", "connection", action === "disable" ? "down" : "up",
+                                           "uuid", uuid])
     }
     function refreshNetwork() {
         if (!networkThroughputEnabled || !activeNetworkInterface) {

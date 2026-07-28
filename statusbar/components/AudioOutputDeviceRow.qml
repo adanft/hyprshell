@@ -24,7 +24,8 @@ Rectangle {
     opacity: root.available ? 1 : root.theme.motion.opacityDisabled
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: `${NetworkMenuLogic.audioOutputLabel(root.device)}, ${NetworkMenuLogic.audioOutputStatus(root.device, root.active)}`
+    Accessible.name: [NetworkMenuLogic.audioOutputLabel(root.device), ", ", NetworkMenuLogic.audioOutputStatus(
+            root.device, root.active)].join("")
 
     Text {
         id: deviceIcon
@@ -99,7 +100,9 @@ Rectangle {
             cursorShape: actionInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
             Accessible.role: Accessible.Button
-            Accessible.name: root.active ? `${NetworkMenuLogic.audioOutputLabel(root.device)} is active` : `Use ${NetworkMenuLogic.audioOutputLabel(root.device)} as output`
+            Accessible.name: root.active ? [NetworkMenuLogic.audioOutputLabel(root.device), " is active"].join("") :
+                                           ["Use ", NetworkMenuLogic.audioOutputLabel(root.device), " as output"].join(
+                                               "")
 
             onClicked: root.requestSelect()
             Keys.onSpacePressed: root.requestSelect()

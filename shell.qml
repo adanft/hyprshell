@@ -53,141 +53,141 @@ ShellRoot {
         target: "applauncher"
 
         function open(): void {
-            shell.openAppLauncher()
-        }
+        shell.openAppLauncher()
+    }
 
         function toggle(): void {
-            shell.toggleAppLauncher()
-        }
+                               shell.toggleAppLauncher()
+                           }
     }
 
     IpcHandler {
         target: "powermenu"
 
         function open(): void {
-            shell.openPowerMenu()
-        }
+        shell.openPowerMenu()
+    }
 
         function toggle(): void {
-            shell.togglePowerMenu()
-        }
+                               shell.togglePowerMenu()
+                           }
     }
 
     IpcHandler {
         target: "wallpaperselector"
 
         function open(): void {
-            shell.openWallpaperSelector()
-        }
+        shell.openWallpaperSelector()
+    }
 
         function toggle(): void {
-            shell.toggleWallpaperSelector()
-        }
+                               shell.toggleWallpaperSelector()
+                           }
     }
 
     IpcHandler {
         target: "screenshot"
 
         function open(): void {
-            shell.openScreenshotTool()
-        }
+        shell.openScreenshotTool()
+    }
 
         function toggle(): void {
-            shell.toggleScreenshotTool()
-        }
+                               shell.toggleScreenshotTool()
+                           }
     }
 
     IpcHandler {
         target: "themeselector"
 
         function open(): void {
-            shell.openThemeSelector()
-        }
+        shell.openThemeSelector()
+    }
 
         function toggle(): void {
-            shell.toggleThemeSelector()
-        }
+                               shell.toggleThemeSelector()
+                           }
 
         function set(name: string): void {
-            themeColors.setTheme(name)
-        }
+        themeColors.setTheme(name)
+    }
     }
 
-    Variants {
-        model: Quickshell.screens
+        Variants {
+            model: Quickshell.screens
 
-        Statusbar.BarWindow {
-            id: barWindow
+            Statusbar.BarWindow {
+                id: barWindow
 
-            required property var modelData
+                required property var modelData
 
-            screen: modelData
-            colors: themeColors
-            services: serviceState
-
-            function toggleNotificationCenter() {
-                notificationCenterLoader.toggle()
-            }
-
-            onOpenNotificationCenterRequested: toggleNotificationCenter()
-
-            OverlayLifecycleLoader {
-                id: notificationCenterLoader
-                directVisibility: true
-                property var ownerWindow: barWindow
-
-                Notifications.NotificationCenter {
-                    colors: themeColors
-                    services: serviceState
-                    barWindow: notificationCenterLoader.ownerWindow
-                }
-            }
-
-            Notifications.NotificationPopupManager {
+                screen: modelData
                 colors: themeColors
                 services: serviceState
-                barWindow: barWindow
+
+                function toggleNotificationCenter() {
+                    notificationCenterLoader.toggle()
+                }
+
+                onOpenNotificationCenterRequested: toggleNotificationCenter()
+
+                OverlayLifecycleLoader {
+                    id: notificationCenterLoader
+                    directVisibility: true
+                    property var ownerWindow: barWindow
+
+                    Notifications.NotificationCenter {
+                        colors: themeColors
+                        services: serviceState
+                        barWindow: notificationCenterLoader.ownerWindow
+                    }
+                }
+
+                Notifications.NotificationPopupManager {
+                    colors: themeColors
+                    services: serviceState
+                    barWindow: barWindow
+                }
             }
         }
-    }
 
-    function openPowerMenu() {
-        powerMenuLoader.open()
-    }
+        function openPowerMenu() {
+            powerMenuLoader.open()
+        }
 
-    function openAppLauncher() {
-        appLauncherLoader.open()
-    }
+        function openAppLauncher() {
+            appLauncherLoader.open()
+        }
 
-    function toggleAppLauncher() {
-        appLauncherLoader.toggle()
-    }
+        function toggleAppLauncher() {
+            appLauncherLoader.toggle()
+        }
 
-    function togglePowerMenu() {
-        powerMenuLoader.toggle()
-    }
+        function togglePowerMenu() {
+            powerMenuLoader.toggle()
+        }
 
-    function openWallpaperSelector() {
-        wallpaperSelectorLoader.open()
-    }
+        function openWallpaperSelector() {
+            wallpaperSelectorLoader.open()
+        }
 
-    function toggleWallpaperSelector() {
-        wallpaperSelectorLoader.toggle()
-    }
+        function toggleWallpaperSelector() {
+            wallpaperSelectorLoader.toggle()
+        }
 
-    function openScreenshotTool() {
-        screenshotToolLoader.open()
-    }
+        function openScreenshotTool() {
+            screenshotToolLoader.open()
+        }
 
-    function toggleScreenshotTool() {
-        screenshotToolLoader.toggle()
-    }
+        function toggleScreenshotTool() {
+            screenshotToolLoader.toggle()
+        }
 
-    function openThemeSelector() {
-        themeSelectorLoader.open()
-    }
+        function openThemeSelector() {
+            themeSelectorLoader.open()
+        }
 
-    function toggleThemeSelector() {
-        themeSelectorLoader.toggle()
+        function toggleThemeSelector() {
+            themeSelectorLoader.toggle()
+        }
     }
-}

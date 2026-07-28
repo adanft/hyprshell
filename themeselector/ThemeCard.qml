@@ -11,17 +11,22 @@ Rectangle {
     property bool selected: false
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
-    readonly property color previewBackground: themeData && themeData.background ? themeData.background : theme.colors.background
+    readonly property color previewBackground: themeData && themeData.background ? themeData.background :
+                                                                                   theme.colors.background
     readonly property color previewSurface: themeData && themeData.surface ? themeData.surface : previewBackground
-    readonly property color previewSurfaceActive: themeData && themeData.surfaceActive ? themeData.surfaceActive : previewSurface
+    readonly property color previewSurfaceActive: themeData && themeData.surfaceActive ? themeData.surfaceActive :
+                                                                                         previewSurface
     readonly property color previewText: themeData && themeData.text ? themeData.text : theme.colors.text
     readonly property color previewBorder: themeData && themeData.border ? themeData.border : theme.colors.border
     readonly property color previewFocus: themeData && themeData.focus ? themeData.focus : theme.colors.focus
-    readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4 ? themeData.previewColors.slice(0, 4) : [previewText, previewBorder, previewSurface, previewBackground]
+    readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4
+                                         ? themeData.previewColors.slice(0, 4) : [previewText, previewBorder,
+                                                                                  previewSurface, previewBackground]
     readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
     readonly property int nameLineHeight: theme.typography.sizeMd + theme.spacing.space4
 
-    implicitHeight: theme.spacing.appLauncherCardPadding * 2 + paletteDotSize + theme.spacing.appLauncherCardSpacing + nameLineHeight
+    implicitHeight: theme.spacing.appLauncherCardPadding * 2 + paletteDotSize + theme.spacing.appLauncherCardSpacing
+                    + nameLineHeight
 
     signal activated
 

@@ -84,12 +84,14 @@ Scope {
             powerMenu.confirmSelectedIndex = (powerMenu.confirmSelectedIndex + direction + 2) % 2
             return
         }
-        powerMenu.selectedIndex = (powerMenu.selectedIndex + direction + powerMenu.actions.length) % powerMenu.actions.length
+        powerMenu.selectedIndex = (powerMenu.selectedIndex + direction + powerMenu.actions.length)
+                % powerMenu.actions.length
     }
 
     function triggerSelection() {
         if (powerMenu.confirming) {
-            powerMenu.confirmSelectedIndex === 0 ? powerMenu.runCommand(powerMenu.pendingCommand) : powerMenu.cancelConfirm()
+            powerMenu.confirmSelectedIndex === 0 ? powerMenu.runCommand(powerMenu.pendingCommand) :
+                                                   powerMenu.cancelConfirm()
             return
         }
         const action = powerMenu.actions[powerMenu.selectedIndex]

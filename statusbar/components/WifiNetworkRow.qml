@@ -80,7 +80,9 @@ Rectangle {
             width: primaryLabel.implicitWidth + root.theme.spacing.space16
             height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
             radius: root.theme.shape.radius8
-            color: primaryInput.containsMouse || primaryInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+            color: primaryInput.containsMouse || primaryInput.activeFocus ? root.colors.surfaceHover :
+                                                                            root.colors.transparent
+
             opacity: root.actionBusy ? root.theme.motion.opacityDisabled : 1
 
             Text {
@@ -103,7 +105,8 @@ Rectangle {
                 enabled: Boolean(root.network) && !root.actionBusy
                 activeFocusOnTab: enabled
                 Accessible.role: Accessible.Button
-                Accessible.name: root.network ? `${root.network.connected ? "Disconnect from" : "Connect to"} ${root.network.name}` : "Wi-Fi network"
+                Accessible.name: root.network ? [root.network.connected ? "Disconnect from" : "Connect to", " ",
+                                                 root.network.name].join("") : "Wi-Fi network"
                 onClicked: root.requestPrimaryAction()
                 Keys.onSpacePressed: root.requestPrimaryAction()
                 Keys.onReturnPressed: root.requestPrimaryAction()
@@ -118,7 +121,8 @@ Rectangle {
             width: visible ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
             height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
             radius: root.theme.shape.radius8
-            color: forgetInput.containsMouse || forgetInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+            color: forgetInput.containsMouse || forgetInput.activeFocus ? root.colors.surfaceHover :
+                                                                          root.colors.transparent
 
             Text {
                 id: forgetLabel

@@ -46,7 +46,8 @@ Item {
     function resetAutoCloseTimer() {
         autoCloseTimer.stop()
         autoCloseTimerInitialized = false
-        if (!popup.popupData || !popup.services || typeof popup.services.notification.notificationPopupTimeout !== "function") {
+        if (!popup.popupData || !popup.services || typeof popup.services.notification.notificationPopupTimeout
+                !== "function") {
             autoCloseRemainingMs = 0
             return
         }
@@ -102,7 +103,8 @@ Item {
 
         interval: 250
         repeat: true
-        running: popup.active && popup.visible && !popup.exiting && !notificationCard.cardHovered && autoCloseRemainingMs > 0
+        running: popup.active && popup.visible && !popup.exiting && !notificationCard.cardHovered
+                 && autoCloseRemainingMs > 0
         onTriggered: {
             popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval)
             if (popup.popupData && popup.autoCloseRemainingMs <= 0)

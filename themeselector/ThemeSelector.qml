@@ -16,7 +16,8 @@ Scope {
 
     function themeCardHeight() {
         const nameLineHeight = theme.typography.sizeMd + theme.spacing.space4
-        return theme.spacing.appLauncherCardPadding * 2 + theme.typography.actionIconFontSize + theme.spacing.appLauncherCardSpacing + nameLineHeight
+        return theme.spacing.appLauncherCardPadding * 2 + theme.typography.actionIconFontSize
+                + theme.spacing.appLauncherCardSpacing + nameLineHeight
     }
 
     function open() {
@@ -129,13 +130,21 @@ Scope {
                 Item {
                     id: applicationFrame
 
-                    readonly property real scaleFactor: Math.max(0.65, Math.min(1, width / selector.theme.sizing.themePreviewReferenceWidth, height / selector.theme.sizing.themePreviewReferenceHeight))
-                    readonly property color frameBackground: preview.themeData && preview.themeData.background ? preview.themeData.background : selector.theme.colors.background
+                    readonly property real scaleFactor: Math.max(0.65, Math.min(1, width
+                                                                                / selector.theme.sizing.themePreviewReferenceWidth,
+                                                                                height / selector.theme.sizing.themePreviewReferenceHeight))
+                    readonly property color frameBackground: preview.themeData && preview.themeData.background
+                                                             ? preview.themeData.background :
+                                                               selector.theme.colors.background
 
-                    readonly property color frameSurface: preview.themeData && preview.themeData.surface ? preview.themeData.surface : frameBackground
-                    readonly property color frameText: preview.themeData && preview.themeData.text ? preview.themeData.text : selector.theme.colors.text
-                    readonly property color accent: preview.themeData && preview.themeData.primary ? preview.themeData.primary : frameText
-                    readonly property color secondaryAccent: preview.themeData && preview.themeData.secondary ? preview.themeData.secondary : accent
+                    readonly property color frameSurface: preview.themeData && preview.themeData.surface
+                                                          ? preview.themeData.surface : frameBackground
+                    readonly property color frameText: preview.themeData && preview.themeData.text
+                                                       ? preview.themeData.text : selector.theme.colors.text
+                    readonly property color accent: preview.themeData && preview.themeData.primary
+                                                    ? preview.themeData.primary : frameText
+                    readonly property color secondaryAccent: preview.themeData && preview.themeData.secondary
+                                                             ? preview.themeData.secondary : accent
 
                     anchors.fill: parent
                     anchors.margins: preview.semanticBorderWidth
@@ -144,7 +153,8 @@ Scope {
                         id: titleBar
 
                         width: parent.width
-                        height: Math.max(selector.theme.sizing.themePreviewHeaderMinHeight, Math.round(parent.height * 0.16))
+                        height: Math.max(selector.theme.sizing.themePreviewHeaderMinHeight, Math.round(parent.height
+                                                                                                       * 0.16))
                         radius: Math.max(0, preview.radius - preview.semanticBorderWidth)
                         color: applicationFrame.frameSurface
 
@@ -158,9 +168,12 @@ Scope {
 
                         Row {
                             anchors.left: parent.left
-                            anchors.leftMargin: Math.round(selector.theme.spacing.space12 * applicationFrame.scaleFactor)
+                            anchors.leftMargin: Math.round(selector.theme.spacing.space12
+                                                           * applicationFrame.scaleFactor)
                             anchors.verticalCenter: parent.verticalCenter
-                            spacing: Math.max(selector.theme.spacing.themePreviewHeaderSpacingMin, Math.round(selector.theme.spacing.themePreviewHeaderSpacing * applicationFrame.scaleFactor))
+                            spacing: Math.max(selector.theme.spacing.themePreviewHeaderSpacingMin, Math.round(
+                                                  selector.theme.spacing.themePreviewHeaderSpacing
+                                                  * applicationFrame.scaleFactor))
 
                             Repeater {
                                 model: preview.previewColors.slice(0, 3)
@@ -168,7 +181,9 @@ Scope {
                                 Rectangle {
                                     required property color modelData
 
-                                    width: Math.max(selector.theme.sizing.themePreviewDotMinSize, Math.round(selector.theme.sizing.themePreviewDotSize * applicationFrame.scaleFactor))
+                                    width: Math.max(selector.theme.sizing.themePreviewDotMinSize, Math.round(
+                                                        selector.theme.sizing.themePreviewDotSize
+                                                        * applicationFrame.scaleFactor))
                                     height: width
                                     radius: width / 2
                                     color: modelData
@@ -199,7 +214,9 @@ Scope {
                         Rectangle {
                             id: navigationRail
 
-                            width: Math.max(selector.theme.sizing.themePreviewRailMinWidth, Math.round(parent.width * 0.11))
+                            width: Math.max(selector.theme.sizing.themePreviewRailMinWidth, Math.round(parent.width
+                                                                                                       * 0.11))
+
                             height: parent.height
                             radius: Math.max(0, preview.radius - preview.semanticBorderWidth)
                             color: applicationFrame.frameSurface
@@ -222,9 +239,12 @@ Scope {
 
                             Column {
                                 anchors.top: parent.top
-                                anchors.topMargin: Math.round(selector.theme.spacing.space8 * applicationFrame.scaleFactor)
+                                anchors.topMargin: Math.round(selector.theme.spacing.space8
+                                                              * applicationFrame.scaleFactor)
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: Math.max(selector.theme.spacing.themePreviewNavigationSpacingMin, Math.round(selector.theme.spacing.themePreviewNavigationSpacing * applicationFrame.scaleFactor))
+                                spacing: Math.max(selector.theme.spacing.themePreviewNavigationSpacingMin, Math.round(
+                                                      selector.theme.spacing.themePreviewNavigationSpacing
+                                                      * applicationFrame.scaleFactor))
 
                                 Repeater {
                                     model: selector.icons.themePreviewNavigation
@@ -233,18 +253,24 @@ Scope {
                                         required property string modelData
                                         required property int index
 
-                                        width: Math.max(selector.theme.sizing.themePreviewNavigationItemMinSize, Math.round(navigationRail.width * 0.72))
+                                        width: Math.max(selector.theme.sizing.themePreviewNavigationItemMinSize,
+                                                        Math.round(navigationRail.width * 0.72))
                                         height: width
-                                        radius: Math.max(selector.theme.shape.radius3, Math.round(selector.theme.shape.themePreviewNavigationRadius * applicationFrame.scaleFactor))
+                                        radius: Math.max(selector.theme.shape.radius3, Math.round(
+                                                             selector.theme.shape.themePreviewNavigationRadius
+                                                             * applicationFrame.scaleFactor))
                                         color: index === 0 ? applicationFrame.accent : selector.theme.colors.transparent
 
                                         Text {
                                             anchors.centerIn: parent
                                             text: modelData
-                                            color: index === 0 ? applicationFrame.frameBackground : applicationFrame.frameText
+                                            color: index === 0 ? applicationFrame.frameBackground :
+                                                                 applicationFrame.frameText
                                             opacity: index === 0 ? 1 : selector.theme.motion.opacityPreviewInactive
                                             font.family: selector.theme.typography.iconFontFamily
-                                            font.pixelSize: Math.max(selector.theme.typography.themePreviewMinFontSize, Math.round(selector.theme.typography.sizeMd * applicationFrame.scaleFactor))
+                                            font.pixelSize: Math.max(selector.theme.typography.themePreviewMinFontSize,
+                                                                     Math.round(selector.theme.typography.sizeMd
+                                                                                * applicationFrame.scaleFactor))
                                         }
                                     }
                                 }
@@ -261,8 +287,12 @@ Scope {
 
                             Column {
                                 anchors.fill: parent
-                                anchors.margins: Math.max(selector.theme.spacing.themePreviewContentMarginMin, Math.round(selector.theme.spacing.themePreviewContentMargin * applicationFrame.scaleFactor))
-                                spacing: Math.max(selector.theme.spacing.themePreviewContentSpacingMin, Math.round(selector.theme.spacing.themePreviewContentSpacing * applicationFrame.scaleFactor))
+                                anchors.margins: Math.max(selector.theme.spacing.themePreviewContentMarginMin,
+                                                          Math.round(selector.theme.spacing.themePreviewContentMargin
+                                                                     * applicationFrame.scaleFactor))
+                                spacing: Math.max(selector.theme.spacing.themePreviewContentSpacingMin, Math.round(
+                                                      selector.theme.spacing.themePreviewContentSpacing
+                                                      * applicationFrame.scaleFactor))
 
                                 Repeater {
                                     model: [
@@ -302,7 +332,9 @@ Scope {
                                         required property var modelData
 
                                         width: parent.width
-                                        height: Math.max(selector.theme.sizing.themePreviewBarMinHeight, Math.round(selector.theme.sizing.themePreviewBarHeight * applicationFrame.scaleFactor))
+                                        height: Math.max(selector.theme.sizing.themePreviewBarMinHeight, Math.round(
+                                                             selector.theme.sizing.themePreviewBarHeight
+                                                             * applicationFrame.scaleFactor))
 
                                         Rectangle {
                                             x: parent.width * modelData.indent
@@ -310,7 +342,9 @@ Scope {
                                             height: parent.height
                                             radius: height / 2
                                             color: modelData.color
-                                            opacity: modelData.color === applicationFrame.frameText ? selector.theme.motion.opacityPreviewBarMuted : selector.theme.motion.opacityPreviewBarActive
+                                            opacity: modelData.color === applicationFrame.frameText
+                                                     ? selector.theme.motion.opacityPreviewBarMuted :
+                                                       selector.theme.motion.opacityPreviewBarActive
                                         }
                                     }
                                 }
@@ -345,8 +379,12 @@ Scope {
 
                             Column {
                                 anchors.fill: parent
-                                anchors.margins: Math.max(selector.theme.spacing.themePreviewFooterMarginMin, Math.round(selector.theme.spacing.themePreviewFooterMargin * applicationFrame.scaleFactor))
-                                spacing: Math.max(selector.theme.spacing.themePreviewFooterSpacingMin, Math.round(selector.theme.spacing.themePreviewFooterSpacing * applicationFrame.scaleFactor))
+                                anchors.margins: Math.max(selector.theme.spacing.themePreviewFooterMarginMin, Math.round(
+                                                              selector.theme.spacing.themePreviewFooterMargin
+                                                              * applicationFrame.scaleFactor))
+                                spacing: Math.max(selector.theme.spacing.themePreviewFooterSpacingMin, Math.round(
+                                                      selector.theme.spacing.themePreviewFooterSpacing
+                                                      * applicationFrame.scaleFactor))
 
                                 Repeater {
                                     model: [0.82, 0.58, 0.72, 0.46, 0.66]
@@ -355,7 +393,9 @@ Scope {
                                         required property real modelData
 
                                         width: parent.width * modelData
-                                        height: Math.max(selector.theme.sizing.themePreviewBarMinHeight, Math.round(selector.theme.sizing.themePreviewBarHeight * applicationFrame.scaleFactor))
+                                        height: Math.max(selector.theme.sizing.themePreviewBarMinHeight, Math.round(
+                                                             selector.theme.sizing.themePreviewBarHeight
+                                                             * applicationFrame.scaleFactor))
                                         radius: height / 2
                                         color: applicationFrame.frameText
                                         opacity: selector.theme.motion.opacityPreviewSubtle
@@ -372,7 +412,8 @@ Scope {
                     radius: preview.radius
                     color: selector.theme.colors.transparent
                     border.width: preview.semanticBorderWidth
-                    border.color: preview.themeData && preview.themeData.border ? preview.themeData.border : selector.theme.colors.border
+                    border.color: preview.themeData && preview.themeData.border ? preview.themeData.border :
+                                                                                  selector.theme.colors.border
                 }
             }
 
@@ -468,8 +509,10 @@ Scope {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxHeight)
+                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin,
+                                selector.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin,
+                                 selector.theme.sizing.appLauncherMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
                 color: selector.theme.colors.panel
                 border.width: selector.theme.shape.wallpaperSelectorBorderWidth

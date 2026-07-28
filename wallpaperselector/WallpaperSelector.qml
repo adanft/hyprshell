@@ -17,12 +17,19 @@ Scope {
 
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string wallpapersDir: Quickshell.env("AWWW_WALLPAPERS_DIR") || `${home}/Wallpapers`
-    readonly property string wallpapersFolderUrl: wallpapersDir ? "file://" + wallpapersDir.split('/').map(segment => encodeURIComponent(segment)).join('/') : ""
-    readonly property var transitionArgs: ["--transition-type", "center", "--transition-duration", "1.0", "--transition-fps", "60"]
+    readonly property string wallpapersFolderUrl: wallpapersDir ? "file://" + wallpapersDir.split('/').map(segment => encodeURIComponent(
+                                                                                                                          segment)).join(
+                                                                      '/') : ""
+    readonly property var transitionArgs: ["--transition-type", "center", "--transition-duration", "1.0",
+        "--transition-fps", "60"]
 
     property int selectedIndex: 0
     readonly property var contentItem: contentLoader.item
-    readonly property string selectedWallpaperPath: wallpaperFolderModel.count > selectedIndex ? fileUrlToPath(wallpaperFolderModel.get(selectedIndex, "filePath")) : ""
+    readonly property string selectedWallpaperPath: wallpaperFolderModel.count > selectedIndex ? fileUrlToPath(
+                                                                                                     wallpaperFolderModel.get(
+                                                                                                         selectedIndex,
+                                                                                                         "filePath")) :
+                                                                                                 ""
     readonly property string previewWallpaperSource: pathToFileUrl(AppSettings.currentWallpaper)
 
     WallpaperThumbnailCache {
@@ -43,7 +50,8 @@ Scope {
                 id: preview
 
                 readonly property int preferredHeight: Math.round(width * 9 / 16)
-                readonly property int minimumGridHeight: selector.theme.sizing.wallpaperCardHeight + selector.theme.spacing.space12
+                readonly property int minimumGridHeight: selector.theme.sizing.wallpaperCardHeight
+                                                         + selector.theme.spacing.space12
 
                 width: parent.width
                 height: Math.min(preferredHeight, Math.max(0, parent.height - parent.spacing - minimumGridHeight))
@@ -103,7 +111,12 @@ Scope {
                 readonly property real slant: Math.min(cardHeight * 0.08, sideWidth * 0.35)
                 readonly property real stride: sideWidth - slant
                 readonly property real centeringMargin: Math.max(0, (width - selectedWidth) / 2)
-                readonly property int viewportIndex: stride > 0 && wallpaperFolderModel.count > 0 ? Math.max(0, Math.min(wallpaperFolderModel.count - 1, Math.round(contentX / stride))) : 0
+                readonly property int viewportIndex: stride > 0 && wallpaperFolderModel.count > 0 ? Math.max(0, Math.min(
+                                                                                                                 wallpaperFolderModel.count
+                                                                                                                 - 1, Math.round(
+                                                                                                                     contentX
+                                                                                                                     / stride))) :
+                                                                                                    0
                 property int transitionFromIndex: selector.selectedIndex
                 property int transitionToIndex: selector.selectedIndex
                 property int queuedIndex: -1
@@ -116,7 +129,8 @@ Scope {
                 boundsBehavior: Flickable.StopAtBounds
                 flickableDirection: Flickable.HorizontalFlick
                 interactive: false
-                contentWidth: wallpaperFolderModel.count > 0 ? 2 * centeringMargin + (wallpaperFolderModel.count - 1) * stride + selectedWidth : width
+                contentWidth: wallpaperFolderModel.count > 0 ? 2 * centeringMargin + (wallpaperFolderModel.count - 1)
+                                                               * stride + selectedWidth : width
                 contentHeight: height
 
                 NumberAnimation {
@@ -146,7 +160,8 @@ Scope {
                             console.warn(message)
                     }
                     check(weightAt(1, 1, 2, 0) === 1 && weightAt(2, 1, 2, 0) === 0, "selection weight at 0 failed")
-                    check(weightAt(1, 1, 2, 0.5) === 0.5 && weightAt(2, 1, 2, 0.5) === 0.5, "selection weight at 0.5 failed")
+                    check(weightAt(1, 1, 2, 0.5) === 0.5 && weightAt(2, 1, 2, 0.5) === 0.5,
+                          "selection weight at 0.5 failed")
                     check(weightAt(1, 1, 2, 1) === 0 && weightAt(2, 1, 2, 1) === 1, "selection weight at 1 failed")
                     check(weightAt(2, 2, 2, 1) === 1 && 2 === 2, "settled selection invariant failed")
                 }
@@ -154,7 +169,8 @@ Scope {
                 function expansionBefore(index) {
                     if (transitionFromIndex === transitionToIndex)
                         return transitionToIndex < index ? 1 : 0
-                    return (transitionFromIndex < index ? 1 - transitionProgress : 0) + (transitionToIndex < index ? transitionProgress : 0)
+                    return (transitionFromIndex < index ? 1 - transitionProgress : 0) + (transitionToIndex < index
+                                                                                         ? transitionProgress : 0)
                 }
 
                 function focusIndex() {
@@ -235,13 +251,26 @@ Scope {
                         readonly property string freshnessToken: `${Number(fileModified)}:${Number(fileSize)}`
                         readonly property string wallpaperPath: selector.fileUrlToPath(filePath)
 
-                        readonly property bool cardActive: Math.abs(index - wallpaperList.viewportIndex) <= selector.residencyRadius
+                        readonly property bool cardActive: Math.abs(index - wallpaperList.viewportIndex)
+                                                           <= selector.residencyRadius
+
                         // Only resident delegates need transition-dependent geometry.
                         readonly property real distance: cardActive ? Math.abs(index - wallpaperList.focusIndex()) : 0
-                        readonly property bool isSelected: cardActive && index === wallpaperList.transitionToIndex && !wallpaperList.transitionRunning
+                        readonly property bool isSelected: cardActive && index === wallpaperList.transitionToIndex &&
+                                                           !wallpaperList.transitionRunning
                         readonly property real depth: Math.min(distance, selector.residencyRadius)
-                        readonly property real finalWidth: cardActive ? wallpaperList.sideWidth + (wallpaperList.selectedWidth - wallpaperList.sideWidth) * wallpaperList.weight(index) : wallpaperList.sideWidth
-                        readonly property real finalX: cardActive ? wallpaperList.centeringMargin + index * wallpaperList.stride + ((wallpaperList.selectedWidth - wallpaperList.sideWidth) * wallpaperList.expansionBefore(index)) : wallpaperList.centeringMargin + index * wallpaperList.stride
+                        readonly property real finalWidth: cardActive ? wallpaperList.sideWidth + (
+                                                                            wallpaperList.selectedWidth
+                                                                            - wallpaperList.sideWidth)
+                                                                        * wallpaperList.weight(index) :
+                                                                        wallpaperList.sideWidth
+                        readonly property real finalX: cardActive ? wallpaperList.centeringMargin + index
+                                                                    * wallpaperList.stride + ((
+                                                                                                  wallpaperList.selectedWidth
+                                                                                                  - wallpaperList.sideWidth)
+                                                                                              * wallpaperList.expansionBefore(
+                                                                                                  index)) : wallpaperList.centeringMargin
+                                                                    + index * wallpaperList.stride
 
                         x: finalX
                         width: finalWidth
@@ -274,7 +303,8 @@ Scope {
                                         thumbnailCache.request(wallpaperPath, freshnessToken)
                                     }
                                 }
-                                opacity: Math.max(selector.theme.motion.opacityCarouselMinimum, 1 - depth * selector.theme.motion.opacityCarouselDepthStep)
+                                opacity: Math.max(selector.theme.motion.opacityCarouselMinimum, 1 - depth
+                                                  * selector.theme.motion.opacityCarouselDepthStep)
                                 Connections {
                                     target: thumbnailCache
                                     function onThumbnailReady(sourcePath, thumbnailUrl) {
@@ -341,8 +371,10 @@ Scope {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin, selector.theme.sizing.appLauncherMaxHeight)
+                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin,
+                                selector.theme.sizing.appLauncherMaxWidth)
+                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin,
+                                 selector.theme.sizing.appLauncherMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
                 color: selector.theme.colors.panel
                 border.width: selector.theme.shape.wallpaperSelectorBorderWidth
@@ -464,7 +496,8 @@ Scope {
 
     function pathToFileUrl(path) {
         const value = String(path || "")
-        return value.length > 0 ? "file://" + value.split('/').map(segment => encodeURIComponent(segment)).join('/') : ""
+        return value.length > 0 ? "file://" + value.split('/').map(segment => encodeURIComponent(segment)).join('/') :
+                                  ""
     }
 
     function setWallpaper(path) {

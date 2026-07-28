@@ -54,7 +54,10 @@ LazyLoader {
     function _scheduleOpen(generation, loadedItem) {
         if (!loadedItem)
             return
-        if ((_scheduledGeneration === generation && _scheduledItem === loadedItem) || (_dispatchedGeneration === generation && _dispatchedItem === loadedItem))
+        if ((_scheduledGeneration === generation && _scheduledItem === loadedItem) || (_dispatchedGeneration
+                                                                                       === generation
+                                                                                       && _dispatchedItem
+                                                                                       === loadedItem))
             return
         _scheduledGeneration = generation
         _scheduledItem = loadedItem

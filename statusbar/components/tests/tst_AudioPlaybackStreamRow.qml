@@ -10,50 +10,50 @@ TestCase {
     height: 160
 
     property var node: ({
-            nickname: "Music",
-            audio: {
-                volume: 0.42,
-                muted: false
-            }
-        })
+                            nickname: "Music",
+                            audio: {
+                                volume: 0.42,
+                                muted: false
+                            }
+                        })
     property var colors: ({
-            primary: "#88aaff",
-            surface: "#202020",
-            surfaceHover: "#303030",
-            transparent: "transparent",
-            text: "#fff",
-            textSubtle: "#aaa"
-        })
+                              primary: "#88aaff",
+                              surface: "#202020",
+                              surfaceHover: "#303030",
+                              transparent: "transparent",
+                              text: "#fff",
+                              textSubtle: "#aaa"
+                          })
     property var theme: ({
-            motion: {
-                opacityDisabled: 0.5
-            },
-            shape: {
-                radius12: 12,
-                radius8: 8
-            },
-            spacing: {
-                space16: 16,
-                space12: 12,
-                space8: 8,
-                space2: 2,
-                statusBarSliderHitAreaVerticalMargin: 6
-            },
-            sizing: {
-                statusBarNetworkQuickControlHeight: 54,
-                statusBarNetworkQuickControlIconWidth: 22,
-                statusBarNetworkQuickControlSliderHeight: 32,
-                statusBarQuickControlTrackHeight: 8,
-                statusBarSliderHandleSize: 14
-            },
-            typography: {
-                sizeLg: 16,
-                sizeMd: 14,
-                sizeSm: 11,
-                textFontFamily: "sans",
-                iconFontFamily: "sans"
-            }
-        })
+                             motion: {
+                                 opacityDisabled: 0.5
+                             },
+                             shape: {
+                                 radius12: 12,
+                                 radius8: 8
+                             },
+                             spacing: {
+                                 space16: 16,
+                                 space12: 12,
+                                 space8: 8,
+                                 space2: 2,
+                                 statusBarSliderHitAreaVerticalMargin: 6
+                             },
+                             sizing: {
+                                 statusBarNetworkQuickControlHeight: 54,
+                                 statusBarNetworkQuickControlIconWidth: 22,
+                                 statusBarNetworkQuickControlSliderHeight: 32,
+                                 statusBarQuickControlTrackHeight: 8,
+                                 statusBarSliderHandleSize: 14
+                             },
+                             typography: {
+                                 sizeLg: 16,
+                                 sizeMd: 14,
+                                 sizeSm: 11,
+                                 textFontFamily: "sans",
+                                 iconFontFamily: "sans"
+                             }
+                         })
 
     Component {
         id: component
@@ -102,8 +102,8 @@ TestCase {
 
     function test_unavailableIsSafe() {
         const value = row({
-            available: false
-        })
+                              available: false
+                          })
         value.requestMute()
         value.requestVolume(50)
         compare(muteSpy.count, 0)
@@ -113,13 +113,13 @@ TestCase {
     function test_draftsAreLocal() {
         const first = row()
         const second = row({
-            stream: ({
-                    audio: {
-                        volume: 0.8,
-                        muted: false
-                    }
-                })
-        })
+                               stream: ({
+                                            audio: {
+                                                volume: 0.8,
+                                                muted: false
+                                            }
+                                        })
+                           })
         first.slider.beginInteraction(40)
         verify(first.slider.draftActive)
         verify(!second.slider.draftActive)
@@ -145,52 +145,52 @@ TestCase {
         compare(muteSpy.count, 1)
 
         value = row({
-            stream: ({
-                    nickname: "Music",
-                    audio: {
-                        volume: 0.42,
-                        muted: true
-                    }
-                })
-        })
+                        stream: ({
+                                     nickname: "Music",
+                                     audio: {
+                                         volume: 0.42,
+                                         muted: true
+                                     }
+                                 })
+                    })
         compare(findChild(value, "playbackStreamVolumeIcon").text, "M")
         compare(findChild(value, "playbackStreamPercentLabel").text, "42%")
         value = row({
-            stream: ({
-                    nickname: "Music",
-                    audio: {
-                        volume: 0,
-                        muted: false
-                    }
-                })
-        })
+                        stream: ({
+                                     nickname: "Music",
+                                     audio: {
+                                         volume: 0,
+                                         muted: false
+                                     }
+                                 })
+                    })
         compare(findChild(value, "playbackStreamVolumeIcon").text, "M")
         value = row({
-            stream: ({
-                    nickname: "Music",
-                    audio: {
-                        volume: 0.2,
-                        muted: false
-                    }
-                })
-        })
+                        stream: ({
+                                     nickname: "Music",
+                                     audio: {
+                                         volume: 0.2,
+                                         muted: false
+                                     }
+                                 })
+                    })
         compare(findChild(value, "playbackStreamVolumeIcon").text, "L")
         value = row({
-            stream: ({
-                    nickname: "Music",
-                    audio: {
-                        volume: 0.9,
-                        muted: false
-                    }
-                })
-        })
+                        stream: ({
+                                     nickname: "Music",
+                                     audio: {
+                                         volume: 0.9,
+                                         muted: false
+                                     }
+                                 })
+                    })
         compare(findChild(value, "playbackStreamVolumeIcon").text, "H")
         value = row({
-            stream: ({
-                    nickname: "Music",
-                    audio: null
-                })
-        })
+                        stream: ({
+                                     nickname: "Music",
+                                     audio: null
+                                 })
+                    })
         compare(findChild(value, "playbackStreamVolumeIcon").text, "U")
     }
 }

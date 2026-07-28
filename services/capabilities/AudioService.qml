@@ -10,7 +10,8 @@ Scope {
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
     readonly property var allAudioNodes: Pipewire.nodes?.values ?? []
-    readonly property var audioSources: root.allAudioNodes.filter(node => node && node.audio && !node.isSink && !node.isStream)
+    readonly property var audioSources: root.allAudioNodes.filter(node => node && node.audio && !node.isSink &&
+                                                                          !node.isStream)
     readonly property var audioOutputs: AudioNodeState.physicalOutputs(root.allAudioNodes, root.sink)
     readonly property var playbackStreams: AudioNodeState.playbackStreams(root.allAudioNodes)
     readonly property int sinkVolume: Math.round((root.sink?.audio?.volume ?? 0) * 100)
@@ -39,19 +40,22 @@ Scope {
         repeat: false
         onTriggered: {
             if (root.quickVolume.activeRequestId !== null)
-                root.quickVolume = QuickControlState.failRequest(root.quickVolume, root.quickVolume.activeRequestId, "reconciliation_timeout", "Volume adjustment failed")
+                root.quickVolume = QuickControlState.failRequest(root.quickVolume, root.quickVolume.activeRequestId,
+                                                                 "reconciliation_timeout", "Volume adjustment failed")
         }
     }
     Component.onCompleted: root.refreshQuickVolume()
 
     function isCurrentPhysicalSink(node) {
-        return node === root.sink && AudioNodeState.containsCurrentNode(root.allAudioNodes, node, AudioNodeState.isPhysicalOutput)
+        return node === root.sink && AudioNodeState.containsCurrentNode(root.allAudioNodes, node,
+                                                                        AudioNodeState.isPhysicalOutput)
     }
 
     function failMasterWrite(requestId) {
         confirmationTimer.stop()
         if (Number.isSafeInteger(requestId))
-            root.quickVolume = QuickControlState.failRequest(root.quickVolume, requestId, "target_unavailable", "Volume adjustment failed")
+            root.quickVolume = QuickControlState.failRequest(root.quickVolume, requestId, "target_unavailable",
+                                                             "Volume adjustment failed")
         else
             root.quickVolume = QuickControlState.unavailableCapability("Volume unavailable")
         return false
@@ -163,12 +167,16 @@ Scope {
         const percent = QuickControlState.clampPercent(Number(root.sink.audio.volume) * 100)
         if (root.quickVolume.activeRequestId !== null && percent !== root.quickVolume.draftPercent)
             return
-        const reconciled = root.quickVolume.activeRequestId !== null ? QuickControlState.confirmRequest(root.quickVolume, root.quickVolume.activeRequestId, percent).state : QuickControlState.syncConfirmed(root.quickVolume, percent).state
+        const reconciled = root.quickVolume.activeRequestId !== null ? QuickControlState.confirmRequest(root.quickVolume,
+                                                                                                        root.quickVolume.activeRequestId,
+                                                                                                        percent).state :
+                                                                       QuickControlState.syncConfirmed(root.quickVolume,
+                                                                                                       percent).state
         if (root.quickVolume.activeRequestId !== null)
             confirmationTimer.stop()
         root.quickVolume = Object.assign({}, reconciled, {
-            muted: Boolean(root.sink.audio.muted)
-        })
+                                             muted: Boolean(root.sink.audio.muted)
+                                         })
     }
 
     function requestSinkVolume(percent, requestId) {
@@ -179,12 +187,12 @@ Scope {
             return
         }
         root.quickVolume = Object.assign({}, root.quickVolume, {
-            availability: "pending_confirmation",
-            draftPercent: request.percent,
-            activeRequestId: requestId,
-            errorCode: null,
-            errorText: null
-        })
+                                             availability: "pending_confirmation",
+                                             draftPercent: request.percent,
+                                             activeRequestId: requestId,
+                                             errorCode: null,
+                                             errorText: null
+                                         })
         try {
             if (!root.isCurrentPhysicalSink(node))
                 return root.failMasterWrite(requestId)

@@ -143,9 +143,13 @@ QtObject {
         const decision = ThemeSyncState.requestHyprland(hyprlandState, nextTheme, force)
         if (decision.action !== "start")
         return
+        startHyprlandTheme(decision.request)
+    }
+
+        function startHyprlandTheme(request) {
         let processArgs
         try {
-        processArgs = HyprlandThemeCommand.processArguments(decision.request.theme)
+        processArgs = HyprlandThemeCommand.processArguments(request.theme)
     } catch (error) {
         hyprlandState.busy = false
         hyprlandState.pending = null
@@ -157,39 +161,39 @@ QtObject {
         try {
         process = hyprlandProcessComponent.createObject(stockThemes)
     } catch (error) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, false)
+        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, false)
         hyprlandSyncBusy = hyprlandState.busy
         console.warn(`Failed to create Hyprland theme process: ${error}`)
         if (next.action === "start")
-        syncHyprlandTheme(next.request.theme, next.request.force)
+        startHyprlandTheme(next.request)
         return
     }
         if (!process) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, false)
+        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, false)
         hyprlandSyncBusy = hyprlandState.busy
         console.warn("Failed to create Hyprland theme process")
         if (next.action === "start")
-        syncHyprlandTheme(next.request.theme, next.request.force)
+        startHyprlandTheme(next.request)
         return
     }
         process.onExited.connect(function (exitCode) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, exitCode === 0)
+        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, exitCode === 0)
         if (exitCode !== 0)
         console.warn(`Failed to apply Hyprland theme (exit ${exitCode})`)
         process.destroy()
         hyprlandSyncBusy = hyprlandState.busy
         if (next.action === "start")
-        syncHyprlandTheme(next.request.theme, next.request.force)
+        startHyprlandTheme(next.request)
     })
         try {
         process.exec(processArgs)
     } catch (error) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, decision.request.signature, false)
+        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, false)
         process.destroy()
         hyprlandSyncBusy = hyprlandState.busy
         console.warn(`Failed to start Hyprland theme process: ${error}`)
         if (next.action === "start")
-        syncHyprlandTheme(next.request.theme, next.request.force)
+        startHyprlandTheme(next.request)
     }
     }
 

@@ -113,6 +113,10 @@ QtObject {
         const decision = ThemeSyncState.requestGhostty(reloadState, force)
         if (decision.action !== "start")
             return
+        startReload(decision.force)
+    }
+
+    function startReload(force) {
         try {
             const process = reloadProcessComponent.createObject(ghosttyTheme)
             if (!process)
@@ -123,14 +127,14 @@ QtObject {
                     console.warn(`Failed to reload Ghostty after theme synchronization (exit ${exitCode})`)
                 process.destroy()
                 if (next.action === "start")
-                    reload(next.force)
+                    startReload(next.force)
             })
             process.exec(["gapplication", "action", "com.mitchellh.ghostty", "reload-config"])
         } catch (error) {
             const next = ThemeSyncState.finishGhostty(reloadState, false)
             console.warn(`Failed to start Ghostty reload process: ${error}`)
             if (next.action === "start")
-                reload(next.force)
+                startReload(next.force)
         }
     }
 

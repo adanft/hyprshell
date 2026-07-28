@@ -12,6 +12,7 @@ assert.equal(context.shouldSyncExternal(false, true), false);
 assert.equal(context.shouldSyncExternal(true, true), true);
 const theme = { focus: "#111111" };
 const otherTheme = { focus: "#222222" };
+const latestTheme = { focus: "#333333" };
 const state = context.createHyprlandState();
 assert.equal(context.requestHyprland(state, theme, false).action, "start");
 assert.equal(context.requestHyprland(state, theme, true).action, "queued");
@@ -62,13 +63,17 @@ assert.equal(
 	context.requestHyprland(latest, otherTheme, false).action,
 	"queued",
 );
+assert.equal(
+	context.requestHyprland(latest, latestTheme, false).action,
+	"queued",
+);
 result = context.finishHyprland(
 	latest,
 	context.effectiveSignature(theme),
-	false,
+	true,
 );
 assert.equal(result.action, "start");
-assert.equal(result.request.signature, context.effectiveSignature(otherTheme));
+assert.equal(result.request.signature, context.effectiveSignature(latestTheme));
 
 for (const failure of [false, false]) {
 	const retry = failure === false && context.createHyprlandState();
@@ -114,6 +119,8 @@ assert.equal(context.ghosttyNeedsReload(false, true), true);
 assert.equal(context.ghosttyNeedsReload(true, false), true);
 const ghostty = context.createGhosttyState();
 assert.equal(context.requestGhostty(ghostty, false).action, "start");
+assert.equal(context.requestGhostty(ghostty, true).action, "queued");
+assert.equal(context.finishGhostty(ghostty, true).action, "start");
 assert.equal(context.finishGhostty(ghostty, true).action, "idle");
 assert.equal(context.requestGhostty(ghostty, false).action, "start");
 assert.equal(context.finishGhostty(ghostty, false).action, "start");
@@ -126,6 +133,9 @@ assert.match(
 	source,
 	/try \{\s*process = hyprlandProcessComponent\.createObject/,
 );
+assert.match(source, /function startHyprlandTheme\(request\)/);
+const ghosttySource = fs.readFileSync(`${__dirname}/GhosttyTheme.qml`, "utf8");
+assert.match(ghosttySource, /function startReload\(force\)/);
 console.log(
 	"ThemeSyncState: readiness, coalescing, retries, latest request, and force contracts passed",
 );

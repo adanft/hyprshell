@@ -72,12 +72,6 @@ QtObject {
     }
 
     Component.onCompleted: startupCoordinator.request(false)
-    Connections {
-        target: AppSettings
-        function onStartupReadyChanged() {
-            startupCoordinator.settingsReady = AppSettings.startupReady
-        }
-    }
     readonly property var startupCoordinator: ThemeStartupCoordinator {
         currentTheme: stockThemes.currentTheme
         settingsReady: AppSettings.startupReady

@@ -4,6 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import "../../notifications/NotificationImagePersistence.js" as NotificationImagePersistence
+import "NotificationTimeActivity.js" as NotificationTimeActivity
 
 Scope {
     id: root
@@ -125,8 +126,11 @@ Scope {
 
     Timer {
         interval: 30000
-        running: root.notificationCenterOpen || root.notificationHistory.length > 0 || root.visibleNotifications.length
-                 > 0 || root.notificationQueue.length > 0
+            running: NotificationTimeActivity.shouldUpdateNotificationTime({
+                centerOpen: root.notificationCenterOpen,
+                visiblePopup: root.visibleNotifications.length > 0,
+                queuedPopup: root.notificationQueue.length > 0,
+            })
         repeat: true
         onTriggered: root.notificationTimeUpdateTick = !root.notificationTimeUpdateTick
     }
@@ -166,8 +170,10 @@ Scope {
 
     function setNotificationCenterOpen(open) {
         root.notificationCenterOpen = open
-        if (root.notificationCenterOpen)
+        if (root.notificationCenterOpen) {
+            root.notificationTimeUpdateTick = !root.notificationTimeUpdateTick
             root.clearNotificationPopups()
+        }
     }
 
     function clearNotificationPopups() {

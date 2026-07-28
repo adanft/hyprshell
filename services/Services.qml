@@ -198,6 +198,7 @@ Scope {
 
     function toggleBluetoothPowered() { return bluetoothService.toggleBluetoothPowered() }
     function scanBluetooth() { return bluetoothService.scanBluetooth() }
+    function setBluetoothScanning(enabled) { return bluetoothService.setBluetoothScanning(enabled) }
     function connectBluetoothDevice(device) { return bluetoothService.connectBluetoothDevice(device) }
     function disconnectBluetoothDevice(device) { return bluetoothService.disconnectBluetoothDevice(device) }
     function pairBluetoothDevice(device) { return bluetoothService.pairBluetoothDevice(device) }

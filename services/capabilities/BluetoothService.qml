@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
+import Quickshell.Io
 
 Scope {
     id: root
@@ -11,153 +12,94 @@ Scope {
     readonly property bool bluetoothDiscovering: bluetoothAvailable ? bluetoothAdapter.discovering : false
     readonly property var bluetoothDevices: bluetoothAdapter?.devices?.values ?? []
     readonly property int bluetoothConnectedCount: bluetoothDevices.filter(device => device && device.connected).length
-    readonly property bool bluetoothBusy: bluetoothDevices.some(device => device && (device.pairing || device.state === BluetoothDeviceState.Connecting || device.state === BluetoothDeviceState.Disconnecting))
-        property string bluetoothError: ""
-        readonly property int bluetoothOperationTimeoutMs: 18000
-        readonly property int bluetoothPairStabilityWindowMs: 1750
-        property var bluetoothPendingOperations: ({})
-        property int bluetoothPendingRevision: 0
+    readonly property bool bluetoothBusy: bluetoothPairProcess.running || bluetoothDevices.some(device => device && (device.pairing || device.state === BluetoothDeviceState.Connecting || device.state === BluetoothDeviceState.Disconnecting))
+    property string bluetoothError: ""
+    property string bluetoothPendingAddress: ""
+    property int bluetoothPendingRevision: 0
+    property bool bluetoothDiscoveryChangePending: false
+    property var bluetoothPendingForgetDevice: null
+    property int bluetoothPendingForgetElapsed: 0
 
-        Timer {
-            id: operationTimer
-            interval: 250
-            repeat: true
-            running: Object.keys(root.bluetoothPendingOperations).length > 0
-            onTriggered: root.pollBluetoothOperations()
+    Timer {
+        id: bluetoothErrorTimer
+        interval: 4000
+        repeat: false
+        onTriggered: root.bluetoothError = ""
+    }
+
+    onBluetoothErrorChanged: {
+        if (bluetoothError.length > 0)
+            bluetoothErrorTimer.restart()
+        else
+            bluetoothErrorTimer.stop()
+    }
+
+    Timer {
+        id: bluetoothDiscoveryTransitionTimer
+        interval: 1500
+        repeat: false
+        onTriggered: root.bluetoothDiscoveryChangePending = false
+    }
+
+    onBluetoothDiscoveringChanged: {
+        bluetoothDiscoveryChangePending = false
+        bluetoothDiscoveryTransitionTimer.stop()
+    }
+
+    onBluetoothPoweredChanged: {
+        if (!bluetoothPowered) {
+            bluetoothDiscoveryChangePending = false
+            bluetoothDiscoveryTransitionTimer.stop()
         }
+    }
 
-        Timer {
-            id: errorClearTimer
-            interval: 5000
-            repeat: false
-            onTriggered: root.bluetoothError = ""
-        }
-
-        onBluetoothErrorChanged: {
-            if (bluetoothError.length > 0)
-                errorClearTimer.restart()
-            else
-                errorClearTimer.stop()
-        }
-
-        function bluetoothDeviceKey(device) {
-            return device && (device.address || device.dbusPath) || ""
-        }
-
-        function bluetoothDevicePending(device) {
-            const key = bluetoothDeviceKey(device)
-            return Boolean(key && root.bluetoothPendingOperations[key])
-        }
-
-        function replacePending(next) {
-            bluetoothPendingOperations = next
-            bluetoothPendingRevision += 1
-        }
-
-        function operationError(operation) {
-            if (operation === "pair") return "Could not pair with device"
-            if (operation === "forget") return "Could not forget device"
-            if (operation === "disconnect-before-forget") return "Could not disconnect from device"
-            return "Could not " + operation + " to device"
-        }
-
-        function finishBluetoothOperation(key, errorMessage) {
-            const next = Object.assign({}, bluetoothPendingOperations)
-            delete next[key]
-            replacePending(next)
-            if (errorMessage) bluetoothError = errorMessage
-            else bluetoothError = ""
-        }
-
-        function operationSucceeded(operation, device) {
-            if (!device) return operation === "forget"
-            if (operation === "connect") return Boolean(device.connected)
-            if (operation === "disconnect") return !device.connected
-            if (operation === "pair") return Boolean(device.paired)
-            if (operation === "disconnect-before-forget") return false
-            return !device.paired && !device.trusted
-        }
-
-            function chainPairToConnect(key, device, now) {
-                const next = Object.assign({}, bluetoothPendingOperations)
-                next[key] = { operation: "connect", startedAt: now }
-                replacePending(next)
-                try {
-                    device.connect()
-                } catch (error) {
-                    finishBluetoothOperation(key, "Could not connect to device")
-                }
+    Timer {
+        id: bluetoothForgetTimer
+        interval: 100
+        repeat: true
+        onTriggered: {
+            const device = root.bluetoothPendingForgetDevice
+            if (!device) {
+stop()
+return
             }
-
-            function chainDisconnectToForget(key, device, now) {
-                const next = Object.assign({}, bluetoothPendingOperations)
-                next[key] = { operation: "forget", startedAt: now }
-                replacePending(next)
-                try {
-                    device.forget()
-                } catch (error) {
-                    finishBluetoothOperation(key, "Could not forget device")
-                }
+            if (!device.connected) {
+root.bluetoothPendingForgetDevice = null
+root.bluetoothPendingForgetElapsed = 0
+stop()
+try {
+device.forget()
+} catch (error) {
+root.bluetoothError = "Could not forget Bluetooth device"
+}
+            } else if (root.bluetoothPendingForgetElapsed >= 4000) {
+root.bluetoothPendingForgetDevice = null
+root.bluetoothPendingForgetElapsed = 0
+stop()
+root.bluetoothError = "Could not disconnect Bluetooth device before forgetting"
+            } else {
+root.bluetoothPendingForgetElapsed += interval
             }
-
-                function pollBluetoothOperations() {
-                    const now = Date.now()
-                    const devices = bluetoothDevices
-                    Object.keys(bluetoothPendingOperations).forEach(key => {
-                        const pending = bluetoothPendingOperations[key]
-                        const device = devices.find(candidate => bluetoothDeviceKey(candidate) === key)
-                        if (pending.operation === "pair" && device) {
-                            // Pairing is multi-phase. Never treat the transient
-                            // paired/connected state as completion.
-                            const pairing = Boolean(device.pairing)
-                            const ready = !pairing && Boolean(device.paired) && Boolean(device.bonded)
-                            const observed = pending.pairingObserved || pairing
-                            let nextPending = pending
-                            if (observed !== pending.pairingObserved)
-                                nextPending = Object.assign({}, nextPending, { pairingObserved: true })
-                            if (pairing || !ready) {
-                                if (nextPending.stableSince !== undefined)
-                                    nextPending = Object.assign({}, nextPending, { stableSince: undefined })
-                                if (observed && !pairing && (!device.paired || !device.bonded)) {
-                                    finishBluetoothOperation(key, operationError("pair"))
-                                    return
-                                }
-                            } else if (nextPending.stableSince === undefined) {
-                                nextPending = Object.assign({}, nextPending, { stableSince: now })
-                            }
-                            if (nextPending !== pending) {
-                                const updated = Object.assign({}, bluetoothPendingOperations)
-                                updated[key] = nextPending
-                                replacePending(updated)
-                            }
-                            if (ready && nextPending.stableSince !== undefined && now - nextPending.stableSince >= bluetoothPairStabilityWindowMs) {
-                                if (device.connected)
-                                    finishBluetoothOperation(key, "")
-                                else
-                                    chainPairToConnect(key, device, now)
-                            }
-                        } else if (pending.operation === "disconnect-before-forget" && device && !device.connected) {
-                            chainDisconnectToForget(key, device, now)
-                        } else if (operationSucceeded(pending.operation, device)) {
-                            finishBluetoothOperation(key, "")
-                        } else if (now - pending.startedAt >= bluetoothOperationTimeoutMs) {
-                            finishBluetoothOperation(key, operationError(pending.operation))
-                        }
-                    })
-                }
-
-        function startBluetoothOperation(device, operation, invoke) {
-            const key = bluetoothDeviceKey(device)
-            if (!key || bluetoothDevicePending(device)) return false
-            bluetoothError = ""
-            const next = Object.assign({}, bluetoothPendingOperations)
-                next[key] = operation === "pair"
-                    ? { operation: operation, startedAt: Date.now(), pairingObserved: false, stableSince: undefined }
-                    : { operation: operation, startedAt: Date.now() }
-            replacePending(next)
-            try { invoke() } catch (error) { finishBluetoothOperation(key, operationError(operation)); return false }
-            return true
         }
+    }
+
+    Process {
+        id: bluetoothPairProcess
+
+        stdout: StdioCollector {}
+        stderr: StdioCollector {}
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0)
+                root.bluetoothError = "Could not pair device"
+            root.bluetoothPendingAddress = ""
+            root.bluetoothPendingRevision += 1
+        }
+    }
+
+    function bluetoothDevicePending(device) {
+        return Boolean(device && bluetoothPendingAddress.length > 0
+            && device.address === bluetoothPendingAddress)
+    }
 
     function toggleBluetoothPowered() {
         if (bluetoothAdapter)
@@ -165,33 +107,84 @@ Scope {
     }
 
     function scanBluetooth() {
-        if (bluetoothAdapter && bluetoothPowered)
-            bluetoothAdapter.discovering = !bluetoothDiscovering
+        setBluetoothScanning(!bluetoothDiscovering)
+    }
+
+    function setBluetoothScanning(enabled) {
+        const desired = Boolean(enabled)
+        if (!bluetoothAdapter || !bluetoothPowered || bluetoothDiscovering === desired || bluetoothDiscoveryChangePending)
+            return false
+        bluetoothDiscoveryChangePending = true
+        bluetoothDiscoveryTransitionTimer.restart()
+        bluetoothAdapter.discovering = desired
+        return true
     }
 
     function connectBluetoothDevice(device) {
-        if (!bluetoothPowered || !device || device.connected || device.blocked || !device.paired && !device.trusted || bluetoothDeviceBusy(device)) return false
-        return startBluetoothOperation(device, "connect", () => device.connect())
+        if (!bluetoothPowered || !device || device.connected || device.blocked || (!device.paired && !device.trusted) || bluetoothDeviceBusy(device)) return false
+        try {
+device.connect()
+return true
+        } catch (error) {
+bluetoothError = "Could not connect Bluetooth device"
+return false
+        }
     }
 
     function disconnectBluetoothDevice(device) {
-        if (!device || !device.connected || bluetoothDeviceBusy(device)) return false
-        return startBluetoothOperation(device, "disconnect", () => device.disconnect())
+        if (!bluetoothPowered || !device || !device.connected || bluetoothDeviceBusy(device)) return false
+        try {
+device.disconnect()
+return true
+        } catch (error) {
+bluetoothError = "Could not disconnect Bluetooth device"
+return false
+        }
     }
 
     function pairBluetoothDevice(device) {
-        if (!bluetoothPowered || !device || device.paired || device.blocked || bluetoothDeviceBusy(device)) return false
-        return startBluetoothOperation(device, "pair", () => device.pair())
+        const address = device?.address || ""
+        if (!bluetoothPowered || !device || !address || device.paired || device.blocked || bluetoothDeviceBusy(device) || bluetoothPairProcess.running) return false
+
+        bluetoothError = ""
+        bluetoothPendingAddress = address
+        bluetoothPendingRevision += 1
+        bluetoothPairProcess.exec([
+            "sh",
+            "-c",
+            "timeout 30 bluetoothctl pair \"$1\" && bluetoothctl trust \"$1\" && timeout 30 bluetoothctl connect \"$1\"",
+            "bluetooth-pair",
+            address,
+        ])
+        return true
     }
 
-    function forgetBluetoothDevice(device) {
-        if (!device || bluetoothDeviceBusy(device)) return false
-        if (!device.connected)
-        return startBluetoothOperation(device, "forget", () => device.forget())
-        return startBluetoothOperation(device, "disconnect-before-forget", () => device.disconnect())
-    }
+        function forgetBluetoothDevice(device) {
+            if (!bluetoothPowered || !device || bluetoothDeviceBusy(device)) return false
+            if (device.connected) {
+                try {
+                    bluetoothPendingForgetDevice = device
+                    bluetoothPendingForgetElapsed = 0
+                    device.disconnect()
+                    bluetoothForgetTimer.start()
+                    return true
+                } catch (error) {
+                    bluetoothPendingForgetDevice = null
+                    bluetoothPendingForgetElapsed = 0
+                    bluetoothError = "Could not disconnect Bluetooth device before forgetting"
+                    return false
+                }
+            }
+            try {
+                device.forget()
+                return true
+            } catch (error) {
+                bluetoothError = "Could not forget Bluetooth device"
+                return false
+            }
+        }
 
     function bluetoothDeviceBusy(device) {
-        return Boolean(device && (device.pairing || device.state === BluetoothDeviceState.Connecting || device.state === BluetoothDeviceState.Disconnecting))
+        return Boolean(device && (bluetoothDevicePending(device) || device.pairing || device.state === BluetoothDeviceState.Connecting || device.state === BluetoothDeviceState.Disconnecting))
     }
 }

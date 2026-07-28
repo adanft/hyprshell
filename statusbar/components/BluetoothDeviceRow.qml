@@ -7,13 +7,14 @@ Rectangle {
     required property var colors
     required property var theme
     property bool pending: false
+    property bool powered: true
     property bool primaryActionVisible: true
     signal primaryActionRequested
     signal forgetRequested
 
     readonly property string action: NetworkMenuLogic.bluetoothDeviceAction(device)
     readonly property bool busy: pending || action === "busy"
-    readonly property bool forgetAvailable: Boolean(device && (device.connected || device.paired || device.trusted))
+    readonly property bool forgetAvailable: Boolean(powered && device && (device.connected || device.paired || device.trusted))
     height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
     color: colors.surface

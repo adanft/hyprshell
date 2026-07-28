@@ -40,7 +40,6 @@ QtObject {
     readonly property color danger: themeData.danger
     readonly property color critical: themeData.critical
 
-
     function setTheme(name) {
         return StockThemes.setTheme(name)
     }

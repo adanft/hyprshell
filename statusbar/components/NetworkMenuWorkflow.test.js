@@ -130,7 +130,12 @@ for (const key of Object.keys(eligible)) {
 	assert.equal(result.state.scannerOwnedDevice, device);
 	assert.deepEqual(clean(result.effects), [
 		{ type: "stopScannerDelay" },
-		{ type: "setScannerEnabled", device, enabled: true, claimOwnership: true },
+		{
+			type: "setScannerEnabled",
+			device,
+			enabled: true,
+			claimOwnership: true,
+		},
 	]);
 	const forced = run(
 		result.state,
@@ -150,7 +155,10 @@ for (const key of Object.keys(eligible)) {
 		replacement = {};
 	const result = run(
 		state({ scannerDevice: oldDevice, scannerOwnedDevice: oldDevice }),
-		Object.assign({ type: "syncScanner", wifiDevice: replacement }, eligible),
+		Object.assign(
+			{ type: "syncScanner", wifiDevice: replacement },
+			eligible,
+		),
 	);
 	assert.deepEqual(effectTypes(result), [
 		"stopScannerDelay",
@@ -245,7 +253,10 @@ for (const key of Object.keys(eligible)) {
 		"stopScannerDelay",
 		"stopActivationSettle",
 	]);
-	assert.deepEqual(effectTypes(run(destroyed.state, { type: "destroy" })), []);
+	assert.deepEqual(
+		effectTypes(run(destroyed.state, { type: "destroy" })),
+		[],
+	);
 }
 
 const openSecurityValue = 0;
@@ -295,9 +306,12 @@ for (const [target, password, expected] of [
 {
 	const changing = { name: "same", stateChanging: true };
 	const sameName = { name: "same" };
-	let result = run(state({ pendingNetwork: changing, connectionError: "x" }), {
-		type: "cancelPassword",
-	});
+	let result = run(
+		state({ pendingNetwork: changing, connectionError: "x" }),
+		{
+			type: "cancelPassword",
+		},
+	);
 	assert.equal(result.state.suppressedPasswordNetwork, changing);
 	assert.equal(result.state.pendingNetwork, null);
 	result = run(result.state, {

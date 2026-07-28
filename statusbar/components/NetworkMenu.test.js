@@ -125,8 +125,14 @@ assert.match(
 );
 assert.match(detailContentBlock, /id: scanButton/);
 assert.match(detailContentBlock, /id: bluetoothDetailTitle/);
-assert.match(detailContentBlock, /id: bluetoothDetailTitle[\s\S]*anchors\.top: parent\.top/);
-assert.match(detailContentBlock, /id: scanButton[\s\S]*anchors\.top: parent\.top/);
+assert.match(
+	detailContentBlock,
+	/id: bluetoothDetailTitle[\s\S]*anchors\.top: parent\.top/,
+);
+assert.match(
+	detailContentBlock,
+	/id: scanButton[\s\S]*anchors\.top: parent\.top/,
+);
 const bluetoothDetailsColumnBlock = objectBlockById(
 	qml,
 	"bluetoothDetailsColumn",
@@ -186,8 +192,14 @@ assert.match(
 	/function pairBluetoothDevice[\s\S]*!bluetoothPowered/,
 );
 assert.match(bluetoothServiceQml, /import Quickshell\.Io/);
-assert.match(bluetoothServiceQml, /id: bluetoothErrorTimer[\s\S]*interval: 4000[\s\S]*onTriggered: root\.bluetoothError = ""/);
-assert.match(bluetoothServiceQml, /onBluetoothErrorChanged:[\s\S]*bluetoothErrorTimer\.restart\(\)[\s\S]*bluetoothErrorTimer\.stop\(\)/);
+assert.match(
+	bluetoothServiceQml,
+	/id: bluetoothErrorTimer[\s\S]*interval: 4000[\s\S]*onTriggered: root\.bluetoothError = ""/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/onBluetoothErrorChanged:[\s\S]*bluetoothErrorTimer\.restart\(\)[\s\S]*bluetoothErrorTimer\.stop\(\)/,
+);
 assert.equal(
 	(bluetoothServiceQml.match(/device\.connect\(\)/g) || []).length,
 	1,
@@ -205,33 +217,84 @@ assert.match(
 	bluetoothServiceQml,
 	/function bluetoothDevicePending\(device\)[\s\S]*device\.address === bluetoothPendingAddress/,
 );
-assert.match(bluetoothServiceQml, /function connectBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.connect\(\)[\s\S]*catch \(error\)[\s\S]*Could not connect Bluetooth device/);
-assert.match(bluetoothServiceQml, /function disconnectBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.disconnect\(\)[\s\S]*catch \(error\)[\s\S]*Could not disconnect Bluetooth device/);
-assert.match(bluetoothServiceQml, /property var bluetoothPendingForgetDevice: null[\s\S]*property int bluetoothPendingForgetElapsed: 0/);
-assert.match(bluetoothServiceQml, /id: bluetoothForgetTimer[\s\S]*interval: 100[\s\S]*if \(!device\.connected\)[\s\S]*device\.forget\(\)[\s\S]*Could not forget Bluetooth device[\s\S]*bluetoothPendingForgetElapsed >= 4000[\s\S]*Could not disconnect Bluetooth device before forgetting/);
-assert.match(bluetoothServiceQml, /function forgetBluetoothDevice\(device\)[\s\S]*device\.disconnect\(\)[\s\S]*bluetoothForgetTimer\.start\(\)[\s\S]*return true/);
-assert.match(bluetoothServiceQml, /function forgetBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.forget\(\)[\s\S]*catch \(error\)[\s\S]*Could not forget Bluetooth device/);
-assert.doesNotMatch(bluetoothServiceQml, /stdinEnabled|\.write\(|--agent|default-agent|validBluetoothMac|PairPostconditions|pair-cli|PendingOperations|operationTimer|TimeoutTimer|SettleTimer|Instantiator|traceBluetoothState|bluetoothDebugLogging/);
-assert.doesNotMatch(bluetoothServiceQml, /device\.pair\(\)|\$\{address\}|this\.text/);
-assert.match(bluetoothServiceQml, /function setBluetoothScanning\(enabled\)[\s\S]*const desired = Boolean\(enabled\)[\s\S]*bluetoothAdapter\.discovering = desired/);
-assert.match(bluetoothServiceQml, /property bool bluetoothDiscoveryChangePending: false/);
-assert.match(bluetoothServiceQml, /id: bluetoothDiscoveryTransitionTimer[\s\S]*interval: 1500[\s\S]*bluetoothDiscoveryChangePending = false/);
-assert.match(bluetoothServiceQml, /onBluetoothDiscoveringChanged:[\s\S]*bluetoothDiscoveryChangePending = false[\s\S]*bluetoothDiscoveryTransitionTimer\.stop\(\)/);
-assert.match(bluetoothServiceQml, /bluetoothDiscovering === desired \|\| bluetoothDiscoveryChangePending[\s\S]*return false[\s\S]*bluetoothDiscoveryChangePending = true/);
-assert.match(qml, /id: bluetoothScanTimer[\s\S]*interval: 25000[\s\S]*onTriggered: root\.stopBluetoothScan\(\)/);
-assert.match(qml, /function startBluetoothScan\(\)[\s\S]*setBluetoothScanning\(true\)[\s\S]*bluetoothScanTimer\.restart\(\)/);
-assert.match(qml, /function stopBluetoothScan\(\)[\s\S]*bluetoothScanTimer\.stop\(\)[\s\S]*setBluetoothScanning\(false\)/);
-assert.match(qml, /onExpandedNetworkSectionChanged:[\s\S]*expandedNetworkSection === "bluetooth"[\s\S]*startBluetoothScan\(\)[\s\S]*stopBluetoothScan\(\)/);
-assert.match(qml, /function close\(\) \{[\s\S]*stopBluetoothScan\(\)[\s\S]*networkController\.requestClose\(\)/);
+assert.match(
+	bluetoothServiceQml,
+	/function connectBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.connect\(\)[\s\S]*catch \(error\)[\s\S]*Could not connect Bluetooth device/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function disconnectBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.disconnect\(\)[\s\S]*catch \(error\)[\s\S]*Could not disconnect Bluetooth device/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/property var bluetoothPendingForgetDevice: null[\s\S]*property int bluetoothPendingForgetElapsed: 0/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/id: bluetoothForgetTimer[\s\S]*interval: 100[\s\S]*if \(!device\.connected\)[\s\S]*device\.forget\(\)[\s\S]*Could not forget Bluetooth device[\s\S]*bluetoothPendingForgetElapsed >= 4000[\s\S]*Could not disconnect Bluetooth device before forgetting/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function forgetBluetoothDevice\(device\)[\s\S]*device\.disconnect\(\)[\s\S]*bluetoothForgetTimer\.start\(\)[\s\S]*return true/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function forgetBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.forget\(\)[\s\S]*catch \(error\)[\s\S]*Could not forget Bluetooth device/,
+);
+assert.doesNotMatch(
+	bluetoothServiceQml,
+	/stdinEnabled|\.write\(|--agent|default-agent|validBluetoothMac|PairPostconditions|pair-cli|PendingOperations|operationTimer|TimeoutTimer|SettleTimer|Instantiator|traceBluetoothState|bluetoothDebugLogging/,
+);
+assert.doesNotMatch(
+	bluetoothServiceQml,
+	/device\.pair\(\)|\$\{address\}|this\.text/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function setBluetoothScanning\(enabled\)[\s\S]*const desired = Boolean\(enabled\)[\s\S]*bluetoothAdapter\.discovering = desired/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/property bool bluetoothDiscoveryChangePending: false/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/id: bluetoothDiscoveryTransitionTimer[\s\S]*interval: 1500[\s\S]*bluetoothDiscoveryChangePending = false/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/onBluetoothDiscoveringChanged:[\s\S]*bluetoothDiscoveryChangePending = false[\s\S]*bluetoothDiscoveryTransitionTimer\.stop\(\)/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/bluetoothDiscovering === desired \|\| bluetoothDiscoveryChangePending[\s\S]*return false[\s\S]*bluetoothDiscoveryChangePending = true/,
+);
+assert.match(
+	qml,
+	/id: bluetoothScanTimer[\s\S]*interval: 25000[\s\S]*onTriggered: root\.stopBluetoothScan\(\)/,
+);
+assert.match(
+	qml,
+	/function startBluetoothScan\(\)[\s\S]*setBluetoothScanning\(true\)[\s\S]*bluetoothScanTimer\.restart\(\)/,
+);
+assert.match(
+	qml,
+	/function stopBluetoothScan\(\)[\s\S]*bluetoothScanTimer\.stop\(\)[\s\S]*setBluetoothScanning\(false\)/,
+);
+assert.match(
+	qml,
+	/onExpandedNetworkSectionChanged:[\s\S]*expandedNetworkSection === "bluetooth"[\s\S]*startBluetoothScan\(\)[\s\S]*stopBluetoothScan\(\)/,
+);
+assert.match(
+	qml,
+	/function close\(\) \{[\s\S]*stopBluetoothScan\(\)[\s\S]*networkController\.requestClose\(\)/,
+);
 assert.doesNotMatch(
 	bluetoothServiceQml,
 	/function onConnectedChanged\(\)\s*\{[^}]*connectBluetoothDevice/,
 	"connection drops must not trigger auto-reconnect",
 );
-assert.doesNotMatch(
-	bluetoothServiceQml,
-	/Python|daemon|auto-reconnect/,
-);
+assert.doesNotMatch(bluetoothServiceQml, /Python|daemon|auto-reconnect/);
 assert.match(bluetoothRowQml, /signal forgetRequested/);
 assert.match(bluetoothRowQml, /Accessible\.role: Accessible\.Button/);
 assert.match(bluetoothRowQml, /bluetoothBatteryText/);
@@ -239,9 +302,18 @@ assert.match(
 	bluetoothRowQml,
 	/forgetAvailable: Boolean\(powered && device && \(device\.connected \|\| device\.paired \|\| device\.trusted\)\)/,
 );
-assert.match(qml, /BluetoothDeviceRow \{[\s\S]*powered: root\.services\.bluetooth\.bluetoothPowered[\s\S]*primaryActionVisible: root\.services\.bluetooth\.bluetoothPowered/);
-assert.match(bluetoothServiceQml, /function disconnectBluetoothDevice\(device\)[\s\S]*!bluetoothPowered/);
-assert.match(bluetoothServiceQml, /function forgetBluetoothDevice\(device\)[\s\S]*!bluetoothPowered/);
+assert.match(
+	qml,
+	/BluetoothDeviceRow \{[\s\S]*powered: root\.services\.bluetooth\.bluetoothPowered[\s\S]*primaryActionVisible: root\.services\.bluetooth\.bluetoothPowered/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function disconnectBluetoothDevice\(device\)[\s\S]*!bluetoothPowered/,
+);
+assert.match(
+	bluetoothServiceQml,
+	/function forgetBluetoothDevice\(device\)[\s\S]*!bluetoothPowered/,
+);
 assert.match(
 	bluetoothRowQml,
 	/root\.action === "connect" \? "Connect" : "Disconnect"/,
@@ -297,7 +369,10 @@ for (const id of [
 ])
 	assert.ok(fixedShellBlock.includes(`id: ${id}`), `${id} must be fixed`);
 for (const id of ["outputCard", "microphoneCard", "lanCard", "wifiCard"])
-	assert.ok(!fixedShellBlock.includes(`id: ${id}`), `${id} must not be fixed`);
+	assert.ok(
+		!fixedShellBlock.includes(`id: ${id}`),
+		`${id} must not be fixed`,
+	);
 assert.ok(menuLayoutBlock.includes("id: fixedShell"));
 assert.ok(menuLayoutBlock.includes("id: detailFlickable"));
 let previousDetailIndex = -1;
@@ -377,7 +452,11 @@ assert.equal(
 	true,
 );
 assert.equal(
-	menu.canForgetNetwork({ known: true, connected: true, stateChanging: false }),
+	menu.canForgetNetwork({
+		known: true,
+		connected: true,
+		stateChanging: false,
+	}),
 	false,
 );
 assert.equal(
@@ -629,7 +708,10 @@ assert.equal(menu.volumeIconKind(true, false, 66), "medium");
 assert.equal(menu.volumeIconKind(true, false, 67), "high");
 assert.equal(menu.audioOutputLabel(null), "Default output");
 assert.equal(
-	menu.audioOutputLabel({ nickname: "  Headphones ", description: "Fallback" }),
+	menu.audioOutputLabel({
+		nickname: "  Headphones ",
+		description: "Fallback",
+	}),
 	"Headphones",
 );
 assert.equal(

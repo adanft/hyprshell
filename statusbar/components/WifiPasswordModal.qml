@@ -16,29 +16,27 @@ Scope {
     readonly property bool busy: Boolean(network?.stateChanging)
 
     signal submitted(string password)
-    signal cancelled()
+    signal cancelled
 
     function focusPassword(selectExisting) {
-        passwordInput.forceActiveFocus();
+        passwordInput.forceActiveFocus()
         if (selectExisting)
-            passwordInput.selectAll();
+            passwordInput.selectAll()
     }
 
     function togglePasswordVisibility() {
-        passwordInput.echoMode = passwordInput.echoMode === TextInput.Password
-            ? TextInput.Normal
-            : TextInput.Password;
-        focusPassword(false);
+        passwordInput.echoMode = passwordInput.echoMode === TextInput.Password ? TextInput.Normal : TextInput.Password
+        focusPassword(false)
     }
 
     function submitCurrentPassword() {
         if (passwordInput.text.length > 0 && !busy)
-            submitted(passwordInput.text);
+            submitted(passwordInput.text)
     }
 
     onErrorTextChanged: {
         if (errorText.length > 0 && panel.visible)
-            Qt.callLater(() => root.focusPassword(true));
+            Qt.callLater(() => root.focusPassword(true))
     }
 
     PanelWindow {
@@ -72,11 +70,11 @@ Scope {
 
         onVisibleChanged: {
             if (visible) {
-                passwordInput.text = "";
-                passwordInput.echoMode = TextInput.Password;
-                Qt.callLater(() => root.focusPassword(false));
+                passwordInput.text = ""
+                passwordInput.echoMode = TextInput.Password
+                Qt.callLater(() => root.focusPassword(false))
             } else {
-                passwordInput.text = "";
+                passwordInput.text = ""
             }
         }
 
@@ -96,10 +94,7 @@ Scope {
             Rectangle {
                 id: dialog
 
-                width: Math.min(
-                    root.theme.sizing.statusBarWifiPasswordModalMaxWidth,
-                    parent.width - root.theme.spacing.space16 * 2
-                )
+                width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth, parent.width - root.theme.spacing.space16 * 2)
                 height: dialogContent.implicitHeight + root.theme.spacing.space16 * 2
                 anchors.centerIn: parent
                 radius: root.theme.shape.appLauncherRadius
@@ -161,9 +156,7 @@ Scope {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             radius: root.theme.shape.radius8
-                            color: closeInput.containsMouse || closeInput.activeFocus
-                                ? root.colors.surfaceHover
-                                : root.colors.transparent
+                            color: closeInput.containsMouse || closeInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
 
                             Text {
                                 anchors.centerIn: parent
@@ -229,9 +222,7 @@ Scope {
 
                             Text {
                                 anchors.centerIn: parent
-                                    text: passwordInput.echoMode === TextInput.Password
-                                        ? root.icons.passwordHidden
-                                        : root.icons.passwordVisible
+                                text: passwordInput.echoMode === TextInput.Password ? root.icons.passwordHidden : root.icons.passwordVisible
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
@@ -272,9 +263,7 @@ Scope {
                             width: cancelLabel.implicitWidth + root.theme.spacing.space24
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
-                            color: cancelInput.containsMouse || cancelInput.activeFocus
-                                ? root.colors.surfaceHover
-                                : root.colors.surface
+                            color: cancelInput.containsMouse || cancelInput.activeFocus ? root.colors.surfaceHover : root.colors.surface
 
                             Text {
                                 id: cancelLabel
@@ -306,9 +295,7 @@ Scope {
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
                             color: root.colors.primary
-                            opacity: passwordInput.text.length > 0 && !root.busy
-                                ? 1
-                                : root.theme.motion.opacityDisabled
+                            opacity: passwordInput.text.length > 0 && !root.busy ? 1 : root.theme.motion.opacityDisabled
 
                             Text {
                                 id: connectLabel

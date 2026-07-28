@@ -32,7 +32,7 @@ QtObject {
     property int scannerDelayGeneration: 0
     property int activationSettleGeneration: 0
 
-    signal closeRequested()
+    signal closeRequested
 
     property Timer wifiScannerStartTimer: Timer {
         interval: root.scannerStartDelayMs
@@ -47,19 +47,24 @@ QtObject {
     }
 
     property Timer uptimeRefreshTimer: Timer {
-        interval: root.uptimeRefreshIntervalMs; running: root.menuOpen; repeat: true
+        interval: root.uptimeRefreshIntervalMs
+        running: root.menuOpen
+        repeat: true
         onTriggered: root.refreshUptime()
     }
 
     function refreshUptime() {
-        root.uptimeSource.reload();
-        const value = Number.parseFloat(String(root.uptimeSource.text() || "0").split(/\s+/)[0]);
+        root.uptimeSource.reload()
+        const value = Number.parseFloat(String(root.uptimeSource.text() || "0").split(/\s+/)[0])
         if (!Number.isNaN(value))
-            root.uptimeSeconds = value;
+            root.uptimeSeconds = value
     }
 
     function prepareOpen() {
-        root.dispatch({ type: "prepareOpen" }); root.refreshUptime();
+        root.dispatch({
+            type: "prepareOpen"
+        })
+        root.refreshUptime()
     }
 
     function context(type, values) {
@@ -70,107 +75,128 @@ QtObject {
             wifiEnabled: Boolean(root.networking?.wifiEnabled),
             wifiHardwareEnabled: Boolean(root.networking?.wifiHardwareEnabled),
             wifiDevice: root.networkService?.wifiDevice ?? null
-        }, values || {});
+        }, values || {})
     }
 
     function dispatch(event) {
-        const result = Workflow.transition(root.reducerState, event);
-        root.reducerState = result.state;
+        const result = Workflow.transition(root.reducerState, event)
+        root.reducerState = result.state
         for (const nextEffect of result.effects)
-            root.executeEffect(nextEffect);
+            root.executeEffect(nextEffect)
     }
 
     function executeEffect(nextEffect) {
         switch (nextEffect.type) {
         case "setWifiEnabled":
-            root.networking.wifiEnabled = nextEffect.enabled;
-            break;
+            root.networking.wifiEnabled = nextEffect.enabled
+            break
         case "setScannerEnabled":
             if (nextEffect.device)
-                nextEffect.device.scannerEnabled = nextEffect.enabled;
-            break;
+                nextEffect.device.scannerEnabled = nextEffect.enabled
+            break
         case "startScannerDelay":
-            root.scannerDelayDevice = nextEffect.device;
-            root.scannerDelayGeneration = nextEffect.generation;
-            root.wifiScannerStartTimer.restart();
-            break;
+            root.scannerDelayDevice = nextEffect.device
+            root.scannerDelayGeneration = nextEffect.generation
+            root.wifiScannerStartTimer.restart()
+            break
         case "stopScannerDelay":
-            root.wifiScannerStartTimer.stop();
-            break;
+            root.wifiScannerStartTimer.stop()
+            break
         case "startActivationSettle":
-            root.activationSettleGeneration = nextEffect.generation;
-            root.wifiActivationSettleTimer.restart();
-            break;
+            root.activationSettleGeneration = nextEffect.generation
+            root.wifiActivationSettleTimer.restart()
+            break
         case "stopActivationSettle":
-            root.wifiActivationSettleTimer.stop();
-            break;
+            root.wifiActivationSettleTimer.stop()
+            break
         case "enableNetworkDetails":
-            root.networkService.enableNetworkDetails();
-            break;
+            root.networkService.enableNetworkDetails()
+            break
         case "disableNetworkDetails":
-            root.networkService.disableNetworkDetails();
-            break;
+            root.networkService.disableNetworkDetails()
+            break
         case "connectNetwork":
-            nextEffect.network.connect();
-            break;
+            nextEffect.network.connect()
+            break
         case "disconnectNetwork":
-            nextEffect.network.disconnect();
-            break;
+            nextEffect.network.disconnect()
+            break
         case "connectNetworkWithPsk":
-            nextEffect.network.connectWithPsk(nextEffect.password);
-            break;
+            nextEffect.network.connectWithPsk(nextEffect.password)
+            break
         case "forgetNetwork":
-            nextEffect.network.forget();
-            break;
+            nextEffect.network.forget()
+            break
         }
     }
 
     function toggleWifiEnabled() {
-        root.dispatch(root.context("toggleWifi"));
+        root.dispatch(root.context("toggleWifi"))
     }
 
     function toggleNetworkSection(section) {
-        root.dispatch(root.context("toggleSection", { section }));
+        root.dispatch(root.context("toggleSection", {
+            section
+        }))
     }
 
     function requestClose() {
-        root.dispatch({ type: "requestClose" });
-        root.closeRequested();
-        root.dispatch({ type: "completeClose" });
+        root.dispatch({
+            type: "requestClose"
+        })
+        root.closeRequested()
+        root.dispatch({
+            type: "completeClose"
+        })
     }
 
     function connectNetwork(network) {
-        root.dispatch({ type: "connectRequested", network, openSecurityValue: root.openSecurityValue });
+        root.dispatch({
+            type: "connectRequested",
+            network,
+            openSecurityValue: root.openSecurityValue
+        })
     }
 
     function submitPassword(password) {
-        root.dispatch({ type: "submitPassword", password });
+        root.dispatch({
+            type: "submitPassword",
+            password
+        })
     }
 
     function cancelPasswordEntry() {
-        root.dispatch({ type: "cancelPassword" });
+        root.dispatch({
+            type: "cancelPassword"
+        })
     }
 
     function forgetNetwork(network) {
-        root.dispatch({ type: "forgetRequested", network });
+        root.dispatch({
+            type: "forgetRequested",
+            network
+        })
     }
 
     function toggleEthernet() {
-        const network = root.networkService.lanDevice?.network;
+        const network = root.networkService.lanDevice?.network
         if (!network || network.stateChanging)
-            return;
+            return
         if (network.connected)
-            network.disconnect();
+            network.disconnect()
         else
-            network.connect();
+            network.connect()
     }
 
     function errorText(network, reason) {
-        return `${network.name}: ${root.failureReasonText(reason)}`;
+        return `${network.name}: ${root.failureReasonText(reason)}`
     }
 
     function handleWifiNetworkConnectedChanged(network) {
-        root.dispatch({ type: "wifiConnectedChanged", network });
+        root.dispatch({
+            type: "wifiConnectedChanged",
+            network
+        })
     }
 
     function handleWifiNetworkConnectionFailed(network, reason) {
@@ -180,18 +206,21 @@ QtObject {
             reason,
             noSecretsValue: root.noSecretsValue,
             errorText: root.errorText(network, reason)
-        });
+        })
     }
 
     function handleScannerDelayElapsed(device, generation) {
         root.dispatch(root.context("scannerDelayElapsed", {
             scheduledDevice: device,
             scheduledGeneration: generation
-        }));
+        }))
     }
 
     function handleActivationSettleElapsed(generation) {
-        root.dispatch({ type: "activationSettleElapsed", generation });
+        root.dispatch({
+            type: "activationSettleElapsed",
+            generation
+        })
     }
 
     onMenuOpenChanged: root.dispatch(root.context("menuOpenChanged"))
@@ -200,10 +229,10 @@ QtObject {
         target: root.networking
         ignoreUnknownSignals: true
         function onWifiEnabledChanged() {
-            root.dispatch(root.context("wifiEnabledChanged"));
+            root.dispatch(root.context("wifiEnabledChanged"))
         }
         function onWifiHardwareEnabledChanged() {
-            root.dispatch(root.context("wifiHardwareEnabledChanged"));
+            root.dispatch(root.context("wifiHardwareEnabledChanged"))
         }
     }
 
@@ -211,7 +240,7 @@ QtObject {
         target: root.networkService
         ignoreUnknownSignals: true
         function onWifiDeviceChanged() {
-            root.dispatch(root.context("wifiDeviceChanged"));
+            root.dispatch(root.context("wifiDeviceChanged"))
         }
     }
 
@@ -219,12 +248,17 @@ QtObject {
         target: root.pendingNetwork
         ignoreUnknownSignals: true
         function onConnectedChanged() {
-            root.dispatch({ type: "pendingConnectedChanged" });
+            root.dispatch({
+                type: "pendingConnectedChanged"
+            })
         }
         function onConnectionFailed(reason) {
-            const network = root.pendingNetwork;
+            const network = root.pendingNetwork
             if (network)
-                root.dispatch({ type: "pendingConnectionFailed", errorText: root.errorText(network, reason) });
+                root.dispatch({
+                    type: "pendingConnectionFailed",
+                    errorText: root.errorText(network, reason)
+                })
         }
     }
 
@@ -235,12 +269,15 @@ QtObject {
             root.dispatch({
                 type: "ethernetConnectionFailed",
                 errorText: `Ethernet: ${root.failureReasonText(reason)}`
-            });
+            })
         }
     }
 
     Component.onCompleted: {
-        root.dispatch(root.context("syncScanner")); root.refreshUptime();
+        root.dispatch(root.context("syncScanner"))
+        root.refreshUptime()
     }
-    Component.onDestruction: root.dispatch({ type: "destroy" })
+    Component.onDestruction: root.dispatch({
+        type: "destroy"
+    })
 }

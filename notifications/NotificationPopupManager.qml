@@ -5,9 +5,7 @@ import Quickshell
 PopupWindow {
     id: root
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
@@ -26,11 +24,11 @@ PopupWindow {
 
     function itemFor(popupData) {
         if (!popupData)
-            return null;
+            return null
 
-        return popupItems.find((item) => {
-            return item && !item.exiting && item.popupData && item.popupData.id === popupData.id;
-        });
+        return popupItems.find(item => {
+            return item && !item.exiting && item.popupData && item.popupData.id === popupData.id
+        })
     }
 
     function createPopupItem(popupData) {
@@ -40,145 +38,140 @@ PopupWindow {
             "popupData": popupData,
             "active": root.isFocusedScreen,
             "width": root.popupWidth
-        });
+        })
         if (item && item.layoutChanged)
-            item.layoutChanged.connect(root.handlePopupLayoutChanged);
+            item.layoutChanged.connect(root.handlePopupLayoutChanged)
 
         if (item && item.slotHeightChanged)
-            item.slotHeightChanged.connect(root.repositionPopupsWithoutYAnimation);
+            item.slotHeightChanged.connect(root.repositionPopupsWithoutYAnimation)
 
         if (item && item.exitFinished)
             item.exitFinished.connect(() => {
-            return root.finishPopupExit(item);
-        });
+                return root.finishPopupExit(item)
+            })
 
         if (item && item.syncLayoutHeight)
-            item.syncLayoutHeight();
+            item.syncLayoutHeight()
 
-        return item;
+        return item
     }
 
     function clearPopupItems() {
         for (const item of popupItems) {
             if (item) {
                 if (item.popupData && item.autoCloseTimerInitialized && typeof item.autoCloseRemainingMs === "number")
-                    item.popupData.autoCloseRemainingMs = item.autoCloseRemainingMs;
+                    item.popupData.autoCloseRemainingMs = item.autoCloseRemainingMs
 
-                item.destroy();
+                item.destroy()
             }
         }
-        popupItems = [];
-        stackHeight = 0;
+        popupItems = []
+        stackHeight = 0
     }
 
     function syncPopups() {
         if (!root.isFocusedScreen) {
-            clearPopupItems();
-            return;
+            clearPopupItems()
+            return
         }
 
-        const visiblePopups = root.services.notification.visibleNotifications || [];
-        const nextItems = [];
-        const enteringItems = [];
+        const visiblePopups = root.services.notification.visibleNotifications || []
+        const nextItems = []
+        const enteringItems = []
         for (const popupData of visiblePopups) {
-            let item = itemFor(popupData);
+            let item = itemFor(popupData)
             if (!item) {
-                item = createPopupItem(popupData);
+                item = createPopupItem(popupData)
                 if (item)
-                    enteringItems.push(item);
+                    enteringItems.push(item)
             }
             if (item)
-                nextItems.push(item);
-
+                nextItems.push(item)
         }
         for (const item of nextItems) {
             if (item)
-                item.active = true;
-
+                item.active = true
         }
         for (const item of popupItems) {
             if (!item || nextItems.indexOf(item) !== -1)
-                continue;
-
+                continue
             if (!item.exiting)
-                item.startExitAnimation();
+                item.startExitAnimation()
 
-            nextItems.push(item);
+            nextItems.push(item)
         }
-        popupItems = nextItems;
+        popupItems = nextItems
         if (enteringItems.length > 0) {
-            setPopupYAnimationEnabled(true);
-            repositionPopups();
-            for (const item of enteringItems) item.startEnterAnimation()
+            setPopupYAnimationEnabled(true)
+            repositionPopups()
+            for (const item of enteringItems)
+                item.startEnterAnimation()
         } else {
-            setPopupYAnimationEnabled(true);
-            repositionPopups();
+            setPopupYAnimationEnabled(true)
+            repositionPopups()
         }
     }
 
     function updatePopupActivity() {
         for (const item of popupItems) {
             if (item)
-                item.active = root.isFocusedScreen;
-
+                item.active = root.isFocusedScreen
         }
     }
 
     function updatePopupCapacity() {
         if (!root.isFocusedScreen || !root.services || typeof root.services.notification.setNotificationPopupAvailableHeight !== "function")
-            return ;
-
-        const screenHeight = root.barWindow.screen ? root.barWindow.screen.height : root.barWindow.height;
-        root.services.notification.setNotificationPopupAvailableHeight(screenHeight - root.topMargin - root.bottomMargin);
+            return
+        const screenHeight = root.barWindow.screen ? root.barWindow.screen.height : root.barWindow.height
+        root.services.notification.setNotificationPopupAvailableHeight(screenHeight - root.topMargin - root.bottomMargin)
     }
 
     function finishPopupExit(item) {
-        const index = popupItems.indexOf(item);
+        const index = popupItems.indexOf(item)
         if (index !== -1) {
-            const nextItems = popupItems.slice();
-            nextItems.splice(index, 1);
-            popupItems = nextItems;
+            const nextItems = popupItems.slice()
+            nextItems.splice(index, 1)
+            popupItems = nextItems
         }
         if (item)
-            item.destroy();
+            item.destroy()
 
-        setPopupYAnimationEnabled(true);
-        repositionPopups();
+        setPopupYAnimationEnabled(true)
+        repositionPopups()
     }
 
     function handlePopupLayoutChanged() {
-        scheduleRepositionPopups(false);
+        scheduleRepositionPopups(false)
     }
 
     function repositionPopupsWithoutYAnimation() {
-        scheduleRepositionPopups(true);
+        scheduleRepositionPopups(true)
     }
 
     function scheduleRepositionPopups(withoutYAnimation) {
         if (withoutYAnimation) {
-            popupRepositionWithoutYAnimation = true;
-            popupYAnimationRestoreTimer.stop();
-            setPopupYAnimationEnabled(false);
+            popupRepositionWithoutYAnimation = true
+            popupYAnimationRestoreTimer.stop()
+            setPopupYAnimationEnabled(false)
         }
 
         if (popupRepositionScheduled)
-            return;
-
-        popupRepositionScheduled = true;
+            return
+        popupRepositionScheduled = true
         Qt.callLater(() => {
-            const restoreYAnimation = popupRepositionWithoutYAnimation;
-            popupRepositionScheduled = false;
-            popupRepositionWithoutYAnimation = false;
+            const restoreYAnimation = popupRepositionWithoutYAnimation
+            popupRepositionScheduled = false
+            popupRepositionWithoutYAnimation = false
             if (restoreYAnimation)
-                setPopupYAnimationEnabled(false);
-            repositionPopups();
+                setPopupYAnimationEnabled(false)
+            repositionPopups()
             if (restoreYAnimation)
-                schedulePopupYAnimationRestore();
-        });
+                schedulePopupYAnimationRestore()
+        })
     }
 
     function schedulePopupYAnimationRestore() {
-        popupYAnimationRestoreTimer.restart();
+        popupYAnimationRestoreTimer.restart()
     }
 
     Timer {
@@ -191,51 +184,48 @@ PopupWindow {
     function setPopupYAnimationEnabled(enabled) {
         for (const item of popupItems) {
             if (item)
-                item.animateY = enabled;
-
+                item.animateY = enabled
         }
     }
 
     function calculateStackHeight() {
-        let y = 0;
+        let y = 0
         for (const item of popupItems) {
             if (!item)
-                continue;
-
-            y += root.popupSlotHeight(item) + root.spacing;
+                continue
+            y += root.popupSlotHeight(item) + root.spacing
         }
-        return Math.max(0, y - root.spacing);
+        return Math.max(0, y - root.spacing)
     }
 
     function repositionPopups() {
-        let y = 0;
+        let y = 0
         for (const item of popupItems) {
             if (!item)
-                continue;
-
-            item.width = root.popupWidth;
-            item.z = 0;
+                continue
+            item.width = root.popupWidth
+            item.z = 0
             if (!item.exiting)
-                item.y = y;
+                item.y = y
 
-            y += root.popupSlotHeight(item) + root.spacing;
+            y += root.popupSlotHeight(item) + root.spacing
         }
-        stackHeight = Math.max(0, y - root.spacing);
+        stackHeight = Math.max(0, y - root.spacing)
     }
 
     function popupSlotHeight(item) {
         if (!item)
-            return 0;
+            return 0
 
-        return item.renderedLayoutHeight || item.layoutHeight || 0;
+        return item.renderedLayoutHeight || item.layoutHeight || 0
     }
 
     onIsFocusedScreenChanged: {
-        updatePopupCapacity();
+        updatePopupCapacity()
         if (isFocusedScreen)
-            syncPopups();
+            syncPopups()
         else
-            clearPopupItems();
+            clearPopupItems()
     }
     implicitWidth: popupWidth
     implicitHeight: Math.max(1, stackHeight)
@@ -245,16 +235,14 @@ PopupWindow {
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin
     Component.onCompleted: {
-        updatePopupCapacity();
-        syncPopups();
+        updatePopupCapacity()
+        syncPopups()
     }
 
     Component {
         id: popupComponent
 
-        NotificationPopup {
-        }
-
+        NotificationPopup {}
     }
 
     Item {
@@ -265,10 +253,9 @@ PopupWindow {
 
     Connections {
         function onVisibleNotificationsChanged() {
-            root.syncPopups();
+            root.syncPopups()
         }
 
         target: root.services.notification
     }
-
 }

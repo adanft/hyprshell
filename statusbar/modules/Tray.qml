@@ -8,48 +8,44 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var barWindow
     readonly property bool hasItems: trayItems.count > 0
 
     function trayIconSourceFor(trayItem) {
-        const icon = trayItem && trayItem.icon ? trayItem.icon : "";
+        const icon = trayItem && trayItem.icon ? trayItem.icon : ""
         if (typeof icon !== "string" || icon === "")
-            return "";
+            return ""
 
         if (icon.includes("?path=")) {
-            const split = icon.split("?path=");
+            const split = icon.split("?path=")
             if (split.length !== 2)
-                return icon;
+                return icon
 
-            const name = split[0];
-            const path = split[1];
-            let fileName = name.substring(name.lastIndexOf("/") + 1);
+            const name = split[0]
+            const path = split[1]
+            let fileName = name.substring(name.lastIndexOf("/") + 1)
             if (fileName.startsWith("dropboxstatus"))
-                fileName = `hicolor/16x16/status/${fileName}`;
+                fileName = `hicolor/16x16/status/${fileName}`
 
-            return `file://${path}/${fileName}`;
+            return `file://${path}/${fileName}`
         }
         if (icon.startsWith("/") && !icon.startsWith("file://"))
-            return `file://${icon}`;
+            return `file://${icon}`
 
-        return icon;
+        return icon
     }
 
     function openTrayMenu(trayItem, anchorItem, localX, localY) {
-        trayMenuLoader.active = true;
+        trayMenuLoader.active = true
         Qt.callLater(() => {
             if (trayMenuLoader.item)
-                trayMenuLoader.item.open(trayItem, anchorItem, localX, localY);
-        });
+                trayMenuLoader.item.open(trayItem, anchorItem, localX, localY)
+        })
     }
 
     implicitWidth: hasItems ? iconRow.implicitWidth : 0
@@ -77,15 +73,15 @@ Item {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                    onClicked: (mouse) => {
+                    onClicked: mouse => {
                         if (mouse.button === Qt.RightButton && modelData.hasMenu)
-                            root.openTrayMenu(modelData, parent, mouse.x, mouse.y);
+                            root.openTrayMenu(modelData, parent, mouse.x, mouse.y)
                         else if (mouse.button === Qt.MiddleButton)
-                            modelData.secondaryActivate();
+                            modelData.secondaryActivate()
                         else if (modelData.onlyMenu && modelData.hasMenu)
-                            root.openTrayMenu(modelData, parent, mouse.x, mouse.y);
+                            root.openTrayMenu(modelData, parent, mouse.x, mouse.y)
                         else
-                            modelData.activate();
+                            modelData.activate()
                     }
                 }
             }
@@ -110,9 +106,9 @@ Item {
         target: trayMenuLoader.item
         enabled: target !== null
         function onMenuOpenChanged() {
-            const menu = trayMenuLoader.item;
+            const menu = trayMenuLoader.item
             if (menu && !menu.menuOpen)
-                trayMenuLoader.active = false;
+                trayMenuLoader.active = false
         }
     }
 }

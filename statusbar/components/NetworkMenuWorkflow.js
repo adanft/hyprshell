@@ -16,10 +16,10 @@ function initialState() {
 function canSubmitPassword(pendingNetwork, password) {
 	return Boolean(
 		pendingNetwork &&
-			password !== null &&
-			password !== undefined &&
-			String(password).length > 0 &&
-			!pendingNetwork.stateChanging,
+		password !== null &&
+		password !== undefined &&
+		String(password).length > 0 &&
+		!pendingNetwork.stateChanging,
 	);
 }
 
@@ -40,10 +40,10 @@ function releaseScanner(state, effects) {
 function eligible(event) {
 	return Boolean(
 		event.menuOpen &&
-			event.expandedNetworkSection === "wifi" &&
-			event.wifiEnabled &&
-			event.wifiHardwareEnabled &&
-			event.wifiDevice,
+		event.expandedNetworkSection === "wifi" &&
+		event.wifiEnabled &&
+		event.wifiHardwareEnabled &&
+		event.wifiDevice,
 	);
 }
 
@@ -143,14 +143,16 @@ function transition(currentState, event) {
 		case "toggleWifi":
 			if (!event.wifiEnabled) {
 				state.wifiActivationGeneration += 1;
-				state.wifiActivationRequested = state.wifiActivationPending = true;
+				state.wifiActivationRequested =
+					state.wifiActivationPending = true;
 				effect(effects, "startActivationSettle", {
 					generation: state.wifiActivationGeneration,
 				});
 				effect(effects, "setWifiEnabled", { enabled: true });
 			} else {
 				state.wifiActivationGeneration += 1;
-				state.wifiActivationRequested = state.wifiActivationPending = false;
+				state.wifiActivationRequested =
+					state.wifiActivationPending = false;
 				effect(effects, "stopScannerDelay");
 				effect(effects, "stopActivationSettle");
 				releaseScanner(state, effects);
@@ -178,7 +180,8 @@ function transition(currentState, event) {
 		case "menuOpenChanged":
 			if (!event.menuOpen) {
 				state.wifiActivationGeneration += 1;
-				state.wifiActivationRequested = state.wifiActivationPending = false;
+				state.wifiActivationRequested =
+					state.wifiActivationPending = false;
 			}
 			syncScanner(state, event, effects);
 			if (event.menuOpen && !state.detailsSubscribed) {
@@ -193,13 +196,15 @@ function transition(currentState, event) {
 			if (state.wifiActivationRequested && !event.wifiEnabled) break;
 			if (event.wifiEnabled && !state.wifiActivationRequested) {
 				state.wifiActivationGeneration += 1;
-				state.wifiActivationRequested = state.wifiActivationPending = true;
+				state.wifiActivationRequested =
+					state.wifiActivationPending = true;
 				effect(effects, "startActivationSettle", {
 					generation: state.wifiActivationGeneration,
 				});
 			} else if (!event.wifiEnabled) {
 				state.wifiActivationGeneration += 1;
-				state.wifiActivationRequested = state.wifiActivationPending = false;
+				state.wifiActivationRequested =
+					state.wifiActivationPending = false;
 				cancelPassword(state);
 				state.suppressedPasswordNetwork = null;
 				effect(effects, "stopActivationSettle");
@@ -208,9 +213,13 @@ function transition(currentState, event) {
 			break;
 		case "wifiHardwareEnabledChanged":
 		case "wifiDeviceChanged":
-			if (event.type === "wifiDeviceChanged" || !event.wifiHardwareEnabled) {
+			if (
+				event.type === "wifiDeviceChanged" ||
+				!event.wifiHardwareEnabled
+			) {
 				state.wifiActivationGeneration += 1;
-				state.wifiActivationRequested = state.wifiActivationPending = false;
+				state.wifiActivationRequested =
+					state.wifiActivationPending = false;
 				cancelPassword(state);
 				state.suppressedPasswordNetwork = null;
 				effect(effects, "stopActivationSettle");
@@ -228,7 +237,9 @@ function transition(currentState, event) {
 			break;
 		case "toggleSection":
 			state.expandedNetworkSection =
-				state.expandedNetworkSection === event.section ? "" : event.section;
+				state.expandedNetworkSection === event.section
+					? ""
+					: event.section;
 			state.connectionError = "";
 			state.pendingNetwork = null;
 			syncScanner(
@@ -256,7 +267,9 @@ function transition(currentState, event) {
 			state.suppressedPasswordNetwork = null;
 			if (!event.network) break;
 			if (event.network.connected)
-				effect(effects, "disconnectNetwork", { network: event.network });
+				effect(effects, "disconnectNetwork", {
+					network: event.network,
+				});
 			else if (
 				event.network.known ||
 				event.network.security === event.openSecurityValue
@@ -283,7 +296,8 @@ function transition(currentState, event) {
 				!event.network.connected &&
 				!event.network.stateChanging
 			) {
-				if (state.pendingNetwork === event.network) state.pendingNetwork = null;
+				if (state.pendingNetwork === event.network)
+					state.pendingNetwork = null;
 				state.connectionError = "";
 				effect(effects, "forgetNetwork", { network: event.network });
 			}
@@ -314,7 +328,8 @@ function transition(currentState, event) {
 				cancelPassword(state);
 			break;
 		case "pendingConnectionFailed":
-			if (state.pendingNetwork) state.connectionError = event.errorText || "";
+			if (state.pendingNetwork)
+				state.connectionError = event.errorText || "";
 			break;
 		case "ethernetConnectionFailed":
 			state.connectionError = event.errorText || "";
@@ -325,7 +340,8 @@ function transition(currentState, event) {
 			effect(effects, "stopScannerDelay");
 			effect(effects, "stopActivationSettle");
 			releaseScanner(state, effects);
-			if (state.detailsSubscribed) effect(effects, "disableNetworkDetails");
+			if (state.detailsSubscribed)
+				effect(effects, "disableNetworkDetails");
 			state.scannerDevice = null;
 			state.detailsSubscribed = false;
 			state._destroyed = true;

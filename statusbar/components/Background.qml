@@ -4,9 +4,7 @@ import "../../theme"
 Rectangle {
     id: root
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     default property alias content: contentRow.data
@@ -25,5 +23,4 @@ Rectangle {
         anchors.centerIn: parent
         spacing: root.contentSpacing
     }
-
 }

@@ -32,7 +32,9 @@ Scope {
         }
         return Math.max(0, Math.min(100, level))
     }
-    function hasBatteryState(state) { return readyBatteries.some(device => device.state === state) }
+    function hasBatteryState(state) {
+        return readyBatteries.some(device => device.state === state)
+    }
     function normalizePercentage(value) {
         const percentage = Number(value) || 0
         return percentage <= 1 ? percentage * 100 : percentage
@@ -43,9 +45,12 @@ Scope {
     }
     function profileSlug(profile) {
         switch (profile) {
-        case PowerProfile.Performance: return "performance"
-        case PowerProfile.PowerSaver: return "power-saver"
-        default: return "balanced"
+        case PowerProfile.Performance:
+            return "performance"
+        case PowerProfile.PowerSaver:
+            return "power-saver"
+        default:
+            return "balanced"
         }
     }
 }

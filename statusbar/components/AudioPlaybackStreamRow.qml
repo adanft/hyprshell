@@ -18,12 +18,16 @@ Rectangle {
     readonly property int percent: NetworkMenuLogic.audioNodePercent(root.stream) ?? 0
     readonly property bool muted: Boolean(root.stream?.audio?.muted)
     readonly property string volumeStateIcon: {
-        const kind = NetworkMenuLogic.audioNodeIconKind(root.stream);
-        if (kind === "unavailable") return root.volumeUnavailableIcon;
-        if (kind === "muted") return root.volumeMutedIcon;
-        if (kind === "low") return root.volumeLowIcon;
-        if (kind === "medium") return root.volumeMediumIcon;
-        return root.volumeHighIcon;
+        const kind = NetworkMenuLogic.audioNodeIconKind(root.stream)
+        if (kind === "unavailable")
+            return root.volumeUnavailableIcon
+        if (kind === "muted")
+            return root.volumeMutedIcon
+        if (kind === "low")
+            return root.volumeLowIcon
+        if (kind === "medium")
+            return root.volumeMediumIcon
+        return root.volumeHighIcon
     }
 
     signal muteRequested(var stream)
@@ -31,21 +35,17 @@ Rectangle {
 
     function requestMute() {
         if (root.available)
-            root.muteRequested(root.stream);
+            root.muteRequested(root.stream)
     }
 
     function requestVolume(value) {
         if (!root.available)
-            return;
-        const percent = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-        root.volumeRequested(root.stream, percent);
+            return
+        const percent = Math.max(0, Math.min(100, Math.round(Number(value) || 0)))
+        root.volumeRequested(root.stream, percent)
     }
 
-    height: root.theme.spacing.space12
-        + playbackStreamHeader.height
-        + root.theme.spacing.space8
-        + playbackStreamSliderZone.height
-        + root.theme.spacing.space12
+    height: root.theme.spacing.space12 + playbackStreamHeader.height + root.theme.spacing.space8 + playbackStreamSliderZone.height + root.theme.spacing.space12
     radius: root.theme.shape.radius12
     color: root.colors.surface
     opacity: root.available ? 1 : root.theme.motion.opacityDisabled
@@ -137,11 +137,7 @@ Rectangle {
                 width: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                 height: parent.height
                 radius: root.theme.shape.radius8
-                color: root.muted
-                    ? root.colors.primary
-                    : (muteInput.containsMouse || muteInput.activeFocus
-                        ? root.colors.surfaceHover
-                        : root.colors.transparent)
+                color: root.muted ? root.colors.primary : (muteInput.containsMouse || muteInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent)
 
                 Text {
                     objectName: "playbackStreamVolumeIcon"

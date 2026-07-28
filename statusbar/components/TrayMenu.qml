@@ -7,13 +7,9 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var barWindow
@@ -25,81 +21,77 @@ Item {
     readonly property int maxOpenRetries: 2
 
     function open(trayItem, anchorItem, localX, localY) {
-        close();
-        currentTrayItem = trayItem;
-        setMenuAnchor(anchorItem, localX, localY);
-        finishOpen(anchorItem, localX, localY);
+        close()
+        currentTrayItem = trayItem
+        setMenuAnchor(anchorItem, localX, localY)
+        finishOpen(anchorItem, localX, localY)
     }
 
     function setMenuAnchor(anchorItem, localX, localY) {
         if (!anchorItem)
-            return ;
-
-        const anchorX = localX === undefined ? anchorItem.width / 2 : localX;
-        const anchorY = localY === undefined ? anchorItem.height : localY;
-        const globalPosition = anchorItem.mapToGlobal(anchorX, anchorY);
-        const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0;
-        const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0;
-        menuAnchorX = globalPosition.x - screenX;
-        menuAnchorY = globalPosition.y - screenY + theme.spacing.space6;
+            return
+        const anchorX = localX === undefined ? anchorItem.width / 2 : localX
+        const anchorY = localY === undefined ? anchorItem.height : localY
+        const globalPosition = anchorItem.mapToGlobal(anchorX, anchorY)
+        const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0
+        const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0
+        menuAnchorX = globalPosition.x - screenX
+        menuAnchorY = globalPosition.y - screenY + theme.spacing.space6
     }
 
     function finishOpen(anchorItem, localX, localY) {
         if (!currentTrayItem)
-            return ;
-
+            return
         if (!hasRootMenuChildren()) {
             if (openRetryCount >= maxOpenRetries) {
-                menuOpen = true;
-                return ;
+                menuOpen = true
+                return
             }
-            const retryTrayItem = currentTrayItem;
-            const retryAnchorItem = anchorItem;
-            const retryLocalX = localX;
-            const retryLocalY = localY;
-            openRetryCount += 1;
-            Qt.callLater(function() {
+            const retryTrayItem = currentTrayItem
+            const retryAnchorItem = anchorItem
+            const retryLocalX = localX
+            const retryLocalY = localY
+            openRetryCount += 1
+            Qt.callLater(function () {
                 if (root.currentTrayItem === retryTrayItem)
-                    root.finishOpen(retryAnchorItem, retryLocalX, retryLocalY);
-
-            });
-            return ;
+                    root.finishOpen(retryAnchorItem, retryLocalX, retryLocalY)
+            })
+            return
         }
-        setMenuAnchor(anchorItem, localX, localY);
-        menuOpen = true;
+        setMenuAnchor(anchorItem, localX, localY)
+        menuOpen = true
     }
 
     function hasRootMenuChildren() {
         if (!rootMenuOpener.children)
-            return false;
+            return false
 
         if (rootMenuOpener.children.values)
-            return rootMenuOpener.children.values.length > 0;
+            return rootMenuOpener.children.values.length > 0
 
-        return rootMenuOpener.children.length > 0;
+        return rootMenuOpener.children.length > 0
     }
 
     function close() {
-        menuOpen = false;
-        currentTrayItem = null;
-        openRetryCount = 0;
-        submenuStack.clear();
+        menuOpen = false
+        currentTrayItem = null
+        openRetryCount = 0
+        submenuStack.clear()
     }
 
     function openSubmenu(entry) {
         submenuStack.append({
             "handle": entry
-        });
+        })
     }
 
     function closeSubmenu() {
         if (submenuStack.count > 0)
-            submenuStack.remove(submenuStack.count - 1);
-
+            submenuStack.remove(submenuStack.count - 1)
     }
 
     function topSubmenuEntry() {
-        return submenuStack.count > 0 ? submenuStack.get(submenuStack.count - 1).handle : null;
+        return submenuStack.count > 0 ? submenuStack.get(submenuStack.count - 1).handle : null
     }
 
     ListModel {
@@ -116,8 +108,8 @@ Item {
         id: submenuOpener
 
         menu: {
-            const entry = root.topSubmenuEntry();
-            return entry ? (entry.menu || entry) : null;
+            const entry = root.topSubmenuEntry()
+            return entry ? (entry.menu || entry) : null
         }
     }
 
@@ -199,7 +191,6 @@ Item {
                             font.pixelSize: root.theme.typography.sizeLg
                             font.styleName: root.theme.typography.styleRegular
                         }
-
                     }
 
                     MouseArea {
@@ -210,7 +201,6 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.closeSubmenu()
                     }
-
                 }
 
                 Repeater {
@@ -236,19 +226,18 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                const entry = menuEntryRoot.modelData;
+                                const entry = menuEntryRoot.modelData
                                 if (!entry || entry.isSeparator)
-                                    return ;
-
+                                    return
                                 if (entry.hasChildren) {
-                                    root.openSubmenu(entry);
-                                    return ;
+                                    root.openSubmenu(entry)
+                                    return
                                 }
                                 if (typeof entry.activate === "function")
-                                    entry.activate();
+                                    entry.activate()
                                 else if (typeof entry.triggered === "function")
-                                    entry.triggered();
-                                root.close();
+                                    entry.triggered()
+                                root.close()
                             }
                         }
 
@@ -278,7 +267,6 @@ Item {
                                     color: root.colors.info
                                     font.pixelSize: root.theme.typography.sizeSm
                                 }
-
                             }
 
                             IconImage {
@@ -308,17 +296,10 @@ Item {
                                 color: root.colors.textMuted
                                 font.family: root.theme.typography.textFontFamily
                             }
-
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

@@ -4,9 +4,7 @@ import QtQuick
 Item {
     id: popup
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
@@ -23,44 +21,43 @@ Item {
     readonly property real renderedLayoutHeight: notificationCard.renderedLayoutHeight
     readonly property real allocatedLayoutHeight: notificationCard.allocatedLayoutHeight
 
-    signal layoutChanged()
-    signal slotHeightChanged()
-    signal exitFinished()
+    signal layoutChanged
+    signal slotHeightChanged
+    signal exitFinished
 
     function startEnterAnimation() {
-        exiting = false;
-        exitAnimation.stop();
-        enterAnimation.stop();
-        enterOffset = width + theme.spacing.notificationPopupEnterOffsetMargin;
-        enterAnimation.start();
+        exiting = false
+        exitAnimation.stop()
+        enterAnimation.stop()
+        enterOffset = width + theme.spacing.notificationPopupEnterOffsetMargin
+        enterAnimation.start()
     }
 
     function startExitAnimation() {
         if (exiting)
-            return ;
-
-        exiting = true;
-        enterAnimation.stop();
-        exitAnimation.stop();
-        autoCloseTimer.stop();
-        exitAnimation.start();
+            return
+        exiting = true
+        enterAnimation.stop()
+        exitAnimation.stop()
+        autoCloseTimer.stop()
+        exitAnimation.start()
     }
 
     function resetAutoCloseTimer() {
-        autoCloseTimer.stop();
-        autoCloseTimerInitialized = false;
+        autoCloseTimer.stop()
+        autoCloseTimerInitialized = false
         if (!popup.popupData || !popup.services || typeof popup.services.notification.notificationPopupTimeout !== "function") {
-            autoCloseRemainingMs = 0;
-            return ;
+            autoCloseRemainingMs = 0
+            return
         }
         if (typeof popup.popupData.autoCloseRemainingMs === "number") {
-            autoCloseRemainingMs = Math.max(0, popup.popupData.autoCloseRemainingMs);
-            autoCloseTimerInitialized = true;
-            return ;
+            autoCloseRemainingMs = Math.max(0, popup.popupData.autoCloseRemainingMs)
+            autoCloseTimerInitialized = true
+            return
         }
 
-        autoCloseRemainingMs = popup.services.notification.notificationPopupTimeout(popup.popupData.urgency);
-        autoCloseTimerInitialized = true;
+        autoCloseRemainingMs = popup.services.notification.notificationPopupTimeout(popup.popupData.urgency)
+        autoCloseTimerInitialized = true
     }
 
     implicitWidth: width
@@ -68,16 +65,15 @@ Item {
     height: allocatedLayoutHeight
     visible: popupData !== null
     onPopupDataChanged: {
-        autoCloseTimerInitialized = false;
-        Qt.callLater(popup.resetAutoCloseTimer);
+        autoCloseTimerInitialized = false
+        Qt.callLater(popup.resetAutoCloseTimer)
     }
     Component.onCompleted: {
-        Qt.callLater(popup.resetAutoCloseTimer);
+        Qt.callLater(popup.resetAutoCloseTimer)
     }
     onActiveChanged: {
         if (!active)
-            autoCloseTimer.stop();
-
+            autoCloseTimer.stop()
     }
 
     NumberAnimation {
@@ -108,10 +104,9 @@ Item {
         repeat: true
         running: popup.active && popup.visible && !popup.exiting && !notificationCard.cardHovered && autoCloseRemainingMs > 0
         onTriggered: {
-            popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval);
+            popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval)
             if (popup.popupData && popup.autoCloseRemainingMs <= 0)
-                popup.services.notification.closeNotificationPopup(popup.popupData.id);
-
+                popup.services.notification.closeNotificationPopup(popup.popupData.id)
         }
     }
 
@@ -130,13 +125,11 @@ Item {
         onSlotHeightChanged: popup.slotHeightChanged()
         onCloseRequested: {
             if (popup.popupData)
-                popup.services.notification.closeNotificationPopup(popup.popupData.id);
-
+                popup.services.notification.closeNotificationPopup(popup.popupData.id)
         }
-        onActionInvoked: (action) => {
+        onActionInvoked: action => {
             if (popup.popupData)
-                popup.services.notification.invokeNotificationPopupAction(popup.popupData.id, action);
-
+                popup.services.notification.invokeNotificationPopupAction(popup.popupData.id, action)
         }
     }
 
@@ -147,7 +140,5 @@ Item {
             duration: popup.moveAnimationMs
             easing.type: Easing.Linear
         }
-
     }
-
 }

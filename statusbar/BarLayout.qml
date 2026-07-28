@@ -6,16 +6,14 @@ import "modules"
 Item {
     id: root
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
     readonly property var icons: Icons {}
 
     required property var colors
     required property var services
     required property var barWindow
 
-    signal openNotificationCenterRequested()
+    signal openNotificationCenterRequested
     signal openNetworkMenuRequested(var anchorItem)
 
     Row {
@@ -38,11 +36,9 @@ Item {
                 services: root.services
                 screen: root.barWindow.screen
             }
-
         }
 
-        Spacer {
-        }
+        Spacer {}
 
         Background {
             width: implicitWidth
@@ -60,11 +56,9 @@ Item {
                 colors: root.colors
                 services: root.services
             }
-
         }
 
-        Spacer {
-        }
+        Spacer {}
 
         Background {
             id: trayBackground
@@ -81,9 +75,7 @@ Item {
                 colors: root.colors
                 barWindow: root.barWindow
             }
-
         }
-
     }
 
     Item {
@@ -91,46 +83,45 @@ Item {
 
         anchors.fill: parent
 
-            Row {
-                anchors.right: timeBackground.left
-                anchors.verticalCenter: timeBackground.verticalCenter
-                spacing: 0
+        Row {
+            anchors.right: timeBackground.left
+            anchors.verticalCenter: timeBackground.verticalCenter
+            spacing: 0
 
-                Background {
-                    id: networkMenuButton
+            Background {
+                id: networkMenuButton
+                width: root.theme.sizing.statusBarIconSize
+                height: root.theme.sizing.statusBarHeight
+                colors: root.colors
+                backgroundColor: root.colors.transparent
+
+                Item {
                     width: root.theme.sizing.statusBarIconSize
-                    height: root.theme.sizing.statusBarHeight
-                    colors: root.colors
-                    backgroundColor: root.colors.transparent
+                    height: root.theme.sizing.statusBarIconSize
 
-                    Item {
-                        width: root.theme.sizing.statusBarIconSize
-                        height: root.theme.sizing.statusBarIconSize
-
-                        BarText {
-                            anchors.centerIn: parent
-                            text: root.icons.controlCenter
-                            color: root.colors.info
-                            font.family: root.theme.typography.iconFontFamily
-                            font.pixelSize: root.theme.typography.statusBarIconFontSize
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.openNetworkMenuRequested(networkMenuButton)
-                        }
+                    BarText {
+                        anchors.centerIn: parent
+                        text: root.icons.controlCenter
+                        color: root.colors.info
+                        font.family: root.theme.typography.iconFontFamily
+                        font.pixelSize: root.theme.typography.statusBarIconFontSize
                     }
-                }
 
-                Spacer {
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.openNetworkMenuRequested(networkMenuButton)
+                    }
                 }
             }
 
-            Background {
-                id: timeBackground
+            Spacer {}
+        }
 
-                width: implicitWidth
+        Background {
+            id: timeBackground
+
+            width: implicitWidth
             height: root.theme.sizing.statusBarHeight
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
@@ -143,7 +134,6 @@ Item {
                 colors: root.colors
                 services: root.services
             }
-
         }
 
         Row {
@@ -151,8 +141,7 @@ Item {
             anchors.verticalCenter: timeBackground.verticalCenter
             spacing: 0
 
-            Spacer {
-            }
+            Spacer {}
 
             Background {
                 width: root.theme.sizing.statusBarIconSize
@@ -164,11 +153,8 @@ Item {
                     colors: root.colors
                     services: root.services
                 }
-
             }
-
         }
-
     }
 
     Row {
@@ -229,13 +215,10 @@ Item {
                     services: root.services
                     onOpenRequested: root.openNotificationCenterRequested()
                 }
-
             }
-
         }
 
-        Spacer {
-        }
+        Spacer {}
 
         Background {
             width: implicitWidth
@@ -249,9 +232,6 @@ Item {
                 colors: root.colors
                 services: root.services
             }
-
         }
-
     }
-
 }

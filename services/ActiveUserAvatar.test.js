@@ -18,16 +18,42 @@ assert.equal(
 	userPath,
 );
 assert.equal(avatar.parseUserObjectPath("not json"), "");
-assert.equal(avatar.parseUserObjectPath(JSON.stringify({ type: "s", data: [userPath] })), "");
-assert.equal(avatar.parseUserObjectPath(JSON.stringify({ type: "o", data: ["/tmp/User1000"] })), "");
-assert.equal(avatar.parseUserObjectPath(JSON.stringify({ type: "o", data: ["/org/freedesktop/Accounts/Userabc"] })), "");
+assert.equal(
+	avatar.parseUserObjectPath(JSON.stringify({ type: "s", data: [userPath] })),
+	"",
+);
+assert.equal(
+	avatar.parseUserObjectPath(
+		JSON.stringify({ type: "o", data: ["/tmp/User1000"] }),
+	),
+	"",
+);
+assert.equal(
+	avatar.parseUserObjectPath(
+		JSON.stringify({
+			type: "o",
+			data: ["/org/freedesktop/Accounts/Userabc"],
+		}),
+	),
+	"",
+);
 
 assert.equal(
-	avatar.parseIconFile(JSON.stringify({ type: "s", data: ["/var/lib/AccountsService/icons/example avatar.png"] })),
+	avatar.parseIconFile(
+		JSON.stringify({
+			type: "s",
+			data: ["/var/lib/AccountsService/icons/example avatar.png"],
+		}),
+	),
 	"file:///var/lib/AccountsService/icons/example%20avatar.png",
 );
 assert.equal(
-	avatar.parseIconFile(JSON.stringify({ type: "s", data: "/var/lib/AccountsService/icons/example.png" })),
+	avatar.parseIconFile(
+		JSON.stringify({
+			type: "s",
+			data: "/var/lib/AccountsService/icons/example.png",
+		}),
+	),
 	"file:///var/lib/AccountsService/icons/example.png",
 );
 
@@ -50,7 +76,14 @@ for (const candidate of [
 }
 
 assert.equal(avatar.parseIconFile("not json"), "");
-assert.equal(avatar.parseIconFile(JSON.stringify({ type: "o", data: ["/tmp/avatar.png"] })), "");
+assert.equal(
+	avatar.parseIconFile(
+		JSON.stringify({ type: "o", data: ["/tmp/avatar.png"] }),
+	),
+	"",
+);
 assert.equal(avatar.parseIconFile(JSON.stringify({ type: "s", data: [] })), "");
 
-console.log("ActiveUserAvatar: typed response and local-path validation passed");
+console.log(
+	"ActiveUserAvatar: typed response and local-path validation passed",
+);

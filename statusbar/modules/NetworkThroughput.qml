@@ -5,13 +5,9 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
@@ -22,15 +18,15 @@ Item {
 
     function formatRate(bytes) {
         if (bytes === undefined || bytes === null || isNaN(bytes))
-            return "0 B/s";
+            return "0 B/s"
 
         if (bytes < 1024)
-            return `${Math.round(bytes)} B/s`;
+            return `${Math.round(bytes)} B/s`
 
         if (bytes < 1024 * 1024)
-            return `${Math.round(bytes / 1024)} KiB/s`;
+            return `${Math.round(bytes / 1024)} KiB/s`
 
-        return `${(bytes / 1024 / 1024).toFixed(1)} MiB/s`;
+        return `${(bytes / 1024 / 1024).toFixed(1)} MiB/s`
     }
 
     implicitWidth: content.implicitWidth
@@ -60,8 +56,5 @@ Item {
             text: root.formatRate(root.services.network.activeNetworkRxRate)
             color: root.rxColor
         }
-
-
     }
-
 }

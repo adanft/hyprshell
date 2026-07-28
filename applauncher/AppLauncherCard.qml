@@ -14,7 +14,7 @@ Rectangle {
     readonly property string fallbackIcon: "application-x-executable"
     readonly property string iconSource: app && app.icon ? Quickshell.iconPath(app.icon, fallbackIcon) : Quickshell.iconPath(fallbackIcon)
 
-    signal activated()
+    signal activated
 
     width: theme.sizing.appLauncherCardWidth
     height: theme.sizing.appLauncherCardHeight
@@ -39,7 +39,6 @@ Rectangle {
                 implicitSize: card.theme.sizing.appLauncherIconSize
                 source: card.iconSource
             }
-
         }
 
         Shared.AppText {
@@ -52,7 +51,6 @@ Rectangle {
             elide: Text.ElideRight
             maximumLineCount: 1
         }
-
     }
 
     MouseArea {
@@ -63,5 +61,4 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onClicked: card.activated()
     }
-
 }

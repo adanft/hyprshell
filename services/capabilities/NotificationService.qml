@@ -40,8 +40,14 @@ Scope {
 
     property bool notificationImageLifecycleActive: true
 
-    Component { id: notificationImageMkdirComponent; Process {} }
-    Component { id: notificationImageCleanupComponent; Process {} }
+    Component {
+        id: notificationImageMkdirComponent
+        Process {}
+    }
+    Component {
+        id: notificationImageCleanupComponent
+        Process {}
+    }
     Component {
         id: notificationImageSweepComponent
 
@@ -54,7 +60,7 @@ Scope {
                         root.removeNotificationImageOrphans(this.text)
                 }
             }
-            onExited: Qt.callLater(function() {
+            onExited: Qt.callLater(function () {
                 sweepProcess.destroy()
             })
         }
@@ -102,20 +108,14 @@ Scope {
             }
 
             notification.tracked = !notification.transient && !policy.hideFromCenter
-            const historyEntry = notification.tracked
-                ? root.addNotificationToHistory(notification, policy)
-                : null
+            const historyEntry = notification.tracked ? root.addNotificationToHistory(notification, policy) : null
             if (policy.hide) {
                 notification.dismiss()
                 return
             }
 
             if (!policy.disablePopup && !root.notificationCenterOpen)
-                root.enqueueNotificationPopup(
-                    notification,
-                    policy,
-                    historyEntry ? historyEntry.id : "",
-                )
+                root.enqueueNotificationPopup(notification, policy, historyEntry ? historyEntry.id : "")
         }
     }
 
@@ -152,7 +152,6 @@ Scope {
     function dismissNotificationHistoryEntry(entry) {
         if (!entry)
             return
-
         if (entry.notification && entry.notification.dismiss)
             entry.notification.dismiss()
         root.notificationHistory = root.notificationHistory.filter(item => item && item.id !== entry.id)
@@ -180,7 +179,6 @@ Scope {
     function enqueueNotificationPopup(notification, policy, historyEntryId) {
         if (!root.shouldShowNotificationPopup(notification, policy))
             return
-
         const popup = root.createNotificationPopup(notification, policy, historyEntryId)
         let queued = root.notificationQueue.slice()
         if (queued.length >= root.maxNotificationQueueSize) {
@@ -228,7 +226,7 @@ Scope {
             actions: notification.actions || [],
             transient: notification.transient,
             historyEntryId: historyEntryId || "",
-            createdAt: Date.now(),
+            createdAt: Date.now()
         }
     }
 
@@ -263,7 +261,7 @@ Scope {
             urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
             actions: [],
             createdAt: createdAt,
-            timestamp: createdAt,
+            timestamp: createdAt
         }
     }
 
@@ -276,7 +274,6 @@ Scope {
         const imageSource = String(source || "")
         if (!imageSource.startsWith("image://qsimage/") || root.invalidLiveImageSources[imageSource] === true)
             return
-
         const next = Object.assign({}, root.invalidLiveImageSources)
         next[imageSource] = true
         root.invalidLiveImageSources = next
@@ -289,22 +286,20 @@ Scope {
     function materializeNotificationImage(entryId, imageItem) {
         if (!entryId || !imageItem)
             return
-
         const entry = root.notificationHistory.find(item => item && item.id === entryId)
         if (!NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, imageItem.status === Image.Ready))
             return
-
         const path = NotificationImagePersistence.notificationImagePath(entry, root.notificationImageCacheDirectory)
         NotificationImagePersistence.begin(root.notificationImagePersistence, entryId, path)
         const mkdir = notificationImageMkdirComponent.createObject(root)
-        mkdir.onExited.connect(function(exitCode) {
+        mkdir.onExited.connect(function (exitCode) {
             mkdir.destroy()
             if (exitCode !== 0) {
                 root.handleNotificationImageSaveResult(entryId, imageItem, path, false)
                 return
             }
 
-            imageItem.grabToImage(function(result) {
+            imageItem.grabToImage(function (result) {
                 let saved = false
                 try {
                     saved = result.saveToFile(path)
@@ -320,14 +315,7 @@ Scope {
 
     function handleNotificationImageSaveResult(entryId, imageItem, path, saved) {
         const current = root.notificationHistory.find(item => item && item.id === entryId)
-        const outcome = NotificationImagePersistence.complete(
-            root.notificationImagePersistence,
-            entryId,
-            path,
-            saved,
-            Boolean(current),
-            root.notificationImageLifecycleActive,
-        )
+        const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved, Boolean(current), root.notificationImageLifecycleActive)
         if (outcome.orphan)
             root.deleteOwnedNotificationImage(outcome.orphan, true)
         if (outcome.persisted) {
@@ -339,7 +327,7 @@ Scope {
         }
 
         if (outcome.retry)
-            Qt.callLater(function() {
+            Qt.callLater(function () {
                 if (root.notificationImageLifecycleActive && imageItem && imageItem.status === Image.Ready)
                     root.materializeNotificationImage(entryId, imageItem)
             })
@@ -348,39 +336,23 @@ Scope {
     function sweepNotificationImageCache() {
         if (!root.notificationImageLifecycleActive)
             return
-
         const sweep = notificationImageSweepComponent.createObject(root)
-        sweep.exec([
-            "find",
-            root.notificationImageCacheDirectory,
-            "-maxdepth",
-            "1",
-            "-type",
-            "f",
-            "-name",
-            "notif_*.png",
-            "-print",
-        ])
+        sweep.exec(["find", root.notificationImageCacheDirectory, "-maxdepth", "1", "-type", "f", "-name", "notif_*.png", "-print",])
     }
 
     function removeNotificationImageOrphans(output) {
         const paths = String(output || "").split("\n").filter(path => path.length > 0)
-        const orphans = NotificationImagePersistence.orphanPaths(
-            paths,
-            root.notificationHistory,
-            root.notificationImageCacheDirectory,
-        )
+        const orphans = NotificationImagePersistence.orphanPaths(paths, root.notificationHistory, root.notificationImageCacheDirectory)
         orphans.forEach(path => root.deleteOwnedNotificationImage(path, true))
     }
 
     function deleteOwnedNotificationImage(path, owned) {
         if (owned !== true || !NotificationImagePersistence.isOwnedPath(path, root.notificationImageCacheDirectory))
             return
-
         const cleanup = notificationImageCleanupComponent.createObject(root)
         if (!cleanup)
             return
-        cleanup.onExited.connect(function(exitCode) {
+        cleanup.onExited.connect(function (exitCode) {
             if (exitCode !== 0)
                 console.warn(`Failed to remove cached notification image: ${path}`)
             cleanup.destroy()
@@ -391,7 +363,6 @@ Scope {
     function removeOwnedNotificationImage(entry) {
         if (!entry)
             return
-
         const ownedPath = NotificationImagePersistence.removeEntry(root.notificationImagePersistence, entry.id)
         const persistedPath = entry.ownedImage ? entry.persistedImagePath : ""
         root.deleteOwnedNotificationImage(ownedPath || persistedPath, Boolean(ownedPath) || entry.ownedImage === true)
@@ -400,41 +371,41 @@ Scope {
     function saveNotificationHistory() {
         saveTimer.stop()
         historyAdapter.notifications = root.notificationHistory.map(item => ({
-            id: item.id,
-            summary: item.summary || "Notification",
-            body: item.body || "",
-            htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
-            appName: item.appName || "App",
-            appIcon: item.appIcon || "",
-            desktopEntry: item.desktopEntry || "",
-            image: NotificationImagePersistence.historyImageSource(item.image),
-            persistedImagePath: item.ownedImage ? item.persistedImagePath || "" : "",
-            ownedImage: item.ownedImage === true,
-            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-            actions: [],
-            createdAt: item.createdAt || item.timestamp || Date.now(),
-            timestamp: item.timestamp || item.createdAt || Date.now(),
-        }))
+                    id: item.id,
+                    summary: item.summary || "Notification",
+                    body: item.body || "",
+                    htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
+                    appName: item.appName || "App",
+                    appIcon: item.appIcon || "",
+                    desktopEntry: item.desktopEntry || "",
+                    image: NotificationImagePersistence.historyImageSource(item.image),
+                    persistedImagePath: item.ownedImage ? item.persistedImagePath || "" : "",
+                    ownedImage: item.ownedImage === true,
+                    urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+                    actions: [],
+                    createdAt: item.createdAt || item.timestamp || Date.now(),
+                    timestamp: item.timestamp || item.createdAt || Date.now()
+                }))
         historyFileView.writeAdapter()
     }
 
     function loadNotificationHistory() {
         root.notificationHistory = (historyAdapter.notifications || []).map(item => ({
-            id: item.id || `${item.timestamp || Date.now()}-${Math.random()}`,
-            summary: item.summary || "Notification",
-            body: item.body || "",
-            htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
-            appName: item.appName || "App",
-            appIcon: item.appIcon || "",
-            desktopEntry: item.desktopEntry || "",
-            image: NotificationImagePersistence.historyImageSource(item.image),
-            persistedImagePath: item.ownedImage === true ? item.persistedImagePath || "" : "",
-            ownedImage: item.ownedImage === true,
-            urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-            actions: [],
-            createdAt: item.createdAt || item.timestamp || Date.now(),
-            timestamp: item.timestamp || item.createdAt || Date.now(),
-        }))
+                    id: item.id || `${item.timestamp || Date.now()}-${Math.random()}`,
+                    summary: item.summary || "Notification",
+                    body: item.body || "",
+                    htmlBody: item.htmlBody || root.resolveHtmlBody(item.body || ""),
+                    appName: item.appName || "App",
+                    appIcon: item.appIcon || "",
+                    desktopEntry: item.desktopEntry || "",
+                    image: NotificationImagePersistence.historyImageSource(item.image),
+                    persistedImagePath: item.ownedImage === true ? item.persistedImagePath || "" : "",
+                    ownedImage: item.ownedImage === true,
+                    urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+                    actions: [],
+                    createdAt: item.createdAt || item.timestamp || Date.now(),
+                    timestamp: item.timestamp || item.createdAt || Date.now()
+                }))
     }
 
     function processNotificationPopupQueue() {
@@ -455,7 +426,6 @@ Scope {
         const capacity = Math.max(root.minVisibleNotifications, Math.floor((availableHeight + popupSpacing) / (root.notificationPopupEstimatedHeight + popupSpacing)))
         if (root.notificationPopupCapacity === capacity)
             return
-
         root.notificationPopupCapacity = capacity
         root.processNotificationPopupQueue()
     }
@@ -497,9 +467,7 @@ Scope {
 
         const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         const timeDate = new Date(time.getFullYear(), time.getMonth(), time.getDate())
-        return Math.floor((nowDate - timeDate) / 86400000) === 0
-            ? root.formatNotificationTime(time)
-            : `${time.toLocaleDateString(Qt.locale(), "dddd")}, ${root.formatNotificationTime(time)}`
+        return Math.floor((nowDate - timeDate) / 86400000) === 0 ? root.formatNotificationTime(time) : `${time.toLocaleDateString(Qt.locale(), "dddd")}, ${root.formatNotificationTime(time)}`
     }
 
     function formatNotificationTime(date) {
@@ -513,12 +481,11 @@ Scope {
             hideFromCenter: false,
             hide: false,
             mute: false,
-            urgency: typeof notification.urgency === "number" ? notification.urgency : NotificationUrgency.Normal,
+            urgency: typeof notification.urgency === "number" ? notification.urgency : NotificationUrgency.Normal
         }
         for (const rule of root.notificationRules) {
             if (!root.matchesNotificationRule(rule, notification))
                 continue
-
             const action = String(rule.action || "default").toLowerCase()
             if (action === "block" || action === "ignore")
                 policy.block = true
@@ -542,7 +509,7 @@ Scope {
             appName: notification.appName || "",
             desktopEntry: notification.desktopEntry || "",
             summary: notification.summary || "",
-            body: notification.body || "",
+            body: notification.body || ""
         }
         for (const key of Object.keys(rule)) {
             if (["action", "urgency"].includes(key))
@@ -578,12 +545,7 @@ Scope {
     }
 
     function escapeHtml(text) {
-        return String(text || "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;")
+        return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;")
     }
 
     function resolveHtmlBody(body) {

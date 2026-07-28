@@ -29,16 +29,16 @@ for (const contract of [
 	/property var _dispatchedItem: null/,
 	/property bool _openingPending: false/,
 	/active: false/,
-	/function open\(\)[\s\S]*requestedVisible = true;[\s\S]*_openingPending = true;[\s\S]*active = true;[\s\S]*const generation = \+\+_lifecycleGeneration;[\s\S]*_scheduleOpen\(generation, item\);/,
-	/function toggle\(\)[\s\S]*if \(!requestedVisible\)[\s\S]*open\(\);[\s\S]*const loadedItem = item;[\s\S]*!_openingPending && \(!loadedItem \|\| !loadedItem\.visible\)[\s\S]*open\(\);[\s\S]*requestedVisible = false;[\s\S]*_openingPending = false;[\s\S]*_lifecycleGeneration\+\+;/,
+	/function open\(\)[\s\S]*requestedVisible = true;?[\s\S]*_openingPending = true;?[\s\S]*active = true;?[\s\S]*const generation = \+\+_lifecycleGeneration;?[\s\S]*_scheduleOpen\(generation, item\);?/,
+	/function toggle\(\)[\s\S]*if \(!requestedVisible\)[\s\S]*open\(\);?[\s\S]*const loadedItem = item;?[\s\S]*!_openingPending && \(!loadedItem \|\| !loadedItem\.visible\)[\s\S]*open\(\);?[\s\S]*requestedVisible = false;?[\s\S]*_openingPending = false;?[\s\S]*_lifecycleGeneration\+\+;?/,
 	/function _scheduleOpen\(generation, loadedItem\)[\s\S]*if \(!loadedItem\)[\s\S]*_scheduledItem === loadedItem[\s\S]*_dispatchedItem === loadedItem[\s\S]*Qt\.callLater/,
-	/root\._scheduledGeneration !== generation \|\| root\._scheduledItem !== loadedItem[\s\S]*return;/,
-	/generation !== root\._lifecycleGeneration[\s\S]*!root\.requestedVisible[\s\S]*root\.item !== loadedItem[\s\S]*return;/,
-	/root\._openingPending = false;[\s\S]*root\.directVisibility[\s\S]*loadedItem\.visible = true;[\s\S]*loadedItem\.open\(\);/,
-	/function _handleItemChanged\(loadedItem\)[\s\S]*const previousItem = _observedItem;[\s\S]*_observedItem = loadedItem;[\s\S]*_itemPresented = loadedItem !== null && loadedItem\.visible;[\s\S]*loadedItem !== previousItem[\s\S]*_scheduledGeneration = -1;[\s\S]*_dispatchedGeneration = -1;[\s\S]*loadedItem && requestedVisible[\s\S]*_scheduleOpen\(_lifecycleGeneration, loadedItem\);/,
-	/function _handleItemVisibleChanged\(loadedItem\)[\s\S]*loadedItem !== _observedItem[\s\S]*loadedItem\.visible[\s\S]*_itemPresented = true;[\s\S]*_openingPending = false;[\s\S]*if \(!_itemPresented\)[\s\S]*return;[\s\S]*requestedVisible = false;[\s\S]*active = false;/,
+	/root\._scheduledGeneration !== generation \|\| root\._scheduledItem !== loadedItem[\s\S]*return;?/,
+	/generation !== root\._lifecycleGeneration[\s\S]*!root\.requestedVisible[\s\S]*root\.item !== loadedItem[\s\S]*return;?/,
+	/root\._openingPending = false;?[\s\S]*root\.directVisibility[\s\S]*loadedItem\.visible = true;?[\s\S]*loadedItem\.open\(\);?/,
+	/function _handleItemChanged\(loadedItem\)[\s\S]*const previousItem = _observedItem;?[\s\S]*_observedItem = loadedItem;?[\s\S]*_itemPresented = loadedItem !== null && loadedItem\.visible;?[\s\S]*loadedItem !== previousItem[\s\S]*_scheduledGeneration = -1;?[\s\S]*_dispatchedGeneration = -1;?[\s\S]*loadedItem && requestedVisible[\s\S]*_scheduleOpen\(_lifecycleGeneration, loadedItem\);?/,
+	/function _handleItemVisibleChanged\(loadedItem\)[\s\S]*loadedItem !== _observedItem[\s\S]*loadedItem\.visible[\s\S]*_itemPresented = true;?[\s\S]*_openingPending = false;?[\s\S]*if \(!_itemPresented\)[\s\S]*return;?[\s\S]*requestedVisible = false;?[\s\S]*active = false;?/,
 	/onItemChanged: _handleItemChanged\(item\)/,
-	/Connections\s*{[\s\S]*target: root\._observedItem[\s\S]*root\._handleItemVisibleChanged\(target\);/,
+	/Connections\s*{[\s\S]*target: root\._observedItem[\s\S]*root\._handleItemVisibleChanged\(target\);?/,
 ]) {
 	assert.match(overlayLifecycleLoader, contract);
 }
@@ -73,7 +73,7 @@ for (const [helper, loaderId, method] of [
 	assert.match(
 		shell,
 		new RegExp(
-			`function ${helper}\\(\\) \\{\\s*${loaderId}\\.${method}\\(\\);\\s*\\}`,
+			`function ${helper}\\(\\) \\{\\s*${loaderId}\\.${method}\\(\\);?\\s*\\}`,
 		),
 		`${helper} must delegate to ${loaderId}.${method}()`,
 	);
@@ -83,7 +83,7 @@ assert.equal(shell.includes("function openLoader(loader)"), false);
 assert.equal(shell.includes("function toggleLoader(loader)"), false);
 assert.match(
 	shell,
-	/function toggleNotificationCenter\(\)\s*{\s*notificationCenterLoader\.toggle\(\);\s*}/,
+	/function toggleNotificationCenter\(\)\s*{\s*notificationCenterLoader\.toggle\(\);?\s*}/,
 );
 assert.match(
 	shell,
@@ -105,7 +105,7 @@ for (const target of [
 }
 assert.match(
 	shell,
-	/function set\(name: string\): void\s*{\s*themeColors\.setTheme\(name\);\s*}/,
+	/function set\(name: string\): void\s*{\s*themeColors\.setTheme\(name\);?\s*}/,
 );
 
 for (const eagerWindow of [
@@ -132,7 +132,7 @@ assert.equal(shell.includes("id: notificationPopupLoader"), false);
 assert.match(barWindow, /LazyLoader\s*{\s*id: networkMenuLoader/);
 assert.match(
 	barWindow,
-	/if \(menu && !menu\.menuOpen\)\s*{\s*networkMenuLoader\.requestedOpen = false;\s*networkMenuLoader\.active = false/,
+	/if \(menu && !menu\.menuOpen\)\s*{\s*networkMenuLoader\.requestedOpen = false;?\s*networkMenuLoader\.active = false/,
 );
 assert.match(tray, /LazyLoader\s*{\s*id: trayMenuLoader/);
 assert.match(
@@ -158,7 +158,7 @@ assert.match(networkController, /networkService\.enableNetworkDetails\(\)/);
 assert.match(networkController, /networkService\.disableNetworkDetails\(\)/);
 assert.match(
 	networkController,
-	/Component\.onDestruction: root\.dispatch\({ type: "destroy" }\)/,
+	/Component\.onDestruction: root\.dispatch\(\{\s*type: "destroy"\s*\}\)/,
 );
 assert.match(
 	networkService,

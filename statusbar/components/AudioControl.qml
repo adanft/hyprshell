@@ -4,13 +4,9 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
@@ -22,18 +18,18 @@ Item {
 
     function iconText() {
         if (!available || muted)
-            return source ? icons.microphoneMuted : icons.volumeMuted;
+            return source ? icons.microphoneMuted : icons.volumeMuted
 
         if (source)
-            return icons.microphone;
+            return icons.microphone
 
         if (volume < 34)
-            return icons.volumeLow;
+            return icons.volumeLow
 
         if (volume < 67)
-            return icons.volumeMedium;
+            return icons.volumeMedium
 
-        return icons.volumeHigh;
+        return icons.volumeHigh
     }
 
     width: content.implicitWidth
@@ -55,7 +51,6 @@ Item {
             text: `${root.volume}%`
             color: root.textColor
         }
-
     }
 
     Rectangle {
@@ -80,14 +75,12 @@ Item {
         Keys.onSpacePressed: root.services.audio.toggleMute(root.source)
         Keys.onReturnPressed: root.services.audio.toggleMute(root.source)
         Keys.onEnterPressed: root.services.audio.toggleMute(root.source)
-        onWheel: (wheel) => {
-            const delta = wheel.angleDelta.y;
+        onWheel: wheel => {
+            const delta = wheel.angleDelta.y
             if (!root.available || delta === 0)
-                return;
-
-            root.services.audio.changeVolume(root.source, delta > 0 ? 1 : -1);
-            wheel.accepted = true;
+                return
+            root.services.audio.changeVolume(root.source, delta > 0 ? 1 : -1)
+            wheel.accepted = true
         }
     }
-
 }

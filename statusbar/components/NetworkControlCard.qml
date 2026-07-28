@@ -18,8 +18,8 @@ Rectangle {
     property string detailAccessibleName: (expanded ? "Hide " : "Show ") + title + " details"
     property string stateDescription: subtitle
 
-    signal bodyClicked()
-    signal toggled()
+    signal bodyClicked
+    signal toggled
 
     radius: theme.shape.radius12
     color: bodyArea.containsMouse ? colors.surfaceHover : colors.surface
@@ -27,12 +27,12 @@ Rectangle {
 
     function requestBodyAction() {
         if (detailAvailable)
-            bodyClicked();
+            bodyClicked()
     }
 
     function requestToggleAction() {
         if (available && !busy)
-            toggled();
+            toggled()
     }
 
     Row {

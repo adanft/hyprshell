@@ -13,14 +13,31 @@ Scope {
     property string time: ""
     property string date: ""
 
-    Capabilities.AudioService { id: audioService }
-    Capabilities.BrightnessService { id: brightnessService }
-    Capabilities.NetworkService { id: networkService }
-    Capabilities.NotificationService { id: notificationService; theme: root.theme }
-    Capabilities.BatteryPowerService { id: batteryPowerService }
-    Capabilities.BluetoothService { id: bluetoothService }
-    Capabilities.SystemStatsService { id: systemStatsService }
-    Capabilities.WorkspaceService { id: workspaceService }
+    Capabilities.AudioService {
+        id: audioService
+    }
+    Capabilities.BrightnessService {
+        id: brightnessService
+    }
+    Capabilities.NetworkService {
+        id: networkService
+    }
+    Capabilities.NotificationService {
+        id: notificationService
+        theme: root.theme
+    }
+    Capabilities.BatteryPowerService {
+        id: batteryPowerService
+    }
+    Capabilities.BluetoothService {
+        id: bluetoothService
+    }
+    Capabilities.SystemStatsService {
+        id: systemStatsService
+    }
+    Capabilities.WorkspaceService {
+        id: workspaceService
+    }
 
     readonly property alias audio: audioService
     readonly property alias brightness: brightnessService
@@ -108,7 +125,9 @@ Scope {
     readonly property alias bluetoothBusy: bluetoothService.bluetoothBusy
     readonly property alias bluetoothError: bluetoothService.bluetoothError
     readonly property alias bluetoothPendingRevision: bluetoothService.bluetoothPendingRevision
-    function bluetoothDevicePending(device) { return bluetoothService.bluetoothDevicePending(device) }
+    function bluetoothDevicePending(device) {
+        return bluetoothService.bluetoothDevicePending(device)
+    }
 
     readonly property alias notificationCount: notificationService.notificationCount
     readonly property alias hasNotifications: notificationService.hasNotifications
@@ -162,102 +181,278 @@ Scope {
     property alias quickBrightnessMaximum: brightnessService.quickBrightnessMaximum
     property alias quickBrightnessRequestId: brightnessService.quickBrightnessRequestId
 
-    ActiveUserAvatar { id: activeUserAvatar }
-    Timer { interval: 1000; running: true; repeat: true; onTriggered: root.updateClock() }
+    ActiveUserAvatar {
+        id: activeUserAvatar
+    }
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: root.updateClock()
+    }
     Component.onCompleted: updateClock()
 
-    function refreshActiveUserAvatar() { return activeUserAvatar.refresh() }
-    function updateClock() {
-        const now = new Date(); const month = pad(now.getMonth() + 1); const day = pad(now.getDate())
-        time = `${pad(now.getHours())}:${pad(now.getMinutes())}`; date = `${month}-${day}`
+    function refreshActiveUserAvatar() {
+        return activeUserAvatar.refresh()
     }
-    function pad(value) { return String(value).padStart(2, "0") }
-    function safeFileViewText(fileView, label, reloadFile) { return FileViewState.safeText(fileView, label, reloadFile) }
+    function updateClock() {
+        const now = new Date()
+        const month = pad(now.getMonth() + 1)
+        const day = pad(now.getDate())
+        time = `${pad(now.getHours())}:${pad(now.getMinutes())}`
+        date = `${month}-${day}`
+    }
+    function pad(value) {
+        return String(value).padStart(2, "0")
+    }
+    function safeFileViewText(fileView, label, reloadFile) {
+        return FileViewState.safeText(fileView, label, reloadFile)
+    }
 
-    function toggleWifiEnabled() { return networkService.toggleWifiEnabled() }
-    function enableNetworkThroughput() { return networkService.enableNetworkThroughput() }
-    function disableNetworkThroughput() { return networkService.disableNetworkThroughput() }
-    function enableNetworkDetails() { return networkService.enableNetworkDetails() }
-    function disableNetworkDetails() { return networkService.disableNetworkDetails() }
-    function resetNetworkSample(clearInterface) { return networkService.resetNetworkSample(clearInterface) }
-    function refreshEthernetInfo() { return networkService.refreshEthernetInfo() }
-    function refreshWifiInfo() { return networkService.refreshWifiInfo() }
-    function setEthernetProfileEnabled(profile) { return networkService.setEthernetProfileEnabled(profile) }
-    function refreshNetwork() { return networkService.refreshNetwork() }
+    function toggleWifiEnabled() {
+        return networkService.toggleWifiEnabled()
+    }
+    function enableNetworkThroughput() {
+        return networkService.enableNetworkThroughput()
+    }
+    function disableNetworkThroughput() {
+        return networkService.disableNetworkThroughput()
+    }
+    function enableNetworkDetails() {
+        return networkService.enableNetworkDetails()
+    }
+    function disableNetworkDetails() {
+        return networkService.disableNetworkDetails()
+    }
+    function resetNetworkSample(clearInterface) {
+        return networkService.resetNetworkSample(clearInterface)
+    }
+    function refreshEthernetInfo() {
+        return networkService.refreshEthernetInfo()
+    }
+    function refreshWifiInfo() {
+        return networkService.refreshWifiInfo()
+    }
+    function setEthernetProfileEnabled(profile) {
+        return networkService.setEthernetProfileEnabled(profile)
+    }
+    function refreshNetwork() {
+        return networkService.refreshNetwork()
+    }
 
-    function enableCpuUsage() { return systemStatsService.enableCpuUsage() }
-    function disableCpuUsage() { return systemStatsService.disableCpuUsage() }
-    function enableMemoryUsage() { return systemStatsService.enableMemoryUsage() }
-    function disableMemoryUsage() { return systemStatsService.disableMemoryUsage() }
-    function refreshSystemStats() { return systemStatsService.refreshSystemStats() }
-    function updateCpuUsage(text) { return systemStatsService.updateCpuUsage(text) }
-    function updateMemoryUsage(text) { return systemStatsService.updateMemoryUsage(text) }
+    function enableCpuUsage() {
+        return systemStatsService.enableCpuUsage()
+    }
+    function disableCpuUsage() {
+        return systemStatsService.disableCpuUsage()
+    }
+    function enableMemoryUsage() {
+        return systemStatsService.enableMemoryUsage()
+    }
+    function disableMemoryUsage() {
+        return systemStatsService.disableMemoryUsage()
+    }
+    function refreshSystemStats() {
+        return systemStatsService.refreshSystemStats()
+    }
+    function updateCpuUsage(text) {
+        return systemStatsService.updateCpuUsage(text)
+    }
+    function updateMemoryUsage(text) {
+        return systemStatsService.updateMemoryUsage(text)
+    }
 
-    function focusWorkspace(workspaceId) { return workspaceService.focusWorkspace(workspaceId) }
-    function statusWorkspaceIdsForMonitor(monitor) { return workspaceService.statusWorkspaceIdsForMonitor(monitor) }
+    function focusWorkspace(workspaceId) {
+        return workspaceService.focusWorkspace(workspaceId)
+    }
+    function statusWorkspaceIdsForMonitor(monitor) {
+        return workspaceService.statusWorkspaceIdsForMonitor(monitor)
+    }
 
-    function toggleBluetoothPowered() { return bluetoothService.toggleBluetoothPowered() }
-    function scanBluetooth() { return bluetoothService.scanBluetooth() }
-    function setBluetoothScanning(enabled) { return bluetoothService.setBluetoothScanning(enabled) }
-    function connectBluetoothDevice(device) { return bluetoothService.connectBluetoothDevice(device) }
-    function disconnectBluetoothDevice(device) { return bluetoothService.disconnectBluetoothDevice(device) }
-    function pairBluetoothDevice(device) { return bluetoothService.pairBluetoothDevice(device) }
-    function forgetBluetoothDevice(device) { return bluetoothService.forgetBluetoothDevice(device) }
-    function toggleMute(isSource) { return audioService.toggleMute(isSource) }
-    function setSourceVolume(percent) { return audioService.setSourceVolume(percent) }
-    function selectAudioSource(node) { return audioService.selectAudioSource(node) }
-    function selectAudioSink(node) { return audioService.selectAudioSink(node) }
-    function togglePlaybackStreamMute(node) { return audioService.togglePlaybackStreamMute(node) }
-    function requestPlaybackStreamVolume(node, percent) { return audioService.requestPlaybackStreamVolume(node, percent) }
-    function changeVolume(isSource, delta) { return audioService.changeVolume(isSource, delta) }
-    function refreshQuickVolume() { return audioService.refreshQuickVolume() }
-    function requestSinkVolume(percent, requestId) { return audioService.requestSinkVolume(percent, requestId) }
+    function toggleBluetoothPowered() {
+        return bluetoothService.toggleBluetoothPowered()
+    }
+    function scanBluetooth() {
+        return bluetoothService.scanBluetooth()
+    }
+    function setBluetoothScanning(enabled) {
+        return bluetoothService.setBluetoothScanning(enabled)
+    }
+    function connectBluetoothDevice(device) {
+        return bluetoothService.connectBluetoothDevice(device)
+    }
+    function disconnectBluetoothDevice(device) {
+        return bluetoothService.disconnectBluetoothDevice(device)
+    }
+    function pairBluetoothDevice(device) {
+        return bluetoothService.pairBluetoothDevice(device)
+    }
+    function forgetBluetoothDevice(device) {
+        return bluetoothService.forgetBluetoothDevice(device)
+    }
+    function toggleMute(isSource) {
+        return audioService.toggleMute(isSource)
+    }
+    function setSourceVolume(percent) {
+        return audioService.setSourceVolume(percent)
+    }
+    function selectAudioSource(node) {
+        return audioService.selectAudioSource(node)
+    }
+    function selectAudioSink(node) {
+        return audioService.selectAudioSink(node)
+    }
+    function togglePlaybackStreamMute(node) {
+        return audioService.togglePlaybackStreamMute(node)
+    }
+    function requestPlaybackStreamVolume(node, percent) {
+        return audioService.requestPlaybackStreamVolume(node, percent)
+    }
+    function changeVolume(isSource, delta) {
+        return audioService.changeVolume(isSource, delta)
+    }
+    function refreshQuickVolume() {
+        return audioService.refreshQuickVolume()
+    }
+    function requestSinkVolume(percent, requestId) {
+        return audioService.requestSinkVolume(percent, requestId)
+    }
 
-    function detectBrightness() { return brightnessService.detectBrightness() }
-    function detectBrightnessDevice(output) { return brightnessService.detectBrightnessDevice(output) }
-    function clearBrightnessState() { return brightnessService.clearBrightnessState() }
-    function updateBrightnessFromFiles(reloadFiles) { return brightnessService.updateBrightnessFromFiles(reloadFiles) }
-    function setBrightness(percent) { return brightnessService.setBrightness(percent) }
-    function scheduleBrightnessWrite() { return brightnessService.scheduleBrightnessWrite() }
-    function flushBrightnessWrite() { return brightnessService.flushBrightnessWrite() }
-    function changeBrightness(delta) { return brightnessService.changeBrightness(delta) }
-    function refreshQuickBrightness(reloadFiles) { return brightnessService.refreshQuickBrightness(reloadFiles) }
-    function failQuickBrightnessRead(message) { return brightnessService.failQuickBrightnessRead(message) }
-    function requestBrightness(percent, requestId) { return brightnessService.requestBrightness(percent, requestId) }
-    function failQuickBrightnessRequest(code, message) { return brightnessService.failQuickBrightnessRequest(code, message) }
+    function detectBrightness() {
+        return brightnessService.detectBrightness()
+    }
+    function detectBrightnessDevice(output) {
+        return brightnessService.detectBrightnessDevice(output)
+    }
+    function clearBrightnessState() {
+        return brightnessService.clearBrightnessState()
+    }
+    function updateBrightnessFromFiles(reloadFiles) {
+        return brightnessService.updateBrightnessFromFiles(reloadFiles)
+    }
+    function setBrightness(percent) {
+        return brightnessService.setBrightness(percent)
+    }
+    function scheduleBrightnessWrite() {
+        return brightnessService.scheduleBrightnessWrite()
+    }
+    function flushBrightnessWrite() {
+        return brightnessService.flushBrightnessWrite()
+    }
+    function changeBrightness(delta) {
+        return brightnessService.changeBrightness(delta)
+    }
+    function refreshQuickBrightness(reloadFiles) {
+        return brightnessService.refreshQuickBrightness(reloadFiles)
+    }
+    function failQuickBrightnessRead(message) {
+        return brightnessService.failQuickBrightnessRead(message)
+    }
+    function requestBrightness(percent, requestId) {
+        return brightnessService.requestBrightness(percent, requestId)
+    }
+    function failQuickBrightnessRequest(code, message) {
+        return brightnessService.failQuickBrightnessRequest(code, message)
+    }
 
-    function computeBatteryLevel() { return batteryPowerService.computeBatteryLevel() }
-    function hasBatteryState(state) { return batteryPowerService.hasBatteryState(state) }
-    function normalizePercentage(value) { return batteryPowerService.normalizePercentage(value) }
-    function nextPowerProfile() { return batteryPowerService.nextPowerProfile() }
-    function profileSlug(profile) { return batteryPowerService.profileSlug(profile) }
+    function computeBatteryLevel() {
+        return batteryPowerService.computeBatteryLevel()
+    }
+    function hasBatteryState(state) {
+        return batteryPowerService.hasBatteryState(state)
+    }
+    function normalizePercentage(value) {
+        return batteryPowerService.normalizePercentage(value)
+    }
+    function nextPowerProfile() {
+        return batteryPowerService.nextPowerProfile()
+    }
+    function profileSlug(profile) {
+        return batteryPowerService.profileSlug(profile)
+    }
 
-    function dismissNotifications() { return notificationService.dismissNotifications() }
-    function dismissNotificationHistoryEntry(entry) { return notificationService.dismissNotificationHistoryEntry(entry) }
-    function setNotificationCenterOpen(open) { return notificationService.setNotificationCenterOpen(open) }
-    function clearNotificationPopups() { return notificationService.clearNotificationPopups() }
-    function toggleNotificationDnd() { return notificationService.toggleNotificationDnd() }
-    function enqueueNotificationPopup(notification, policy) { return notificationService.enqueueNotificationPopup(notification, policy) }
-    function shouldShowNotificationPopup(notification, policy) { return notificationService.shouldShowNotificationPopup(notification, policy) }
-    function createNotificationPopup(notification, policy) { return notificationService.createNotificationPopup(notification, policy) }
-    function addNotificationToHistory(notification, policy) { return notificationService.addNotificationToHistory(notification, policy) }
-    function createNotificationHistoryEntry(notification, policy) { return notificationService.createNotificationHistoryEntry(notification, policy) }
-    function persistentNotificationImage(source) { return notificationService.persistentNotificationImage(source) }
-    function scheduleNotificationHistorySave() { return notificationService.scheduleNotificationHistorySave() }
-    function saveNotificationHistory() { return notificationService.saveNotificationHistory() }
-    function loadNotificationHistory() { return notificationService.loadNotificationHistory() }
-    function processNotificationPopupQueue() { return notificationService.processNotificationPopupQueue() }
-    function setNotificationPopupAvailableHeight(height) { return notificationService.setNotificationPopupAvailableHeight(height) }
-    function closeNotificationPopup(id) { return notificationService.closeNotificationPopup(id) }
-    function invokeNotificationPopupAction(id, action) { return notificationService.invokeNotificationPopupAction(id, action) }
-    function notificationPopupTimeout(urgency) { return notificationService.notificationPopupTimeout(urgency) }
-    function notificationTimeText(popup) { return notificationService.notificationTimeText(popup) }
-    function formatNotificationTime(date) { return notificationService.formatNotificationTime(date) }
-    function evaluateNotificationPolicy(notification) { return notificationService.evaluateNotificationPolicy(notification) }
-    function matchesNotificationRule(rule, notification) { return notificationService.matchesNotificationRule(rule, notification) }
-    function matchesRuleValue(actual, expected) { return notificationService.matchesRuleValue(actual, expected) }
-    function coerceNotificationUrgency(value, fallback) { return notificationService.coerceNotificationUrgency(value, fallback) }
-    function stripImages(text) { return notificationService.stripImages(text) }
-    function escapeHtml(text) { return notificationService.escapeHtml(text) }
-    function resolveHtmlBody(body) { return notificationService.resolveHtmlBody(body) }
+    function dismissNotifications() {
+        return notificationService.dismissNotifications()
+    }
+    function dismissNotificationHistoryEntry(entry) {
+        return notificationService.dismissNotificationHistoryEntry(entry)
+    }
+    function setNotificationCenterOpen(open) {
+        return notificationService.setNotificationCenterOpen(open)
+    }
+    function clearNotificationPopups() {
+        return notificationService.clearNotificationPopups()
+    }
+    function toggleNotificationDnd() {
+        return notificationService.toggleNotificationDnd()
+    }
+    function enqueueNotificationPopup(notification, policy) {
+        return notificationService.enqueueNotificationPopup(notification, policy)
+    }
+    function shouldShowNotificationPopup(notification, policy) {
+        return notificationService.shouldShowNotificationPopup(notification, policy)
+    }
+    function createNotificationPopup(notification, policy) {
+        return notificationService.createNotificationPopup(notification, policy)
+    }
+    function addNotificationToHistory(notification, policy) {
+        return notificationService.addNotificationToHistory(notification, policy)
+    }
+    function createNotificationHistoryEntry(notification, policy) {
+        return notificationService.createNotificationHistoryEntry(notification, policy)
+    }
+    function persistentNotificationImage(source) {
+        return notificationService.persistentNotificationImage(source)
+    }
+    function scheduleNotificationHistorySave() {
+        return notificationService.scheduleNotificationHistorySave()
+    }
+    function saveNotificationHistory() {
+        return notificationService.saveNotificationHistory()
+    }
+    function loadNotificationHistory() {
+        return notificationService.loadNotificationHistory()
+    }
+    function processNotificationPopupQueue() {
+        return notificationService.processNotificationPopupQueue()
+    }
+    function setNotificationPopupAvailableHeight(height) {
+        return notificationService.setNotificationPopupAvailableHeight(height)
+    }
+    function closeNotificationPopup(id) {
+        return notificationService.closeNotificationPopup(id)
+    }
+    function invokeNotificationPopupAction(id, action) {
+        return notificationService.invokeNotificationPopupAction(id, action)
+    }
+    function notificationPopupTimeout(urgency) {
+        return notificationService.notificationPopupTimeout(urgency)
+    }
+    function notificationTimeText(popup) {
+        return notificationService.notificationTimeText(popup)
+    }
+    function formatNotificationTime(date) {
+        return notificationService.formatNotificationTime(date)
+    }
+    function evaluateNotificationPolicy(notification) {
+        return notificationService.evaluateNotificationPolicy(notification)
+    }
+    function matchesNotificationRule(rule, notification) {
+        return notificationService.matchesNotificationRule(rule, notification)
+    }
+    function matchesRuleValue(actual, expected) {
+        return notificationService.matchesRuleValue(actual, expected)
+    }
+    function coerceNotificationUrgency(value, fallback) {
+        return notificationService.coerceNotificationUrgency(value, fallback)
+    }
+    function stripImages(text) {
+        return notificationService.stripImages(text)
+    }
+    function escapeHtml(text) {
+        return notificationService.escapeHtml(text)
+    }
+    function resolveHtmlBody(body) {
+        return notificationService.resolveHtmlBody(body)
+    }
 }

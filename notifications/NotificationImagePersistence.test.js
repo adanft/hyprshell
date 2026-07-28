@@ -23,17 +23,23 @@ assert.equal(
 	"file:///tmp/external.png",
 );
 assert.equal(persistence.isLiveImage(liveImage), true);
-assert.equal(persistence.notificationImagePath(entry, cacheDirectory), generatedPath);
-    assert.equal(
-        persistence.notificationImagePath({ timestamp: 1700000000001, notification: {} }, cacheDirectory),
-        `${cacheDirectory}/notif_1700000000001_0.png`,
-    );
-    const unsafePath = persistence.notificationImagePath(
-        { timestamp: "../escape", notification: { id: "1/2" } },
-        cacheDirectory,
-    );
-    assert.equal(unsafePath, `${cacheDirectory}/notif_0_0.png`);
-    assert.equal(persistence.isOwnedPath(unsafePath, cacheDirectory), true);
+assert.equal(
+	persistence.notificationImagePath(entry, cacheDirectory),
+	generatedPath,
+);
+assert.equal(
+	persistence.notificationImagePath(
+		{ timestamp: 1700000000001, notification: {} },
+		cacheDirectory,
+	),
+	`${cacheDirectory}/notif_1700000000001_0.png`,
+);
+const unsafePath = persistence.notificationImagePath(
+	{ timestamp: "../escape", notification: { id: "1/2" } },
+	cacheDirectory,
+);
+assert.equal(unsafePath, `${cacheDirectory}/notif_0_0.png`);
+assert.equal(persistence.isOwnedPath(unsafePath, cacheDirectory), true);
 
 const state = persistence.createState();
 assert.equal(persistence.canMaterialize(state, entry, false), false);
@@ -58,7 +64,14 @@ assert.equal(persistence.removeEntry(state, entry.id), generatedPath);
 const retryState = persistence.createState();
 persistence.begin(retryState, entry.id, generatedPath);
 assert.deepEqual(
-	persistence.complete(retryState, entry.id, generatedPath, false, true, true),
+	persistence.complete(
+		retryState,
+		entry.id,
+		generatedPath,
+		false,
+		true,
+		true,
+	),
 	{ persisted: false, orphan: "", retry: true },
 	"the first save failure receives one retry",
 );
@@ -100,7 +113,14 @@ const orphanState = persistence.createState();
 persistence.begin(orphanState, entry.id, generatedPath);
 persistence.removeEntry(orphanState, entry.id);
 assert.deepEqual(
-	persistence.complete(orphanState, entry.id, generatedPath, true, false, true),
+	persistence.complete(
+		orphanState,
+		entry.id,
+		generatedPath,
+		true,
+		false,
+		true,
+	),
 	{ persisted: false, orphan: generatedPath, retry: false },
 	"a removed entry cleans up an in-flight owned file",
 );

@@ -20,11 +20,11 @@ function historyImageSource(source) {
 function canMaterialize(state, entry, ready) {
 	return Boolean(
 		ready &&
-			entry &&
-			entry.id &&
-			isLiveImage(entry.image) &&
-			!state.pending[entry.id] &&
-			!state.owned[entry.id],
+		entry &&
+		entry.id &&
+		isLiveImage(entry.image) &&
+		!state.pending[entry.id] &&
+		!state.owned[entry.id],
 	);
 }
 
@@ -71,22 +71,25 @@ function removeEntry(state, entryId) {
 	return path;
 }
 
-    function notificationImagePath(entry, cacheDirectory) {
-        const normalize = value => {
-            const number = Number(value);
-            return Number.isFinite(number) && number >= 0 ? Math.floor(number) : 0;
-        };
-        const timestamp = entry && (entry.timestamp || entry.createdAt) || 0;
-        const nativeId = entry && entry.notification && entry.notification.id || 0;
-        return `${cacheDirectory}/notif_${normalize(timestamp)}_${normalize(nativeId)}.png`;
-    }
+function notificationImagePath(entry, cacheDirectory) {
+	const normalize = (value) => {
+		const number = Number(value);
+		return Number.isFinite(number) && number >= 0 ? Math.floor(number) : 0;
+	};
+	const timestamp = (entry && (entry.timestamp || entry.createdAt)) || 0;
+	const nativeId =
+		(entry && entry.notification && entry.notification.id) || 0;
+	return `${cacheDirectory}/notif_${normalize(timestamp)}_${normalize(nativeId)}.png`;
+}
 
 function isOwnedPath(path, cacheDirectory) {
 	const prefix = `${cacheDirectory}/notif_`;
 	return (
 		typeof path === "string" &&
 		path.startsWith(prefix) &&
-		/^notif_[A-Za-z0-9._-]+_[A-Za-z0-9._-]+\.png$/.test(path.slice(cacheDirectory.length + 1))
+		/^notif_[A-Za-z0-9._-]+_[A-Za-z0-9._-]+\.png$/.test(
+			path.slice(cacheDirectory.length + 1),
+		)
 	);
 }
 

@@ -5,26 +5,21 @@ import QtQuick
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
-        readonly property color moduleColor: services.notification.notificationDnd ? colors.primary : colors.text
+    readonly property color moduleColor: services.notification.notificationDnd ? colors.primary : colors.text
 
-        signal openRequested()
+    signal openRequested
 
-        function iconText() {
-            if (services.notification.notificationDnd)
+    function iconText() {
+        if (services.notification.notificationDnd)
+            return icons.notificationsDnd
 
-            return icons.notificationsDnd;
-
-        return icons.notifications;
+        return icons.notifications
     }
 
     implicitWidth: content.implicitWidth
@@ -56,12 +51,11 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: (mouse) => {
+        onClicked: mouse => {
             if (mouse.button === Qt.RightButton)
-                services.notification.toggleNotificationDnd();
+                services.notification.toggleNotificationDnd()
             else
-                root.openRequested();
+                root.openRequested()
         }
     }
-
 }

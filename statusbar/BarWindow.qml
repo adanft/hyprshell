@@ -7,14 +7,12 @@ import "components"
 PanelWindow {
     id: window
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
 
-    signal openNotificationCenterRequested()
+    signal openNotificationCenterRequested
 
     implicitHeight: theme.sizing.statusBarOuterHeight
     exclusiveZone: theme.sizing.statusBarOuterHeight
@@ -39,20 +37,20 @@ PanelWindow {
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()
         onOpenNetworkMenuRequested: anchorItem => {
-            networkMenuLoader.requestedOpen = !networkMenuLoader.requestedOpen;
+            networkMenuLoader.requestedOpen = !networkMenuLoader.requestedOpen
             if (!networkMenuLoader.requestedOpen) {
                 if (networkMenuLoader.item && networkMenuLoader.item.menuOpen)
-                    networkMenuLoader.item.close();
+                    networkMenuLoader.item.close()
                 else
-                    networkMenuLoader.active = false;
-                return;
+                    networkMenuLoader.active = false
+                return
             }
 
-            networkMenuLoader.active = true;
+            networkMenuLoader.active = true
             Qt.callLater(() => {
                 if (networkMenuLoader.requestedOpen && networkMenuLoader.item)
-                    networkMenuLoader.item.open(anchorItem);
-            });
+                    networkMenuLoader.item.open(anchorItem)
+            })
         }
     }
 
@@ -72,10 +70,10 @@ PanelWindow {
         target: networkMenuLoader.item
         enabled: target !== null
         function onMenuOpenChanged() {
-            const menu = networkMenuLoader.item;
+            const menu = networkMenuLoader.item
             if (menu && !menu.menuOpen) {
-                networkMenuLoader.requestedOpen = false;
-                networkMenuLoader.active = false;
+                networkMenuLoader.requestedOpen = false
+                networkMenuLoader.active = false
             }
         }
     }

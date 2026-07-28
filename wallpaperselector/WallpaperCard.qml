@@ -6,12 +6,11 @@ import QtQuick.Shapes
 Item {
     id: card
 
-    readonly property var theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property string path
     property string thumbnailPath: path
-        property bool thumbnailCached: false
+    property bool thumbnailCached: false
     property bool selected: false
     property real focusWeight: selected ? 1 : 0
     property real renderWidth: width
@@ -21,20 +20,11 @@ Item {
     readonly property real borderWidth: theme.shape.appLauncherCardBorderWidth
     readonly property real pathInset: borderWidth / 2
     readonly property real innerHeight: Math.max(1, height - 2 * pathInset)
-    readonly property real cornerRadius: Math.max(0, Math.min(
-        theme.shape.wallpaperCardRadius,
-        (width - slant - 2 * pathInset) / 2,
-        innerHeight / 2
-    ))
+    readonly property real cornerRadius: Math.max(0, Math.min(theme.shape.wallpaperCardRadius, (width - slant - 2 * pathInset) / 2, innerHeight / 2))
     readonly property real slopeOffset: slant * cornerRadius / innerHeight
-    readonly property color borderColor: Qt.rgba(
-        theme.colors.border.r + (theme.colors.focus.r - theme.colors.border.r) * focusWeight,
-        theme.colors.border.g + (theme.colors.focus.g - theme.colors.border.g) * focusWeight,
-        theme.colors.border.b + (theme.colors.focus.b - theme.colors.border.b) * focusWeight,
-        theme.colors.border.a + (theme.colors.focus.a - theme.colors.border.a) * focusWeight
-    )
+    readonly property color borderColor: Qt.rgba(theme.colors.border.r + (theme.colors.focus.r - theme.colors.border.r) * focusWeight, theme.colors.border.g + (theme.colors.focus.g - theme.colors.border.g) * focusWeight, theme.colors.border.b + (theme.colors.focus.b - theme.colors.border.b) * focusWeight, theme.colors.border.a + (theme.colors.focus.a - theme.colors.border.a) * focusWeight)
 
-    signal activated()
+    signal activated
     signal wheelStepped(int direction)
 
     width: theme.sizing.wallpaperCardWidth
@@ -44,15 +34,12 @@ Item {
         anchors.fill: parent
         source: card.thumbnailPath || card.path
         // Only known local qsrice thumbnails may load synchronously; originals stay async.
-            asynchronous: !card.thumbnailCached
+        asynchronous: !card.thumbnailCached
         cache: true
         retainWhileLoading: true
         fillMode: Image.PreserveAspectCrop
         smooth: true
-        sourceSize: Qt.size(
-            Math.max(1, card.renderWidth * card.previewScale),
-            Math.max(1, card.height * card.previewScale)
-        )
+        sourceSize: Qt.size(Math.max(1, card.renderWidth * card.previewScale), Math.max(1, card.height * card.previewScale))
         layer.enabled: true
 
         layer.effect: MultiEffect {
@@ -79,14 +66,46 @@ Item {
             strokeColor: card.theme.colors.transparent
             startX: card.pathInset + card.slant + card.cornerRadius
             startY: card.pathInset
-            PathLine { x: card.width - card.pathInset - card.cornerRadius; y: card.pathInset }
-            PathQuad { x: card.width - card.pathInset - card.slopeOffset; y: card.pathInset + card.cornerRadius; controlX: card.width - card.pathInset; controlY: card.pathInset }
-            PathLine { x: card.width - card.pathInset - card.slant + card.slopeOffset; y: card.height - card.pathInset - card.cornerRadius }
-            PathQuad { x: card.width - card.pathInset - card.slant - card.cornerRadius; y: card.height - card.pathInset; controlX: card.width - card.pathInset - card.slant; controlY: card.height - card.pathInset }
-            PathLine { x: card.pathInset + card.cornerRadius; y: card.height - card.pathInset }
-            PathQuad { x: card.pathInset + card.slopeOffset; y: card.height - card.pathInset - card.cornerRadius; controlX: card.pathInset; controlY: card.height - card.pathInset }
-            PathLine { x: card.pathInset + card.slant - card.slopeOffset; y: card.pathInset + card.cornerRadius }
-            PathQuad { x: card.pathInset + card.slant + card.cornerRadius; y: card.pathInset; controlX: card.pathInset + card.slant; controlY: card.pathInset }
+            PathLine {
+                x: card.width - card.pathInset - card.cornerRadius
+                y: card.pathInset
+            }
+            PathQuad {
+                x: card.width - card.pathInset - card.slopeOffset
+                y: card.pathInset + card.cornerRadius
+                controlX: card.width - card.pathInset
+                controlY: card.pathInset
+            }
+            PathLine {
+                x: card.width - card.pathInset - card.slant + card.slopeOffset
+                y: card.height - card.pathInset - card.cornerRadius
+            }
+            PathQuad {
+                x: card.width - card.pathInset - card.slant - card.cornerRadius
+                y: card.height - card.pathInset
+                controlX: card.width - card.pathInset - card.slant
+                controlY: card.height - card.pathInset
+            }
+            PathLine {
+                x: card.pathInset + card.cornerRadius
+                y: card.height - card.pathInset
+            }
+            PathQuad {
+                x: card.pathInset + card.slopeOffset
+                y: card.height - card.pathInset - card.cornerRadius
+                controlX: card.pathInset
+                controlY: card.height - card.pathInset
+            }
+            PathLine {
+                x: card.pathInset + card.slant - card.slopeOffset
+                y: card.pathInset + card.cornerRadius
+            }
+            PathQuad {
+                x: card.pathInset + card.slant + card.cornerRadius
+                y: card.pathInset
+                controlX: card.pathInset + card.slant
+                controlY: card.pathInset
+            }
         }
     }
 
@@ -102,14 +121,46 @@ Item {
             strokeWidth: card.borderWidth
             startX: card.pathInset + card.slant + card.cornerRadius
             startY: card.pathInset
-            PathLine { x: card.width - card.pathInset - card.cornerRadius; y: card.pathInset }
-            PathQuad { x: card.width - card.pathInset - card.slopeOffset; y: card.pathInset + card.cornerRadius; controlX: card.width - card.pathInset; controlY: card.pathInset }
-            PathLine { x: card.width - card.pathInset - card.slant + card.slopeOffset; y: card.height - card.pathInset - card.cornerRadius }
-            PathQuad { x: card.width - card.pathInset - card.slant - card.cornerRadius; y: card.height - card.pathInset; controlX: card.width - card.pathInset - card.slant; controlY: card.height - card.pathInset }
-            PathLine { x: card.pathInset + card.cornerRadius; y: card.height - card.pathInset }
-            PathQuad { x: card.pathInset + card.slopeOffset; y: card.height - card.pathInset - card.cornerRadius; controlX: card.pathInset; controlY: card.height - card.pathInset }
-            PathLine { x: card.pathInset + card.slant - card.slopeOffset; y: card.pathInset + card.cornerRadius }
-            PathQuad { x: card.pathInset + card.slant + card.cornerRadius; y: card.pathInset; controlX: card.pathInset + card.slant; controlY: card.pathInset }
+            PathLine {
+                x: card.width - card.pathInset - card.cornerRadius
+                y: card.pathInset
+            }
+            PathQuad {
+                x: card.width - card.pathInset - card.slopeOffset
+                y: card.pathInset + card.cornerRadius
+                controlX: card.width - card.pathInset
+                controlY: card.pathInset
+            }
+            PathLine {
+                x: card.width - card.pathInset - card.slant + card.slopeOffset
+                y: card.height - card.pathInset - card.cornerRadius
+            }
+            PathQuad {
+                x: card.width - card.pathInset - card.slant - card.cornerRadius
+                y: card.height - card.pathInset
+                controlX: card.width - card.pathInset - card.slant
+                controlY: card.height - card.pathInset
+            }
+            PathLine {
+                x: card.pathInset + card.cornerRadius
+                y: card.height - card.pathInset
+            }
+            PathQuad {
+                x: card.pathInset + card.slopeOffset
+                y: card.height - card.pathInset - card.cornerRadius
+                controlX: card.pathInset
+                controlY: card.height - card.pathInset
+            }
+            PathLine {
+                x: card.pathInset + card.slant - card.slopeOffset
+                y: card.pathInset + card.cornerRadius
+            }
+            PathQuad {
+                x: card.pathInset + card.slant + card.cornerRadius
+                y: card.pathInset
+                controlX: card.pathInset + card.slant
+                controlY: card.pathInset
+            }
         }
     }
 

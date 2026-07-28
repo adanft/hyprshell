@@ -18,97 +18,91 @@ LazyLoader {
     active: false
 
     function open() {
-        requestedVisible = true;
-        _openingPending = true;
-        active = true;
-        const generation = ++_lifecycleGeneration;
-        _scheduleOpen(generation, item);
+        requestedVisible = true
+        _openingPending = true
+        active = true
+        const generation = ++_lifecycleGeneration
+        _scheduleOpen(generation, item)
     }
 
     function toggle() {
         if (!requestedVisible) {
-            open();
-            return;
+            open()
+            return
         }
 
-        const loadedItem = item;
+        const loadedItem = item
         if (!_openingPending && (!loadedItem || !loadedItem.visible)) {
-            open();
-            return;
+            open()
+            return
         }
 
-        requestedVisible = false;
-        _openingPending = false;
-        _lifecycleGeneration++;
+        requestedVisible = false
+        _openingPending = false
+        _lifecycleGeneration++
         if (!loadedItem || !loadedItem.visible) {
-            active = false;
-            return;
+            active = false
+            return
         }
 
         if (directVisibility)
-            loadedItem.visible = false;
+            loadedItem.visible = false
         else
-            loadedItem.toggle();
+            loadedItem.toggle()
     }
 
     function _scheduleOpen(generation, loadedItem) {
         if (!loadedItem)
-            return;
-        if ((_scheduledGeneration === generation && _scheduledItem === loadedItem)
-                || (_dispatchedGeneration === generation && _dispatchedItem === loadedItem))
-            return;
-
-        _scheduledGeneration = generation;
-        _scheduledItem = loadedItem;
+            return
+        if ((_scheduledGeneration === generation && _scheduledItem === loadedItem) || (_dispatchedGeneration === generation && _dispatchedItem === loadedItem))
+            return
+        _scheduledGeneration = generation
+        _scheduledItem = loadedItem
         Qt.callLater(() => {
             if (root._scheduledGeneration !== generation || root._scheduledItem !== loadedItem)
-                return;
-            root._scheduledGeneration = -1;
-            root._scheduledItem = null;
-            if (generation !== root._lifecycleGeneration
-                    || !root.requestedVisible
-                    || root.item !== loadedItem)
-                return;
-
-            root._dispatchedGeneration = generation;
-            root._dispatchedItem = loadedItem;
-            root._openingPending = false;
+                return
+            root._scheduledGeneration = -1
+            root._scheduledItem = null
+            if (generation !== root._lifecycleGeneration || !root.requestedVisible || root.item !== loadedItem)
+                return
+            root._dispatchedGeneration = generation
+            root._dispatchedItem = loadedItem
+            root._openingPending = false
             if (root.directVisibility)
-                loadedItem.visible = true;
+                loadedItem.visible = true
             else
-                loadedItem.open();
-        });
+                loadedItem.open()
+        })
     }
 
     function _handleItemChanged(loadedItem) {
-        const previousItem = _observedItem;
-        _observedItem = loadedItem;
-        _itemPresented = loadedItem !== null && loadedItem.visible;
+        const previousItem = _observedItem
+        _observedItem = loadedItem
+        _itemPresented = loadedItem !== null && loadedItem.visible
         if (loadedItem !== previousItem) {
-            _scheduledGeneration = -1;
-            _scheduledItem = null;
-            _dispatchedGeneration = -1;
-            _dispatchedItem = null;
+            _scheduledGeneration = -1
+            _scheduledItem = null
+            _dispatchedGeneration = -1
+            _dispatchedItem = null
         }
         if (loadedItem && requestedVisible)
-            _scheduleOpen(_lifecycleGeneration, loadedItem);
+            _scheduleOpen(_lifecycleGeneration, loadedItem)
     }
 
     function _handleItemVisibleChanged(loadedItem) {
         if (!loadedItem || loadedItem !== _observedItem)
-            return;
+            return
         if (loadedItem.visible) {
-            _itemPresented = true;
-            _openingPending = false;
-            return;
+            _itemPresented = true
+            _openingPending = false
+            return
         }
         if (!_itemPresented)
-            return;
-
-        requestedVisible = false;
-        _openingPending = false;
-        _lifecycleGeneration++;
-        active = false;
+            return
+        requestedVisible = false
+        _openingPending = false
+        _lifecycleGeneration++
+        active = false
     }
 
     onItemChanged: _handleItemChanged(item)
@@ -118,7 +112,7 @@ LazyLoader {
         enabled: target !== null
 
         function onVisibleChanged() {
-            root._handleItemVisibleChanged(target);
+            root._handleItemVisibleChanged(target)
         }
     }
 }

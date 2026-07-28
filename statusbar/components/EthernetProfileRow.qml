@@ -15,7 +15,7 @@ Rectangle {
 
     function requestToggle() {
         if (!busy)
-            toggleRequested(profile);
+            toggleRequested(profile)
     }
 
     height: theme.sizing.statusBarNetworkDeviceRowHeight

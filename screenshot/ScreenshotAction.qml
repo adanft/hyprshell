@@ -5,9 +5,7 @@ import QtQuick
 Rectangle {
     id: action
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property string icon
     required property string title
@@ -15,7 +13,7 @@ Rectangle {
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
 
-    signal activated()
+    signal activated
 
     width: theme.sizing.screenshotToolActionWidth
     height: theme.sizing.screenshotToolActionHeight
@@ -51,7 +49,6 @@ Rectangle {
             elide: Text.ElideRight
             maximumLineCount: 1
         }
-
     }
 
     MouseArea {
@@ -63,5 +60,4 @@ Rectangle {
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: action.activated()
     }
-
 }

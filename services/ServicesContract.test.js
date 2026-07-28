@@ -318,7 +318,7 @@ assert.doesNotMatch(
 assert.ok(
 	(
 		audioSource.match(
-			/if \(!root\.isWritablePlaybackStream\(node\)\) return false;/g,
+			/if \(!root\.isWritablePlaybackStream\(node\)\)\s*return false;?/g,
 		) || []
 	).length === 2,
 	"each playback control must validate live writable identity immediately before mutation",

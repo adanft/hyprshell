@@ -74,7 +74,8 @@ function containsCurrentNode(nodes, node, predicate) {
 function canControlPlaybackStream(nodes, node) {
 	try {
 		return (
-			containsCurrentNode(nodes, node, isPlaybackStream) && Boolean(node.audio)
+			containsCurrentNode(nodes, node, isPlaybackStream) &&
+			Boolean(node.audio)
 		);
 	} catch (_) {
 		return false;

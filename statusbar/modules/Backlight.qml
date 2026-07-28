@@ -44,7 +44,6 @@ Item {
             const delta = wheel.angleDelta.y
             if (delta === 0)
                 return
-
             root.services.brightness.changeBrightness(delta > 0 ? 1 : -1)
             wheel.accepted = true
         }

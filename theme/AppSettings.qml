@@ -13,7 +13,7 @@ Item {
     AppSettingsPersistence {
         id: persistence
 
-        onLoaded: function(nextTheme, nextWallpaper) {
+        onLoaded: function (nextTheme, nextWallpaper) {
             if (appSettings.currentTheme !== nextTheme)
                 appSettings.currentTheme = nextTheme
             if (appSettings.currentWallpaper !== nextWallpaper)

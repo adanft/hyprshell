@@ -8,9 +8,7 @@ import Quickshell.Wayland
 Scope {
     id: tool
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     property alias visible: panel.visible
     property bool quitOnClose: false
@@ -21,57 +19,56 @@ Scope {
     readonly property string captureSuccessCommand: "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
     function open() {
-        selectedActionIndex = 0;
-        delaySeconds = 0;
-        panel.visible = true;
+        selectedActionIndex = 0
+        delaySeconds = 0
+        panel.visible = true
         Qt.callLater(() => {
-            return overlay.forceActiveFocus();
-        });
+            return overlay.forceActiveFocus()
+        })
     }
 
     function close() {
-        panel.visible = false;
+        panel.visible = false
         if (quitOnClose)
-            Qt.quit();
-
+            Qt.quit()
     }
 
     function toggle() {
-        panel.visible ? close() : open();
+        panel.visible ? close() : open()
     }
 
     function normalizedDelaySeconds() {
-        return Math.max(0, Math.min(maximumDelaySeconds, Number(delaySeconds) || 0));
+        return Math.max(0, Math.min(maximumDelaySeconds, Number(delaySeconds) || 0))
     }
 
     function capture(mode) {
-        const grimCursorArg = includeCursor ? "-c " : "";
-        const delay = normalizedDelaySeconds();
-        const initialDelay = mode === "area" ? 0.2 : delay + 0.2;
-        let command = "";
+        const grimCursorArg = includeCursor ? "-c " : ""
+        const delay = normalizedDelaySeconds()
+        const initialDelay = mode === "area" ? 0.2 : delay + 0.2
+        let command = ""
         switch (mode) {
         case "monitor":
-            command = captureCommand(`grim ${grimCursorArg}-o "${panel.screen.name}"`);
-            break;
+            command = captureCommand(`grim ${grimCursorArg}-o "${panel.screen.name}"`)
+            break
         case "window":
-            command = `id=$(hyprctl activewindow -j | jq -r 'select(.stableId != null) | .stableId') && if [ -n "$id" ]; then sleep 0.5; ${captureCommand(`grim ${grimCursorArg}-T "$id"`)}; fi`;
-            break;
+            command = `id=$(hyprctl activewindow -j | jq -r 'select(.stableId != null) | .stableId') && if [ -n "$id" ]; then sleep 0.5; ${captureCommand(`grim ${grimCursorArg}-T "$id"`)}; fi`
+            break
         case "area":
-            command = `geometry=$(slurp) && if [ -n "$geometry" ]; then sleep ${delay}; ${captureCommand(`grim ${grimCursorArg}-g "$geometry"`)}; fi`;
-            break;
+            command = `geometry=$(slurp) && if [ -n "$geometry" ]; then sleep ${delay}; ${captureCommand(`grim ${grimCursorArg}-g "$geometry"`)}; fi`
+            break
         case "all":
         default:
-            command = captureCommand(`grim ${grimCursorArg}`);
-            break;
+            command = captureCommand(`grim ${grimCursorArg}`)
+            break
         }
-        close();
+        close()
         Qt.callLater(() => {
-            Quickshell.execDetached(["sh", "-c", `mkdir -p "$HOME/Pictures/Screenshots" && sleep ${initialDelay} && ${command}`]);
-        });
+            Quickshell.execDetached(["sh", "-c", `mkdir -p "$HOME/Pictures/Screenshots" && sleep ${initialDelay} && ${command}`])
+        })
     }
 
     function captureCommand(grimCommand) {
-        return `file="$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png"; ${grimCommand} "$file" && ${captureSuccessCommand}`;
+        return `file="$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png"; ${grimCommand} "$file" && ${captureSuccessCommand}`
     }
 
     function pathToFileUrl(path) {
@@ -82,54 +79,54 @@ Scope {
     function actionIcon(index) {
         switch (index) {
         case 0:
-            return "󰍹";
+            return "󰍹"
         case 1:
-            return "󰹑";
+            return "󰹑"
         case 2:
-            return "󰖲";
+            return "󰖲"
         case 3:
-            return "󰆞";
+            return "󰆞"
         default:
-            return "󰍹";
+            return "󰍹"
         }
     }
 
     function actionTitle(index) {
         switch (index) {
         case 0:
-            return "All";
+            return "All"
         case 1:
-            return "Monitor";
+            return "Monitor"
         case 2:
-            return "Window";
+            return "Window"
         case 3:
-            return "Area";
+            return "Area"
         default:
-            return "All";
+            return "All"
         }
     }
 
     function actionMode(index) {
         switch (index) {
         case 0:
-            return "all";
+            return "all"
         case 1:
-            return "monitor";
+            return "monitor"
         case 2:
-            return "window";
+            return "window"
         case 3:
-            return "area";
+            return "area"
         default:
-            return "all";
+            return "all"
         }
     }
 
     function moveSelection(direction) {
-        selectedActionIndex = Math.max(0, Math.min(3, selectedActionIndex + direction));
+        selectedActionIndex = Math.max(0, Math.min(3, selectedActionIndex + direction))
     }
 
     function activateSelection() {
-        capture(actionMode(selectedActionIndex));
+        capture(actionMode(selectedActionIndex))
     }
 
     Component {
@@ -144,14 +141,14 @@ Scope {
             readonly property int minimumVerticalSpacing: tool.theme.spacing.screenshotToolSectionSpacing
 
             function focusTimer() {
-                timerInput.forceActiveFocus();
-                timerInput.selectAll();
+                timerInput.forceActiveFocus()
+                timerInput.selectAll()
             }
 
             function setTimer(value) {
-                timerInput.text = String(value);
-                timerInput.forceActiveFocus();
-                timerInput.cursorPosition = timerInput.text.length;
+                timerInput.text = String(value)
+                timerInput.forceActiveFocus()
+                timerInput.cursorPosition = timerInput.text.length
             }
 
             anchors.fill: parent
@@ -317,20 +314,20 @@ Scope {
                         onTextChanged: tool.delaySeconds = acceptableInput && text.length > 0 ? Number(text) : 0
                         onActiveFocusChanged: {
                             if (activeFocus)
-                                selectAll();
+                                selectAll()
                         }
                         Keys.onEscapePressed: tool.close()
-                        Keys.onLeftPressed: (event) => {
+                        Keys.onLeftPressed: event => {
                             if (cursorPosition === 0)
-                                tool.moveSelection(-1);
+                                tool.moveSelection(-1)
                             else
-                                event.accepted = false;
+                                event.accepted = false
                         }
-                        Keys.onRightPressed: (event) => {
+                        Keys.onRightPressed: event => {
                             if (cursorPosition === text.length)
-                                tool.moveSelection(1);
+                                tool.moveSelection(1)
                             else
-                                event.accepted = false;
+                                event.accepted = false
                         }
                         Keys.onUpPressed: tool.includeCursor = !tool.includeCursor
                         Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
@@ -396,12 +393,12 @@ Scope {
             Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
             Keys.onTabPressed: {
                 if (contentLoader.item)
-                    contentLoader.item.focusTimer();
+                    contentLoader.item.focusTimer()
             }
-            Keys.onPressed: (event) => {
+            Keys.onPressed: event => {
                 if (event.text >= "0" && event.text <= "9" && contentLoader.item) {
-                    contentLoader.item.setTimer(event.text);
-                    event.accepted = true;
+                    contentLoader.item.setTimer(event.text)
+                    event.accepted = true
                 }
             }
             Keys.onReturnPressed: tool.activateSelection()
@@ -436,11 +433,7 @@ Scope {
                     active: panel.visible
                     sourceComponent: screenshotContent
                 }
-
             }
-
         }
-
     }
-
 }

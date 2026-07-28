@@ -25,45 +25,45 @@ Item {
     property real draftValue: 0
 
     signal liveValueRequested(int value)
-    signal interactionCanceled()
+    signal interactionCanceled
 
     enabled: available
     opacity: enabled ? 1 : theme.motion.opacityDisabled
 
     function updateFromPointer(pointerX) {
-        const travel = Math.max(1, width - sliderHandle.width);
-        const ratio = Math.max(0, Math.min(1, (pointerX - sliderHandle.width / 2) / travel));
-        draftValue = Math.round(ratio * 100);
+        const travel = Math.max(1, width - sliderHandle.width)
+        const ratio = Math.max(0, Math.min(1, (pointerX - sliderHandle.width / 2) / travel))
+        draftValue = Math.round(ratio * 100)
     }
 
     function beginInteraction(pointerX) {
-        draftActive = true;
-        updateFromPointer(pointerX);
+        draftActive = true
+        updateFromPointer(pointerX)
     }
 
     function moveInteraction(pointerX) {
         if (draftActive)
-            updateFromPointer(pointerX);
+            updateFromPointer(pointerX)
     }
 
     function finishInteraction(pointerX) {
         if (!draftActive)
-            return;
-        updateFromPointer(pointerX);
-        flushDraft();
-        draftActive = false;
+            return
+        updateFromPointer(pointerX)
+        flushDraft()
+        draftActive = false
     }
 
     function cancelInteraction() {
         if (!draftActive)
-            return;
-        draftActive = false;
-        interactionCanceled();
+            return
+        draftActive = false
+        interactionCanceled()
     }
 
     function flushDraft() {
         if (draftActive)
-            liveValueRequested(Math.round(draftValue));
+            liveValueRequested(Math.round(draftValue))
     }
 
     Timer {
@@ -118,7 +118,7 @@ Item {
         onPressed: mouse => control.beginInteraction(mouse.x)
         onPositionChanged: mouse => {
             if (pressed)
-                control.moveInteraction(mouse.x);
+                control.moveInteraction(mouse.x)
         }
         onReleased: mouse => control.finishInteraction(mouse.x)
         onCanceled: control.cancelInteraction()

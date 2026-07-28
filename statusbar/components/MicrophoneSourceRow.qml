@@ -14,7 +14,7 @@ Rectangle {
 
     function requestSelect() {
         if (!root.active)
-            root.selectRequested(root.source);
+            root.selectRequested(root.source)
     }
 
     height: root.theme.sizing.statusBarNetworkDeviceRowHeight
@@ -74,9 +74,7 @@ Rectangle {
         anchors.rightMargin: root.theme.spacing.space8
         anchors.verticalCenter: parent.verticalCenter
         radius: root.theme.shape.radius8
-        color: actionInput.containsMouse || actionInput.activeFocus
-            ? root.colors.surfaceHover
-            : root.colors.transparent
+        color: actionInput.containsMouse || actionInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
 
         Text {
             id: actionLabel
@@ -99,9 +97,7 @@ Rectangle {
             cursorShape: actionInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
             Accessible.role: Accessible.Button
-            Accessible.name: root.active
-                ? `${NetworkMenuLogic.audioSourceLabel(root.source)} is active`
-                : `Use ${NetworkMenuLogic.audioSourceLabel(root.source)} as microphone`
+            Accessible.name: root.active ? `${NetworkMenuLogic.audioSourceLabel(root.source)} is active` : `Use ${NetworkMenuLogic.audioSourceLabel(root.source)} as microphone`
 
             onClicked: root.requestSelect()
             Keys.onSpacePressed: root.requestSelect()

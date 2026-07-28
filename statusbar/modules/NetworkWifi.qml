@@ -6,13 +6,9 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
@@ -21,8 +17,8 @@ Item {
 
     function icon() {
         if (connected)
-            return icons.wifiConnected;
-        return Networking.wifiEnabled ? icons.wifiEnabled : icons.wifiDisconnected;
+            return icons.wifiConnected
+        return Networking.wifiEnabled ? icons.wifiEnabled : icons.wifiDisconnected
     }
 
     implicitWidth: content.implicitWidth
@@ -46,7 +42,6 @@ Item {
             text: `${root.services.network.wifiSignal}%`
             color: root.moduleColor
         }
-
     }
 
     MouseArea {

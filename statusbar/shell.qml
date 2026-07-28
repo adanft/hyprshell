@@ -26,7 +26,5 @@ ShellRoot {
             colors: themeColors
             services: serviceState
         }
-
     }
-
 }

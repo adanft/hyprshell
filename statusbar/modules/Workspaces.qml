@@ -10,9 +10,7 @@ Item {
     readonly property var theme: AppTheme {}
     readonly property var monitor: Hyprland.monitorFor(screen)
     readonly property var focusedMonitor: Hyprland.focusedMonitor
-    readonly property bool monitorFocused: !!monitor && !!focusedMonitor
-        && (monitor === focusedMonitor
-            || (monitor.name.length > 0 && monitor.name === focusedMonitor.name))
+    readonly property bool monitorFocused: !!monitor && !!focusedMonitor && (monitor === focusedMonitor || (monitor.name.length > 0 && monitor.name === focusedMonitor.name))
     required property var colors
     required property var screen
     required property var services
@@ -31,8 +29,8 @@ Item {
                 required property int modelData
 
                 readonly property bool active: root.monitor?.activeWorkspace?.id === modelData
-                    readonly property bool urgent: root.services.workspace.statusUrgentWorkspaceIds[modelData] ?? false
-                    readonly property bool empty: !(root.services.workspace.statusOccupiedWorkspaceIds[modelData] ?? false)
+                readonly property bool urgent: root.services.workspace.statusUrgentWorkspaceIds[modelData] ?? false
+                readonly property bool empty: !(root.services.workspace.statusOccupiedWorkspaceIds[modelData] ?? false)
 
                 readonly property bool hovered: mouseArea.containsMouse
 

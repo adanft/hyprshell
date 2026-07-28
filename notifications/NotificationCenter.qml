@@ -8,13 +8,9 @@ import Quickshell.Widgets
 PopupWindow {
     id: popup
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
@@ -25,36 +21,35 @@ PopupWindow {
     property var expandedNotificationIds: ({})
 
     function notificationExpansionKey(notification) {
-        return notification && notification.id !== undefined ? `notification:${notification.id}` : "";
+        return notification && notification.id !== undefined ? `notification:${notification.id}` : ""
     }
 
     function isNotificationExpanded(notification) {
-        const key = notificationExpansionKey(notification);
-        return key.length > 0 && expandedNotificationIds[key] === true;
+        const key = notificationExpansionKey(notification)
+        return key.length > 0 && expandedNotificationIds[key] === true
     }
 
     function setNotificationExpanded(notification, expanded) {
-        const key = notificationExpansionKey(notification);
+        const key = notificationExpansionKey(notification)
         if (key.length === 0)
-            return ;
-
-        const nextExpandedIds = Object.assign({}, expandedNotificationIds);
+            return
+        const nextExpandedIds = Object.assign({}, expandedNotificationIds)
         if (expanded)
-            nextExpandedIds[key] = true;
+            nextExpandedIds[key] = true
         else
-            delete nextExpandedIds[key];
-        expandedNotificationIds = nextExpandedIds;
+            delete nextExpandedIds[key]
+        expandedNotificationIds = nextExpandedIds
     }
 
     function pruneExpandedNotifications() {
-        const activeIds = {};
-        const notifications = services.notification.notifications || [];
+        const activeIds = {}
+        const notifications = services.notification.notifications || []
         for (const notification of notifications) {
-            const key = notificationExpansionKey(notification);
+            const key = notificationExpansionKey(notification)
             if (key.length > 0 && expandedNotificationIds[key] === true)
-                activeIds[key] = true;
+                activeIds[key] = true
         }
-        expandedNotificationIds = activeIds;
+        expandedNotificationIds = activeIds
     }
 
     implicitWidth: cardWidth + contentPadding * 2
@@ -149,7 +144,6 @@ PopupWindow {
                             font.family: popup.theme.typography.iconFontFamily
                             font.pixelSize: popup.theme.typography.sizeMd
                         }
-
                     }
 
                     MouseArea {
@@ -160,9 +154,7 @@ PopupWindow {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: popup.services.notification.dismissNotifications()
                     }
-
                 }
-
             }
 
             Row {
@@ -203,9 +195,7 @@ PopupWindow {
                                 duration: popup.theme.motion.durationShort
                                 easing.type: Easing.OutCubic
                             }
-
                         }
-
                     }
 
                     MouseArea {
@@ -214,9 +204,7 @@ PopupWindow {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: popup.services.notification.toggleNotificationDnd()
                     }
-
                 }
-
             }
 
             Item {
@@ -243,7 +231,6 @@ PopupWindow {
                         font.family: popup.theme.typography.textFontFamily
                         font.pixelSize: popup.theme.typography.sizeLg
                     }
-
                 }
 
                 ListView {
@@ -272,19 +259,13 @@ PopupWindow {
                         timeText: popup.services.notification.notificationTimeText(modelData)
                         onExpandedChanged: popup.setNotificationExpanded(modelData, expanded)
                         onCloseRequested: popup.services.notification.dismissNotificationHistoryEntry(modelData)
-                        onActionInvoked: (action) => {
+                        onActionInvoked: action => {
                             if (action && action.invoke)
-                                action.invoke();
-
+                                action.invoke()
                         }
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

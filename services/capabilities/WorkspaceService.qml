@@ -39,8 +39,7 @@ Scope {
             const assignedMonitor = workspace?.monitor
             if (!assignedMonitor)
                 return false
-            return assignedMonitor === monitor
-                || (assignedMonitor.name.length > 0 && assignedMonitor.name === monitor.name)
+            return assignedMonitor === monitor || (assignedMonitor.name.length > 0 && assignedMonitor.name === monitor.name)
         })
     }
 }

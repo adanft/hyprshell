@@ -17,18 +17,13 @@ Rectangle {
     readonly property color previewText: themeData && themeData.text ? themeData.text : theme.colors.text
     readonly property color previewBorder: themeData && themeData.border ? themeData.border : theme.colors.border
     readonly property color previewFocus: themeData && themeData.focus ? themeData.focus : theme.colors.focus
-    readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4
-        ? themeData.previewColors.slice(0, 4)
-        : [previewText, previewBorder, previewSurface, previewBackground]
+    readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4 ? themeData.previewColors.slice(0, 4) : [previewText, previewBorder, previewSurface, previewBackground]
     readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
     readonly property int nameLineHeight: theme.typography.sizeMd + theme.spacing.space4
 
-    implicitHeight: theme.spacing.appLauncherCardPadding * 2
-        + paletteDotSize
-        + theme.spacing.appLauncherCardSpacing
-        + nameLineHeight
+    implicitHeight: theme.spacing.appLauncherCardPadding * 2 + paletteDotSize + theme.spacing.appLauncherCardSpacing + nameLineHeight
 
-    signal activated()
+    signal activated
 
     radius: theme.shape.appLauncherCardRadius
     color: active ? previewSurfaceActive : previewBackground

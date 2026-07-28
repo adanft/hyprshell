@@ -4,17 +4,15 @@ import QtQuick
 Rectangle {
     id: button
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     property string icon: ""
     property bool selected: false
     property color primary: theme.colors.primary
     readonly property bool active: selected || mouseArea.containsMouse
 
-    signal activated()
-    signal hovered()
+    signal activated
+    signal hovered
 
     width: theme.sizing.powerMenuActionSize
     height: theme.sizing.powerMenuActionSize
@@ -42,5 +40,4 @@ Rectangle {
         onEntered: button.hovered()
         onClicked: button.activated()
     }
-
 }

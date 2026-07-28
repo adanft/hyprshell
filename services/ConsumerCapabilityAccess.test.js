@@ -4,10 +4,9 @@ const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const owners = {
-	audio:
-		"sink source audioSources audioOutputs playbackStreams sinkVolume sinkMuted microphoneAvailable sourceVolume sourceMuted quickVolume toggleMute setSourceVolume selectAudioSource selectAudioSink togglePlaybackStreamMute requestPlaybackStreamVolume changeVolume requestSinkVolume".split(
-			" ",
-		),
+	audio: "sink source audioSources audioOutputs playbackStreams sinkVolume sinkMuted microphoneAvailable sourceVolume sourceMuted quickVolume toggleMute setSourceVolume selectAudioSource selectAudioSink togglePlaybackStreamMute requestPlaybackStreamVolume changeVolume requestSinkVolume".split(
+		" ",
+	),
 	brightness:
 		"brightnessAvailable brightnessLevel setBrightness changeBrightness".split(
 			" ",
@@ -97,7 +96,10 @@ function violations(relativePath, source) {
 
 function assertRejected(source, expectedMessage) {
 	const failures = violations("fixture.qml", source);
-	assert.ok(failures.length > 0, `expected fixture to be rejected: ${source}`);
+	assert.ok(
+		failures.length > 0,
+		`expected fixture to be rejected: ${source}`,
+	);
 	assert.ok(
 		failures.some((failure) => failure.includes(expectedMessage)),
 		`expected diagnostic containing ${expectedMessage}; got ${failures.join("; ")}`,

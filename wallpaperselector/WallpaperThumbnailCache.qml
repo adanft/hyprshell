@@ -24,20 +24,18 @@ Item {
 
     Component.onCompleted: {
         const mkdir = mkdirComponent.createObject(cache)
-        mkdir.onExited.connect(function(exitCode) {
+        mkdir.onExited.connect(function (exitCode) {
             if (exitCode !== 0) {
                 mkdir.destroy()
                 return
             }
             const cleanup = cleanupComponent.createObject(cache)
-            cleanup.onExited.connect(function() {
+            cleanup.onExited.connect(function () {
                 cleanup.destroy()
                 cache.cacheReady = true
                 cache.pump()
             })
-            cleanup.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f",
-                    "(", "-name", "*.tmp-*", "-o", "(", "-name", "*.jpg", "-mtime", "+30", ")", ")",
-                    "-delete"])
+            cleanup.exec(["find", cacheRoot, "-maxdepth", "1", "-type", "f", "(", "-name", "*.tmp-*", "-o", "(", "-name", "*.jpg", "-mtime", "+30", ")", ")", "-delete"])
             mkdir.destroy()
         })
         mkdir.exec(["mkdir", "-p", cacheRoot])
@@ -73,10 +71,16 @@ Item {
         requested[path] = identity
         const queued = pending.findIndex(item => item.path === path)
         if (queued >= 0) {
-            pending[queued] = { path: path, token: token }
+            pending[queued] = {
+                path: path,
+                token: token
+            }
             return
         }
-        pending.push({ path: path, token: token })
+        pending.push({
+            path: path,
+            token: token
+        })
         pump()
     }
 
@@ -108,7 +112,9 @@ Item {
             statFinished(token)
             return
         }
-        const stat = statComponent.createObject(cache, { sourcePath: item.path })
+        const stat = statComponent.createObject(cache, {
+            sourcePath: item.path
+        })
         stat.exec(["stat", "-c", "%Y:%s", "--", item.path])
     }
 
@@ -122,7 +128,7 @@ Item {
         }
         const destinationPath = destination(currentPath, parts[0], parts[1])
         const exists = existsComponent.createObject(cache)
-        exists.onExited.connect(function(exitCode) {
+        exists.onExited.connect(function (exitCode) {
             if (!jobTerminal) {
                 if (exitCode === 0)
                     publish(currentPath, destinationPath)
@@ -138,11 +144,11 @@ Item {
         currentDestination = destinationPath
         currentTemporary = `${destinationPath}.tmp-${hash(currentPath + Date.now())}`
         const process = generationComponent.createObject(cache)
-        process.onExited.connect(function(exitCode) {
+        process.onExited.connect(function (exitCode) {
             if (!jobTerminal) {
                 if (exitCode === 0) {
                     const move = moveComponent.createObject(cache)
-                    move.onExited.connect(function(moveExitCode) {
+                    move.onExited.connect(function (moveExitCode) {
                         if (moveExitCode === 0)
                             publish(currentPath, currentDestination)
                         else
@@ -173,7 +179,7 @@ Item {
         cleaning[path] = true
         pump()
         const old = cleanupComponent.createObject(cache)
-        old.onExited.connect(function() {
+        old.onExited.connect(function () {
             delete cleaning[path]
             old.destroy()
             cache.pump()
@@ -200,19 +206,37 @@ Item {
             return
         }
         const cleanup = cleanupFileComponent.createObject(cache)
-        cleanup.onExited.connect(function() {
+        cleanup.onExited.connect(function () {
             cleanup.destroy()
             cache.pump()
         })
         cleanup.exec(["rm", "-f", "--", temporary])
     }
 
-    Component { id: mkdirComponent; Process {} }
-    Component { id: cleanupComponent; Process {} }
-    Component { id: cleanupFileComponent; Process {} }
-    Component { id: existsComponent; Process {} }
-    Component { id: generationComponent; Process {} }
-    Component { id: moveComponent; Process {} }
+    Component {
+        id: mkdirComponent
+        Process {}
+    }
+    Component {
+        id: cleanupComponent
+        Process {}
+    }
+    Component {
+        id: cleanupFileComponent
+        Process {}
+    }
+    Component {
+        id: existsComponent
+        Process {}
+    }
+    Component {
+        id: generationComponent
+        Process {}
+    }
+    Component {
+        id: moveComponent
+        Process {}
+    }
 
     Component {
         id: statComponent

@@ -1,13 +1,11 @@
 function typedStringPayload(output, expectedType) {
 	try {
 		var response = JSON.parse(String(output || ""));
-		if (!response || response.type !== expectedType)
-			return "";
+		if (!response || response.type !== expectedType) return "";
 
 		var value = response.data;
 		if (Array.isArray(value)) {
-			if (value.length !== 1)
-				return "";
+			if (value.length !== 1) return "";
 			value = value[0];
 		}
 
@@ -25,18 +23,29 @@ function parseUserObjectPath(output) {
 function safeLocalFileUrl(path) {
 	if (typeof path !== "string" || path.length === 0 || path.length > 4096)
 		return "";
-	if (path !== path.trim() || path.charAt(0) !== "/")
-		return "";
-	if (/[\u0000-\u001f\u007f]/.test(path) || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(path))
+	if (path !== path.trim() || path.charAt(0) !== "/") return "";
+	if (
+		/[\u0000-\u001f\u007f]/.test(path) ||
+		/^[A-Za-z][A-Za-z0-9+.-]*:/.test(path)
+	)
 		return "";
 
 	var segments = path.split("/");
-	if (segments.some(function(segment) { return segment === ".."; }))
+	if (
+		segments.some(function (segment) {
+			return segment === "..";
+		})
+	)
 		return "";
 
-	return "file://" + segments.map(function(segment) {
-		return encodeURIComponent(segment);
-	}).join("/");
+	return (
+		"file://" +
+		segments
+			.map(function (segment) {
+				return encodeURIComponent(segment);
+			})
+			.join("/")
+	);
 }
 
 function parseIconFile(output) {

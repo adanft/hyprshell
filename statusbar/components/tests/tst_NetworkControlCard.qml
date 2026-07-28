@@ -16,18 +16,26 @@ TestCase {
             width: 200
             height: 54
             colors: ({
-                surface: "#202020",
-                surfaceHover: "#303030",
-                primary: "#88aaff",
-                border: "#555555",
-                text: "#ffffff",
-                textMuted: "#aaaaaa",
-                textSubtle: "#888888",
-                background: "#101010"
-            })
+                    surface: "#202020",
+                    surfaceHover: "#303030",
+                    primary: "#88aaff",
+                    border: "#555555",
+                    text: "#ffffff",
+                    textMuted: "#aaaaaa",
+                    textSubtle: "#888888",
+                    background: "#101010"
+                })
             theme: ({
-                shape: { radius12: 12, borderMedium: 2, borderThin: 1 },
-                spacing: { space8: 8, space6: 6, space2: 2 },
+                    shape: {
+                        radius12: 12,
+                        borderMedium: 2,
+                        borderThin: 1
+                    },
+                    spacing: {
+                        space8: 8,
+                        space6: 6,
+                        space2: 2
+                    },
                     typography: {
                         sizeSm: 11,
                         sizeMd: 14,
@@ -37,7 +45,7 @@ TestCase {
                         styleRegular: "Regular",
                         styleSemibold: "Semibold"
                     }
-            })
+                })
             icon: "N"
             title: "Network"
             subtitle: "Disconnected"
@@ -55,51 +63,59 @@ TestCase {
     }
 
     function createCard(properties) {
-        const card = createTemporaryObject(cardComponent, testCase, properties || {});
-        verify(card !== null);
-        bodySpy.target = card;
-        toggleSpy.target = card;
-        bodySpy.clear();
-        toggleSpy.clear();
-        return card;
+        const card = createTemporaryObject(cardComponent, testCase, properties || {})
+        verify(card !== null)
+        bodySpy.target = card
+        toggleSpy.target = card
+        bodySpy.clear()
+        toggleSpy.clear()
+        return card
     }
 
     function test_bodyAndToggleActionsAreIndependent() {
-        const card = createCard();
+        const card = createCard()
 
-        card.requestBodyAction();
-        compare(bodySpy.count, 1);
-        compare(toggleSpy.count, 0);
+        card.requestBodyAction()
+        compare(bodySpy.count, 1)
+        compare(toggleSpy.count, 0)
 
-        card.requestToggleAction();
-        compare(bodySpy.count, 1);
-        compare(toggleSpy.count, 1);
+        card.requestToggleAction()
+        compare(bodySpy.count, 1)
+        compare(toggleSpy.count, 1)
     }
 
     function test_unavailableOrBusyToggleDoesNothing() {
-        const unavailable = createCard({ available: false });
-        unavailable.requestToggleAction();
-        compare(toggleSpy.count, 0);
+        const unavailable = createCard({
+            available: false
+        })
+        unavailable.requestToggleAction()
+        compare(toggleSpy.count, 0)
 
-        const busy = createCard({ busy: true });
-        busy.requestToggleAction();
-        compare(toggleSpy.count, 0);
+        const busy = createCard({
+            busy: true
+        })
+        busy.requestToggleAction()
+        compare(toggleSpy.count, 0)
     }
 
     function test_bodyRemainsAvailableWhenToggleIsUnavailable() {
-        const card = createCard({ available: false });
+        const card = createCard({
+            available: false
+        })
 
-        card.requestBodyAction();
-        compare(bodySpy.count, 1);
-        compare(toggleSpy.count, 0);
+        card.requestBodyAction()
+        compare(bodySpy.count, 1)
+        compare(toggleSpy.count, 0)
     }
 
     function test_detailUnavailableSuppressesBodyAction() {
-        const card = createCard({ detailAvailable: false });
+        const card = createCard({
+            detailAvailable: false
+        })
 
-        card.requestBodyAction();
-        compare(bodySpy.count, 0);
-        compare(toggleSpy.count, 0);
+        card.requestBodyAction()
+        compare(bodySpy.count, 0)
+        compare(toggleSpy.count, 0)
     }
 
     function test_accessibleLabelsTrackState() {
@@ -108,13 +124,13 @@ TestCase {
             subtitle: "Connected",
             active: true,
             expanded: false
-        });
+        })
 
-        compare(card.actionAccessibleName, "Toggle Wi-Fi");
-        compare(card.detailAccessibleName, "Show Wi-Fi details");
-        compare(card.stateDescription, "Connected");
+        compare(card.actionAccessibleName, "Toggle Wi-Fi")
+        compare(card.detailAccessibleName, "Show Wi-Fi details")
+        compare(card.stateDescription, "Connected")
 
-        card.expanded = true;
-        compare(card.detailAccessibleName, "Hide Wi-Fi details");
+        card.expanded = true
+        compare(card.detailAccessibleName, "Hide Wi-Fi details")
     }
 }

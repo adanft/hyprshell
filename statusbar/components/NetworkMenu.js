@@ -112,7 +112,10 @@ function networkStatus(network) {
 
 function canForgetNetwork(network) {
 	return Boolean(
-		network && network.known && !network.connected && !network.stateChanging,
+		network &&
+		network.known &&
+		!network.connected &&
+		!network.stateChanging,
 	);
 }
 
@@ -187,9 +190,9 @@ function shouldScanWifi(
 ) {
 	return Boolean(
 		menuOpen &&
-			expandedSection === "wifi" &&
-			wifiEnabled &&
-			wifiHardwareEnabled,
+		expandedSection === "wifi" &&
+		wifiEnabled &&
+		wifiHardwareEnabled,
 	);
 }
 
@@ -239,7 +242,10 @@ function bluetoothUniqueDevices(devices) {
 	return Array.from(devices || []).filter((device) => {
 		var key =
 			device &&
-			(device.address || device.dbusPath || device.name || device.deviceName);
+			(device.address ||
+				device.dbusPath ||
+				device.name ||
+				device.deviceName);
 		if (!key || seen[key]) return false;
 		seen[key] = true;
 		return true;
@@ -275,7 +281,8 @@ function bluetoothDevicesVisible(scanning, devices) {
 	return (
 		Boolean(scanning) &&
 		Array.from(devices || []).some(
-			(device) => device && bluetoothDeviceCategory(device) === "available",
+			(device) =>
+				device && bluetoothDeviceCategory(device) === "available",
 		)
 	);
 }

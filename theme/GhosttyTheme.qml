@@ -50,7 +50,7 @@ QtObject {
     function ensureConfigDir(theme) {
         const configDirectory = configFile.substring(0, configFile.lastIndexOf("/"))
         const mkdir = mkdirComponent.createObject(ghosttyTheme)
-        mkdir.onExited.connect(function(exitCode) {
+        mkdir.onExited.connect(function (exitCode) {
             mkdir.destroy()
             if (exitCode !== 0) {
                 console.warn(`Failed to create Ghostty config directory: ${configDirectory}`)
@@ -91,7 +91,7 @@ QtObject {
 
     function reload() {
         const process = reloadProcessComponent.createObject(ghosttyTheme)
-        process.onExited.connect(function(exitCode) {
+        process.onExited.connect(function (exitCode) {
             if (exitCode !== 0)
                 console.warn(`Failed to reload Ghostty after theme synchronization (exit ${exitCode})`)
             process.destroy()
@@ -99,6 +99,10 @@ QtObject {
         process.exec(["gapplication", "action", "com.mitchellh.ghostty", "reload-config"])
     }
 
-    readonly property Component reloadProcessComponent: Component { Process {} }
-    readonly property Component mkdirComponent: Component { Process {} }
+    readonly property Component reloadProcessComponent: Component {
+        Process {}
+    }
+    readonly property Component mkdirComponent: Component {
+        Process {}
+    }
 }

@@ -1,4 +1,3 @@
 import "../../shared/components"
 
-AppText {
-}
+AppText {}

@@ -5,27 +5,22 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
-        readonly property color moduleColor: services.bluetooth.bluetoothConnectedCount > 0 ? colors.primary : colors.text
+    readonly property color moduleColor: services.bluetooth.bluetoothConnectedCount > 0 ? colors.primary : colors.text
 
-        function icon() {
-            if (!services.bluetooth.bluetoothPowered)
-                return icons.bluetoothOff;
+    function icon() {
+        if (!services.bluetooth.bluetoothPowered)
+            return icons.bluetoothOff
 
-            if (services.bluetooth.bluetoothConnectedCount > 0)
+        if (services.bluetooth.bluetoothConnectedCount > 0)
+            return icons.bluetoothConnected
 
-            return icons.bluetoothConnected;
-
-        return icons.bluetoothOn;
+        return icons.bluetoothOn
     }
 
     implicitWidth: content.implicitWidth
@@ -48,7 +43,6 @@ Item {
             text: root.services.bluetooth.bluetoothConnectedCount
             color: root.moduleColor
         }
-
     }
 
     MouseArea {

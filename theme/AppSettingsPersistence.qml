@@ -39,7 +39,6 @@ Item {
     function start() {
         if (startupStarted)
             return
-
         startupStarted = true
         ensureConfigDir()
     }
@@ -64,13 +63,12 @@ Item {
 
     function ensureConfigDir() {
         const mkdir = mkdirComponent.createObject(persistence)
-        mkdir.onExited.connect(function(exitCode) {
+        mkdir.onExited.connect(function (exitCode) {
             mkdir.destroy()
             if (exitCode !== 0)
                 return
-
             const exists = existsComponent.createObject(persistence)
-            exists.onExited.connect(function(newExitCode) {
+            exists.onExited.connect(function (newExitCode) {
                 exists.destroy()
                 if (newExitCode === 0) {
                     persistence.migrationReady = true
@@ -85,7 +83,7 @@ Item {
 
     function migrateOldSettings() {
         const oldExists = oldExistsComponent.createObject(persistence)
-        oldExists.onExited.connect(function(exitCode) {
+        oldExists.onExited.connect(function (exitCode) {
             oldExists.destroy()
             if (exitCode !== 0) {
                 persistence.migrationReady = true
@@ -93,7 +91,7 @@ Item {
             }
 
             const copy = copyComponent.createObject(persistence)
-            copy.onExited.connect(function(copyExitCode) {
+            copy.onExited.connect(function (copyExitCode) {
                 copy.destroy()
                 migrationReady = true
             })
@@ -102,8 +100,20 @@ Item {
         oldExists.exec(["test", "-e", legacyFile])
     }
 
-    Component { id: mkdirComponent; Process {} }
-    Component { id: existsComponent; Process {} }
-    Component { id: oldExistsComponent; Process {} }
-    Component { id: copyComponent; Process {} }
+    Component {
+        id: mkdirComponent
+        Process {}
+    }
+    Component {
+        id: existsComponent
+        Process {}
+    }
+    Component {
+        id: oldExistsComponent
+        Process {}
+    }
+    Component {
+        id: copyComponent
+        Process {}
+    }
 }

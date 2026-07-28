@@ -7,9 +7,7 @@ import Quickshell.Wayland
 Scope {
     id: launcher
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
     readonly property var icons: Icons {}
 
     property alias visible: panel.visible
@@ -24,140 +22,135 @@ Scope {
     readonly property var contentItem: contentLoader.item
 
     function open() {
-        refreshApplications();
+        refreshApplications()
         if (searchText !== "")
-            searchText = "";
+            searchText = ""
 
-        applySearchFilter(false);
-        selectedIndex = 0;
-        panel.visible = true;
+        applySearchFilter(false)
+        selectedIndex = 0
+        panel.visible = true
         Qt.callLater(() => {
-            return contentItem?.searchField?.forceActiveFocus();
-        });
+            return contentItem?.searchField?.forceActiveFocus()
+        })
     }
 
     function close() {
-        panel.visible = false;
+        panel.visible = false
         if (quitOnClose)
-            Qt.quit();
-
+            Qt.quit()
     }
 
     function toggle() {
-        panel.visible ? close() : open();
+        panel.visible ? close() : open()
     }
 
     function refreshApplications() {
         if (typeof DesktopEntries === "undefined") {
-            appSearchKeys = [];
-            apps = [];
-            applySearchFilter(false);
-            return ;
+            appSearchKeys = []
+            apps = []
+            applySearchFilter(false)
+            return
         }
-        const refreshedApps = (DesktopEntries.applications.values || []).filter((app) => {
-            return app && !app.hidden && !app.noDisplay;
+        const refreshedApps = (DesktopEntries.applications.values || []).filter(app => {
+            return app && !app.hidden && !app.noDisplay
         }).sort((a, b) => {
-            return appName(a).localeCompare(appName(b));
-        });
-        appSearchKeys = refreshedApps.map(searchableText);
-        apps = refreshedApps;
-        applySearchFilter(false);
+            return appName(a).localeCompare(appName(b))
+        })
+        appSearchKeys = refreshedApps.map(searchableText)
+        apps = refreshedApps
+        applySearchFilter(false)
     }
 
     function scheduleSearchFilter() {
-        searchFilterTimer.restart();
+        searchFilterTimer.restart()
     }
 
     function applySearchFilter(resetView) {
-        searchFilterTimer.stop();
+        searchFilterTimer.stop()
 
-        const queryChanged = searchText !== appliedSearchText;
-        filteredApps = filterApps(searchText);
-        appliedSearchText = searchText;
+        const queryChanged = searchText !== appliedSearchText
+        filteredApps = filterApps(searchText)
+        appliedSearchText = searchText
 
         if (queryChanged) {
-            selectedIndex = 0;
+            selectedIndex = 0
             if (resetView)
-                contentItem?.appGrid?.positionViewAtBeginning();
+                contentItem?.appGrid?.positionViewAtBeginning()
         } else {
-            clampSelection();
+            clampSelection()
         }
     }
 
     function filterApps(query) {
-        const normalizedQuery = normalizeText(query);
+        const normalizedQuery = normalizeText(query)
         if (normalizedQuery.length === 0)
-            return apps;
+            return apps
 
         return apps.filter((app, index) => {
-            return (appSearchKeys[index] || searchableText(app)).includes(normalizedQuery);
-        });
+            return (appSearchKeys[index] || searchableText(app)).includes(normalizedQuery)
+        })
     }
 
     function searchableText(app) {
-        return [appName(app), app ? (app.genericName || "") : "", app ? (app.comment || "") : "", app ? (app.id || "") : "", app ? (app.desktopEntry || "") : ""].map(normalizeText).join(" ");
+        return [appName(app), app ? (app.genericName || "") : "", app ? (app.comment || "") : "", app ? (app.id || "") : "", app ? (app.desktopEntry || "") : ""].map(normalizeText).join(" ")
     }
 
     function normalizeText(value) {
-        return String(value || "").toLowerCase();
+        return String(value || "").toLowerCase()
     }
 
     function appName(app) {
-        return app ? (app.name || app.id || app.desktopEntry || "") : "";
+        return app ? (app.name || app.id || app.desktopEntry || "") : ""
     }
 
     function clampSelection() {
-        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, filteredApps.length - 1)));
+        selectedIndex = Math.max(0, Math.min(selectedIndex, Math.max(0, filteredApps.length - 1)))
     }
 
     function moveSelection(direction) {
-        const count = filteredApps.length;
+        const count = filteredApps.length
         if (count === 0)
-            return ;
-
-        selectedIndex = Math.max(0, Math.min(count - 1, selectedIndex + direction));
-        contentItem?.appGrid?.positionViewAtIndex(selectedIndex, GridView.Contain);
+            return
+        selectedIndex = Math.max(0, Math.min(count - 1, selectedIndex + direction))
+        contentItem?.appGrid?.positionViewAtIndex(selectedIndex, GridView.Contain)
     }
 
     function launchSelection() {
         if (searchFilterTimer.running)
-            applySearchFilter(false);
+            applySearchFilter(false)
 
-        const app = filteredApps[selectedIndex];
+        const app = filteredApps[selectedIndex]
         if (app)
-            launchApp(app);
-
+            launchApp(app)
     }
 
     function launchApp(app) {
         if (!app)
-            return ;
-
+            return
         if (typeof app.execute === "function") {
-            close();
+            close()
             Qt.callLater(() => {
-                return app.execute();
-            });
-            return ;
+                return app.execute()
+            })
+            return
         }
-        const command = fallbackCommand(app);
-        close();
+        const command = fallbackCommand(app)
+        close()
         if (command.length > 0)
             Qt.callLater(() => {
-            return Quickshell.execDetached(command);
-        });
-
+                return Quickshell.execDetached(command)
+            })
     }
 
     function fallbackCommand(app) {
-        const command = app.command || "";
+        const command = app.command || ""
         if (Array.isArray(command))
-            return command;
+            return command
 
         if (typeof command === "string" && command.length > 0 && !/\s/.test(command))
-            return [command];
+            return [command]
 
-        return [];
+        return []
     }
 
     Timer {
@@ -236,24 +229,23 @@ Scope {
                     text: launcher.searchText
                     onTextChanged: launcher.searchText = text
                     Keys.onEscapePressed: launcher.close()
-                    Keys.onLeftPressed: (event) => {
+                    Keys.onLeftPressed: event => {
                         if (cursorPosition === 0)
-                            launcher.moveSelection(-1);
+                            launcher.moveSelection(-1)
                         else
-                            event.accepted = false;
+                            event.accepted = false
                     }
-                    Keys.onRightPressed: (event) => {
+                    Keys.onRightPressed: event => {
                         if (cursorPosition === text.length)
-                            launcher.moveSelection(1);
+                            launcher.moveSelection(1)
                         else
-                            event.accepted = false;
+                            event.accepted = false
                     }
                     Keys.onUpPressed: launcher.moveSelection(-grid.columns)
                     Keys.onDownPressed: launcher.moveSelection(grid.columns)
                     Keys.onReturnPressed: launcher.launchSelection()
                     Keys.onEnterPressed: launcher.launchSelection()
                 }
-
             }
 
             GridView {
@@ -295,11 +287,8 @@ Scope {
                         selected: launcher.selectedIndex === index
                         onActivated: launcher.launchApp(modelData)
                     }
-
                 }
-
             }
-
         }
     }
 
@@ -365,11 +354,7 @@ Scope {
                     active: panel.visible
                     sourceComponent: launcherContent
                 }
-
             }
-
         }
-
     }
-
 }

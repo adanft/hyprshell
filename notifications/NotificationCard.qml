@@ -7,13 +7,9 @@ import Quickshell.Widgets
 Item {
     id: card
 
-    readonly property var
-    icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var
-    theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var notificationService
@@ -63,43 +59,43 @@ Item {
     readonly property real viewportHeight: Math.max(0, renderedLayoutHeight - contentInset * 2)
     readonly property real bodyViewportHeight: {
         if (bodyHtml.length === 0)
-            return 0;
+            return 0
 
-        const actionSpace = hasActions ? spacing + actionButtonHeight : 0;
-        return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace);
+        const actionSpace = hasActions ? spacing + actionButtonHeight : 0
+        return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
     }
     readonly property color urgencyTimeColor: {
         if (!notificationData)
-            return card.colors.textSubtle;
+            return card.colors.textSubtle
 
         switch (notificationData.urgency) {
         case NotificationUrgency.Critical:
-            return card.colors.critical;
+            return card.colors.critical
         case NotificationUrgency.Normal:
-            return card.colors.info;
+            return card.colors.info
         default:
-            return card.colors.textSubtle;
+            return card.colors.textSubtle
         }
     }
     readonly property string fallbackIconName: "application-x-executable"
     readonly property string fallbackIconSource: {
         if (!notificationData)
-            return Quickshell.iconPath(fallbackIconName);
+            return Quickshell.iconPath(fallbackIconName)
 
-        const appIcon = notificationData.appIcon || notificationData.desktopEntry || "";
+        const appIcon = notificationData.appIcon || notificationData.desktopEntry || ""
         if (appIcon.length === 0)
-            return Quickshell.iconPath(fallbackIconName);
+            return Quickshell.iconPath(fallbackIconName)
 
         if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
-            return appIcon;
+            return appIcon
 
         if (appIcon.startsWith("/"))
-            return `file://${appIcon}`;
+            return `file://${appIcon}`
 
         if (appIcon.includes("/"))
-            return appIcon;
+            return appIcon
 
-        return Quickshell.iconPath(appIcon, fallbackIconName);
+        return Quickshell.iconPath(appIcon, fallbackIconName)
     }
     readonly property string iconSource: {
         const image = notificationData?.image || ""
@@ -111,96 +107,91 @@ Item {
     property string failedImageSource: ""
     readonly property bool iconSourceQuarantined: (notificationService && typeof notificationService.isInvalidLiveImageSource === "function" && notificationService.isInvalidLiveImageSource(iconSource)) || (failedImageSource.length > 0 && iconSource === failedImageSource)
 
-    signal layoutChanged()
-    signal slotHeightChanged()
-    signal closeRequested()
+    signal layoutChanged
+    signal slotHeightChanged
+    signal closeRequested
     signal actionInvoked(var action)
-    signal hoverStarted()
-    signal hoverEnded()
+    signal hoverStarted
+    signal hoverEnded
 
     function toggleExpanded() {
-        const nextExpanded = !expanded;
-        expanded = nextExpanded;
+        const nextExpanded = !expanded
+        expanded = nextExpanded
         if (nextExpanded)
-            collapsedTextMode = false;
-
+            collapsedTextMode = false
     }
 
     function countInvokableActions() {
-        const actions = notificationData && notificationData.actions ? notificationData.actions : [];
-        let count = 0;
+        const actions = notificationData && notificationData.actions ? notificationData.actions : []
+        let count = 0
         for (let i = 0; i < actions.length; i++) {
-            const action = actions[i];
+            const action = actions[i]
             if (action && action.invoke)
-                count++;
-
+                count++
         }
-        return count;
+        return count
     }
 
     function invokableActionAt(invokableIndex) {
-        const actions = notificationData && notificationData.actions ? notificationData.actions : [];
-        let current = 0;
+        const actions = notificationData && notificationData.actions ? notificationData.actions : []
+        let current = 0
         for (let i = 0; i < actions.length; i++) {
-            const action = actions[i];
+            const action = actions[i]
             if (!action || !action.invoke)
-                continue;
-
+                continue
             if (current === invokableIndex)
-                return action;
+                return action
 
-            current++;
+            current++
         }
-        return null;
+        return null
     }
 
     function bodyTargetHeight(forExpanded) {
         if (bodyHtml.length === 0)
-            return 0;
+            return 0
 
         if (forExpanded)
-            return bodyMeasure.implicitHeight;
+            return bodyMeasure.implicitHeight
 
-        return Math.min(bodyMeasure.implicitHeight, bodyText.font.pixelSize * bodyLineHeight * collapsedBodyLines);
+        return Math.min(bodyMeasure.implicitHeight, bodyText.font.pixelSize * bodyLineHeight * collapsedBodyLines)
     }
 
     function syncLayoutHeight() {
-        const target = Math.max(0, Number(layoutHeight));
+        const target = Math.max(0, Number(layoutHeight))
         if (isNaN(target))
-            return ;
-
+            return
         if (!inlineGeometryReady) {
-            renderedHeightAnimation.stop();
-            renderedLayoutHeight = target;
-            allocatedLayoutHeight = target;
-            return ;
+            renderedHeightAnimation.stop()
+            renderedLayoutHeight = target
+            allocatedLayoutHeight = target
+            return
         }
-        const currentRendered = Math.max(0, Number(renderedLayoutHeight));
-        const nextAllocation = Math.max(target, currentRendered, allocatedLayoutHeight);
-        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= geometryEpsilon;
+        const currentRendered = Math.max(0, Number(renderedLayoutHeight))
+        const nextAllocation = Math.max(target, currentRendered, allocatedLayoutHeight)
+        const allocationChanged = Math.abs(nextAllocation - allocatedLayoutHeight) >= geometryEpsilon
         if (allocationChanged) {
-            allocatedLayoutHeight = nextAllocation;
-            slotHeightChanged();
+            allocatedLayoutHeight = nextAllocation
+            slotHeightChanged()
         }
         if (Math.abs(target - renderedLayoutHeight) < geometryEpsilon) {
-            finishLayoutHeightAnimation();
-            return ;
+            finishLayoutHeightAnimation()
+            return
         }
-        renderedLayoutHeight = target;
-        allocationFinalizeTimer.restart();
+        renderedLayoutHeight = target
+        allocationFinalizeTimer.restart()
     }
 
     function finishLayoutHeightAnimation() {
-        const target = Math.max(0, Number(layoutHeight));
+        const target = Math.max(0, Number(layoutHeight))
         if (isNaN(target))
-            return ;
-
+            return
         if (Math.abs(renderedLayoutHeight - target) >= geometryEpsilon)
-            renderedLayoutHeight = target;
+            renderedLayoutHeight = target
 
-        allocatedLayoutHeight = target;
-        collapsedTextMode = !expanded;
-        slotHeightChanged();
+        allocatedLayoutHeight = target
+        collapsedTextMode = !expanded
+        slotHeightChanged()
     }
 
     implicitWidth: width
@@ -208,31 +199,31 @@ Item {
     height: implicitHeight
     visible: notificationData !== null
     onNotificationDataChanged: {
-        expanded = initialExpanded;
-        collapsedTextMode = true;
-        renderedHeightAnimation.stop();
+        expanded = initialExpanded
+        collapsedTextMode = true
+        renderedHeightAnimation.stop()
         Qt.callLater(() => {
-            renderedLayoutHeight = layoutHeight;
-            allocatedLayoutHeight = layoutHeight;
-            inlineGeometryReady = true;
-            layoutChanged();
-        });
+            renderedLayoutHeight = layoutHeight
+            allocatedLayoutHeight = layoutHeight
+            inlineGeometryReady = true
+            layoutChanged()
+        })
     }
     onIconSourceChanged: {
         if (failedImageSource.length > 0 && iconSource !== failedImageSource)
-            failedImageSource = "";
+            failedImageSource = ""
     }
     onLayoutHeightChanged: syncLayoutHeight()
     onRenderedLayoutHeightChanged: {
         if (inlineHeightAnimating)
-            slotHeightChanged();
+            slotHeightChanged()
     }
 
     Component.onCompleted: {
-        renderedHeightAnimation.stop();
-        renderedLayoutHeight = layoutHeight;
-        allocatedLayoutHeight = layoutHeight;
-        inlineGeometryReady = true;
+        renderedHeightAnimation.stop()
+        renderedLayoutHeight = layoutHeight
+        allocatedLayoutHeight = layoutHeight
+        inlineGeometryReady = true
     }
 
     Timer {
@@ -259,9 +250,9 @@ Item {
 
             onHoveredChanged: {
                 if (hovered)
-                    card.hoverStarted();
+                    card.hoverStarted()
                 else
-                    card.hoverEnded();
+                    card.hoverEnded()
             }
         }
 
@@ -339,7 +330,6 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                         visible: card.iconSource.length === 0
                     }
-
                 }
 
                 Column {
@@ -377,7 +367,6 @@ Item {
                             font.pixelSize: card.labelFontSize
                             elide: Text.ElideRight
                         }
-
                     }
 
                     Text {
@@ -414,14 +403,13 @@ Item {
                             wrapMode: Text.WordWrap
                             maximumLineCount: card.collapsedTextMode ? card.collapsedBodyLines : -1
                             elide: card.collapsedTextMode ? Text.ElideRight : Text.ElideNone
-                            onLinkActivated: (link) => {
-                                return Qt.openUrlExternally(link);
+                            onLinkActivated: link => {
+                                return Qt.openUrlExternally(link)
                             }
 
                             HoverHandler {
                                 cursorShape: bodyText.hoveredLink.length > 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
                             }
-
                         }
 
                         Text {
@@ -446,7 +434,6 @@ Item {
                             z: -1
                             onClicked: card.toggleExpanded()
                         }
-
                     }
 
                     Row {
@@ -487,13 +474,9 @@ Item {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: card.actionInvoked(parent.action)
                                 }
-
                             }
-
                         }
-
                     }
-
                 }
 
                 Item {
@@ -529,15 +512,10 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: card.closeRequested()
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     }
 
     Behavior on renderedLayoutHeight {
@@ -548,11 +526,9 @@ Item {
             easing.type: Easing.Linear
             onRunningChanged: card.inlineHeightAnimating = running
             onFinished: {
-                allocationFinalizeTimer.stop();
-                card.finishLayoutHeightAnimation();
+                allocationFinalizeTimer.stop()
+                card.finishLayoutHeightAnimation()
             }
         }
-
     }
-
 }

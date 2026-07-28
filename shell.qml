@@ -53,11 +53,11 @@ ShellRoot {
         target: "applauncher"
 
         function open(): void {
-            shell.openAppLauncher();
+            shell.openAppLauncher()
         }
 
         function toggle(): void {
-            shell.toggleAppLauncher();
+            shell.toggleAppLauncher()
         }
     }
 
@@ -65,11 +65,11 @@ ShellRoot {
         target: "powermenu"
 
         function open(): void {
-            shell.openPowerMenu();
+            shell.openPowerMenu()
         }
 
         function toggle(): void {
-            shell.togglePowerMenu();
+            shell.togglePowerMenu()
         }
     }
 
@@ -77,11 +77,11 @@ ShellRoot {
         target: "wallpaperselector"
 
         function open(): void {
-            shell.openWallpaperSelector();
+            shell.openWallpaperSelector()
         }
 
         function toggle(): void {
-            shell.toggleWallpaperSelector();
+            shell.toggleWallpaperSelector()
         }
     }
 
@@ -89,11 +89,11 @@ ShellRoot {
         target: "screenshot"
 
         function open(): void {
-            shell.openScreenshotTool();
+            shell.openScreenshotTool()
         }
 
         function toggle(): void {
-            shell.toggleScreenshotTool();
+            shell.toggleScreenshotTool()
         }
     }
 
@@ -101,15 +101,15 @@ ShellRoot {
         target: "themeselector"
 
         function open(): void {
-            shell.openThemeSelector();
+            shell.openThemeSelector()
         }
 
         function toggle(): void {
-            shell.toggleThemeSelector();
+            shell.toggleThemeSelector()
         }
 
         function set(name: string): void {
-            themeColors.setTheme(name);
+            themeColors.setTheme(name)
         }
     }
 
@@ -126,7 +126,7 @@ ShellRoot {
             services: serviceState
 
             function toggleNotificationCenter() {
-                notificationCenterLoader.toggle();
+                notificationCenterLoader.toggle()
             }
 
             onOpenNotificationCenterRequested: toggleNotificationCenter()
@@ -152,42 +152,42 @@ ShellRoot {
     }
 
     function openPowerMenu() {
-        powerMenuLoader.open();
+        powerMenuLoader.open()
     }
 
     function openAppLauncher() {
-        appLauncherLoader.open();
+        appLauncherLoader.open()
     }
 
     function toggleAppLauncher() {
-        appLauncherLoader.toggle();
+        appLauncherLoader.toggle()
     }
 
     function togglePowerMenu() {
-        powerMenuLoader.toggle();
+        powerMenuLoader.toggle()
     }
 
     function openWallpaperSelector() {
-        wallpaperSelectorLoader.open();
+        wallpaperSelectorLoader.open()
     }
 
     function toggleWallpaperSelector() {
-        wallpaperSelectorLoader.toggle();
+        wallpaperSelectorLoader.toggle()
     }
 
     function openScreenshotTool() {
-        screenshotToolLoader.open();
+        screenshotToolLoader.open()
     }
 
     function toggleScreenshotTool() {
-        screenshotToolLoader.toggle();
+        screenshotToolLoader.toggle()
     }
 
     function openThemeSelector() {
-        themeSelectorLoader.open();
+        themeSelectorLoader.open()
     }
 
     function toggleThemeSelector() {
-        themeSelectorLoader.toggle();
+        themeSelectorLoader.toggle()
     }
 }

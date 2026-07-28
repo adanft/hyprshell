@@ -5,19 +5,16 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var icons: Icons {
-    }
+    readonly property var icons: Icons {}
 
-    readonly property var theme: AppTheme {
-    }
+    readonly property var theme: AppTheme {}
 
     required property var colors
     required property var services
-        readonly property color moduleColor: {
-            if (services.systemStats.memoryUsage > 90)
-                return colors.danger
-            if (services.systemStats.memoryUsage > 75)
-
+    readonly property color moduleColor: {
+        if (services.systemStats.memoryUsage > 90)
+            return colors.danger
+        if (services.systemStats.memoryUsage > 75)
             return colors.warning
         return colors.text
     }
@@ -46,7 +43,5 @@ Item {
             text: `${Math.round(root.services.systemStats.memoryUsage)}%`
             color: root.moduleColor
         }
-
     }
-
 }

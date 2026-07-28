@@ -18,6 +18,7 @@ Item {
     required property var colors
     required property var notificationService
     property var notificationData: null
+    property bool allowLiveImage: false
     property string timeText: "now"
     property int cornerRadius: theme.shape.notificationCardRadius
     property bool initialExpanded: false
@@ -100,7 +101,12 @@ Item {
 
         return Quickshell.iconPath(appIcon, fallbackIconName);
     }
-    readonly property string iconSource: notificationData?.image || fallbackIconSource
+    readonly property string iconSource: {
+        const image = notificationData?.image || ""
+        if (image.startsWith("image://qsimage/") && !allowLiveImage)
+            return fallbackIconSource
+        return image || fallbackIconSource
+    }
     readonly property bool iconSourceIsImageFile: iconSource.startsWith("file://") || iconSource.startsWith("http://") || iconSource.startsWith("https://") || iconSource.startsWith("image://")
     property string failedImageSource: ""
     readonly property bool iconSourceQuarantined: (notificationService && typeof notificationService.isInvalidLiveImageSource === "function" && notificationService.isInvalidLiveImageSource(iconSource)) || (failedImageSource.length > 0 && iconSource === failedImageSource)
@@ -300,13 +306,15 @@ Item {
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                         onStatusChanged: {
-                            const failedSource = source.toString();
-                                if (status === Image.Error && failedSource.startsWith("image://qsimage/")) {
-                                    card.failedImageSource = failedSource;
-                                    if (card.notificationService && typeof card.notificationService.quarantineInvalidLiveImageSource === "function")
-                                        card.notificationService.quarantineInvalidLiveImageSource(failedSource);
-                                }
+                            if (status === Image.Ready && card.allowLiveImage && card.notificationData?.historyEntryId && card.notificationService && typeof card.notificationService.materializeNotificationImage === "function")
+                                card.notificationService.materializeNotificationImage(card.notificationData.historyEntryId, notificationImage)
 
+                            const failedSource = source.toString()
+                            if (status === Image.Error && card.allowLiveImage && failedSource.startsWith("image://qsimage/")) {
+                                card.failedImageSource = failedSource
+                                if (card.notificationService && typeof card.notificationService.quarantineInvalidLiveImageSource === "function")
+                                    card.notificationService.quarantineInvalidLiveImageSource(failedSource)
+                            }
                         }
                     }
 

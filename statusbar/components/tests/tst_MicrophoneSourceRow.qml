@@ -40,15 +40,20 @@ TestCase {
                             space2: 2
                         },
                         sizing: {
-                            statusBarTrayMenuItemHeight: 36
+                            statusBarTrayMenuItemHeight: 36,
+                            statusBarNetworkDeviceRowHeight: 48,
+                            statusBarNetworkQuickControlIconWidth: 22
                         },
                         typography: {
                             sizeMd: 14,
                             sizeSm: 11,
+                            sizeLg: 16,
                             textFontFamily: "sans-serif",
+                            iconFontFamily: "Symbols Nerd Font",
                             styleRegular: "Regular"
                         }
                     })
+            icon: "M"
         }
     }
 

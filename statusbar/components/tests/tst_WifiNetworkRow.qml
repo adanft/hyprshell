@@ -45,7 +45,11 @@ TestCase {
                             space2: 2
                         },
                         sizing: {
-                            statusBarTrayMenuItemHeight: 36
+                            statusBarTrayMenuItemHeight: 36,
+                            statusBarNetworkDeviceRowHeight: 48
+                        },
+                        motion: {
+                            opacityDisabled: 0.45
                         },
                         typography: {
                             sizeSm: 11,

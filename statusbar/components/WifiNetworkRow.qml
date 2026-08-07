@@ -118,7 +118,11 @@ Rectangle {
             id: forgetButton
             objectName: "forgetAction"
             visible: root.forgetAvailable
-            width: visible ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
+            // Driven by the same condition as visible rather than by visible
+            // itself: reading visible yields effective visibility, so the width
+            // collapsed to zero whenever an ancestor was hidden, even though
+            // the button was meant to be shown.
+            width: root.forgetAvailable ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
             height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
             radius: root.theme.shape.radius8
             color: forgetInput.containsMouse || forgetInput.activeFocus ? root.colors.surfaceHover :

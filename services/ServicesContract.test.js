@@ -360,7 +360,7 @@ for (const contract of [
 
 for (const shellPath of [
 	path.join(root, "..", "shell.qml"),
-	path.join(root, "..", "statusbar", "shell.qml"),
+	path.join(root, "..", "smoketest.qml"),
 ]) {
 	const shell = fs.readFileSync(shellPath, "utf8");
 	assert.match(

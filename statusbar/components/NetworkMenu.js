@@ -336,7 +336,12 @@ function audioOutputStatus(node, active) {
 }
 
 function audioNodePercent(node) {
-	var volume = Number(node && node.audio && node.audio.volume);
+	// Guard the node and its audio separately: `node && node.audio &&
+	// node.audio.volume` yields null for a node whose audio is null, and
+	// Number(null) is 0 rather than NaN, which reported such a node as
+	// present at zero volume instead of unavailable.
+	if (!node || !node.audio) return null;
+	var volume = Number(node.audio.volume);
 	if (!Number.isFinite(volume)) return null;
 	return Math.max(0, Math.min(100, Math.round(volume * 100)));
 }

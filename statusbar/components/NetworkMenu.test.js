@@ -771,6 +771,13 @@ assert.equal(
 	"muted",
 );
 assert.equal(menu.audioNodeIconKind({}), "unavailable");
+// A node carrying an explicit null audio is unavailable too. It used to report
+// "muted", because `node && node.audio && node.audio.volume` yields null there
+// and Number(null) is 0, which reads as a finite zero-volume stream.
+assert.equal(menu.audioNodeIconKind({ audio: null }), "unavailable");
+assert.equal(menu.audioNodePercent({ audio: null }), null);
+assert.equal(menu.audioNodePercent(null), null);
+assert.equal(menu.audioNodePercent({ audio: { volume: 0 } }), 0);
 assert.match(source, /audioNodeIconKind[\s\S]*return volumeIconKind/);
 assert.doesNotMatch(source, /function outputIconKind|function outputSinkLabel/);
 

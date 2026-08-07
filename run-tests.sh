@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# Runs the whole suite: the Node contract tests, then the QML smoke test.
+# Runs the whole suite: the Node contract tests, the QML component tests, then
+# the QML smoke test.
 #
-#     ./run-tests.sh              both stages
+#     ./run-tests.sh              all three stages
 #     ./run-tests.sh --js         Node tests only, no compositor needed
 #
 # Exits non-zero if any stage fails or is inconclusive.
@@ -33,8 +34,34 @@ else
 fi
 
 if [[ "$js_only" == true ]]; then
+	echo "== QML component tests SKIPPED (--js) =="
 	echo "== QML smoke test SKIPPED (--js) =="
 	exit "$failed"
+fi
+
+echo
+echo "== QML component tests =="
+
+# Shipped with Qt but outside PATH, so it is addressed directly.
+readonly QMLTESTRUNNER=/usr/lib/qt6/bin/qmltestrunner
+
+if [[ ! -x "$QMLTESTRUNNER" ]]; then
+	echo "-- INCONCLUSIVE: $QMLTESTRUNNER not found"
+	failed=1
+else
+	# Each file runs from its own directory, because the tests reach their
+	# subjects through a relative import.
+	for test_file in statusbar/components/tests/tst_*.qml theme/tests/tst_*.qml; do
+		test_dir=$(dirname "$test_file")
+		test_name=$(basename "$test_file")
+		if output=$(cd "$test_dir" && timeout 60 "$QMLTESTRUNNER" -input "$test_name" 2>&1); then
+			printf -- "-- %-42s %s\n" "$test_name" "$(grep -E '^Totals:' <<<"$output")"
+		else
+			printf -- "-- %-42s FAILED\n" "$test_name"
+			grep -E '^(FAIL|QWARN)' <<<"$output" | sed 's/^/     /'
+			failed=1
+		fi
+	done
 fi
 
 echo

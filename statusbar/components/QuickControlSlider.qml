@@ -1,11 +1,14 @@
 import QtQuick
 import QtQuick.Controls as Controls
-import "../../theme"
 
 Item {
     id: control
 
-    readonly property var theme: AppTheme
+    // Injected like every other row in this directory, rather than read from
+    // the AppTheme singleton. Reaching for the singleton pulls in AppSettings
+    // and therefore the Quickshell plugin, which makes this component and
+    // anything embedding it impossible to load under qmltestrunner.
+    required property var theme
 
     property real value: 0
     property bool available: true

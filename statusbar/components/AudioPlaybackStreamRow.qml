@@ -173,6 +173,7 @@ Rectangle {
 
             QuickControlSlider {
                 id: volumeSlider
+                theme: root.theme
                 width: parent.width - root.theme.sizing.statusBarNetworkQuickControlSliderHeight - parent.spacing
                 height: parent.height
                 trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight

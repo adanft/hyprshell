@@ -9,6 +9,25 @@ TestCase {
     width: 320
     height: 120
 
+    // Mirrors the tokens QuickControlSlider reads, with the values from
+    // theme/Sizing.qml, theme/Spacing.qml, theme/Motion.qml and theme/Colors.qml.
+    property var theme: ({
+                             sizing: {
+                                 statusBarSliderTrackHeight: 5,
+                                 statusBarSliderHandleSize: 14
+                             },
+                             spacing: {
+                                 statusBarSliderHitAreaVerticalMargin: 8
+                             },
+                             motion: {
+                                 opacityDisabled: 0.45
+                             },
+                             colors: {
+                                 transparent: "transparent",
+                                 text: "#ffffff"
+                             }
+                         })
+
     Component {
         id: sliderComponent
 
@@ -18,6 +37,7 @@ TestCase {
             liveUpdateInterval: 20
             available: true
             value: 0
+            theme: testCase.theme
         }
     }
 

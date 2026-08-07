@@ -60,6 +60,7 @@ Column {
 
             QuickControlSlider {
                 id: outputVolumeSlider
+                theme: root.theme
                 width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth - parent.spacing
                 height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                 anchors.verticalCenter: parent.verticalCenter

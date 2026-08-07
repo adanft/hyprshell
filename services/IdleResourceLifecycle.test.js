@@ -58,51 +58,54 @@ for (const loaderId of [
 	);
 }
 
-for (const [helper, loaderId, method] of [
-	["openPowerMenu", "powerMenuLoader", "open"],
-	["openAppLauncher", "appLauncherLoader", "open"],
-	["toggleAppLauncher", "appLauncherLoader", "toggle"],
-	["togglePowerMenu", "powerMenuLoader", "toggle"],
-	["openWallpaperSelector", "wallpaperSelectorLoader", "open"],
-	["toggleWallpaperSelector", "wallpaperSelectorLoader", "toggle"],
-	["openScreenshotTool", "screenshotToolLoader", "open"],
-	["toggleScreenshotTool", "screenshotToolLoader", "toggle"],
-	["openThemeSelector", "themeSelectorLoader", "open"],
-	["toggleThemeSelector", "themeSelectorLoader", "toggle"],
+// Each IPC target must call its own overlay directly. IpcHandler publishes
+// every property it carries, so the handlers cannot take a loader property and
+// stay plain declarations instead.
+for (const [target, loaderId] of [
+	["applauncher", "appLauncherLoader"],
+	["powermenu", "powerMenuLoader"],
+	["wallpaperselector", "wallpaperSelectorLoader"],
+	["screenshot", "screenshotToolLoader"],
+	["themeselector", "themeSelectorLoader"],
 ]) {
-	assert.match(
-		shell,
-		new RegExp(
-			`function ${helper}\\(\\) \\{\\s*${loaderId}\\.${method}\\(\\);?\\s*\\}`,
-		),
-		`${helper} must delegate to ${loaderId}.${method}()`,
+	const handler = new RegExp(
+		`IpcHandler\\s*\\{\\s*target: "${target}"([\\s\\S]*?)\\n    \\}`,
+	).exec(shell);
+	assert.ok(handler, `IpcHandler missing for target ${target}`);
+	for (const method of ["open", "toggle"])
+		assert.match(
+			handler[1],
+			new RegExp(
+				`function ${method}\\(\\): void \\{\\s*${loaderId}\\.${method}\\(\\);?\\s*\\}`,
+			),
+			`${target}.${method}() must delegate to ${loaderId}.${method}()`,
+		);
+	assert.doesNotMatch(
+		handler[1],
+		/property /,
+		`${target} handler must carry no property: IpcHandler publishes them`,
 	);
 }
 
+// Lifecycle behaviour stays inside OverlayLifecycleLoader; the shell must not
+// reimplement it, whether as named helpers or inline in a handler.
 assert.equal(shell.includes("function openLoader(loader)"), false);
 assert.equal(shell.includes("function toggleLoader(loader)"), false);
+assert.equal(shell.includes("requestedVisible"), false);
+assert.equal(shell.includes("Qt.callLater"), false);
 assert.match(
 	shell,
 	/function toggleNotificationCenter\(\)\s*{\s*notificationCenterLoader\.toggle\(\);?\s*}/,
 );
 assert.match(
 	shell,
-	/OverlayLifecycleLoader\s*{\s*id: notificationCenterLoader\s*directVisibility: true\s*property var ownerWindow: barWindow/,
+	/OverlayLifecycleLoader\s*{\s*id: notificationCenterLoader\s*directVisibility: true\s*property var ownerWindow: barWindow/s,
 );
 assert.match(
 	shell,
 	/Notifications\.NotificationCenter\s*{\s*colors: Theme\.Colors\s*services: serviceState\s*barWindow: notificationCenterLoader\.ownerWindow/,
 );
 
-for (const target of [
-	"applauncher",
-	"powermenu",
-	"wallpaperselector",
-	"screenshot",
-	"themeselector",
-]) {
-	assert.match(shell, new RegExp(`IpcHandler\\s*\\{\\s*target: "${target}"`));
-}
 assert.match(
 	shell,
 	/function set\(name: string\): void\s*{\s*Theme\.Colors\.setTheme\(name\);?\s*}/,

@@ -46,145 +46,106 @@ ShellRoot {
         Screenshot.ScreenshotTool {}
     }
 
+    // IpcHandler publishes every property it carries, and a loader property is
+    // not serialisable, so these stay as plain declarations calling their own
+    // loader rather than being collapsed into a shared handler type.
     IpcHandler {
         target: "applauncher"
 
         function open(): void {
-        shell.openAppLauncher()
-    }
+            appLauncherLoader.open()
+        }
 
         function toggle(): void {
-                               shell.toggleAppLauncher()
-                           }
+            appLauncherLoader.toggle()
+        }
     }
-
     IpcHandler {
         target: "powermenu"
 
         function open(): void {
-        shell.openPowerMenu()
-    }
+            powerMenuLoader.open()
+        }
 
         function toggle(): void {
-                               shell.togglePowerMenu()
-                           }
+            powerMenuLoader.toggle()
+        }
     }
-
     IpcHandler {
         target: "wallpaperselector"
 
         function open(): void {
-        shell.openWallpaperSelector()
-    }
+            wallpaperSelectorLoader.open()
+        }
 
         function toggle(): void {
-                               shell.toggleWallpaperSelector()
-                           }
+            wallpaperSelectorLoader.toggle()
+        }
     }
-
     IpcHandler {
         target: "screenshot"
 
         function open(): void {
-        shell.openScreenshotTool()
-    }
+            screenshotToolLoader.open()
+        }
 
         function toggle(): void {
-                               shell.toggleScreenshotTool()
-                           }
+            screenshotToolLoader.toggle()
+        }
     }
-
     IpcHandler {
         target: "themeselector"
 
         function open(): void {
-        shell.openThemeSelector()
-    }
-
-        function toggle(): void {
-                               shell.toggleThemeSelector()
-                           }
-
-        function set(name: string): void {
-        Theme.Colors.setTheme(name)
-    }
-    }
-
-        Variants {
-            model: Quickshell.screens
-
-            Statusbar.BarWindow {
-                id: barWindow
-
-                required property var modelData
-
-                screen: modelData
-                colors: Theme.Colors
-                services: serviceState
-
-                function toggleNotificationCenter() {
-                    notificationCenterLoader.toggle()
-                }
-
-                onOpenNotificationCenterRequested: toggleNotificationCenter()
-
-                OverlayLifecycleLoader {
-                    id: notificationCenterLoader
-                    directVisibility: true
-                    property var ownerWindow: barWindow
-
-                    Notifications.NotificationCenter {
-                        colors: Theme.Colors
-                        services: serviceState
-                        barWindow: notificationCenterLoader.ownerWindow
-                    }
-                }
-
-                Notifications.NotificationPopupManager {
-                    colors: Theme.Colors
-                    services: serviceState
-                    barWindow: barWindow
-                }
-            }
-        }
-
-        function openPowerMenu() {
-            powerMenuLoader.open()
-        }
-
-        function openAppLauncher() {
-            appLauncherLoader.open()
-        }
-
-        function toggleAppLauncher() {
-            appLauncherLoader.toggle()
-        }
-
-        function togglePowerMenu() {
-            powerMenuLoader.toggle()
-        }
-
-        function openWallpaperSelector() {
-            wallpaperSelectorLoader.open()
-        }
-
-        function toggleWallpaperSelector() {
-            wallpaperSelectorLoader.toggle()
-        }
-
-        function openScreenshotTool() {
-            screenshotToolLoader.open()
-        }
-
-        function toggleScreenshotTool() {
-            screenshotToolLoader.toggle()
-        }
-
-        function openThemeSelector() {
             themeSelectorLoader.open()
         }
 
-        function toggleThemeSelector() {
+        function toggle(): void {
             themeSelectorLoader.toggle()
         }
+
+        function set(name: string): void {
+            Theme.Colors.setTheme(name)
+        }
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        Statusbar.BarWindow {
+            id: barWindow
+
+            required property var modelData
+
+            screen: modelData
+            colors: Theme.Colors
+            services: serviceState
+
+            function toggleNotificationCenter() {
+                notificationCenterLoader.toggle()
+            }
+
+            onOpenNotificationCenterRequested: toggleNotificationCenter()
+
+            OverlayLifecycleLoader {
+                id: notificationCenterLoader
+
+                directVisibility: true
+
+                property var ownerWindow: barWindow
+
+                Notifications.NotificationCenter {
+                    colors: Theme.Colors
+                    services: serviceState
+                    barWindow: notificationCenterLoader.ownerWindow
+                }
+            }
+
+            Notifications.NotificationPopupManager {
+                colors: Theme.Colors
+                services: serviceState
+                barWindow: barWindow
+            }
+        }
+    }
+}

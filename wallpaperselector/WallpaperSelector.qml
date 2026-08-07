@@ -8,7 +8,7 @@ import "../theme"
 Scope {
     id: selector
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
     property alias visible: panel.visible
     property bool quitOnClose: false
     property bool transitionsEnabled: false

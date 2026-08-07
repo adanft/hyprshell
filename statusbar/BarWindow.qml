@@ -7,7 +7,7 @@ import "components"
 PanelWindow {
     id: window
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     required property var colors
     required property var services

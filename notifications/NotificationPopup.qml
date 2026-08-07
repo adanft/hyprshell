@@ -4,7 +4,7 @@ import QtQuick
 Item {
     id: popup
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     required property var colors
     required property var services

@@ -3,11 +3,11 @@ internal AppSettingsPersistence AppSettingsPersistence.qml
 ThemeStartupCoordinator 1.0 ThemeStartupCoordinator.qml
 singleton StockThemes 1.0 StockThemes.qml
 singleton GhosttyTheme 1.0 GhosttyTheme.qml
-AppTheme 1.0 AppTheme.qml
-Colors 1.0 Colors.qml
-Icons 1.0 Icons.qml
-Motion 1.0 Motion.qml
-Shape 1.0 Shape.qml
-Spacing 1.0 Spacing.qml
-Sizing 1.0 Sizing.qml
-Typography 1.0 Typography.qml
+singleton AppTheme 1.0 AppTheme.qml
+singleton Colors 1.0 Colors.qml
+singleton Icons 1.0 Icons.qml
+singleton Motion 1.0 Motion.qml
+singleton Shape 1.0 Shape.qml
+singleton Spacing 1.0 Spacing.qml
+singleton Sizing 1.0 Sizing.qml
+singleton Typography 1.0 Typography.qml

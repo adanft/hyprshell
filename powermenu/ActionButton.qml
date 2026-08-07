@@ -4,7 +4,7 @@ import QtQuick
 Rectangle {
     id: button
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     property string icon: ""
     property bool selected: false

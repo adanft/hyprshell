@@ -2,7 +2,7 @@ import "../../theme"
 import QtQuick
 
 Text {
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     font.family: theme.typography.textFontFamily
     font.pixelSize: theme.typography.sizeLg

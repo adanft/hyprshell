@@ -5,7 +5,7 @@ import "../../theme"
 Item {
     id: control
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     property real value: 0
     property bool available: true

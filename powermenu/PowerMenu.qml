@@ -6,8 +6,8 @@ import Quickshell.Wayland
 Scope {
     id: powerMenu
 
-    readonly property var theme: AppTheme {}
-    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme
+    readonly property var icons: Icons
 
     property alias visible: panel.visible
     property bool quitOnClose: false

@@ -7,7 +7,7 @@ import "FileViewState.js" as FileViewState
 Scope {
     id: root
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
     readonly property string activeUserAvatarSource: activeUserAvatar.source
     readonly property string activeUserAvatarState: activeUserAvatar.state
     property string time: ""

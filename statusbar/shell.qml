@@ -8,10 +8,6 @@ import Quickshell
 ShellRoot {
     id: shell
 
-    Theme.Colors {
-        id: themeColors
-    }
-
     Services.Services {
         id: serviceState
     }
@@ -23,7 +19,7 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-            colors: themeColors
+            colors: Theme.Colors
             services: serviceState
         }
     }

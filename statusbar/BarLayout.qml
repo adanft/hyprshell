@@ -6,8 +6,8 @@ import "modules"
 Item {
     id: root
 
-    readonly property var theme: AppTheme {}
-    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme
+    readonly property var icons: Icons
 
     required property var colors
     required property var services

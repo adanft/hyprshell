@@ -11,8 +11,8 @@ import "NetworkMenu.js" as NetworkMenuLogic
 Item {
     id: root
 
-    readonly property var theme: AppTheme {}
-    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme
+    readonly property var icons: Icons
     readonly property string username: Quickshell.env("USER") || Quickshell.env("LOGNAME") || "User"
     readonly property string hostname: NetworkMenuLogic.hostnameOrFallback(hostnameFile.loaded ? hostnameFile.text() :
                                                                                                  "")

@@ -6,8 +6,8 @@ import "../../theme"
 Row {
     id: root
 
-    readonly property var icons: Icons {}
-    readonly property var theme: AppTheme {}
+    readonly property var icons: Icons
+    readonly property var theme: AppTheme
     required property var colors
 
     readonly property var activeToplevel: {

@@ -12,7 +12,7 @@ Scope {
     property var network: null
     property string errorText: ""
 
-    readonly property var icons: Icons {}
+    readonly property var icons: Icons
     readonly property bool busy: Boolean(network?.stateChanging)
 
     signal submitted(string password)

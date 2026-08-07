@@ -5,7 +5,7 @@ import QtQuick
 Rectangle {
     id: action
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     required property string icon
     required property string title

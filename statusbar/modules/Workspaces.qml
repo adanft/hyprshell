@@ -6,8 +6,8 @@ import "../../theme"
 Item {
     id: root
 
-    readonly property var icons: Icons {}
-    readonly property var theme: AppTheme {}
+    readonly property var icons: Icons
+    readonly property var theme: AppTheme
     readonly property var monitor: Hyprland.monitorFor(screen)
     readonly property var focusedMonitor: Hyprland.focusedMonitor
     readonly property bool monitorFocused: !!monitor && !!focusedMonitor && (monitor === focusedMonitor || (

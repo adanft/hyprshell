@@ -6,8 +6,8 @@ import Quickshell.Wayland
 Scope {
     id: selector
 
-    readonly property var theme: AppTheme {}
-    readonly property var icons: Icons {}
+    readonly property var theme: AppTheme
+    readonly property var icons: Icons
     readonly property var themes: StockThemes.availableThemes
     property alias visible: panel.visible
     property bool quitOnClose: false

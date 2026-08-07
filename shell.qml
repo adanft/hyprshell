@@ -16,9 +16,6 @@ import "wallpaperselector" as Wallpaperselector
 ShellRoot {
     id: shell
 
-    Theme.Colors {
-        id: themeColors
-    }
     Services.Services {
         id: serviceState
     }
@@ -109,7 +106,7 @@ ShellRoot {
                            }
 
         function set(name: string): void {
-        themeColors.setTheme(name)
+        Theme.Colors.setTheme(name)
     }
     }
 
@@ -122,7 +119,7 @@ ShellRoot {
                 required property var modelData
 
                 screen: modelData
-                colors: themeColors
+                colors: Theme.Colors
                 services: serviceState
 
                 function toggleNotificationCenter() {
@@ -137,14 +134,14 @@ ShellRoot {
                     property var ownerWindow: barWindow
 
                     Notifications.NotificationCenter {
-                        colors: themeColors
+                        colors: Theme.Colors
                         services: serviceState
                         barWindow: notificationCenterLoader.ownerWindow
                     }
                 }
 
                 Notifications.NotificationPopupManager {
-                    colors: themeColors
+                    colors: Theme.Colors
                     services: serviceState
                     barWindow: barWindow
                 }

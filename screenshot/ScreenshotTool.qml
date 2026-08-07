@@ -8,7 +8,7 @@ import Quickshell.Wayland
 Scope {
     id: tool
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     property alias visible: panel.visible
     property bool quitOnClose: false

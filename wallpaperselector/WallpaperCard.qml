@@ -6,7 +6,7 @@ import QtQuick.Shapes
 Item {
     id: card
 
-    readonly property var theme: AppTheme {}
+    readonly property var theme: AppTheme
 
     required property string path
     property string thumbnailPath: path

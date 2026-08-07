@@ -182,8 +182,6 @@ const legacyMethods = [
 	"disableMemoryUsage",
 	"focusWorkspace",
 	"statusWorkspaceIdsForMonitor",
-	"updateClock",
-	"pad",
 	"toggleMute",
 	"setSourceVolume",
 	"selectAudioSource",

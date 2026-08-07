@@ -10,8 +10,8 @@ Scope {
     readonly property var theme: AppTheme
     readonly property string activeUserAvatarSource: activeUserAvatar.source
     readonly property string activeUserAvatarState: activeUserAvatar.state
-    property string time: ""
-    property string date: ""
+    readonly property string time: Qt.formatDateTime(systemClock.date, "HH:mm")
+    readonly property string date: Qt.formatDateTime(systemClock.date, "MM-dd")
 
     Capabilities.AudioService {
         id: audioService
@@ -184,26 +184,17 @@ Scope {
     ActiveUserAvatar {
         id: activeUserAvatar
     }
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: root.updateClock()
+    // The bar renders HH:mm and MM-dd, so minute precision is the resolution
+    // the display actually has. A second-precision clock wakes the process 59
+    // extra times per minute to recompute an identical string.
+    SystemClock {
+        id: systemClock
+
+        precision: SystemClock.Minutes
     }
-    Component.onCompleted: updateClock()
 
     function refreshActiveUserAvatar() {
         return activeUserAvatar.refresh()
-    }
-    function updateClock() {
-        const now = new Date()
-        const month = pad(now.getMonth() + 1)
-        const day = pad(now.getDate())
-        time = `${pad(now.getHours())}:${pad(now.getMinutes())}`
-        date = `${month}-${day}`
-    }
-    function pad(value) {
-        return String(value).padStart(2, "0")
     }
     function safeFileViewText(fileView, label, reloadFile) {
         return FileViewState.safeText(fileView, label, reloadFile)

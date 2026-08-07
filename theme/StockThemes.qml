@@ -1,5 +1,6 @@
 pragma Singleton
 
+import "policy"
 import QtQuick
 import QtQml
 import Quickshell

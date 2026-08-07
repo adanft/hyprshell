@@ -3,32 +3,39 @@ import QtTest
 import "."
 
 TestCase {
+    id: testCase
     name: "ThemeStartupCoordinator"
 
     property int effectCount: 0
     property bool lastForce: false
 
-    Loader {
-        id: loader
-        source: Qt.resolvedUrl("../ThemeStartupCoordinator.qml")
-        onStatusChanged: console.warn("coordinator loader", status, loader.item, loader.source)
-    }
-    property var coordinator: loader.item
+    // Built with Qt.createComponent rather than a Loader: the coordinator's
+    // root is a QtObject, and Loader.source rejects a non-visual root, so the
+    // loader always settled on Loader.Error with a null item, hiding the real
+    // error underneath.
+    //
+    // The coordinator lives in theme/policy/ because every QML file implicitly
+    // imports its own directory. While it sat in theme/, loading it pulled in
+    // that directory's qmldir, and therefore AppSettings and the Quickshell
+    // plugin, which qmltestrunner cannot load.
+    property var coordinator: null
+
     Connections {
-        target: loader.item
+        target: testCase.coordinator
         function onSyncRequested(themeId, force) {
-            effectCount += 1
-            lastForce = force
+            testCase.effectCount += 1
+            testCase.lastForce = force
         }
     }
 
     function initTestCase() {
-        wait(100)
-        verify(loader.item !== null)
+        const component = Qt.createComponent(Qt.resolvedUrl("../policy/ThemeStartupCoordinator.qml"))
+        compare(component.status, Component.Ready, component.errorString())
+        coordinator = component.createObject(testCase)
+        verify(coordinator !== null)
     }
 
     function init() {
-        verify(loader.item !== null)
         effectCount = 0
         lastForce = false
         coordinator.settingsReady = false

@@ -1,4 +1,6 @@
-import "../theme"
+// The theme module is aliased because it also exports a Shape type, which
+// would otherwise collide with QtQuick.Shapes.Shape used below.
+import "../theme" as Theme
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Shapes
@@ -6,7 +8,7 @@ import QtQuick.Shapes
 Item {
     id: card
 
-    readonly property var theme: AppTheme
+    readonly property var theme: Theme.AppTheme
 
     required property string path
     property string thumbnailPath: path

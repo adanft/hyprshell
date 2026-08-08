@@ -19,8 +19,9 @@ PopupWindow {
     property real stackHeight: 0
     property bool popupRepositionScheduled: false
     property bool popupRepositionWithoutYAnimation: false
-    readonly property string screenName: barWindow.screen ? barWindow.screen.name : ""
-    readonly property bool isFocusedScreen: screenName === services.notification.focusedNotificationScreenName
+    readonly property real maxStackHeight: Math.max(0, (barWindow.screen ? barWindow.screen.height :
+                                                                          barWindow.height) - topMargin
+                                                    - bottomMargin)
 
     function itemFor(popupData) {
         if (!popupData)
@@ -35,10 +36,12 @@ PopupWindow {
         const item = popupComponent.createObject(popupLayer, {
                                                      "colors": root.colors,
                                                      "services": root.services,
-                                                     "popupData": popupData,
-                                                     "active": root.isFocusedScreen,
+                                                     "active": true,
                                                      "width": root.popupWidth
                                                  })
+        if (item)
+            item.popupData = popupData
+
         if (item && item.layoutChanged)
             item.layoutChanged.connect(root.handlePopupLayoutChanged)
 
@@ -70,11 +73,6 @@ PopupWindow {
     }
 
     function syncPopups() {
-        if (!root.isFocusedScreen) {
-            clearPopupItems()
-            return
-        }
-
         const visiblePopups = root.services.notification.visibleNotifications || []
         const nextItems = []
         const enteringItems = []
@@ -112,15 +110,8 @@ PopupWindow {
         }
     }
 
-    function updatePopupActivity() {
-        for (const item of popupItems) {
-            if (item)
-                item.active = root.isFocusedScreen
-        }
-    }
-
     function updatePopupCapacity() {
-        if (!root.isFocusedScreen || !root.services
+        if (!root.services
                 || typeof root.services.notification.setNotificationPopupAvailableHeight !== "function")
             return
         const screenHeight = root.barWindow.screen ? root.barWindow.screen.height : root.barWindow.height
@@ -222,16 +213,9 @@ PopupWindow {
         return item.renderedLayoutHeight || item.layoutHeight || 0
     }
 
-    onIsFocusedScreenChanged: {
-        updatePopupCapacity()
-        if (isFocusedScreen)
-            syncPopups()
-        else
-            clearPopupItems()
-    }
     implicitWidth: popupWidth
-    implicitHeight: Math.max(1, stackHeight)
-    visible: isFocusedScreen && stackHeight > 0
+    implicitHeight: Math.max(1, Math.min(stackHeight, maxStackHeight))
+    visible: stackHeight > 0
     color: root.colors.transparent
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
@@ -251,6 +235,7 @@ PopupWindow {
         id: popupLayer
 
         anchors.fill: parent
+        clip: true
     }
 
     Connections {

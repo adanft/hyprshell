@@ -293,8 +293,8 @@ Scope {
         root.invalidLiveImageSources = next
     }
 
-        root.notificationHistoryWritePending = true
     function scheduleNotificationHistorySave() {
+        root.notificationHistoryWritePending = true
         saveTimer.restart()
     }
 

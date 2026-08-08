@@ -9,6 +9,7 @@ Item {
                                         + "/qsrice/wallpapers"
 
     readonly property int maxJobs: 1
+    readonly property int generationTimeoutMs: 15000
     property bool cacheReady: false
     property var pending: []
     property var requested: ({})
@@ -21,6 +22,7 @@ Item {
     property string currentTemporary: ""
     property bool jobTerminal: false
     property bool statHandled: false
+    property var currentGenerationProcess: null
 
     signal thumbnailReady(string sourcePath, string thumbnailUrl)
 
@@ -147,7 +149,12 @@ Item {
         currentDestination = destinationPath
         currentTemporary = `${destinationPath}.tmp-${hash(currentPath + Date.now())}`
         const process = generationComponent.createObject(cache)
+        currentGenerationProcess = process
+        generationTimeout.restart()
         process.onExited.connect(function (exitCode) {
+            generationTimeout.stop()
+            if (currentGenerationProcess === process)
+                currentGenerationProcess = null
             if (!jobTerminal) {
                 if (exitCode === 0) {
                     const move = moveComponent.createObject(cache)
@@ -173,6 +180,7 @@ Item {
         if (jobTerminal)
             return
         jobTerminal = true
+        generationTimeout.stop()
         known[path] = destinationPath
         thumbnailReady(path, fileUrl(destinationPath))
         activeJobs--
@@ -196,6 +204,7 @@ Item {
         if (jobTerminal)
             return
         jobTerminal = true
+        generationTimeout.stop()
         const failedPath = currentPath
         const failedIdentity = currentIdentity
         const temporary = currentTemporary
@@ -216,6 +225,18 @@ Item {
             cache.pump()
         })
         cleanup.exec(["rm", "-f", "--", temporary])
+    }
+
+    Timer {
+        id: generationTimeout
+
+        interval: cache.generationTimeoutMs
+        repeat: false
+        onTriggered: {
+            const process = cache.currentGenerationProcess
+            if (process && process.running)
+                process.signal(9)
+        }
     }
 
     Component {

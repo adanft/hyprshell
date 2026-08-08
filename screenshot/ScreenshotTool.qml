@@ -3,6 +3,7 @@ import "../theme"
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "ScreenshotCommand.js" as ScreenshotCommand
 
 Scope {
     id: tool
@@ -16,9 +17,6 @@ Scope {
     property bool includeCursor: false
     property int selectedActionIndex: 0
     property int delaySeconds: 0
-    readonly property string captureSuccessCommand:
-        "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
-
     function open() {
         selectedActionIndex = 0
         delaySeconds = 0
@@ -39,39 +37,12 @@ Scope {
     }
 
     function capture(mode) {
-        const grimCursorArg = includeCursor ? "-c " : ""
-        const delay = tool.delaySeconds
-        const initialDelay = mode === "area" ? 0.2 : delay + 0.2
-        const windowGrimCommand = `grim ${grimCursorArg}-T "$id"`
-        const areaGrimCommand = `grim ${grimCursorArg}-g "$geometry"`
-        let command = ""
-        switch (mode) {
-        case "monitor":
-            command = captureCommand(`grim ${grimCursorArg}-o "${panel.screen.name}"`)
-            break
-        case "window":
-            command = [`id=$(hyprctl activewindow -j | jq -r 'select(.stableId != null) | .stableId') && if [ -n "$id" ]; then sleep 0.5; `,
-                       captureCommand(windowGrimCommand), "; fi"].join("")
-            break
-        case "area":
-            command = [`geometry=$(slurp) && if [ -n "$geometry" ]; then sleep ${delay}; `, captureCommand(
-                           areaGrimCommand), "; fi"].join("")
-            break
-        case "all":
-        default:
-            command = captureCommand(`grim ${grimCursorArg}`)
-            break
-        }
+        const monitorName = panel.screen ? panel.screen.name : ""
+        const processArgs = ScreenshotCommand.processArguments(mode, includeCursor, monitorName, tool.delaySeconds)
         close()
         Qt.callLater(() => {
-            Quickshell.execDetached(["sh", "-c", ["mkdir -p \"$HOME/Pictures/Screenshots\" && sleep ", initialDelay,
-                                                  " && ", command].join("")])
+            Quickshell.execDetached(processArgs)
         })
-    }
-
-    function captureCommand(grimCommand) {
-        return ["file=\"$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png\"; ", grimCommand,
-                " \"$file\" && ", captureSuccessCommand].join("")
     }
 
     function actionIcon(index) {

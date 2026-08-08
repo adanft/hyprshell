@@ -40,7 +40,9 @@ QtObject {
 
     readonly property int wallpaperSelectorScreenMargin: space96
     readonly property int wallpaperSelectorGridMargin: space24
+    readonly property int wallpaperSelectorPadding: space12
     readonly property int wallpaperSelectorEmptyTextHorizontalMargin: space80
+    readonly property int wallpaperGridGap: space6
 
     readonly property int screenshotToolScreenMargin: space96
     readonly property int screenshotToolPadding: appLauncherPadding

@@ -36,9 +36,14 @@ QtObject {
 
     readonly property int powerMenuActionSize: 136
 
-    readonly property int wallpaperCardWidth: 220
-    readonly property int wallpaperCardHeight: 150
+    readonly property int wallpaperSelectorMaxWidth: 688
+    readonly property int wallpaperSelectorMaxHeight: 444
+    readonly property int wallpaperCardWidth: 160
+    readonly property int wallpaperCardHeight: 90
     readonly property real wallpaperCardPreviewScale: 1.5
+    readonly property int wallpaperCardLabelHeight: 20
+    readonly property int wallpaperGridColumns: 4
+    readonly property int wallpaperExtensionFilterWidth: 42
 
     readonly property int screenshotToolActionWidth: appLauncherCardWidth
     readonly property int screenshotToolActionHeight: appLauncherCardHeight

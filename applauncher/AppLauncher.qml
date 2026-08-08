@@ -208,7 +208,7 @@ Scope {
                                         + launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     anchors.verticalCenter: parent.verticalCenter
                     visible: searchInput.text.length === 0
-                    text: "Search Apps"
+                    text: "Search..."
                     color: launcher.theme.colors.textSubtle
                     font.pixelSize: launcher.theme.typography.sizeLg
                     font.styleName: launcher.theme.typography.styleMedium

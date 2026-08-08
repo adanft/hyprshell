@@ -14,6 +14,4 @@ QtObject {
     readonly property real opacityPreviewBarMuted: 0.34
     readonly property real opacityPreviewBarActive: 0.82
     readonly property real opacityPreviewSubtle: 0.16
-    readonly property real opacityCarouselMinimum: 0.22
-    readonly property real opacityCarouselDepthStep: 0.14
 }

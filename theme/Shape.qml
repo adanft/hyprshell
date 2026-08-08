@@ -26,9 +26,12 @@ QtObject {
     readonly property int powerMenuActionRadius: radius36
     readonly property int powerMenuActionBorderWidth: borderEmphasis
 
-    readonly property int wallpaperSelectorRadius: radius24
+    readonly property int wallpaperSelectorRadius: radius16
     readonly property int wallpaperSelectorBorderWidth: borderMedium
     readonly property int wallpaperCardRadius: radius24
+    readonly property int wallpaperThumbnailRadius: radius12
+    readonly property int wallpaperExtensionFilterRadius: radius12
+    readonly property int wallpaperCardBorderWidth: borderMedium
 
     readonly property int screenshotToolRadius: radius16
     readonly property int screenshotToolActionRadius: radius12

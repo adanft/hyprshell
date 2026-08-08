@@ -1,5 +1,5 @@
+import "../shared/components" as Shared
 import QtQuick
-import QtQuick.Effects
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Wayland
@@ -9,11 +9,10 @@ Scope {
     id: selector
 
     readonly property var theme: AppTheme
+    readonly property var icons: Icons
     property alias visible: panel.visible
     property bool quitOnClose: false
-    property bool transitionsEnabled: false
-    property bool visualsActive: false
-    readonly property int residencyRadius: 5
+    readonly property var contentItem: contentLoader.item
 
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string wallpapersDir: Quickshell.env("AWWW_WALLPAPERS_DIR") || `${home}/Wallpapers`
@@ -23,14 +22,40 @@ Scope {
     readonly property var transitionArgs: ["--transition-type", "center", "--transition-duration", "1.0",
         "--transition-fps", "60"]
 
+    property string searchText: ""
     property int selectedIndex: 0
-    readonly property var contentItem: contentLoader.item
-    readonly property string selectedWallpaperPath: wallpaperFolderModel.count > selectedIndex ? fileUrlToPath(
-                                                                                                     wallpaperFolderModel.get(
-                                                                                                         selectedIndex,
-                                                                                                         "filePath")) :
-                                                                                                 ""
-    readonly property string previewWallpaperSource: pathToFileUrl(AppSettings.currentWallpaper)
+    readonly property var extensionFilters: ["png", "jpg", "gif"]
+    readonly property var extensionFilterIcons: ({
+            "png": "󰵸",
+            "jpg": "󰈥",
+            "gif": "󰸭"
+        })
+    property var activeExtensions: []
+    readonly property var filteredIndices: computeFilteredIndices()
+    readonly property string selectedWallpaperPath: filteredIndices.length > selectedIndex && selectedIndex >= 0 ?
+                                                     fileUrlToPath(wallpaperFolderModel.get(
+                                                                       filteredIndices[selectedIndex], "filePath")) : ""
+
+    function computeFilteredIndices() {
+        const query = searchText.trim().toLowerCase()
+        const indices = []
+        for (let i = 0; i < wallpaperFolderModel.count; i++) {
+            const name = String(wallpaperFolderModel.get(i, "fileName") || "")
+            const suffix = String(wallpaperFolderModel.get(i, "fileSuffix") || "").toLowerCase()
+            const matchesQuery = query.length === 0 || name.toLowerCase().includes(query)
+            const matchesExtension = activeExtensions.length === 0 || activeExtensions.includes(suffix)
+            if (matchesQuery && matchesExtension)
+                indices.push(i)
+        }
+        return indices
+    }
+
+    function toggleExtensionFilter(extension) {
+        activeExtensions = activeExtensions.includes(extension) ? activeExtensions.filter(
+                                                                        item => item !== extension) : [
+                                                                        ...activeExtensions, extension]
+        selectedIndex = 0
+    }
 
     WallpaperThumbnailCache {
         id: thumbnailCache
@@ -40,285 +65,184 @@ Scope {
         id: selectorContent
 
         Column {
-            property alias wallpaperListView: wallpaperList
+            id: content
+
+            property alias searchField: searchInput
+            property alias appGrid: grid
+            readonly property int columns: selector.theme.sizing.wallpaperGridColumns
+            readonly property int cellWidth: selector.theme.sizing.wallpaperCardWidth
+                                             + selector.theme.spacing.wallpaperGridGap
+            readonly property int cellHeight: selector.theme.sizing.wallpaperCardHeight
+                                              + selector.theme.spacing.appLauncherCardSpacing
+                                              + selector.theme.sizing.wallpaperCardLabelHeight
+                                              + selector.theme.spacing.wallpaperGridGap
+            readonly property int gridWidth: columns * cellWidth
 
             anchors.fill: parent
-            anchors.margins: selector.theme.spacing.wallpaperSelectorGridMargin
-            spacing: selector.theme.spacing.appLauncherSectionSpacing
+            anchors.margins: selector.theme.spacing.wallpaperSelectorPadding
+            spacing: selector.theme.spacing.space12
 
-            Rectangle {
-                id: preview
+            Item {
+                width: content.gridWidth
+                height: selector.theme.sizing.appLauncherSearchHeight
+                anchors.horizontalCenter: parent.horizontalCenter
 
-                readonly property int preferredHeight: Math.round(width * 9 / 16)
-                readonly property int minimumGridHeight: selector.theme.sizing.wallpaperCardHeight
-                                                         + selector.theme.spacing.space12
+                Row {
+                    id: extensionFiltersRow
 
-                width: parent.width
-                height: Math.min(preferredHeight, Math.max(0, parent.height - parent.spacing - minimumGridHeight))
-                radius: selector.theme.shape.wallpaperCardRadius
-                color: selector.theme.colors.background
-                clip: true
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: selector.theme.spacing.space12
 
-                Image {
-                    id: previewImage
+                    Repeater {
+                        model: selector.extensionFilters
 
-                    anchors.fill: parent
-                    source: selector.previewWallpaperSource
-                    asynchronous: true
-                    cache: true
-                    fillMode: Image.PreserveAspectCrop
-                    smooth: true
-                    sourceSize: Qt.size(width * 2, height * 2)
-                    visible: source.toString().length > 0
-                    layer.enabled: true
+                        WallpaperExtensionFilter {
+                            required property string modelData
 
-                    layer.effect: MultiEffect {
-                        maskEnabled: true
-                        maskSource: previewMask
-                        maskThresholdMin: 0.5
-                        maskSpreadAtMin: 1
+                            icon: selector.extensionFilterIcons[modelData]
+                            selected: selector.activeExtensions.includes(modelData)
+                            onActivated: selector.toggleExtensionFilter(modelData)
+                        }
                     }
                 }
 
                 Rectangle {
-                    id: previewMask
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - extensionFiltersRow.width - selector.theme.spacing.space12
+                    height: parent.height
+                    radius: selector.theme.shape.appLauncherSearchRadius
+                    color: selector.theme.colors.surface
 
-                    anchors.fill: parent
-                    radius: preview.radius
-                    color: selector.theme.colors.mask
-                    visible: false
-                    layer.enabled: true
+                    Shared.AppText {
+                        anchors.left: parent.left
+                        anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: selector.theme.sizing.appLauncherSearchIconSlotWidth
+                        text: selector.icons.search
+                        color: selector.theme.colors.textSubtle
+                        font.family: selector.theme.typography.iconFontFamily
+                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.styleName: selector.theme.typography.styleMedium
+                        horizontalAlignment: Text.AlignLeft
+                    }
+
+                    Shared.AppText {
+                        anchors.left: parent.left
+                        anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                                            + selector.theme.sizing.appLauncherSearchIconSlotWidth
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: searchInput.text.length === 0
+                        text: "Search..."
+                        color: selector.theme.colors.textSubtle
+                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.styleName: selector.theme.typography.styleMedium
+                    }
+
+                    TextInput {
+                        id: searchInput
+
+                        anchors.fill: parent
+                        anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                                            + selector.theme.sizing.appLauncherSearchIconSlotWidth
+                        anchors.rightMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                        clip: true
+                        color: selector.theme.colors.text
+                        selectionColor: selector.theme.colors.selection
+                        selectedTextColor: selector.theme.colors.selectionText
+                        font.family: selector.theme.typography.textFontFamily
+                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.styleName: selector.theme.typography.styleMedium
+                        verticalAlignment: TextInput.AlignVCenter
+                        text: selector.searchText
+                        onTextChanged: selector.searchText = text
+                        Keys.onEscapePressed: selector.close()
+                        Keys.onLeftPressed: event => {
+                            if (cursorPosition === 0)
+                                selector.moveSelection(-1)
+                            else
+                                event.accepted = false
+                        }
+                        Keys.onRightPressed: event => {
+                            if (cursorPosition === text.length)
+                                selector.moveSelection(1)
+                            else
+                                event.accepted = false
+                        }
+                        Keys.onUpPressed: selector.moveSelection(-grid.columns)
+                        Keys.onDownPressed: selector.moveSelection(grid.columns)
+                        Keys.onReturnPressed: selector.applySelection()
+                        Keys.onEnterPressed: selector.applySelection()
+                    }
                 }
+            }
+
+            GridView {
+                id: grid
+
+                readonly property int columns: content.columns
+
+                width: columns * cellWidth
+                height: parent.height - selector.theme.sizing.appLauncherSearchHeight - parent.spacing
+                anchors.horizontalCenter: parent.horizontalCenter
+                clip: true
+                cellWidth: content.cellWidth
+                cellHeight: content.cellHeight
+                model: selector.filteredIndices
+                currentIndex: selector.selectedIndex
 
                 Text {
                     anchors.centerIn: parent
-                    visible: wallpaperFolderModel.status !== FolderListModel.Loading && wallpaperFolderModel.count === 0
+                    visible: selector.filteredIndices.length === 0
                     width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
-                    text: `No wallpapers found. Add images to ${selector.wallpapersDir}`
+                    text: selector.searchText.length > 0 ? `No wallpapers match "${selector.searchText}"` :
+                                                           `No wallpapers found. Add images to ${selector.wallpapersDir}`
                     color: selector.theme.colors.textMuted
                     font.pixelSize: selector.theme.typography.sizeLg
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                 }
-            }
 
-            Flickable {
-                id: wallpaperList
+                delegate: Item {
+                    id: cell
 
-                readonly property real selectedWidth: Math.min(width * 0.58, height * 1.62)
-                readonly property real sideWidth: Math.max(1, height * 0.34)
-                readonly property real cardHeight: Math.max(1, height - selector.theme.spacing.space4)
-                readonly property real slant: Math.min(cardHeight * 0.08, sideWidth * 0.35)
-                readonly property real stride: sideWidth - slant
-                readonly property real centeringMargin: Math.max(0, (width - selectedWidth) / 2)
-                readonly property int viewportIndex: stride > 0 && wallpaperFolderModel.count > 0 ? Math.max(0, Math.min(
-                                                                                                                 wallpaperFolderModel.count
-                                                                                                                 - 1, Math.round(
-                                                                                                                     contentX
-                                                                                                                     / stride))) :
-                                                                                                    0
-                property int transitionFromIndex: selector.selectedIndex
-                property int transitionToIndex: selector.selectedIndex
-                property int queuedIndex: -1
-                property real transitionProgress: 1
-                property bool transitionRunning: false
+                    required property int index
+                    required property int modelData
 
-                width: parent.width
-                height: Math.max(0, parent.height - preview.height - parent.spacing)
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                flickableDirection: Flickable.HorizontalFlick
-                interactive: false
-                contentWidth: wallpaperFolderModel.count > 0 ? 2 * centeringMargin + (wallpaperFolderModel.count - 1)
-                                                               * stride + selectedWidth : width
-                contentHeight: height
+                    width: grid.cellWidth
+                    height: grid.cellHeight
 
-                NumberAnimation {
-                    id: transitionAnimation
-                    target: wallpaperList
-                    property: "transitionProgress"
-                    from: 0
-                    to: 1
-                    duration: selector.theme.motion.durationShort
-                    easing.type: Easing.InOutCubic
-                    onFinished: wallpaperList.finishTransition()
-                }
+                    WallpaperCard {
+                        id: wallpaperCard
 
-                function weightAt(index, fromIndex, toIndex, progress) {
-                    if (fromIndex === toIndex)
-                        return index === toIndex ? 1 : 0
-                    return index === fromIndex ? 1 - progress : (index === toIndex ? progress : 0)
-                }
+                        readonly property string wallpaperPath: selector.fileUrlToPath(
+                                                                     wallpaperFolderModel.get(cell.modelData,
+                                                                                              "filePath"))
+                        readonly property string wallpaperLabel: String(
+                            wallpaperFolderModel.get(cell.modelData, "fileName") || "")
 
-                function weight(index) {
-                    return weightAt(index, transitionFromIndex, transitionToIndex, transitionProgress)
-                }
+                        anchors.centerIn: parent
+                        width: selector.theme.sizing.wallpaperCardWidth
+                        height: selector.theme.sizing.wallpaperCardHeight
+                               + selector.theme.spacing.appLauncherCardSpacing
+                               + selector.theme.sizing.wallpaperCardLabelHeight
+                        path: wallpaperPath
+                        label: wallpaperLabel
+                        thumbnailPath: thumbnailCache.sourceFor(wallpaperPath)
+                        thumbnailCached: thumbnailPath !== selector.pathToFileUrl(wallpaperPath)
+                        selected: selector.selectedIndex === cell.index
+                        isActive: wallpaperPath === AppSettings.currentWallpaper
 
-                Component.onCompleted: {
-                    function check(ok, message) {
-                        if (!ok)
-                            console.warn(message)
-                    }
-                    check(weightAt(1, 1, 2, 0) === 1 && weightAt(2, 1, 2, 0) === 0, "selection weight at 0 failed")
-                    check(weightAt(1, 1, 2, 0.5) === 0.5 && weightAt(2, 1, 2, 0.5) === 0.5,
-                          "selection weight at 0.5 failed")
-                    check(weightAt(1, 1, 2, 1) === 0 && weightAt(2, 1, 2, 1) === 1, "selection weight at 1 failed")
-                    check(weightAt(2, 2, 2, 1) === 1 && 2 === 2, "settled selection invariant failed")
-                }
+                        onActivated: selector.setWallpaper(wallpaperPath)
 
-                function expansionBefore(index) {
-                    if (transitionFromIndex === transitionToIndex)
-                        return transitionToIndex < index ? 1 : 0
-                    return (transitionFromIndex < index ? 1 - transitionProgress : 0) + (transitionToIndex < index
-                                                                                         ? transitionProgress : 0)
-                }
-
-                function focusIndex() {
-                    return transitionFromIndex + (transitionToIndex - transitionFromIndex) * transitionProgress
-                }
-
-                function selectionContentX(index) {
-                    return Math.max(0, Math.min(index * stride, Math.max(0, contentWidth - width)))
-                }
-
-                onTransitionProgressChanged: contentX = selectionContentX(focusIndex())
-
-                function finishTransition() {
-                    transitionProgress = 1
-                    if (queuedIndex >= 0 && queuedIndex !== transitionToIndex) {
-                        const next = queuedIndex
-                        queuedIndex = -1
-                        startTransition(next)
-                        return
-                    }
-                    queuedIndex = -1
-                    selector.selectedIndex = transitionToIndex
-                    transitionRunning = false
-                }
-
-                function startTransition(index) {
-                    if (index === transitionToIndex) {
-                        jumpToIndex(index)
-                        return
-                    }
-                    transitionFromIndex = transitionToIndex
-                    transitionToIndex = index
-                    transitionRunning = true
-                    transitionAnimation.restart()
-                }
-
-                function requestIndex(index) {
-                    if (index < 0 || index >= wallpaperFolderModel.count)
-                        return
-                    if (!selector.transitionsEnabled) {
-                        jumpToIndex(index)
-                        return
-                    }
-                    if (transitionRunning) {
-                        queuedIndex = index
-                        selector.selectedIndex = index
-                        return
-                    }
-                    selector.selectedIndex = index
-                    startTransition(index)
-                }
-
-                function stopTransition() {
-                    transitionAnimation.stop()
-                    queuedIndex = -1
-                    transitionRunning = false
-                }
-
-                function jumpToIndex(index) {
-                    transitionAnimation.stop()
-                    transitionFromIndex = index
-                    transitionToIndex = index
-                    transitionProgress = 1
-                    queuedIndex = -1
-                    transitionRunning = false
-                    selector.selectedIndex = index
-                    contentX = selectionContentX(index)
-                }
-
-                Repeater {
-                    model: wallpaperFolderModel
-
-                    delegate: Item {
-                        required property string filePath
-                        required property int index
-                        required property date fileModified
-                        required property var fileSize
-                        readonly property string freshnessToken: `${Number(fileModified)}:${Number(fileSize)}`
-                        readonly property string wallpaperPath: selector.fileUrlToPath(filePath)
-
-                        readonly property bool cardActive: Math.abs(index - wallpaperList.viewportIndex)
-                                                           <= selector.residencyRadius
-
-                        // Only resident delegates need transition-dependent geometry.
-                        readonly property real distance: cardActive ? Math.abs(index - wallpaperList.focusIndex()) : 0
-                        readonly property bool isSelected: cardActive && index === wallpaperList.transitionToIndex &&
-                                                           !wallpaperList.transitionRunning
-                        readonly property real depth: Math.min(distance, selector.residencyRadius)
-                        readonly property real finalWidth: cardActive ? wallpaperList.sideWidth + (
-                                                                            wallpaperList.selectedWidth
-                                                                            - wallpaperList.sideWidth)
-                                                                        * wallpaperList.weight(index) :
-                                                                        wallpaperList.sideWidth
-                        readonly property real finalX: cardActive ? wallpaperList.centeringMargin + index
-                                                                    * wallpaperList.stride + ((
-                                                                                                  wallpaperList.selectedWidth
-                                                                                                  - wallpaperList.sideWidth)
-                                                                                              * wallpaperList.expansionBefore(
-                                                                                                  index)) : wallpaperList.centeringMargin
-                                                                    + index * wallpaperList.stride
-
-                        x: finalX
-                        width: finalWidth
-                        height: wallpaperList.height
-                        z: isSelected ? 100 : 50 - distance
-
-                        Loader {
-                            anchors.centerIn: parent
-                            width: parent.width
-                            height: wallpaperList.cardHeight
-                            active: selector.visualsActive && cardActive
-                            sourceComponent: wallpaperCardComponent
-                        }
-
-                        Component {
-                            id: wallpaperCardComponent
-
-                            WallpaperCard {
-                                anchors.fill: parent
-                                renderWidth: wallpaperList.selectedWidth
-                                path: wallpaperPath
-                                thumbnailPath: thumbnailCache.sourceFor(wallpaperPath)
-                                thumbnailCached: thumbnailPath !== selector.pathToFileUrl(wallpaperPath)
-                                selected: isSelected
-                                focusWeight: wallpaperList.weight(index)
-                                Component.onCompleted: thumbnailCache.request(wallpaperPath, freshnessToken)
-                                Connections {
-                                    target: wallpaperFolderModel
-                                    function onDataChanged() {
-                                        thumbnailCache.request(wallpaperPath, freshnessToken)
-                                    }
-                                }
-                                opacity: Math.max(selector.theme.motion.opacityCarouselMinimum, 1 - depth
-                                                  * selector.theme.motion.opacityCarouselDepthStep)
-                                Connections {
-                                    target: thumbnailCache
-                                    function onThumbnailReady(sourcePath, thumbnailUrl) {
-                                        if (sourcePath === wallpaperPath)
-                                            thumbnailPath = thumbnailUrl
-                                    }
-                                }
-                                onActivated: {
-                                    if (isSelected)
-                                        selector.setWallpaper(wallpaperPath)
-                                    else
-                                        selector.selectIndex(index)
-                                }
-                                onWheelStepped: direction => selector.moveSelection(direction)
+                        Component.onCompleted: thumbnailCache.request(wallpaperPath, selector.freshnessTokenForIndex(
+                                                                           cell.modelData))
+                        Connections {
+                            target: thumbnailCache
+                            function onThumbnailReady(sourcePath, thumbnailUrl) {
+                                if (sourcePath === wallpaperCard.wallpaperPath)
+                                    wallpaperCard.thumbnailPath = thumbnailUrl
                             }
                         }
                     }
@@ -331,7 +255,6 @@ Scope {
         id: panel
 
         visible: false
-        onVisibleChanged: selector.visualsActive = visible
         aboveWindows: true
         focusable: true
         exclusionMode: ExclusionMode.Ignore
@@ -358,8 +281,8 @@ Scope {
             Keys.onEscapePressed: selector.close()
             Keys.onLeftPressed: selector.moveSelection(-1)
             Keys.onRightPressed: selector.moveSelection(1)
-            Keys.onUpPressed: selector.moveSelection(-2)
-            Keys.onDownPressed: selector.moveSelection(2)
+            Keys.onUpPressed: selector.moveSelection(-selector.theme.sizing.wallpaperGridColumns)
+            Keys.onDownPressed: selector.moveSelection(selector.theme.sizing.wallpaperGridColumns)
             Keys.onReturnPressed: selector.applySelection()
             Keys.onEnterPressed: selector.applySelection()
 
@@ -372,13 +295,11 @@ Scope {
             Rectangle {
                 anchors.centerIn: parent
                 width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin,
-                                selector.theme.sizing.appLauncherMaxWidth)
+                                selector.theme.sizing.wallpaperSelectorMaxWidth)
                 height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin,
-                                 selector.theme.sizing.appLauncherMaxHeight)
+                                 selector.theme.sizing.wallpaperSelectorMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
-                color: selector.theme.colors.panel
-                border.width: selector.theme.shape.wallpaperSelectorBorderWidth
-                border.color: selector.theme.colors.border
+                color: selector.theme.colors.background
 
                 MouseArea {
                     anchors.fill: parent
@@ -420,33 +341,17 @@ Scope {
         onTriggered: selector.clampSelection()
     }
 
-    Timer {
-        id: enableTransitionsTimer
-        interval: 80
-        repeat: false
-        onTriggered: {
-            if (panel.visible)
-                selector.transitionsEnabled = true
-        }
-    }
-
     function open() {
-        enableTransitionsTimer.stop()
-        transitionsEnabled = false
-        visualsActive = true
+        searchText = ""
+        activeExtensions = []
         selectedIndex = 0
         clampSelection()
-        contentItem?.wallpaperListView?.jumpToIndex(selectedIndex)
         panel.visible = true
-        enableTransitionsTimer.start()
+        Qt.callLater(() => contentItem?.searchField?.forceActiveFocus())
     }
 
     function close() {
-        enableTransitionsTimer.stop()
-        transitionsEnabled = false
-        contentItem?.wallpaperListView?.stopTransition()
         panel.visible = false
-        visualsActive = false
 
         if (quitOnClose)
             Qt.quit()
@@ -456,21 +361,19 @@ Scope {
         panel.visible ? close() : open()
     }
 
+    onSearchTextChanged: selectedIndex = 0
+
     function moveSelection(direction) {
-        const count = wallpaperFolderModel.count
+        const count = filteredIndices.length
         if (count === 0)
             return
         selector.selectIndex(Math.max(0, Math.min(count - 1, selector.selectedIndex + direction)))
     }
 
     function selectIndex(index) {
-        if (index < 0 || index >= wallpaperFolderModel.count)
+        if (index < 0 || index >= filteredIndices.length)
             return
-        const list = contentItem?.wallpaperListView
-        if (list)
-            list.requestIndex(index)
-        else
-            selectedIndex = index
+        selectedIndex = index
     }
 
     function applySelection() {
@@ -479,13 +382,21 @@ Scope {
             selector.setWallpaper(path)
     }
 
+    function freshnessTokenForIndex(index) {
+        if (index < 0 || index >= wallpaperFolderModel.count)
+            return ""
+        const modified = wallpaperFolderModel.get(index, "fileModified")
+        const size = wallpaperFolderModel.get(index, "fileSize")
+        return `${Number(modified)}:${Number(size)}`
+    }
+
     function scheduleClampSelection() {
         if (!clampSelectionTimer.running)
             clampSelectionTimer.start()
     }
 
     function clampSelection() {
-        const nextIndex = Math.min(selector.selectedIndex, Math.max(0, wallpaperFolderModel.count - 1))
+        const nextIndex = Math.min(selector.selectedIndex, Math.max(0, filteredIndices.length - 1))
         if (selector.selectedIndex !== nextIndex)
             selector.selectedIndex = nextIndex
     }

@@ -20,7 +20,15 @@ Rectangle {
     width: theme.sizing.appLauncherCardWidth
     height: theme.sizing.appLauncherCardHeight
     radius: theme.shape.appLauncherCardRadius
-    color: selected ? theme.colors.primary : (hovered ? theme.colors.secondary : theme.colors.surfaceTransparent)
+    color: card.cardColor(selected, hovered)
+
+    function cardColor(isSelected, isHovered) {
+        if (isSelected)
+            return theme.colors.primary
+        if (isHovered)
+            return theme.colors.secondary
+        return theme.colors.surfaceTransparent
+    }
 
     Column {
         anchors.fill: parent

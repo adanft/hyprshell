@@ -19,9 +19,7 @@ QtObject {
     readonly property int appLauncherRadius: radius16
     readonly property int appLauncherBorderWidth: borderMedium
     readonly property int appLauncherSearchRadius: radiusFull
-    readonly property int appLauncherSearchBorderWidth: borderMedium
     readonly property int appLauncherCardRadius: radius12
-    readonly property int appLauncherCardBorderWidth: borderMedium
 
     readonly property int powerMenuActionRadius: radius36
     readonly property int powerMenuActionBorderWidth: borderEmphasis

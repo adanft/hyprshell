@@ -39,7 +39,7 @@ QtObject {
     readonly property int powerMenuActionSpacing: space16
 
     readonly property int wallpaperSelectorScreenMargin: space96
-    readonly property int wallpaperSelectorGridMargin: space24
+    readonly property int themeSelectorPadding: space12
     readonly property int wallpaperSelectorPadding: space12
     readonly property int wallpaperSelectorEmptyTextHorizontalMargin: space80
     readonly property int wallpaperGridGap: space6

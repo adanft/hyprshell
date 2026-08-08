@@ -22,7 +22,11 @@ QtObject {
     readonly property int appLauncherIconSlotSize: 56
     readonly property int appLauncherIconSize: 52
     readonly property int themeSelectorPaletteDotSize: size28
-    readonly property int themeSelectorGridColumns: 2
+    readonly property int themeSelectorGridColumns: 3
+    readonly property int themeSelectorMaxWidth: 504
+    readonly property int themeSelectorMaxHeight: 226
+    readonly property int themeSelectorCellWidth: 160
+    readonly property int themeVariantFilterWidth: 42
     readonly property int themePreviewReferenceWidth: 400
     readonly property int themePreviewReferenceHeight: 208
     readonly property int themePreviewHeaderMinHeight: size24

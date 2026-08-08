@@ -9,16 +9,14 @@ Rectangle {
     readonly property var theme: AppTheme
     required property var themeData
     property bool selected: false
+    property bool isActive: false
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
     readonly property color previewBackground: themeData && themeData.background ? themeData.background :
                                                                                    theme.colors.background
     readonly property color previewSurface: themeData && themeData.surface ? themeData.surface : previewBackground
-    readonly property color previewSurfaceActive: themeData && themeData.surfaceActive ? themeData.surfaceActive :
-                                                                                         previewSurface
     readonly property color previewText: themeData && themeData.text ? themeData.text : theme.colors.text
     readonly property color previewBorder: themeData && themeData.border ? themeData.border : theme.colors.border
-    readonly property color previewFocus: themeData && themeData.focus ? themeData.focus : theme.colors.focus
     readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4
                                          ? themeData.previewColors.slice(0, 4) : [previewText, previewBorder,
                                                                                   previewSurface, previewBackground]
@@ -31,9 +29,9 @@ Rectangle {
     signal activated
 
     radius: theme.shape.appLauncherCardRadius
-    color: active ? previewSurfaceActive : previewBackground
-    border.width: selected ? theme.shape.appLauncherCardBorderWidth : 0
-    border.color: previewFocus
+    color: previewBackground
+    border.width: (hovered || selected || isActive) ? theme.shape.wallpaperCardBorderWidth : 0
+    border.color: hovered ? theme.colors.secondary : (selected ? theme.colors.primary : theme.colors.info)
 
     Column {
         anchors.centerIn: parent

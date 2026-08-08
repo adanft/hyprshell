@@ -54,13 +54,11 @@ fi
 echo
 echo "== QML component tests =="
 
-# Shipped with Qt but outside PATH, so it is addressed directly.
-readonly QMLTESTRUNNER=/usr/lib/qt6/bin/qmltestrunner
-
-if [[ ! -x "$QMLTESTRUNNER" ]]; then
-	echo "-- INCONCLUSIVE: $QMLTESTRUNNER not found"
+if ! resolved_qmltestrunner=$(scripts/find-qmltestrunner.sh); then
+	echo "-- INCONCLUSIVE: qmltestrunner not found via QMLTESTRUNNER, PATH, or distro fallbacks"
 	failed=1
 else
+	readonly QMLTESTRUNNER="$resolved_qmltestrunner"
 	# Each file runs from its own directory, because the tests reach their
 	# subjects through a relative import.
 	for test_file in statusbar/components/tests/tst_*.qml theme/tests/tst_*.qml; do

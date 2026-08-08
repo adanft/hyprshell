@@ -7,7 +7,7 @@ import "../FileViewState.js" as FileViewState
 
 Scope {
     id: root
-    readonly property int networkRefreshMs: 2000
+    readonly property int networkRefreshMs: 1000
     readonly property var networkDevices: Networking.devices?.values ?? []
     readonly property var lanDevice: networkDevices.find(device => device.type === DeviceType.Wired) ?? null
     readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null

@@ -187,9 +187,7 @@ Scope {
                 height: launcher.theme.sizing.appLauncherSearchHeight
                 anchors.horizontalCenter: parent.horizontalCenter
                 radius: launcher.theme.shape.appLauncherSearchRadius
-                color: launcher.theme.colors.surfaceActive
-                border.width: launcher.theme.shape.appLauncherSearchBorderWidth
-                border.color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.border
+                color: launcher.theme.colors.surface
 
                 Shared.AppText {
                     anchors.left: parent.left
@@ -197,7 +195,7 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                     width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     text: launcher.icons.search
-                    color: searchInput.activeFocus ? launcher.theme.colors.focus : launcher.theme.colors.textSubtle
+                    color: launcher.theme.colors.textSubtle
                     font.family: launcher.theme.typography.iconFontFamily
                     font.pixelSize: launcher.theme.typography.sizeLg
                     font.styleName: launcher.theme.typography.styleMedium
@@ -272,8 +270,8 @@ Scope {
                     visible: launcher.filteredApps.length === 0
                     width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
                     text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
-                    color: launcher.theme.colors.textMuted
-                    font.pixelSize: launcher.theme.typography.sizeLg
+                    color: launcher.theme.colors.textSubtle
+                    font.pixelSize: launcher.theme.typography.sizeMd
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                 }
@@ -345,9 +343,7 @@ Scope {
                 height: Math.min(parent.height - launcher.theme.spacing.appLauncherScreenMargin,
                                  launcher.theme.sizing.appLauncherMaxHeight)
                 radius: launcher.theme.shape.appLauncherRadius
-                color: launcher.theme.colors.panel
-                border.width: launcher.theme.shape.appLauncherBorderWidth
-                border.color: launcher.theme.colors.border
+                color: launcher.theme.colors.background
 
                 MouseArea {
                     anchors.fill: parent

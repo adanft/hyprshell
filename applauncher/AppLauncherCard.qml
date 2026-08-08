@@ -20,9 +20,7 @@ Rectangle {
     width: theme.sizing.appLauncherCardWidth
     height: theme.sizing.appLauncherCardHeight
     radius: theme.shape.appLauncherCardRadius
-    color: active ? theme.colors.surfaceActive : theme.colors.surfaceTransparent
-    border.width: selected ? theme.shape.appLauncherCardBorderWidth : 0
-    border.color: theme.colors.focus
+    color: selected ? theme.colors.primary : (hovered ? theme.colors.secondary : theme.colors.surfaceTransparent)
 
     Column {
         anchors.fill: parent
@@ -45,7 +43,7 @@ Rectangle {
         Shared.AppText {
             width: parent.width
             text: card.app ? (card.app.name || "Unnamed") : "Unnamed"
-            color: card.theme.colors.text
+            color: card.active ? card.theme.colors.primaryText : card.theme.colors.text
             font.pixelSize: card.theme.typography.sizeLg
             font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter

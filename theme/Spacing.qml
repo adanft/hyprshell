@@ -16,7 +16,7 @@ QtObject {
     readonly property int space128: 128
 
     readonly property int appLauncherScreenMargin: space128
-    readonly property int appLauncherPadding: space24
+    readonly property int appLauncherPadding: space18
     readonly property int appLauncherSectionSpacing: space18
     readonly property int appLauncherSearchHorizontalPadding: space16
     readonly property int appLauncherEmptyTextHorizontalMargin: space80

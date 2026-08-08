@@ -26,7 +26,7 @@ QtObject {
                                                    displayName: "Catppuccin",
                                                    transparent: "transparent",
                                                    mask: "black",
-                                                   scrim: "#bf1e1e2e",
+                                                   scrim: "#40000000",
                                                    background: "#1e1e2e",
                                                    panel: "#f0181825",
                                                    surface: "#181825",

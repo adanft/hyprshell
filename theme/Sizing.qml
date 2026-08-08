@@ -11,8 +11,8 @@ QtObject {
     readonly property int size32: 32
     readonly property int size34: 34
 
-    readonly property int appLauncherMaxWidth: 488
-    readonly property int appLauncherMaxHeight: 548
+    readonly property int appLauncherMaxWidth: 476
+    readonly property int appLauncherMaxHeight: 536
     readonly property int appLauncherSearchHeight: 42
     readonly property int appLauncherSearchIconSlotWidth: size24
     readonly property int appLauncherGridCellWidth: 110

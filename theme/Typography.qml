@@ -13,7 +13,6 @@ QtObject {
     readonly property int statusBarIconFontSize: 24
     readonly property int themePreviewMinFontSize: 9
     readonly property int actionIconFontSize: 28
-    readonly property int displayIconFontSize: 56
     readonly property int heroIconFontSize: 68
     readonly property real notificationBodyLineHeight: 1.35
 

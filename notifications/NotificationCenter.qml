@@ -64,10 +64,16 @@ PopupWindow {
     anchor.rect.y: theme.sizing.notificationCenterTopOffset
     onVisibleChanged: popup.services.notification.setNotificationCenterOpen(visible)
 
+    Shortcut {
+        sequence: "Escape"
+        enabled: popup.visible
+        onActivated: popup.visible = false
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: popup.theme.shape.notificationCenterRadius
-        color: popup.colors.background
+        color: popup.colors.surface
         border.color: popup.colors.border
         border.width: popup.theme.shape.notificationCenterBorderWidth
 
@@ -87,66 +93,75 @@ PopupWindow {
                     id: headerTitle
 
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Notifications"
+                    text: `Notifications (${popup.services.notification.notificationCount})`
                     color: popup.colors.text
                     font.family: popup.theme.typography.textFontFamily
-                }
-
-                AppText {
-                    id: headerIcon
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: popup.icons.notificationsEmpty
-                    color: popup.colors.text
-                    font.family: popup.theme.typography.iconFontFamily
-                    font.pixelSize: popup.theme.typography.sizeLg
-                }
-
-                AppText {
-                    id: headerCount
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: popup.services.notification.notificationCount
-                    color: popup.colors.text
-                    font.family: popup.theme.typography.textFontFamily
-                    font.pixelSize: popup.theme.typography.sizeMd
                 }
 
                 Item {
-                    width: Math.max(0, parent.width - headerTitle.implicitWidth - headerIcon.implicitWidth
-                                    - headerCount.implicitWidth - clearButton.width - parent.spacing * 4)
+                    width: Math.max(0, parent.width - headerTitle.implicitWidth - dndButton.width
+                                    - clearButton.width - parent.spacing * 3)
                     height: popup.theme.sizing.notificationCenterSpacerHeight
                 }
 
-                Item {
+                Rectangle {
+                    id: dndButton
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: popup.theme.sizing.notificationCenterClearButtonHeight
+                    height: popup.theme.sizing.notificationCenterClearButtonHeight
+                    radius: width / 2
+                    color: popup.services.notification.notificationDnd ? popup.colors.primary :
+                                                                         (dndMouse.containsMouse || dndMouse.activeFocus ?
+                                                                          popup.colors.secondary :
+                                                                          popup.colors.transparent)
+
+                    AppText {
+                        anchors.fill: parent
+                        text: popup.icons.notificationsDnd
+                        color: popup.services.notification.notificationDnd || dndMouse.containsMouse ?
+                                   popup.colors.primaryText : popup.colors.textSubtle
+                        font.family: popup.theme.typography.iconFontFamily
+                        font.pixelSize: popup.theme.sizing.notificationCenterHeaderIconSize
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    MouseArea {
+                        id: dndMouse
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        activeFocusOnTab: true
+                        Accessible.role: Accessible.CheckBox
+                        Accessible.name: "Do Not Disturb"
+                        Accessible.checked: popup.services.notification.notificationDnd
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: popup.services.notification.toggleNotificationDnd()
+                        Keys.onReturnPressed: popup.services.notification.toggleNotificationDnd()
+                        Keys.onEnterPressed: popup.services.notification.toggleNotificationDnd()
+                        Keys.onSpacePressed: popup.services.notification.toggleNotificationDnd()
+                    }
+                }
+
+                Rectangle {
                     id: clearButton
 
                     anchors.verticalCenter: parent.verticalCenter
-                    width: clearContent.implicitWidth
+                    width: popup.theme.sizing.notificationCenterClearButtonWidth
                     height: popup.theme.sizing.notificationCenterClearButtonHeight
+                    radius: height / 2
                     visible: popup.services.notification.hasNotifications
+                    color: clearMouse.containsMouse || clearMouse.activeFocus ? popup.colors.secondary : popup.colors.transparent
 
-                    Row {
-                        id: clearContent
-
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: popup.theme.spacing.notificationCenterClearButtonSpacing
-
-                        AppText {
-                            text: "Clear"
-                            color: clearMouse.containsMouse ? popup.colors.link : popup.colors.textMuted
-                            font.family: popup.theme.typography.textFontFamily
-                            font.pixelSize: popup.theme.typography.sizeMd
-                            font.styleName: popup.theme.typography.styleMedium
-                        }
-
-                        AppText {
-                            text: popup.icons.notificationsClear
-                            color: clearMouse.containsMouse ? popup.colors.link : popup.colors.textMuted
-                            font.family: popup.theme.typography.iconFontFamily
-                            font.pixelSize: popup.theme.typography.sizeMd
-                        }
+                    AppText {
+                        anchors.fill: parent
+                        text: popup.icons.notificationsClear
+                        color: clearMouse.containsMouse ? popup.colors.primaryText : popup.colors.textSubtle
+                        font.family: popup.theme.typography.iconFontFamily
+                        font.pixelSize: popup.theme.sizing.notificationCenterHeaderIconSize
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
                     }
 
                     MouseArea {
@@ -154,90 +169,29 @@ PopupWindow {
 
                         anchors.fill: parent
                         hoverEnabled: true
+                        activeFocusOnTab: true
+                        Accessible.role: Accessible.Button
+                        Accessible.name: "Clear all notifications"
                         cursorShape: Qt.PointingHandCursor
                         onClicked: popup.services.notification.dismissNotifications()
-                    }
-                }
-            }
-
-            Row {
-                id: dndRow
-
-                width: parent.width
-                height: popup.theme.sizing.notificationCenterDndRowHeight
-
-                AppText {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - dndSwitch.width
-                    text: "Do Not Disturb"
-                    color: popup.colors.text
-                    font.family: popup.theme.typography.textFontFamily
-                    font.pixelSize: popup.theme.typography.sizeMd
-                }
-
-                Rectangle {
-                    id: dndSwitch
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: popup.theme.sizing.notificationCenterDndSwitchWidth
-                    height: popup.theme.sizing.notificationCenterDndSwitchHeight
-                    radius: height / 2
-                    color: popup.services.notification.notificationDnd ? popup.colors.primary :
-                                                                         popup.colors.surfaceHover
-                    border.width: 0
-
-                    Rectangle {
-                        width: popup.theme.sizing.notificationCenterDndKnobSize
-                        height: popup.theme.sizing.notificationCenterDndKnobSize
-                        radius: width / 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: popup.services.notification.notificationDnd ? parent.width - width
-                                                                         - popup.theme.spacing.notificationCenterDndKnobMargin :
-                                                                         popup.theme.spacing.notificationCenterDndKnobMargin
-                        color: popup.services.notification.notificationDnd ? popup.colors.background :
-                                                                             popup.colors.textSubtle
-
-                        Behavior on x {
-                            NumberAnimation {
-                                duration: popup.theme.motion.durationShort
-                                easing.type: Easing.OutCubic
-                            }
-                        }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: popup.services.notification.toggleNotificationDnd()
+                        Keys.onReturnPressed: popup.services.notification.dismissNotifications()
+                        Keys.onEnterPressed: popup.services.notification.dismissNotifications()
+                        Keys.onSpacePressed: popup.services.notification.dismissNotifications()
                     }
                 }
             }
 
             Item {
                 width: parent.width
-                height: parent.height - headerRow.height - dndRow.height - parent.spacing * 2
+                height: parent.height - headerRow.height - parent.spacing
 
-                Column {
+                AppText {
                     anchors.centerIn: parent
-                    spacing: popup.theme.spacing.notificationCenterSectionSpacing
                     visible: !popup.services.notification.hasNotifications
-
-                    AppText {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: popup.icons.notificationsEmpty
-                        color: popup.colors.textSubtle
-                        font.family: popup.theme.typography.iconFontFamily
-                        font.pixelSize: popup.theme.typography.displayIconFontSize
-                    }
-
-                    AppText {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "No Notifications"
-                        color: popup.colors.textSubtle
-                        font.family: popup.theme.typography.textFontFamily
-                        font.pixelSize: popup.theme.typography.sizeLg
-                    }
+                    text: "No notifications"
+                    color: popup.colors.textSubtle
+                    font.family: popup.theme.typography.textFontFamily
+                    font.pixelSize: popup.theme.typography.sizeMd
                 }
 
                 ListView {
@@ -255,18 +209,21 @@ PopupWindow {
                     onModelChanged: popup.pruneExpandedNotifications()
 
                     delegate: NotificationCard {
-                        required property var modelData
+                        required property int index
+
+                        readonly property var entryData: popup.services.notification.notifications[index] || null
 
                         width: notificationList.width
                         colors: popup.colors
                         notificationService: popup.services.notification
-                        initialExpanded: popup.isNotificationExpanded(modelData)
-                        notificationData: modelData
-                        cornerRadius: popup.theme.shape.notificationCenterCardRadius
+                        allowLiveImage: true
+                        isHistoryEntry: true
+                        initialExpanded: popup.isNotificationExpanded(entryData)
+                        notificationData: entryData
                         useRenderedHeightForLayout: true
-                        timeText: popup.services.notification.notificationTimeText(modelData)
-                        onExpandedChanged: popup.setNotificationExpanded(modelData, expanded)
-                        onCloseRequested: popup.services.notification.dismissNotificationHistoryEntry(modelData)
+                        timeText: popup.services.notification.notificationTimeText(entryData)
+                        onExpandedChanged: popup.setNotificationExpanded(entryData, expanded)
+                        onCloseRequested: popup.services.notification.dismissNotificationHistoryEntry(entryData)
                         onActionInvoked: action => {
                             if (action && action.invoke)
                                 action.invoke()

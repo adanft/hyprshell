@@ -1,5 +1,6 @@
 import "../theme"
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
@@ -15,6 +16,7 @@ Item {
     required property var notificationService
     property var notificationData: null
     property bool allowLiveImage: false
+    property bool isHistoryEntry: false
     property string timeText: "now"
     property int cornerRadius: theme.shape.notificationCardRadius
     property bool initialExpanded: false
@@ -29,6 +31,7 @@ Item {
     readonly property string textFont: theme.typography.textFontFamily
     readonly property string iconFont: theme.typography.iconFontFamily
     readonly property int spacing: theme.spacing.notificationCardSpacing
+    readonly property int actionSpacing: theme.spacing.notificationCardActionSpacing
     readonly property int cardPadding: theme.spacing.notificationCardPadding
     readonly property int borderWidth: theme.shape.notificationCardBorderWidth
     readonly property int iconSlotSize: theme.sizing.notificationCardIconSlotSize
@@ -48,8 +51,14 @@ Item {
     readonly property int allocationFinalizeDelayMs: theme.motion.layoutFinalizeDelay
     readonly property real geometryEpsilon: 0.5
     readonly property real contentInset: cardPadding + cardRect.border.width
+    readonly property real contentInsetLeft: cardPadding + urgencyBarWidth
+    readonly property real contentInsetRight: cardPadding
     readonly property int actionCount: countInvokableActions()
     readonly property bool hasActions: actionCount > 0
+    readonly property var defaultAction: findDefaultAction()
+    readonly property bool hasDefaultAction: defaultAction !== null
+    readonly property string materializeEntryId: notificationData ? (notificationData.historyEntryId
+                                                                       || notificationData.id || "") : ""
     readonly property real headerHeight: Math.ceil(labelFontSize * bodyLineHeight)
     readonly property real titleHeight: Math.ceil(titleFontSize * bodyLineHeight)
     readonly property string bodyHtml: notificationData ? (notificationData.htmlBody || notificationData.body || "") :
@@ -73,17 +82,19 @@ Item {
         const actionSpace = hasActions ? spacing + actionButtonHeight : 0
         return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
     }
-    readonly property color urgencyTimeColor: {
+    readonly property color urgencyTimeColor: card.colors.info
+    readonly property int urgencyBarWidth: theme.spacing.notificationCardUrgencyBarWidth
+    readonly property color urgencyBarColor: {
         if (!notificationData)
-            return card.colors.textSubtle
+            return card.colors.info
 
         switch (notificationData.urgency) {
         case NotificationUrgency.Critical:
             return card.colors.critical
-        case NotificationUrgency.Normal:
-            return card.colors.info
+        case NotificationUrgency.Low:
+            return card.colors.secondary
         default:
-            return card.colors.textSubtle
+            return card.colors.info
         }
     }
     readonly property string fallbackIconName: "application-x-executable"
@@ -136,12 +147,22 @@ Item {
             collapsedTextMode = false
     }
 
+    function findDefaultAction() {
+        const actions = notificationData && notificationData.actions ? notificationData.actions : []
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i]
+            if (action && action.invoke && action.identifier === "default")
+                return action
+        }
+        return null
+    }
+
     function countInvokableActions() {
         const actions = notificationData && notificationData.actions ? notificationData.actions : []
         let count = 0
         for (let i = 0; i < actions.length; i++) {
             const action = actions[i]
-            if (action && action.invoke)
+            if (action && action.invoke && action.identifier !== "default")
                 count++
         }
         return count
@@ -152,7 +173,7 @@ Item {
         let current = 0
         for (let i = 0; i < actions.length; i++) {
             const action = actions[i]
-            if (!action || !action.invoke)
+            if (!action || !action.invoke || action.identifier === "default")
                 continue
             if (current === invokableIndex)
                 return action
@@ -218,10 +239,14 @@ Item {
         collapsedTextMode = true
         renderedHeightAnimation.stop()
         Qt.callLater(() => {
-            renderedLayoutHeight = layoutHeight
-            allocatedLayoutHeight = layoutHeight
-            inlineGeometryReady = true
-            layoutChanged()
+            try {
+                renderedLayoutHeight = layoutHeight
+                allocatedLayoutHeight = layoutHeight
+                inlineGeometryReady = true
+                layoutChanged()
+            } catch (error) {
+                // card was destroyed before this deferred call ran
+            }
         })
     }
     onIconSourceChanged: {
@@ -256,9 +281,26 @@ Item {
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
         color: card.colors.background
-        border.color: card.colors.borderStrong
+        border.color: card.colors.border
         border.width: card.borderWidth
         clip: true
+        layer.enabled: true
+        layer.smooth: true
+
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: cardRectMask
+            maskThresholdMin: 0.5
+            maskSpreadAtMin: 1
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: card.urgencyBarWidth
+            color: card.urgencyBarColor
+        }
 
         HoverHandler {
             id: cardHoverHandler
@@ -271,14 +313,30 @@ Item {
             }
         }
 
+        MouseArea {
+            id: defaultActionMouse
+
+            anchors.fill: parent
+            enabled: card.hasDefaultAction
+            activeFocusOnTab: enabled
+            Accessible.role: Accessible.Button
+            Accessible.name: card.notificationData ? `Open ${card.notificationData.summary || "notification"}` : "Open notification"
+            cursorShape: Qt.ArrowCursor
+            z: -1
+            onClicked: card.actionInvoked(card.defaultAction)
+            Keys.onReturnPressed: card.actionInvoked(card.defaultAction)
+            Keys.onEnterPressed: card.actionInvoked(card.defaultAction)
+            Keys.onSpacePressed: card.actionInvoked(card.defaultAction)
+        }
+
         Item {
             id: contentViewport
 
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.leftMargin: card.contentInset
-            anchors.rightMargin: card.contentInset
+            anchors.leftMargin: card.contentInsetLeft
+            anchors.rightMargin: card.contentInsetRight
             anchors.topMargin: card.contentInset
             height: card.viewportHeight
             clip: true
@@ -309,15 +367,18 @@ Item {
                                  !card.iconSourceQuarantined && status !== Image.Error
                         asynchronous: !card.iconSource.startsWith("image://qsimage/")
                         cache: true
-                        sourceSize: Qt.size(card.iconSize, card.iconSize)
+                        readonly property size oversampledSourceSize: Qt.size(card.iconSize * 2, card.iconSize * 2)
+                        sourceSize: card.iconSource.startsWith(
+                                        "image://qsimage/") ? Qt.size(0, 0) : oversampledSourceSize
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                        mipmap: true
                         onStatusChanged: {
-                            if (status === Image.Ready && card.allowLiveImage && card.notificationData?.historyEntryId
+                            if (status === Image.Ready && card.allowLiveImage && card.materializeEntryId
                                     && card.notificationService
                                     && typeof card.notificationService.materializeNotificationImage === "function")
                                 card.notificationService.materializeNotificationImage(
-                                            card.notificationData.historyEntryId, notificationImage)
+                                            card.materializeEntryId, notificationImage)
 
                             const failedSource = source.toString()
                             if (status === Image.Error && card.allowLiveImage && failedSource.startsWith(
@@ -422,7 +483,7 @@ Item {
                             width: parent.width
                             text: card.bodyHtml
                             textFormat: Text.StyledText
-                            color: card.colors.textMuted
+                            color: card.colors.text
                             linkColor: card.colors.link
                             font.family: card.textFont
                             font.pixelSize: card.bodyFontSize
@@ -451,20 +512,11 @@ Item {
                             maximumLineCount: -1
                             elide: Text.ElideNone
                         }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            enabled: bodyText.hoveredLink.length === 0 && (bodyContainer.canExpand || card.expanded)
-                            cursorShape: Qt.ArrowCursor
-                            propagateComposedEvents: true
-                            z: -1
-                            onClicked: card.toggleExpanded()
-                        }
                     }
 
                     Row {
                         width: parent.width
-                        spacing: card.spacing
+                        spacing: card.actionSpacing
                         visible: card.hasActions
 
                         Repeater {
@@ -478,7 +530,7 @@ Item {
                                                 card.actionButtonMinWidth)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
-                                color: card.colors.surfaceInverse
+                                color: actionMouse.containsMouse || actionMouse.activeFocus ? card.colors.secondary : card.colors.surface
                                 border.width: 0
 
                                 Text {
@@ -486,7 +538,7 @@ Item {
 
                                     anchors.centerIn: parent
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
-                                    color: actionMouse.containsMouse ? card.colors.link : card.colors.textMuted
+                                    color: actionMouse.containsMouse ? card.colors.primaryText : card.colors.textMuted
                                     font.family: card.textFont
                                     font.pixelSize: card.theme.typography.sizeSm
                                     font.styleName: card.theme.typography.styleMedium
@@ -498,8 +550,14 @@ Item {
 
                                     anchors.fill: parent
                                     hoverEnabled: true
+                                    activeFocusOnTab: true
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: parent.action ? (parent.action.text || "Open") : "Open"
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: card.actionInvoked(parent.action)
+                                    Keys.onReturnPressed: card.actionInvoked(parent.action)
+                                    Keys.onEnterPressed: card.actionInvoked(parent.action)
+                                    Keys.onSpacePressed: card.actionInvoked(parent.action)
                                 }
                             }
                         }
@@ -509,7 +567,7 @@ Item {
                 Item {
                     id: closeButtonSlot
 
-                    width: card.iconSlotSize
+                    width: card.closeButtonSize
                     height: card.iconSlotSize
                     anchors.top: parent.top
 
@@ -519,12 +577,12 @@ Item {
                         width: card.closeButtonSize
                         height: card.closeButtonSize
                         radius: card.theme.shape.notificationCardCloseButtonRadius
-                        color: closeMouse.containsMouse ? card.colors.surfaceHover : card.colors.transparent
+                        color: closeMouse.containsMouse || closeMouse.activeFocus ? card.colors.secondary : card.colors.surfaceHover
 
                         Text {
                             anchors.fill: parent
-                            text: card.icons.close
-                            color: card.colors.textSubtle
+                            text: card.isHistoryEntry ? card.icons.trash : card.icons.close
+                            color: closeMouse.containsMouse ? card.colors.primaryText : card.colors.textSubtle
                             font.family: card.iconFont
                             font.pixelSize: card.closeIconFontSize
                             horizontalAlignment: Text.AlignHCenter
@@ -536,13 +594,72 @@ Item {
 
                             anchors.fill: parent
                             hoverEnabled: true
+                            activeFocusOnTab: true
+                            Accessible.role: Accessible.Button
+                            Accessible.name: card.isHistoryEntry ? "Delete notification" : "Dismiss notification"
                             cursorShape: Qt.PointingHandCursor
                             onClicked: card.closeRequested()
+                            Keys.onReturnPressed: card.closeRequested()
+                            Keys.onEnterPressed: card.closeRequested()
+                            Keys.onSpacePressed: card.closeRequested()
                         }
                     }
                 }
             }
         }
+
+        Item {
+            id: expandToggleSlot
+
+            width: card.closeButtonSize
+            height: card.closeButtonSize
+            x: parent.width - card.contentInsetRight - card.closeButtonSize
+               - card.theme.spacing.notificationCardExpandToggleGap - card.closeButtonSize
+            y: card.contentInset
+            visible: bodyContainer.canExpand || card.expanded
+
+            Rectangle {
+                anchors.fill: parent
+                radius: card.theme.shape.notificationCardCloseButtonRadius
+                color: expandMouse.containsMouse || expandMouse.activeFocus ? card.colors.secondary : card.colors.surfaceHover
+
+                Text {
+                    anchors.fill: parent
+                    text: card.expanded ? card.icons.chevronUp : card.icons.chevronDown
+                    color: expandMouse.containsMouse ? card.colors.primaryText : card.colors.textSubtle
+                    font.family: card.iconFont
+                    font.pixelSize: card.closeIconFontSize
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                MouseArea {
+                    id: expandMouse
+
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    activeFocusOnTab: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: card.expanded ? "Collapse notification" : "Expand notification"
+                    Accessible.pressed: card.expanded
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: card.toggleExpanded()
+                    Keys.onReturnPressed: card.toggleExpanded()
+                    Keys.onEnterPressed: card.toggleExpanded()
+                    Keys.onSpacePressed: card.toggleExpanded()
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: cardRectMask
+
+        anchors.fill: cardRect
+        radius: card.cornerRadius
+        color: card.colors.mask
+        visible: false
+        layer.enabled: true
     }
 
     Behavior on renderedLayoutHeight {

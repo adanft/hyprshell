@@ -68,13 +68,12 @@ QtObject {
     readonly property int notificationCenterHeaderHeight: size30
     readonly property int notificationCenterSpacerHeight: 1
     readonly property int notificationCenterClearButtonHeight: size26
-    readonly property int notificationCenterDndRowHeight: size26
-    readonly property int notificationCenterDndSwitchWidth: size34
-    readonly property int notificationCenterDndSwitchHeight: size16
-    readonly property int notificationCenterDndKnobSize: size14
+    readonly property int notificationCenterClearButtonWidth: 72
+    readonly property int notificationCenterHeaderIconSize: size16
     readonly property int notificationCardCollapsedBodyLines: 2
-    readonly property int notificationCardIconSlotSize: size32
-    readonly property int notificationCardIconSize: size24
+    readonly property int notificationCardIconSlotSize: 36
+    readonly property int notificationCardIconSize: 36
+    readonly property int notificationCardIconSaveSize: 72
     readonly property int notificationCardCloseButtonSize: size24
     readonly property int notificationCardActionButtonHeight: size24
     readonly property int notificationCardActionButtonMinWidth: 68

@@ -228,7 +228,6 @@ Scope {
         const body = root.stripImages(notification.body || "")
         return {
             id: root.notificationPopupSequence,
-            notification: notification,
             summary: root.stripImages(notification.summary || "Notification"),
             body: body,
             htmlBody: root.resolveHtmlBody(body),
@@ -273,7 +272,7 @@ Scope {
             desktopEntry: notification.desktopEntry || "",
             image: notification.image || "",
             urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
-            actions: [],
+            actions: notification.actions || [],
             createdAt: createdAt,
             timestamp: createdAt
         }
@@ -315,6 +314,7 @@ Scope {
                 return
             }
 
+            const saveSize = root.theme.sizing.notificationCardIconSaveSize
             imageItem.grabToImage(function (result) {
                 let saved = false
                 try {
@@ -324,7 +324,7 @@ Scope {
                 }
 
                 root.handleNotificationImageSaveResult(entryId, imageItem, path, saved)
-            })
+            }, Qt.size(saveSize, saveSize))
         })
         mkdir.exec(["mkdir", "-p", "--", root.notificationImageCacheDirectory])
     }

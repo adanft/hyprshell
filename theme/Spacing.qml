@@ -54,7 +54,7 @@ QtObject {
     readonly property int screenshotToolCursorSwitchKnobMargin: 3
 
     readonly property int notificationBadgeTopMargin: space6
-    readonly property int notificationBadgeRightMargin: space8
+    readonly property int notificationBadgeRightMargin: 0
     readonly property int notificationPopupTopMargin: space52
     readonly property int notificationPopupRightMargin: space12
     readonly property int notificationPopupBottomMargin: space12
@@ -64,11 +64,12 @@ QtObject {
     readonly property int notificationCenterScreenMargin: space6
     readonly property int notificationCenterSectionSpacing: space12
     readonly property int notificationCenterHeaderSpacing: space8
-    readonly property int notificationCenterClearButtonSpacing: space4
-    readonly property int notificationCenterDndKnobMargin: space2
     readonly property int notificationCenterListSpacing: space12
-    readonly property int notificationCardSpacing: space8
-    readonly property int notificationCardPadding: space8
+    readonly property int notificationCardSpacing: space12
+    readonly property int notificationCardPadding: space12
+    readonly property int notificationCardUrgencyBarWidth: 3
+    readonly property int notificationCardExpandToggleGap: space6
+    readonly property int notificationCardActionSpacing: space6
     readonly property int notificationCardActionButtonHorizontalPadding: space16
 
     readonly property int statusBarSliderHitAreaVerticalMargin: space8

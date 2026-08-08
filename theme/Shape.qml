@@ -38,7 +38,6 @@ QtObject {
     readonly property int notificationBadgeRadius: radius3
     readonly property int notificationCenterRadius: radius16
     readonly property int notificationCenterBorderWidth: borderThin
-    readonly property int notificationCenterCardRadius: radius12
     readonly property int notificationCardRadius: radius16
     readonly property int notificationCardBorderWidth: borderThin
     readonly property int notificationCardCloseButtonRadius: radiusFull

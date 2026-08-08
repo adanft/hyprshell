@@ -13,7 +13,7 @@ assert.match(
 );
 assert.match(
 	source,
-	/timeText:\s*popup\.services\.notification\.notificationTimeText\(modelData\)/,
+	/timeText:\s*popup\.services\.notification\.notificationTimeText\(entryData\)/,
 );
 assert.match(
 	serviceSource,

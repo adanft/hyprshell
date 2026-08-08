@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 #
-# Runs the whole suite: the Node contract tests, the QML component tests, then
-# the QML smoke test.
+# Runs the whole suite: Node contract tests, Python benchmark tests, QML
+# component tests, then the QML smoke test.
 #
-#     ./run-tests.sh              all three stages
-#     ./run-tests.sh --js         Node tests only, no compositor needed
+#     ./run-tests.sh              all four stages
+#     ./run-tests.sh --js         Node + Python tests; QML/compositor skipped
+#
+# --js omits the compositor-dependent QML stages but still runs the Python
+# benchmark tests.
 #
 # Exits non-zero if any stage fails or is inconclusive.
 
@@ -30,6 +33,15 @@ if node --test; then
 	echo "-- Node tests passed"
 else
 	echo "-- Node tests FAILED"
+	failed=1
+fi
+
+echo
+echo "== Python benchmark tests =="
+if python3 scripts/qsrice-bench.test.py; then
+	echo "-- Python benchmark tests passed"
+else
+	echo "-- Python benchmark tests FAILED"
 	failed=1
 fi
 

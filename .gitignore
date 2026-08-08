@@ -3,3 +3,4 @@
 *.qslog
 .qmlls.ini
 .codegraph
+__pycache__/

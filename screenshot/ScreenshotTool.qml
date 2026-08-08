@@ -8,6 +8,8 @@ Scope {
     id: tool
 
     readonly property var theme: AppTheme
+    readonly property var icons: Icons
+    readonly property var delayOptions: [0, 3, 5, 10, 15]
 
     property alias visible: panel.visible
     property bool quitOnClose: false
@@ -75,11 +77,11 @@ Scope {
     function actionIcon(index) {
         switch (index) {
         case 0:
-            return "󰍹"
+            return "󰍺"
         case 1:
-            return "󰹑"
+            return "󰍹"
         case 2:
-            return "󰖲"
+            return ""
         case 3:
             return "󰆞"
         default:
@@ -121,6 +123,12 @@ Scope {
         selectedActionIndex = Math.max(0, Math.min(3, selectedActionIndex + direction))
     }
 
+    function moveDelaySelection(direction) {
+        const currentIndex = Math.max(0, delayOptions.indexOf(delaySeconds))
+        const nextIndex = (currentIndex + direction + delayOptions.length) % delayOptions.length
+        delaySeconds = delayOptions[nextIndex]
+    }
+
     function activateSelection() {
         capture(actionMode(selectedActionIndex))
     }
@@ -133,29 +141,108 @@ Scope {
 
             readonly property int cursorRowHeight: Math.max(cursorLabel.implicitHeight, cursorSwitch.height)
             readonly property int timerRowHeight: Math.max(timerLabel.implicitHeight, timerOptions.height)
-            readonly property int actionRowHeight: tool.theme.sizing.screenshotToolActionHeight
-            readonly property int minimumVerticalSpacing: tool.theme.spacing.screenshotToolSectionSpacing
 
-            anchors.fill: parent
-            anchors.margins: tool.theme.spacing.screenshotToolPadding
-            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - cursorRowHeight - timerRowHeight
-                                                                  - actionRowHeight) / 2))
+            spacing: tool.theme.spacing.screenshotToolSectionSpacing
+
+            Row {
+                id: actionRow
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: tool.theme.spacing.screenshotToolActionRowSpacing
+
+                Repeater {
+                    model: 4
+
+                    ScreenshotAction {
+                        required property int index
+
+                        icon: tool.actionIcon(index)
+                        title: tool.actionTitle(index)
+                        selected: tool.selectedActionIndex === index
+                        onActivated: tool.capture(tool.actionMode(index))
+                    }
+                }
+            }
+
+            Item {
+                id: timerRow
+
+                width: actionRow.width
+                height: content.timerRowHeight
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: tool.theme.spacing.space6
+
+                    Shared.AppText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: ""
+                        color: tool.theme.colors.info
+                        font.family: tool.theme.typography.iconFontFamily
+                        font.pixelSize: tool.theme.sizing.size24
+                    }
+
+                    Shared.AppText {
+                        id: timerLabel
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Timer"
+                        color: tool.theme.colors.text
+                        font.pixelSize: tool.theme.typography.sizeMd
+                        font.styleName: tool.theme.typography.styleSemibold
+                    }
+                }
+
+                Row {
+                    id: timerOptions
+
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: tool.theme.spacing.screenshotToolTimerOptionSpacing
+
+                    Repeater {
+                        model: tool.delayOptions
+
+                        ScreenshotTimerOption {
+                            required property int modelData
+
+                            value: modelData
+                            selected: tool.delaySeconds === modelData
+                            onActivated: tool.delaySeconds = modelData
+                        }
+                    }
+                }
+            }
 
             Item {
                 id: cursorRow
 
-                width: parent.width
+                width: actionRow.width
                 height: content.cursorRowHeight
 
-                Shared.AppText {
-                    id: cursorLabel
-
+                Row {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Cursor"
-                    color: tool.theme.colors.text
-                    font.pixelSize: tool.theme.typography.sizeMd
-                    font.styleName: tool.theme.typography.styleSemibold
+                    spacing: tool.theme.spacing.space6
+
+                    Shared.AppText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: ""
+                        color: tool.theme.colors.info
+                        font.family: tool.theme.typography.iconFontFamily
+                        font.pixelSize: tool.theme.sizing.size24
+                    }
+
+                    Shared.AppText {
+                        id: cursorLabel
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Cursor"
+                        color: tool.theme.colors.text
+                        font.pixelSize: tool.theme.typography.sizeMd
+                        font.styleName: tool.theme.typography.styleSemibold
+                    }
                 }
 
                 Rectangle {
@@ -176,7 +263,7 @@ Scope {
                         x: tool.includeCursor ? parent.width - width
                                                 - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin :
                                                 tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
-                        color: tool.includeCursor ? tool.theme.colors.primaryText : tool.theme.colors.textMuted
+                        color: tool.theme.colors.primaryText
 
                         Behavior on x {
                             NumberAnimation {
@@ -191,64 +278,6 @@ Scope {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: tool.includeCursor = !tool.includeCursor
-                    }
-                }
-            }
-
-            Item {
-                id: timerRow
-
-                width: parent.width
-                height: content.timerRowHeight
-
-                Shared.AppText {
-                    id: timerLabel
-
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Timer"
-                    color: tool.theme.colors.text
-                    font.pixelSize: tool.theme.typography.sizeMd
-                    font.styleName: tool.theme.typography.styleSemibold
-                }
-
-                Row {
-                    id: timerOptions
-
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: tool.theme.spacing.screenshotToolTimerOptionSpacing
-
-                    Repeater {
-                        model: [3, 5, 10, 15]
-
-                        ScreenshotTimerOption {
-                            required property int modelData
-
-                            value: modelData
-                            selected: tool.delaySeconds === modelData
-                            onActivated: tool.delaySeconds = tool.delaySeconds === modelData ? 0 : modelData
-                        }
-                    }
-                }
-            }
-
-            Row {
-                id: actionRow
-
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: tool.theme.spacing.screenshotToolActionRowSpacing
-
-                Repeater {
-                    model: 4
-
-                    ScreenshotAction {
-                        required property int index
-
-                        icon: tool.actionIcon(index)
-                        title: tool.actionTitle(index)
-                        selected: tool.selectedActionIndex === index
-                        onActivated: tool.capture(tool.actionMode(index))
                     }
                 }
             }
@@ -287,6 +316,8 @@ Scope {
             Keys.onRightPressed: tool.moveSelection(1)
             Keys.onUpPressed: tool.includeCursor = !tool.includeCursor
             Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
+            Keys.onTabPressed: tool.moveDelaySelection(1)
+            Keys.onBacktabPressed: tool.moveDelaySelection(-1)
             Keys.onReturnPressed: tool.activateSelection()
             Keys.onEnterPressed: tool.activateSelection()
 
@@ -300,10 +331,10 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - tool.theme.spacing.screenshotToolScreenMargin,
-                                tool.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin,
-                                 tool.theme.sizing.appLauncherMaxHeight)
+                width: Math.min(contentLoader.width + tool.theme.spacing.screenshotToolPadding * 2,
+                                parent.width - tool.theme.spacing.screenshotToolScreenMargin)
+                height: Math.min(contentLoader.height + tool.theme.spacing.screenshotToolPadding * 2,
+                                 parent.height - tool.theme.spacing.screenshotToolScreenMargin)
                 radius: tool.theme.shape.screenshotToolRadius
                 color: tool.theme.colors.background
 
@@ -315,7 +346,7 @@ Scope {
                 Loader {
                     id: contentLoader
 
-                    anchors.fill: parent
+                    anchors.centerIn: parent
                     active: panel.visible
                     sourceComponent: screenshotContent
                 }

@@ -21,7 +21,7 @@ Rectangle {
 
     Shared.AppText {
         anchors.centerIn: parent
-        text: option.value + "s"
+        text: String(option.value)
         color: option.active ? option.theme.colors.primaryText : option.theme.colors.text
         font.pixelSize: option.theme.typography.sizeMd
         font.styleName: option.theme.typography.styleMedium

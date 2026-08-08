@@ -21,7 +21,15 @@ assert.match(facade, /Component\.onCompleted: persistence\.start\(\)/);
 assert.match(facade, /AppSettingsPersistence\s*\{/);
 assert.match(facade, /if \(currentTheme === name\)\s*return false/);
 assert.match(facade, /if \(currentWallpaper === path\)\s*return false/);
-assert.match(facade, /persistence\.persist\(currentTheme, currentWallpaper\)/g);
+assert.match(facade, /property bool startupThemeChanged: false/);
+assert.match(facade, /property bool startupWallpaperChanged: false/);
+assert.match(facade, /if \(!appSettings\.startupThemeChanged/);
+assert.match(facade, /if \(!appSettings\.startupWallpaperChanged/);
+assert.equal(
+	(facade.match(/persistence\.persist\(/g) || []).length,
+	3,
+	"startup settles through one coalesced persist and ready changes persist directly",
+);
 assert.doesNotMatch(
 	facade,
 	/Quickshell|FileView|JsonAdapter|writeAdapter|migrationReady|configFile/,
@@ -33,6 +41,8 @@ assert.match(
 );
 assert.match(persistence, /property bool migrationReady: false/);
 assert.match(persistence, /property bool startupStarted: false/);
+assert.match(persistence, /readonly property bool ready: migrationReady && startupSettledEmitted/);
+assert.match(persistence, /if \(!ready\)\s*return false/);
 assert.match(persistence, /Quickshell\.env\("XDG_CONFIG_HOME"\)/);
 assert.match(persistence, /Quickshell\.env\("HOME"\).*\/\.config/);
 assert.match(persistence, /`\$\{configDir\}\/qsrice`/);

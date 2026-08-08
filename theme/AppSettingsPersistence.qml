@@ -15,6 +15,7 @@ Item {
     property bool migrationReady: false
     property bool startupStarted: false
     property bool startupSettledEmitted: false
+    readonly property bool ready: migrationReady && startupSettledEmitted
 
     readonly property var settingsReloadTimer: Timer {
         interval: 100
@@ -47,6 +48,8 @@ Item {
     }
 
     function persist(currentTheme, currentWallpaper) {
+        if (!ready)
+            return false
         if (settingsConfig.currentTheme === currentTheme && settingsConfig.currentWallpaper === currentWallpaper)
             return false
 

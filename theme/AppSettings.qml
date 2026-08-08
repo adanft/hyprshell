@@ -8,18 +8,24 @@ Item {
     property string currentTheme: ""
     property string currentWallpaper: ""
     property bool startupReady: false
+    property bool startupThemeChanged: false
+    property bool startupWallpaperChanged: false
 
     Component.onCompleted: persistence.start()
 
     AppSettingsPersistence {
         id: persistence
 
-        onStartupSettled: appSettings.startupReady = true
+        onStartupSettled: {
+            appSettings.startupReady = true
+            if (appSettings.startupThemeChanged || appSettings.startupWallpaperChanged)
+                persistence.persist(appSettings.currentTheme, appSettings.currentWallpaper)
+        }
 
         onLoaded: function (nextTheme, nextWallpaper) {
-            if (appSettings.currentTheme !== nextTheme)
+            if (!appSettings.startupThemeChanged && appSettings.currentTheme !== nextTheme)
                 appSettings.currentTheme = nextTheme
-            if (appSettings.currentWallpaper !== nextWallpaper)
+            if (!appSettings.startupWallpaperChanged && appSettings.currentWallpaper !== nextWallpaper)
                 appSettings.currentWallpaper = nextWallpaper
         }
     }
@@ -29,7 +35,10 @@ Item {
             return false
 
         currentTheme = name
-        persistence.persist(currentTheme, currentWallpaper)
+        if (startupReady)
+            persistence.persist(currentTheme, currentWallpaper)
+        else
+            startupThemeChanged = true
         return true
     }
 
@@ -38,7 +47,10 @@ Item {
             return false
 
         currentWallpaper = path
-        persistence.persist(currentTheme, currentWallpaper)
+        if (startupReady)
+            persistence.persist(currentTheme, currentWallpaper)
+        else
+            startupWallpaperChanged = true
         return true
     }
 }

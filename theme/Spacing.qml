@@ -43,12 +43,12 @@ QtObject {
     readonly property int wallpaperSelectorEmptyTextHorizontalMargin: space80
 
     readonly property int screenshotToolScreenMargin: space96
-    readonly property int screenshotToolPadding: space24
-    readonly property int screenshotToolSectionSpacing: space16
+    readonly property int screenshotToolPadding: appLauncherPadding
+    readonly property int screenshotToolSectionSpacing: appLauncherSectionSpacing
     readonly property int screenshotToolActionRowSpacing: space6
     readonly property int screenshotToolActionPadding: space8
     readonly property int screenshotToolActionSpacing: appLauncherCardSpacing
-    readonly property int screenshotToolTimerInputHorizontalPadding: space16
+    readonly property int screenshotToolTimerOptionSpacing: appLauncherCardSpacing
     readonly property int screenshotToolCursorSwitchKnobMargin: space2
 
     readonly property int notificationBadgeTopMargin: space6

@@ -1,7 +1,6 @@
 import "../shared/components" as Shared
 import "../theme"
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 
@@ -15,7 +14,6 @@ Scope {
     property bool includeCursor: false
     property int selectedActionIndex: 0
     property int delaySeconds: 0
-    readonly property int maximumDelaySeconds: 60
     readonly property string captureSuccessCommand:
         "wl-copy --type image/png < \"$file\" && notify-send -u low -i image-png \"Screenshot captured\" \"$(basename \"$file\")\\nCopied to clipboard\""
 
@@ -38,13 +36,9 @@ Scope {
         panel.visible ? close() : open()
     }
 
-    function normalizedDelaySeconds() {
-        return Math.max(0, Math.min(maximumDelaySeconds, Number(delaySeconds) || 0))
-    }
-
     function capture(mode) {
         const grimCursorArg = includeCursor ? "-c " : ""
-        const delay = normalizedDelaySeconds()
+        const delay = tool.delaySeconds
         const initialDelay = mode === "area" ? 0.2 : delay + 0.2
         const windowGrimCommand = `grim ${grimCursorArg}-T "$id"`
         const areaGrimCommand = `grim ${grimCursorArg}-g "$geometry"`
@@ -76,12 +70,6 @@ Scope {
     function captureCommand(grimCommand) {
         return ["file=\"$HOME/Pictures/Screenshots/screenshot_$(date +%Y-%m-%d-%H-%M-%S).png\"; ", grimCommand,
                 " \"$file\" && ", captureSuccessCommand].join("")
-    }
-
-    function pathToFileUrl(path) {
-        const value = String(path || "")
-        return value.length > 0 ? "file://" + value.split('/').map(segment => encodeURIComponent(segment)).join('/') :
-                                  ""
     }
 
     function actionIcon(index) {
@@ -144,71 +132,14 @@ Scope {
             id: content
 
             readonly property int cursorRowHeight: Math.max(cursorLabel.implicitHeight, cursorSwitch.height)
-            readonly property int timerRowHeight: Math.max(timerLabel.implicitHeight, timerInputWrapper.height)
+            readonly property int timerRowHeight: Math.max(timerLabel.implicitHeight, timerOptions.height)
             readonly property int actionRowHeight: tool.theme.sizing.screenshotToolActionHeight
             readonly property int minimumVerticalSpacing: tool.theme.spacing.screenshotToolSectionSpacing
 
-            function focusTimer() {
-                timerInput.forceActiveFocus()
-                timerInput.selectAll()
-            }
-
-            function setTimer(value) {
-                timerInput.text = String(value)
-                timerInput.forceActiveFocus()
-                timerInput.cursorPosition = timerInput.text.length
-            }
-
             anchors.fill: parent
             anchors.margins: tool.theme.spacing.screenshotToolPadding
-            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - preview.height - cursorRowHeight
-                                                                  - timerRowHeight - actionRowHeight) / 3))
-
-            Rectangle {
-                id: preview
-
-                readonly property int preferredHeight: Math.round(width * 9 / 16)
-                readonly property int minimumControlsHeight: content.cursorRowHeight + content.timerRowHeight
-                                                             + content.actionRowHeight + content.minimumVerticalSpacing
-                                                             * 3
-
-                width: parent.width
-                height: Math.min(preferredHeight, Math.max(0, parent.height - minimumControlsHeight))
-                radius: tool.theme.shape.screenshotToolActionRadius
-                color: tool.theme.colors.background
-                clip: true
-
-                Image {
-                    id: previewImage
-
-                    anchors.fill: parent
-                    source: tool.pathToFileUrl(AppSettings.currentWallpaper)
-                    asynchronous: true
-                    cache: true
-                    fillMode: Image.PreserveAspectCrop
-                    smooth: true
-                    sourceSize: Qt.size(width * 2, height * 2)
-                    visible: source.toString().length > 0
-                    layer.enabled: true
-
-                    layer.effect: MultiEffect {
-                        maskEnabled: true
-                        maskSource: previewMask
-                        maskThresholdMin: 0.5
-                        maskSpreadAtMin: 1
-                    }
-                }
-
-                Rectangle {
-                    id: previewMask
-
-                    anchors.fill: parent
-                    radius: parent.radius
-                    color: tool.theme.colors.mask
-                    visible: false
-                    layer.enabled: true
-                }
-            }
+            spacing: Math.max(minimumVerticalSpacing, Math.floor((height - cursorRowHeight - timerRowHeight
+                                                                  - actionRowHeight) / 2))
 
             Item {
                 id: cursorRow
@@ -281,71 +212,23 @@ Scope {
                     font.styleName: tool.theme.typography.styleSemibold
                 }
 
-                Rectangle {
-                    id: timerInputWrapper
+                Row {
+                    id: timerOptions
 
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: tool.theme.sizing.screenshotToolTimerInputWidth
-                    height: tool.theme.sizing.screenshotToolTimerInputHeight
-                    radius: tool.theme.shape.screenshotToolTimerInputRadius
-                    color: tool.theme.colors.surfaceActive
-                    border.width: tool.theme.shape.screenshotToolTimerInputBorderWidth
-                    border.color: timerInput.activeFocus ? tool.theme.colors.focus : tool.theme.colors.border
+                    spacing: tool.theme.spacing.screenshotToolTimerOptionSpacing
 
-                    Shared.AppText {
-                        anchors.fill: parent
-                        visible: timerInput.text.length === 0
-                        text: "0"
-                        color: tool.theme.colors.textSubtle
-                        font.pixelSize: tool.theme.typography.sizeLg
-                        font.styleName: tool.theme.typography.styleMedium
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                    Repeater {
+                        model: [3, 5, 10, 15]
 
-                    TextInput {
-                        id: timerInput
+                        ScreenshotTimerOption {
+                            required property int modelData
 
-                        anchors.fill: parent
-                        anchors.leftMargin: tool.theme.spacing.screenshotToolTimerInputHorizontalPadding
-                        anchors.rightMargin: tool.theme.spacing.screenshotToolTimerInputHorizontalPadding
-                        clip: true
-                        color: tool.theme.colors.text
-                        selectionColor: tool.theme.colors.selection
-                        selectedTextColor: tool.theme.colors.selectionText
-                        font.family: tool.theme.typography.textFontFamily
-                        font.pixelSize: tool.theme.typography.sizeLg
-                        font.styleName: tool.theme.typography.styleMedium
-                        horizontalAlignment: TextInput.AlignHCenter
-                        verticalAlignment: TextInput.AlignVCenter
-                        inputMethodHints: Qt.ImhDigitsOnly
-                        validator: IntValidator {
-                            bottom: 0
-                            top: tool.maximumDelaySeconds
+                            value: modelData
+                            selected: tool.delaySeconds === modelData
+                            onActivated: tool.delaySeconds = tool.delaySeconds === modelData ? 0 : modelData
                         }
-                        onTextChanged: tool.delaySeconds = acceptableInput && text.length > 0 ? Number(text) : 0
-                        onActiveFocusChanged: {
-                            if (activeFocus)
-                                selectAll()
-                        }
-                        Keys.onEscapePressed: tool.close()
-                        Keys.onLeftPressed: event => {
-                            if (cursorPosition === 0)
-                                tool.moveSelection(-1)
-                            else
-                                event.accepted = false
-                        }
-                        Keys.onRightPressed: event => {
-                            if (cursorPosition === text.length)
-                                tool.moveSelection(1)
-                            else
-                                event.accepted = false
-                        }
-                        Keys.onUpPressed: tool.includeCursor = !tool.includeCursor
-                        Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
-                        Keys.onReturnPressed: tool.activateSelection()
-                        Keys.onEnterPressed: tool.activateSelection()
                     }
                 }
             }
@@ -404,16 +287,6 @@ Scope {
             Keys.onRightPressed: tool.moveSelection(1)
             Keys.onUpPressed: tool.includeCursor = !tool.includeCursor
             Keys.onDownPressed: tool.includeCursor = !tool.includeCursor
-            Keys.onTabPressed: {
-                if (contentLoader.item)
-                    contentLoader.item.focusTimer()
-            }
-            Keys.onPressed: event => {
-                if (event.text >= "0" && event.text <= "9" && contentLoader.item) {
-                    contentLoader.item.setTimer(event.text)
-                    event.accepted = true
-                }
-            }
             Keys.onReturnPressed: tool.activateSelection()
             Keys.onEnterPressed: tool.activateSelection()
 
@@ -432,9 +305,7 @@ Scope {
                 height: Math.min(parent.height - tool.theme.spacing.screenshotToolScreenMargin,
                                  tool.theme.sizing.appLauncherMaxHeight)
                 radius: tool.theme.shape.screenshotToolRadius
-                color: tool.theme.colors.panel
-                border.width: tool.theme.shape.screenshotToolBorderWidth
-                border.color: tool.theme.colors.border
+                color: tool.theme.colors.background
 
                 MouseArea {
                     anchors.fill: parent

@@ -44,8 +44,8 @@ QtObject {
     readonly property int screenshotToolActionHeight: appLauncherCardHeight
     readonly property int screenshotToolActionIconSlotSize: appLauncherIconSlotSize
     readonly property int screenshotToolActionIconSize: 36
-    readonly property int screenshotToolTimerInputWidth: 96
-    readonly property int screenshotToolTimerInputHeight: 42
+    readonly property int screenshotToolTimerOptionWidth: 56
+    readonly property int screenshotToolTimerOptionHeight: 42
     readonly property int screenshotToolCursorSwitchWidth: size34
     readonly property int screenshotToolCursorSwitchHeight: size16
     readonly property int screenshotToolCursorSwitchKnobSize: size14

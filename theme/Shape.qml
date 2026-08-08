@@ -30,12 +30,9 @@ QtObject {
     readonly property int wallpaperSelectorBorderWidth: borderMedium
     readonly property int wallpaperCardRadius: radius24
 
-    readonly property int screenshotToolRadius: radius24
-    readonly property int screenshotToolBorderWidth: borderMedium
+    readonly property int screenshotToolRadius: radius16
     readonly property int screenshotToolActionRadius: radius12
-    readonly property int screenshotToolActionBorderWidth: borderMedium
-    readonly property int screenshotToolTimerInputRadius: radiusFull
-    readonly property int screenshotToolTimerInputBorderWidth: borderMedium
+    readonly property int screenshotToolTimerOptionRadius: radiusFull
 
     readonly property int notificationBadgeRadius: radius3
     readonly property int notificationCenterRadius: radius16

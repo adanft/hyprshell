@@ -5,7 +5,7 @@ import "../FileViewState.js" as FileViewState
 
 Scope {
     id: root
-    readonly property int systemStatsRefreshMs: 2000
+    readonly property int systemStatsRefreshMs: 1000
     property int cpuUsageSubscriberCount: 0
     property int memoryUsageSubscriberCount: 0
     readonly property bool cpuUsageEnabled: cpuUsageSubscriberCount > 0

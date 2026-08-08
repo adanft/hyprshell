@@ -39,6 +39,7 @@ Scope {
     property bool notificationCenterOpen: false
     property var notificationHistory: []
     property bool notificationDnd: false
+    property bool notificationHistoryWritePending: false
     // Session-scoped quarantine; entries live only as long as this capability.
     property var invalidLiveImageSources: ({})
     property var notificationImagePersistence: NotificationImagePersistence.createState()
@@ -76,6 +77,8 @@ Scope {
 
         path: root.notificationHistoryFile
         printErrors: false
+        blockWrites: true
+        atomicWrites: true
         onLoaded: {
             root.loadNotificationHistory()
             root.sweepNotificationImageCache()
@@ -145,7 +148,7 @@ Scope {
 
     Component.onDestruction: {
         root.notificationImageLifecycleActive = false
-        if (saveTimer.running)
+        if (root.notificationHistoryWritePending)
             root.saveNotificationHistory()
     }
 
@@ -290,6 +293,7 @@ Scope {
         root.invalidLiveImageSources = next
     }
 
+        root.notificationHistoryWritePending = true
     function scheduleNotificationHistorySave() {
         saveTimer.restart()
     }
@@ -402,6 +406,7 @@ Scope {
             timestamp: item.timestamp || item.createdAt || Date.now()
         }))
         historyFileView.writeAdapter()
+        root.notificationHistoryWritePending = false
     }
 
     function loadNotificationHistory() {

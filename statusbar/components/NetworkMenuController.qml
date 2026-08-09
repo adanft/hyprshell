@@ -140,6 +140,15 @@ QtObject {
                                    }))
     }
 
+    // Opening the panel on a section is not the same gesture as clicking that
+    // section's header. A section stays expanded across a close, so toggling it
+    // on the way in would collapse the very thing the click asked to see.
+    function expandNetworkSection(section) {
+        if (!section || section.length === 0 || root.expandedNetworkSection === section)
+            return
+        root.toggleNetworkSection(section)
+    }
+
     function requestClose() {
         root.dispatch({
                           type: "requestClose"

@@ -263,6 +263,31 @@ TestCase {
         compare(foreign.device.scannerEnabled, true)
     }
 
+    // Opening the panel on a section is not the same gesture as clicking that
+    // section's header: a section survives a close, so toggling it on the way in
+    // would collapse the very thing the click asked to see.
+    function test_expandingASectionIsIdempotentUnlikeToggling() {
+        const f = fixture({})
+        f.controller.menuOpen = true
+
+        f.controller.expandNetworkSection("bluetooth")
+        compare(f.controller.expandedNetworkSection, "bluetooth")
+
+        f.controller.expandNetworkSection("bluetooth")
+        compare(f.controller.expandedNetworkSection, "bluetooth")
+
+        f.controller.expandNetworkSection("output")
+        compare(f.controller.expandedNetworkSection, "output")
+
+        // Opening with no section named leaves whatever was there alone.
+        f.controller.expandNetworkSection("")
+        compare(f.controller.expandedNetworkSection, "output")
+
+        // Toggling is still the header's gesture and still collapses.
+        f.controller.toggleNetworkSection("output")
+        compare(f.controller.expandedNetworkSection, "")
+    }
+
     function test_outputSectionIsIndependentAndDoesNotOwnScanner() {
         const f = fixture({})
         f.controller.menuOpen = true

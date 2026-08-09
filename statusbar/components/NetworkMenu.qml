@@ -96,7 +96,11 @@ Item {
         open(anchorItem)
     }
 
-    function open(anchorItem) {
+    // section is the panel to arrive expanded on, or "" to open as it was left.
+    // A status bar module passes its own, so clicking the speaker lands on the
+    // volume controls rather than on whatever was open last time.
+    function open(anchorItem, section) {
+        networkController.expandNetworkSection(section || "")
         if (anchorItem) {
             const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height)
             const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0

@@ -136,39 +136,46 @@ assert.match(
 	/onVisibilityToggleRequested: root\.services\.bluetooth\.toggleBluetoothDiscoverable\(\)/,
 );
 
-const bluetoothDetailsColumnBlock = objectBlockById(
-	qml,
-	"bluetoothDetailsColumn",
-);
-assert.match(
-	bluetoothDetailsColumnBlock,
-	/anchors\.left: parent\.left\s*anchors\.right: parent\.right/,
-	"Bluetooth detail column must span the full detail width",
-);
-assert.match(
-	bluetoothDetailsColumnBlock,
-	/anchors\.verticalCenter: parent\.verticalCenter/,
-	"Bluetooth detail content must keep the same 12px vertical inset as audio panels",
-);
-assert.doesNotMatch(
-	bluetoothDetailsColumnBlock,
-	/anchors\.margins:/,
-	"Bluetooth detail column must not apply a global outer inset",
-);
+// Every detail section insets once, on its own column, rather than repeating
+// the arithmetic on each child.
 for (const id of [
-	"bluetoothInfoHeader",
-	"bluetoothConnectedSection",
-	"bluetoothKnownSection",
-	"bluetoothAvailableSection",
+	"outputColumn",
+	"microphoneColumn",
+	"lanColumn",
+	"wifiColumn",
+	"bluetoothDetailsColumn",
 ]) {
-	const sectionBlock = objectBlockById(qml, id);
+	const columnBlock = objectBlockById(qml, id);
 	assert.match(
-		sectionBlock,
-		/x: root\.theme\.spacing\.space12\s*width: parent\.width - root\.theme\.spacing\.space24/,
-		`${id} must use the AudioMixerSection horizontal inset`,
+		columnBlock,
+		/anchors\.left: parent\.left\s*anchors\.right: parent\.right/,
+		`${id} must span the full detail width`,
+	);
+	assert.match(
+		columnBlock,
+		/anchors\.margins: root\.theme\.spacing\.space12/,
+		`${id} must carry the 12px inset itself`,
+	);
+	assert.match(
+		columnBlock,
+		/spacing: root\.theme\.spacing\.space6/,
+		`${id} must use the 6px sibling gap`,
 	);
 }
-assert.match(detailContentBlock, /color: "transparent"/);
+assert.doesNotMatch(
+	qml,
+	/x: root\.theme\.spacing\.space12|parent\.width - root\.theme\.spacing\.space24/,
+	"no section may inset its children by hand",
+);
+
+// The five detail sections are layout boxes, not painted surfaces.
+assert.doesNotMatch(detailContentBlock, /color: "transparent"/);
+for (const id of ["outputCard", "microphoneCard", "lanCard", "bluetoothDetails", "wifiCard"])
+	assert.match(
+		detailContentBlock,
+		new RegExp(`Item \\{\\s*id: ${id}\\b`),
+		`${id} must be an Item: it paints nothing`,
+	);
 assert.match(bluetoothRowQml, /signal primaryActionRequested/);
 assert.match(bluetoothRowQml, /property bool primaryActionVisible: true/);
 assert.match(bluetoothRowQml, /visible: root\.primaryActionVisible/);

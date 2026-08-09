@@ -31,6 +31,8 @@ Item {
                                          || expandedNetworkSection === "ethernet" || expandedNetworkSection === "wifi"
                                          || expandedNetworkSection === "bluetooth"
     readonly property real uptimeSeconds: networkController.uptimeSeconds
+    readonly property bool hasEthernetProfiles: (services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
+    readonly property bool scanningBluetooth: services.bluetooth.bluetoothDiscovering
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled && Networking.wifiEnabled &&
                                                  !wifiActivationPending && services.network.wifiDevice
                                                  ? NetworkMenuLogic.sortedWifiNetworks(
@@ -113,7 +115,7 @@ Item {
     }
 
     function toggleBluetoothScan() {
-        if (root.services.bluetooth.bluetoothDiscovering)
+        if (root.scanningBluetooth)
             stopBluetoothScan()
         else
             startBluetoothScan()
@@ -570,16 +572,15 @@ Item {
                         id: detailContent
                         width: detailFlickable.width
 
-                        Rectangle {
+                        Item {
                             id: outputCard
                             visible: root.expandedNetworkSection === "output"
                             width: parent.width
                             height: outputColumn.implicitHeight + root.theme.spacing.space24
-                            color: "transparent"
-                            border.width: 0
 
                             Column {
                                 id: outputColumn
+                                anchors.margins: root.theme.spacing.space12
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
@@ -602,36 +603,31 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        Item {
                             id: microphoneCard
                             visible: root.expandedNetworkSection === "microphone"
                             width: parent.width
                             height: microphoneColumn.implicitHeight + root.theme.spacing.space24
-                            color: "transparent"
-                            border.width: 0
 
                             Column {
                                 id: microphoneColumn
+                                anchors.margins: root.theme.spacing.space12
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space6
 
                                 BarText {
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     text: "Input volume"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
-                                Rectangle {
+                                Item {
                                     width: parent.width
                                     height: root.theme.sizing.statusBarNetworkQuickControlHeight
-                                    radius: root.theme.shape.radius12
-                                    color: "transparent"
-                                    border.width: 0
 
                                     Row {
                                         anchors.fill: parent
@@ -672,8 +668,7 @@ Item {
                                 }
 
                                 BarText {
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     text: "Input devices"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
@@ -682,8 +677,7 @@ Item {
 
                                 Column {
                                     id: microphoneDevicesSection
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     spacing: root.theme.spacing.space6
 
                                     Repeater {
@@ -691,7 +685,7 @@ Item {
 
                                         MicrophoneSourceRow {
                                             required property var modelData
-                                            width: microphoneDevicesSection.width
+                                            width: parent.width
                                             source: modelData
                                             icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
                                                                                     root.icons.microphone
@@ -715,13 +709,11 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        Item {
                             id: lanCard
                             visible: root.expandedNetworkSection === "ethernet"
                             width: parent.width
                             height: lanColumn.implicitHeight + root.theme.spacing.space24
-                            color: "transparent"
-                            border.width: 0
 
                             Column {
                                 id: lanColumn
@@ -732,7 +724,7 @@ Item {
                                 spacing: root.theme.spacing.space6
 
                                 BarText {
-                                    text: "Network info"
+                                    text: "Ethernet info"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
@@ -758,15 +750,8 @@ Item {
                                     wrapMode: Text.Wrap
                                 }
 
-                                Rectangle {
-                                    visible: (root.services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
-                                    width: parent.width
-                                    height: root.theme.shape.borderThin
-                                    color: Colors.outline
-                                }
-
                                 BarText {
-                                    visible: (root.services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
+                                    visible: root.hasEthernetProfiles
                                     text: "Connection profiles"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
@@ -778,7 +763,7 @@ Item {
 
                                     EthernetProfileRow {
                                         required property var modelData
-                                        width: lanColumn.width
+                                        width: parent.width
                                         profile: modelData
                                         active: modelData.uuid === root.services.network.ethernetInfo.activeUuid
                                         busy: root.services.network.ethernetProfileBusy
@@ -791,16 +776,15 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        Item {
                             id: bluetoothDetails
                             visible: root.expandedNetworkSection === "bluetooth"
                             width: parent.width
                             height: bluetoothDetailsColumn.implicitHeight + root.theme.spacing.space24
-                            color: "transparent"
-                            border.width: 0
 
                             Column {
                                 id: bluetoothDetailsColumn
+                                anchors.margins: root.theme.spacing.space12
                                 readonly property var bluetoothDevices: NetworkMenuLogic.bluetoothUniqueDevices(
                                                                             root.services.bluetooth.bluetoothDevices)
                                 readonly property var connectedDevices: bluetoothDevices.filter(device
@@ -816,7 +800,7 @@ Item {
                                                                                                        device)
                                                                                                    === "available" &&
                                                                                                    !device.blocked
-                                                                                                   && root.services.bluetooth.bluetoothDiscovering)
+                                                                                                   && root.scanningBluetooth)
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
@@ -824,8 +808,7 @@ Item {
 
                                 Item {
                                     id: bluetoothInfoHeader
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     height: Math.max(bluetoothInfoTitle.implicitHeight,
                                                      scanButton.visible ? scanButton.height : 0)
 
@@ -865,7 +848,7 @@ Item {
 
                                             BarText {
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                text: root.services.bluetooth.bluetoothDiscovering ? "Scanning…" :
+                                                text: root.scanningBluetooth ? "Scanning…" :
                                                                                                      "Scan"
                                                 color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
                                                 font.pixelSize: root.theme.typography.sizeSm
@@ -881,7 +864,7 @@ Item {
                                             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                             activeFocusOnTab: enabled
                                             Accessible.role: Accessible.Button
-                                            Accessible.name: root.services.bluetooth.bluetoothDiscovering
+                                            Accessible.name: root.scanningBluetooth
                                                              ? "Scanning Bluetooth" : "Scan Bluetooth"
                                             onClicked: root.toggleBluetoothScan()
                                             Keys.onSpacePressed: root.toggleBluetoothScan()
@@ -892,8 +875,7 @@ Item {
                                 }
 
                                 BluetoothInfoCard {
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     theme: root.theme
                                     adapterName: root.services.bluetooth.bluetoothAdapterName
                                     available: root.services.bluetooth.bluetoothAvailable
@@ -905,8 +887,7 @@ Item {
 
                                 BarText {
                                     visible: root.services.bluetooth.bluetoothError.length > 0
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     text: root.services.bluetooth.bluetoothError
                                     color: Colors.error
                                     font.pixelSize: root.theme.typography.sizeSm
@@ -917,8 +898,7 @@ Item {
                                 Column {
                                     id: bluetoothConnectedSection
                                     visible: bluetoothDetailsColumn.connectedDevices.length > 0
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     spacing: root.theme.spacing.space6
 
                                     BarText {
@@ -953,8 +933,7 @@ Item {
                                 Column {
                                     id: bluetoothKnownSection
                                     visible: bluetoothDetailsColumn.knownDevices.length > 0
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     spacing: root.theme.spacing.space6
 
                                     BarText {
@@ -988,10 +967,9 @@ Item {
 
                                 Column {
                                     id: bluetoothAvailableSection
-                                    visible: root.services.bluetooth.bluetoothDiscovering
+                                    visible: root.scanningBluetooth
                                              && bluetoothDetailsColumn.availableDevices.length > 0
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     spacing: root.theme.spacing.space6
 
                                     BarText {
@@ -1023,10 +1001,9 @@ Item {
                                 }
 
                                 BarText {
-                                    visible: root.services.bluetooth.bluetoothDiscovering
+                                    visible: root.scanningBluetooth
                                              && bluetoothDetailsColumn.availableDevices.length === 0
-                                    x: root.theme.spacing.space12
-                                    width: parent.width - root.theme.spacing.space24
+                                    width: parent.width
                                     text: "Scanning for Bluetooth devices…"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeSm
@@ -1035,13 +1012,11 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        Item {
                             id: wifiCard
                             visible: root.expandedNetworkSection === "wifi"
                             width: parent.width
                             height: wifiColumn.implicitHeight + root.theme.spacing.space24
-                            color: "transparent"
-                            border.width: 0
 
                             Column {
                                 id: wifiColumn
@@ -1052,7 +1027,7 @@ Item {
                                 spacing: root.theme.spacing.space6
 
                                 BarText {
-                                    text: "Network info"
+                                    text: "Wi-Fi info"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
@@ -1104,7 +1079,7 @@ Item {
                                     WifiNetworkRow {
                                         id: networkRow
                                         required property var modelData
-                                        width: wifiColumn.width
+                                        width: parent.width
                                         network: modelData
                                         theme: root.theme
                                         openSecurityValue: WifiSecurityType.None

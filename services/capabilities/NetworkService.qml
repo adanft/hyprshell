@@ -13,7 +13,14 @@ Scope {
     readonly property var wifiDevice: networkDevices.find(device => device.type === DeviceType.Wifi) ?? null
     readonly property string lanInterface: lanDevice?.name ?? ""
     readonly property string wifiInterface: wifiDevice?.name ?? ""
-    property var ethernetInfo: NetworkState.parseNmcliDeviceInfo("")
+    // Same split as the wireless card: the address is a device property, and
+    // only the active profile still needs asking, because Quickshell.Networking
+    // publishes no uuid for it.
+    readonly property var ethernetInfo: ({
+                                             ipv4Address: lanDevice?.address ?? "",
+                                             activeUuid: ethernetActiveUuid
+                                         })
+    property string ethernetActiveUuid: ""
     property string ethernetInfoRequestedInterface: ""
     property int ethernetInfoRequestGeneration: 0
     property int ethernetInfoProcessGeneration: 0
@@ -49,10 +56,26 @@ Scope {
     property string previousNetworkInterface: ""
     property real previousNetworkSampleMs: 0
 
+    // What replaced the three-second poll. Which profile is live changes only
+    // when the connection does, and NetworkManager cannot activate one without
+    // deactivating the other, so the device's own state is the event. Opening
+    // the panel asks once, because anything may have happened while it was
+    // closed; a profile switched from the panel is already covered by
+    // ethernetActionRefreshTimer.
+    onLanUpChanged: {
+        if (networkDetailsEnabled)
+            Qt.callLater(refreshEthernetInfo)
+    }
+
+    onNetworkDetailsEnabledChanged: {
+        if (networkDetailsEnabled)
+            Qt.callLater(refreshEthernetInfo)
+    }
+
     onLanInterfaceChanged: {
         ethernetInfoRequestGeneration += 1
         ethernetInfoRequestedInterface = ""
-        ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
+        ethernetActiveUuid = ""
         ethernetProfileActionGeneration += 1
         if (ethernetProfileBusy || ethernetProfileAwaitingRefresh) {
             ethernetProfileAwaitingRefresh = false
@@ -83,13 +106,6 @@ Scope {
         onTriggered: root.refreshNetwork()
     }
     Timer {
-        interval: 3000
-        running: root.networkDetailsEnabled && root.lanDevice !== null
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: root.refreshEthernetInfo()
-    }
-    Timer {
         id: ethernetActionRefreshTimer
         interval: 750
         repeat: false
@@ -102,7 +118,7 @@ Scope {
             onStreamFinished: {
                 if (root.ethernetInfoProcessGeneration === root.ethernetInfoRequestGeneration
                         && root.ethernetInfoRequestedInterface === root.lanInterface)
-                    root.ethernetInfo = NetworkState.parseNmcliDeviceInfo(this.text)
+                    root.ethernetActiveUuid = NetworkState.parseNmcliDeviceInfo(this.text).activeUuid
             }
         }
         onExited: (exitCode, exitStatus) => {
@@ -168,7 +184,7 @@ Scope {
     }
     function refreshEthernetInfo() {
         if (!/^[A-Za-z0-9._:-]{1,64}$/.test(lanInterface)) {
-            ethernetInfo = NetworkState.parseNmcliDeviceInfo("")
+            ethernetActiveUuid = ""
             if (ethernetProfileAwaitingRefresh) {
                 ethernetProfileAwaitingRefresh = false
                 ethernetProfileBusy = false
@@ -183,10 +199,8 @@ Scope {
         ethernetInfoRequestedInterface = lanInterface
         ethernetInfoProcessGeneration = ethernetInfoRequestGeneration
         ethernetInfoProcessRefreshesProfile = ethernetProfileAwaitingRefresh
-        // Only what the wired card shows plus what profile switching needs:
-        // IP4.ADDRESS for the address, GENERAL.CON-UUID to know which profile
-        // is live. Wi-Fi still asks for the full set because its panel shows it.
-        ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CON-UUID,IP4.ADDRESS",
+        // One field, because one field is all that is left to ask for.
+        ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CON-UUID",
                                   "device", "show", lanInterface])
     }
     function setEthernetProfileEnabled(profile) {

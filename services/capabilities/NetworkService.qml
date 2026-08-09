@@ -218,7 +218,10 @@ Scope {
         ethernetInfoRequestedInterface = lanInterface
         ethernetInfoProcessGeneration = ethernetInfoRequestGeneration
         ethernetInfoProcessRefreshesProfile = ethernetProfileAwaitingRefresh
-        ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
+        // Only what the wired card shows plus what profile switching needs:
+        // IP4.ADDRESS for the address, GENERAL.CON-UUID to know which profile
+        // is live. Wi-Fi still asks for the full set because its panel shows it.
+        ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CON-UUID,IP4.ADDRESS",
                                   "device", "show", lanInterface])
     }
     function refreshWifiInfo() {

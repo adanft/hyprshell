@@ -738,84 +738,13 @@ Item {
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
-                                Rectangle {
+                                EthernetInfoCard {
                                     width: parent.width
-                                    height: networkInfoColumn.implicitHeight + root.theme.spacing.space16
-                                    radius: root.theme.shape.radius12
-                                    color: Colors.surface
-                                    border.width: 0
-
-                                    Column {
-                                        id: networkInfoColumn
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.margins: root.theme.spacing.space8
-                                        spacing: root.theme.spacing.space4
-
-                                        BarText {
-                                            width: parent.width
-                                            text: root.services.network.lanDevice?.name || "No wired adapter"
-                                            color: Colors.on_surface
-                                            font.pixelSize: root.theme.typography.sizeMd
-                                            font.styleName: root.theme.typography.styleRegular
-                                            elide: Text.ElideRight
-                                        }
-
-                                        BarText {
-                                            width: parent.width
-                                            text: root.services.network.lanDevice?.hasLink ? (
-                                                                                                 root.services.network.lanUp
-                                                                                                 ? "Connected" :
-                                                                                                   "Cable connected") :
-                                                                                             "Cable disconnected"
-                                            color: root.services.network.lanUp ? Colors.primary :
-                                                                                 Colors.on_surface_variant
-
-                                            font.pixelSize: root.theme.typography.sizeSm
-                                            font.styleName: root.theme.typography.styleRegular
-                                        }
-
-                                        NetworkInfoRow {
-                                            label: "Profile"
-                                            value: root.services.network.ethernetInfo.connectionName || ""
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "IPv4"
-                                            value: root.services.network.ethernetInfo.ipv4Address || ""
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "Gateway"
-                                            value: root.services.network.ethernetInfo.ipv4Gateway
-                                                   || root.services.network.ethernetInfo.ipv6Gateway || ""
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "DNS"
-                                            value: [...(root.services.network.ethernetInfo.ipv4Dns || []), ...(
-                                                    root.services.network.ethernetInfo.ipv6Dns || [])].join(", ")
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "IPv6"
-                                            value: root.services.network.ethernetInfo.ipv6Address || ""
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "MAC"
-                                            value: root.services.network.ethernetInfo.macAddress
-                                                   || root.services.network.lanDevice?.address || ""
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "Link speed"
-                                            value: root.services.network.lanDevice?.linkSpeed > 0
-                                                   ? [root.services.network.lanDevice.linkSpeed, " Mb/s"].join("") : ""
-                                            theme: root.theme
-                                        }
-                                    }
+                                    theme: root.theme
+                                    interfaceName: root.services.network.lanDevice?.name || ""
+                                    wired: Boolean(root.services.network.lanDevice?.hasLink)
+                                    online: Boolean(root.services.network.lanUp)
+                                    address: root.services.network.ethernetInfo.ipv4Address || ""
                                 }
 
                                 BarText {

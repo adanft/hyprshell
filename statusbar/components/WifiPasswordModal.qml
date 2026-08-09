@@ -190,9 +190,12 @@ Scope {
                         height: root.theme.sizing.appLauncherSearchHeight
                         radius: root.theme.shape.appLauncherSearchRadius
                         color: Colors.surface
-                        // Focus rings paint only on focus here, as everywhere else.
-                        border.color: Colors.primary
-                        border.width: passwordInput.activeFocus ? root.theme.shape.focusBorderWidth : 0
+                        // No focus ring. The dialog puts the caret in this field
+                        // the moment it opens, so a ring that paints on focus was
+                        // painted from the first frame - a 2px border by another
+                        // name, and the one thing that did not match the search
+                        // field this is otherwise a copy of. The caret is the
+                        // focus indicator here.
 
                         TextInput {
                             id: passwordInput

@@ -253,6 +253,10 @@ assert.match(modal, /radius: root\.theme\.shape\.appLauncherSearchRadius/);
 // Its actions are pills, like every action in the control center. Close, Cancel
 // and Connect: three, and no fourth shape among them.
 assert.equal((modal.match(/radius: height \/ 2/g) || []).length, 3);
+// The field carries no border at all, like the search field it copies. A ring
+// that paints on focus is painted from the first frame here, because the dialog
+// puts the caret in the field as it opens.
+assert.doesNotMatch(modal, /border\.(color|width)/);
 assert.doesNotMatch(modal, /radius: root\.theme\.shape\.radius12/);
 
 // The five detail sections are layout boxes, not painted surfaces.

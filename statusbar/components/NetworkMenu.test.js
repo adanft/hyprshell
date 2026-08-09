@@ -136,8 +136,8 @@ assert.match(
 	/onVisibilityToggleRequested: root\.services\.bluetooth\.toggleBluetoothDiscoverable\(\)/,
 );
 
-// Every detail section insets once, on its own column, rather than repeating
-// the arithmetic on each child.
+// menuLayout is the only inset in the panel, so a card lands 12 from the box
+// whether it sits in the fixed shell or inside a detail section.
 for (const id of [
 	"outputColumn",
 	"microphoneColumn",
@@ -151,10 +151,10 @@ for (const id of [
 		/anchors\.left: parent\.left\s*anchors\.right: parent\.right/,
 		`${id} must span the full detail width`,
 	);
-	assert.match(
+	assert.doesNotMatch(
 		columnBlock,
-		/anchors\.margins: root\.theme\.spacing\.space12/,
-		`${id} must carry the 12px inset itself`,
+		/anchors\.margins:/,
+		`${id} must not inset again: menuLayout already sits 12 from the box`,
 	);
 	assert.match(
 		columnBlock,

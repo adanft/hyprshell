@@ -591,7 +591,6 @@ Item {
 
                             Column {
                                 id: outputColumn
-                                anchors.margins: root.theme.spacing.space12
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
@@ -622,7 +621,6 @@ Item {
 
                             Column {
                                 id: microphoneColumn
-                                anchors.margins: root.theme.spacing.space12
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
@@ -648,7 +646,6 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.margins: root.theme.spacing.space12
                                 spacing: root.theme.spacing.space6
 
                                 BarText {
@@ -712,7 +709,6 @@ Item {
 
                             Column {
                                 id: bluetoothDetailsColumn
-                                anchors.margins: root.theme.spacing.space12
                                 readonly property var bluetoothDevices: NetworkMenuLogic.bluetoothUniqueDevices(
                                                                             root.services.bluetooth.bluetoothDevices)
                                 readonly property var connectedDevices: bluetoothDevices.filter(device
@@ -950,7 +946,6 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.margins: root.theme.spacing.space12
                                 spacing: root.theme.spacing.space6
 
                                 BarText {

@@ -27,8 +27,7 @@ Column {
     }
 
     BarText {
-        x: root.theme.spacing.space12
-        width: parent.width - root.theme.spacing.space24
+        width: parent.width
         text: "Output volume"
         color: Colors.on_surface_variant
         font.pixelSize: root.theme.typography.sizeMd
@@ -41,7 +40,6 @@ Column {
 
         Row {
             anchors.fill: parent
-            anchors.margins: root.theme.spacing.space12
             spacing: root.theme.spacing.space6
 
             BarText {
@@ -77,8 +75,7 @@ Column {
     Column {
         id: outputDevicesSection
 
-        x: root.theme.spacing.space12
-        width: parent.width - root.theme.spacing.space24
+        width: parent.width
         spacing: root.theme.spacing.space6
 
         BarText {
@@ -127,8 +124,7 @@ Column {
     Column {
         id: playbackStreamsSection
 
-        x: root.theme.spacing.space12
-        width: parent.width - root.theme.spacing.space24
+        width: parent.width
         spacing: root.theme.spacing.space6
 
         BarText {

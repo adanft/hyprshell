@@ -29,7 +29,6 @@ Column {
 
         Row {
             anchors.fill: parent
-            anchors.margins: root.theme.spacing.space12
             spacing: root.theme.spacing.space6
 
             BarText {

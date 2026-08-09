@@ -207,8 +207,6 @@ function bluetoothDeviceState(device) {
 	if (!device) return "Unavailable";
 	if (device.blocked) return "Blocked";
 	if (device.pairing) return "Pairing…";
-	if (device.state === "Connecting") return "Connecting…";
-	if (device.state === "Disconnecting") return "Disconnecting…";
 	if (device.connected) return "Connected";
 	return device.paired || device.trusted
 		? "Paired · Disconnected"
@@ -223,14 +221,13 @@ function bluetoothDeviceCategory(device) {
 }
 
 function bluetoothDeviceAction(device) {
-	if (
-		!device ||
-		device.blocked ||
-		device.pairing ||
-		device.state === "Connecting" ||
-		device.state === "Disconnecting"
-	)
-		return "busy";
+	// Connecting and disconnecting are not decided here. device.state is an int
+	// from BluetoothDeviceState, and this file cannot see that enum, so it used
+	// to compare it against the strings "Connecting" and "Disconnecting" - a
+	// number is never equal to a string, so those branches never once ran and
+	// the row went on offering Connect while a connect was already in flight.
+	// The service owns that check now, where the enum is in scope.
+	if (!device || device.blocked || device.pairing) return "busy";
 	var category = bluetoothDeviceCategory(device);
 	if (category === "connected") return "disconnect";
 	if (category === "known-disconnected") return "connect";

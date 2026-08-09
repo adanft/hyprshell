@@ -651,7 +651,16 @@ assert.equal(
 	"Paired · Disconnected",
 );
 assert.equal(menu.bluetoothDeviceState({ pairing: true }), "Pairing…");
-assert.equal(menu.bluetoothDeviceState({ state: "Connecting" }), "Connecting…");
+// device.state is an int from BluetoothDeviceState, so a string can never
+// equal it. This file used to assert against "Connecting" and passed while
+// production never once took that branch.
+assert.equal(menu.bluetoothDeviceState({ state: "Connecting" }), "Available");
+assert.equal(menu.bluetoothDeviceAction({ state: "Connecting" }), "pair");
+assert.doesNotMatch(
+	fs.readFileSync(`${__dirname}/NetworkMenu.js`, "utf8").replace(/\/\/.*$/gm, ""),
+	/state === "(Connecting|Disconnecting)"/,
+	"comparing the state enum to a string is how that check went missing",
+);
 assert.equal(menu.bluetoothDeviceState({ blocked: true }), "Blocked");
 assert.equal(menu.bluetoothDeviceAction({ connected: true }), "disconnect");
 assert.equal(menu.bluetoothDeviceAction({ paired: true }), "connect");

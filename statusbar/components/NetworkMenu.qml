@@ -845,7 +845,7 @@ Item {
                                             primaryActionVisible: root.services.bluetooth.bluetoothPowered
                                             pending: {
                                                 root.services.bluetooth.bluetoothPendingRevision
-                                                return root.services.bluetooth.bluetoothDevicePending(device)
+                                                return root.services.bluetooth.bluetoothDeviceBusy(device)
                                             }
                                             onPrimaryActionRequested: root.services.bluetooth.disconnectBluetoothDevice(
                                                                           device)
@@ -880,7 +880,7 @@ Item {
                                             primaryActionVisible: root.services.bluetooth.bluetoothPowered
                                             pending: {
                                                 root.services.bluetooth.bluetoothPendingRevision
-                                                return root.services.bluetooth.bluetoothDevicePending(device)
+                                                return root.services.bluetooth.bluetoothDeviceBusy(device)
                                             }
                                             onPrimaryActionRequested: root.services.bluetooth.connectBluetoothDevice(
                                                                           device)
@@ -916,7 +916,7 @@ Item {
                                             primaryActionVisible: root.services.bluetooth.bluetoothPowered
                                             pending: {
                                                 root.services.bluetooth.bluetoothPendingRevision
-                                                return root.services.bluetooth.bluetoothDevicePending(device)
+                                                return root.services.bluetooth.bluetoothDeviceBusy(device)
                                             }
                                             onPrimaryActionRequested: root.services.bluetooth.pairBluetoothDevice(
                                                                           device)

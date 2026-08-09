@@ -237,7 +237,9 @@ Scope {
             wifiInfoAvailability = "loading"
         wifiInfoRequestedInterface = wifiInterface
         wifiInfoProcessGeneration = wifiInfoRequestGeneration
-        wifiInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CONNECTION,GENERAL.CON-UUID,GENERAL.HWADDR,IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,IP6.ADDRESS,IP6.GATEWAY,IP6.DNS",
+        // Only what the wireless card shows. The SSID comes from the network
+        // list, and with no profile switching here the uuid is not needed.
+        wifiInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "IP4.ADDRESS",
                               "device", "show", wifiInterface])
     }
     function setEthernetProfileEnabled(profile) {

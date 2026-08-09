@@ -16,6 +16,7 @@ QtObject {
     readonly property string brightnessControl: "󰌵"
     readonly property string processor: "󰓅"
     readonly property string memory: "󰍛"
+    readonly property string wifiInterface: "󰩩"
     readonly property string wifiConnected: "󰤨"
     readonly property string wifiEnabled: "󰤯"
     readonly property string wifiDisconnected: "󰤭"

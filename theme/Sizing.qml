@@ -95,7 +95,6 @@ QtObject {
     readonly property int statusBarControlEmptyStateHeight: 58
     readonly property int statusBarNetworkDeviceRowHeight: 48
     readonly property int statusBarNetworkInfoCardHeight: 64
-    readonly property int statusBarNetworkInfoLabelWidth: 72
     readonly property int statusBarWifiPasswordModalMaxWidth: 420
     readonly property int statusBarWifiPasswordCloseButtonSize: size30
     readonly property int statusBarWifiPasswordFieldHeight: 46

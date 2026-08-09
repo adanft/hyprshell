@@ -1045,110 +1045,26 @@ Item {
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
-                                Rectangle {
+                                WifiInfoCard {
                                     width: parent.width
-                                    height: wifiNetworkInfoColumn.implicitHeight + root.theme.spacing.space16
-                                    radius: root.theme.shape.radius12
-                                    color: Colors.surface
-                                    border.width: 0
+                                    theme: root.theme
+                                    interfaceName: root.services.network.wifiInterface || ""
+                                    address: root.services.network.wifiInfo.ipv4Address || ""
+                                    hardwareEnabled: Networking.wifiHardwareEnabled
+                                    radioEnabled: Networking.wifiEnabled
+                                    activating: root.wifiActivationPending
+                                    online: root.services.network.wifiUp
+                                }
 
-                                    Column {
-                                        id: wifiNetworkInfoColumn
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.margins: root.theme.spacing.space8
-                                        spacing: root.theme.spacing.space4
-
-                                        BarText {
-                                            width: parent.width
-                                            text: root.services.network.wifiInterface || "No Wi-Fi adapter"
-                                            color: Colors.on_surface
-                                            font.pixelSize: root.theme.typography.sizeMd
-                                            font.styleName: root.theme.typography.styleRegular
-                                            elide: Text.ElideRight
-                                        }
-
-                                        BarText {
-                                            width: parent.width
-                                            text: !Networking.wifiHardwareEnabled ? "Unavailable" : (
-                                                                                        root.wifiActivationPending
-                                                                                        ? "Enabling…" : (
-                                                                                              !Networking.wifiEnabled
-                                                                                              ? "Disabled" : (
-                                                                                                    root.services.network.wifiUp
-                                                                                                    ? "Connected" :
-                                                                                                      "Not connected")))
-                                            color: root.services.network.wifiUp ? Colors.primary :
-                                                                                  Colors.on_surface_variant
-
-                                            font.pixelSize: root.theme.typography.sizeSm
-                                            font.styleName: root.theme.typography.styleRegular
-                                        }
-
-                                        BarText {
-                                            visible: !root.wifiActivationPending && root.services.network.wifiUp
-                                                     && root.services.network.wifiInfoAvailability !== "available"
-                                            width: parent.width
-                                            text: root.services.network.wifiInfoAvailability === "unavailable"
-                                                  ? "Network details unavailable" : "Loading network details…"
-                                            color: Colors.on_surface_variant
-                                            font.pixelSize: root.theme.typography.sizeSm
-                                            font.styleName: root.theme.typography.styleRegular
-                                            wrapMode: Text.WordWrap
-                                        }
-
-                                        NetworkInfoRow {
-                                            label: "Network"
-                                            value: root.wifiActivationPending ? "" : (
-                                                                                    root.services.network.wifiInfo.connectionName
-                                                                                    || root.services.network.connectedWifiNetwork
-                                                                                    ?.name || "")
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "Security"
-                                            value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSecurityLabel(
-                                                                                    root.services.network.connectedWifiNetwork,
-                                                                                    WifiSecurityType.None)
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "Signal quality"
-                                            value: root.wifiActivationPending ? "" :
-                                                                                NetworkMenuLogic.wifiSignalQualityText(
-                                                                                    root.services.network.connectedWifiNetwork)
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "IPv4"
-                                            value: root.wifiActivationPending ? "" : (
-                                                                                    root.services.network.wifiInfo.ipv4Address
-                                                                                    || "")
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "Gateway"
-                                            value: root.wifiActivationPending ? "" : (
-                                                                                    root.services.network.wifiInfo.ipv4Gateway
-                                                                                    || root.services.network.wifiInfo.ipv6Gateway
-                                                                                    || "")
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "IPv6"
-                                            value: root.wifiActivationPending ? "" : (
-                                                                                    root.services.network.wifiInfo.ipv6Address
-                                                                                    || "")
-                                            theme: root.theme
-                                        }
-                                        NetworkInfoRow {
-                                            label: "MAC"
-                                            value: root.services.network.wifiInfo.macAddress
-                                                   || root.services.network.wifiDevice?.address || ""
-                                            theme: root.theme
-                                        }
-                                    }
+                                BarText {
+                                    visible: !root.wifiActivationPending && root.services.network.wifiUp
+                                             && root.services.network.wifiInfoAvailability !== "available"
+                                    width: parent.width
+                                    text: root.services.network.wifiInfoAvailability === "unavailable"
+                                          ? "Network details unavailable" : "Loading network details…"
+                                    color: Colors.on_surface_variant
+                                    font.pixelSize: root.theme.typography.sizeSm
+                                    wrapMode: Text.WordWrap
                                 }
 
                                 BarText {

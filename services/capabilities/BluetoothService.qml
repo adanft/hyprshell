@@ -112,6 +112,13 @@ Scope {
             bluetoothAdapter.enabled = !bluetoothAdapter.enabled
     }
 
+    // discoverable is writable straight on the adapter, so being seen by other
+    // devices is a property to set, not a bluetoothctl call to shell out to.
+    function toggleBluetoothDiscoverable() {
+        if (bluetoothAdapter && bluetoothPowered)
+            bluetoothAdapter.discoverable = !bluetoothAdapter.discoverable
+    }
+
     function scanBluetooth() {
         setBluetoothScanning(!bluetoothDiscovering)
     }

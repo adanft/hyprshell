@@ -15,6 +15,8 @@ Rectangle {
     property bool discoverable: false
     property int connectedCount: 0
 
+    signal visibilityToggleRequested
+
     readonly property var icons: Icons
     readonly property color tone: powered ? Colors.primary : Colors.on_surface_variant
 
@@ -52,28 +54,57 @@ Rectangle {
         font.pixelSize: card.theme.typography.actionIconFontSize
     }
 
-    Row {
+    // Visibility is the one thing here you act on, and BluetoothAdapter exposes
+    // `discoverable` as writable, so the state doubles as its own switch while
+    // the adapter is powered. Off and Unavailable stay inert.
+    Rectangle {
         id: state
 
         anchors.right: parent.right
-        anchors.rightMargin: card.theme.spacing.space16
+        anchors.rightMargin: card.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        spacing: card.theme.spacing.space6
+        width: stateContent.implicitWidth + card.theme.spacing.space12
+        height: stateContent.implicitHeight + card.theme.spacing.space4
+        radius: height / 2
+        color: stateInput.containsMouse || stateInput.activeFocus ? Colors.hover : "transparent"
 
-        BarText {
-            anchors.verticalCenter: parent.verticalCenter
-            text: card.icons.workspaceDot
-            color: card.tone
-            font.family: card.theme.typography.iconFontFamily
-            font.pixelSize: card.theme.typography.sizeSm
+        Row {
+            id: stateContent
+
+            anchors.centerIn: parent
+            spacing: card.theme.spacing.space6
+
+            BarText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: card.icons.workspaceDot
+                color: stateInput.containsMouse ? Colors.on_hover : card.tone
+                font.family: card.theme.typography.iconFontFamily
+                font.pixelSize: card.theme.typography.sizeSm
+            }
+
+            BarText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: card.stateText
+                color: stateInput.containsMouse ? Colors.on_hover : card.tone
+                font.pixelSize: card.theme.typography.sizeSm
+                font.styleName: card.theme.typography.styleMedium
+            }
         }
 
-        BarText {
-            anchors.verticalCenter: parent.verticalCenter
-            text: card.stateText
-            color: card.tone
-            font.pixelSize: card.theme.typography.sizeSm
-            font.styleName: card.theme.typography.styleMedium
+        MouseArea {
+            id: stateInput
+
+            anchors.fill: parent
+            enabled: card.powered
+            hoverEnabled: true
+            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+            activeFocusOnTab: enabled
+            Accessible.role: Accessible.Button
+            Accessible.name: card.discoverable ? "Hide from other devices" : "Make visible to other devices"
+            onClicked: card.visibilityToggleRequested()
+            Keys.onSpacePressed: card.visibilityToggleRequested()
+            Keys.onReturnPressed: card.visibilityToggleRequested()
+            Keys.onEnterPressed: card.visibilityToggleRequested()
         }
     }
 

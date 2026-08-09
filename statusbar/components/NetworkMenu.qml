@@ -900,6 +900,7 @@ Item {
                                     powered: root.services.bluetooth.bluetoothPowered
                                     discoverable: root.services.bluetooth.bluetoothDiscoverable
                                     connectedCount: root.services.bluetooth.bluetoothConnectedCount
+                                    onVisibilityToggleRequested: root.services.bluetooth.toggleBluetoothDiscoverable()
                                 }
 
                                 BarText {

@@ -129,6 +129,12 @@ assert.match(detailContentBlock, /onClicked: root\.toggleBluetoothScan\(\)/);
 
 const infoCard = fs.readFileSync(`${__dirname}/BluetoothInfoCard.qml`, "utf8");
 assert.doesNotMatch(infoCard, /scan|Scan/);
+assert.match(infoCard, /onClicked: card\.visibilityToggleRequested\(\)/);
+assert.match(infoCard, /enabled: card\.powered/);
+assert.match(
+	detailContentBlock,
+	/onVisibilityToggleRequested: root\.services\.bluetooth\.toggleBluetoothDiscoverable\(\)/,
+);
 
 const bluetoothDetailsColumnBlock = objectBlockById(
 	qml,

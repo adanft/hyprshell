@@ -262,6 +262,9 @@ Scope {
         return workspaceService.statusWorkspaceIdsForMonitor(monitor)
     }
 
+    function toggleBluetoothDiscoverable() {
+        return bluetoothService.toggleBluetoothDiscoverable()
+    }
     function toggleBluetoothPowered() {
         return bluetoothService.toggleBluetoothPowered()
     }

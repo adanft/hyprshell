@@ -15,6 +15,9 @@ Rectangle {
 
     readonly property var icons: Icons
     readonly property color tone: online ? Colors.primary : Colors.on_surface_variant
+    // nmcli reports IP4.ADDRESS in CIDR form; the prefix is not what this card
+    // is read for, so only the address itself is shown.
+    readonly property string bareAddress: address.split("/")[0]
     readonly property bool present: interfaceName.length > 0
     readonly property string stateText: !present ? "Unavailable" : (online ? "Connected" : (wired ? "Cable in" :
                                                                                                     "No cable"))
@@ -85,8 +88,8 @@ Rectangle {
 
         BarText {
             width: parent.width
-            visible: card.address.length > 0
-            text: card.address
+            visible: card.bareAddress.length > 0
+            text: card.bareAddress
             color: Colors.on_surface_variant
             font.pixelSize: card.theme.typography.sizeSm
             font.styleName: card.theme.typography.styleMedium

@@ -374,12 +374,6 @@ Item {
                         smooth: true
                         mipmap: true
                         onStatusChanged: {
-                            if (status === Image.Ready && card.allowLiveImage && card.materializeEntryId
-                                    && card.notificationService
-                                    && typeof card.notificationService.materializeNotificationImage === "function")
-                                card.notificationService.materializeNotificationImage(
-                                            card.materializeEntryId, notificationImage)
-
                             const failedSource = source.toString()
                             if (status === Image.Error && card.allowLiveImage && failedSource.startsWith(
                                         "image://qsimage/")) {

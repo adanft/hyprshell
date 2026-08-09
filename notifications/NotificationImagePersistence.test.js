@@ -198,6 +198,34 @@ assert.match(serviceSource, /notificationImageLifecycleActive = false/);
 assert.match(serviceSource, /if \(outcome\.retry\)[\s\S]*Qt\.callLater/);
 assert.match(
 	serviceSource,
+	/root\.scheduleNotificationHistorySave\(\)\s*root\.materializeNotificationImage\(entry\.id\)/,
+	"history reception starts image persistence without a rendered toast",
+);
+assert.match(serviceSource, /id: notificationImageCaptureComponent/);
+assert.match(serviceSource, /required property string entryId/);
+assert.match(serviceSource, /NotificationImagePersistence\.begin[\s\S]*notificationImageCaptureComponent\.createObject/);
+assert.match(
+	serviceSource,
+	/current\.image = `file:\/\/\$\{path\}`[\s\S]*root\.scheduleNotificationHistorySave\(\)/,
+	"successful completion publishes the owned path and forces a history write",
+);
+assert.doesNotMatch(
+	cardSource,
+	/materializeNotificationImage/,
+	"visual cards never start duplicate persistence jobs",
+);
+assert.match(
+	serviceSource,
+	/notification\.tracked = !notification\.transient && !policy\.hideFromCenter/,
+	"toast-only transient notifications remain outside history",
+);
+assert.match(
+	serviceSource,
+	/historyEntry = notification\.tracked \? root\.addNotificationToHistory[\s\S]*root\.enqueueNotificationPopup/,
+	"an untracked transient may still be enqueued as a toast",
+);
+assert.match(
+	serviceSource,
 	/owned !== true \|\| !NotificationImagePersistence\.isOwnedPath/,
 );
 assert.match(serviceSource, /cleanup\.exec\(\["rm", "-f", "--", path\]\)/);

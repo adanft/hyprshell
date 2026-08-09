@@ -51,6 +51,28 @@ Scope {
         Process {}
     }
     Component {
+        id: notificationImageCaptureComponent
+
+        Image {
+            required property string entryId
+            required property string targetPath
+
+            width: root.theme.sizing.notificationCardIconSaveSize
+            height: width
+            asynchronous: false
+            cache: true
+            sourceSize: Qt.size(0, 0)
+            fillMode: Image.PreserveAspectFit
+            visible: false
+            onStatusChanged: {
+                if (status === Image.Ready)
+                    root.captureNotificationImage(entryId, this, targetPath)
+                else if (status === Image.Error)
+                    root.handleNotificationImageSaveResult(entryId, this, targetPath, false)
+            }
+        }
+    }
+    Component {
         id: notificationImageCleanupComponent
         Process {}
     }
@@ -255,6 +277,7 @@ Scope {
 
         root.notificationHistory = history
         root.scheduleNotificationHistorySave()
+        root.materializeNotificationImage(entry.id)
         return entry
     }
 
@@ -297,15 +320,26 @@ Scope {
         saveTimer.restart()
     }
 
-    function materializeNotificationImage(entryId, imageItem) {
-        if (!entryId || !imageItem)
+    function materializeNotificationImage(entryId) {
+        if (!entryId || !root.notificationImageLifecycleActive)
             return
         const entry = root.notificationHistory.find(item => item && item.id === entryId)
-        if (!NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, imageItem.status
-                                                         === Image.Ready))
+        if (!NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, true))
             return
         const path = NotificationImagePersistence.notificationImagePath(entry, root.notificationImageCacheDirectory)
         NotificationImagePersistence.begin(root.notificationImagePersistence, entryId, path)
+        const imageItem = notificationImageCaptureComponent.createObject(root, {
+            entryId: entryId,
+            targetPath: path,
+            source: entry.image
+        })
+        if (!imageItem)
+            root.handleNotificationImageSaveResult(entryId, null, path, false)
+    }
+
+    function captureNotificationImage(entryId, imageItem, path) {
+        if (!root.notificationImageLifecycleActive || !imageItem)
+            return
         const mkdir = notificationImageMkdirComponent.createObject(root)
         mkdir.onExited.connect(function (exitCode) {
             mkdir.destroy()
@@ -332,7 +366,9 @@ Scope {
     function handleNotificationImageSaveResult(entryId, imageItem, path, saved) {
         const current = root.notificationHistory.find(item => item && item.id === entryId)
         const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved,
-                                                              Boolean(current), root.notificationImageLifecycleActive)
+                                                               Boolean(current), root.notificationImageLifecycleActive)
+        if (imageItem)
+            imageItem.destroy()
         if (outcome.orphan)
             root.deleteOwnedNotificationImage(outcome.orphan, true)
         if (outcome.persisted) {
@@ -345,8 +381,8 @@ Scope {
 
         if (outcome.retry)
             Qt.callLater(function () {
-                if (root.notificationImageLifecycleActive && imageItem && imageItem.status === Image.Ready)
-                    root.materializeNotificationImage(entryId, imageItem)
+                if (root.notificationImageLifecycleActive)
+                    root.materializeNotificationImage(entryId)
             })
     }
 

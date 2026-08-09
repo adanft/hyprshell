@@ -25,7 +25,7 @@ Item {
     property bool useRenderedHeightForLayout: false
     property bool inlineHeightAnimating: false
     property bool inlineGeometryReady: false
-    readonly property bool cardHovered: cardHoverHandler.hovered
+    readonly property bool cardHovered: cardHoverHandler.hovered || closeMouse.containsMouse || expandMouse.containsMouse
     property real renderedLayoutHeight: layoutHeight
     property real allocatedLayoutHeight: layoutHeight
     readonly property string textFont: theme.typography.textFontFamily
@@ -255,6 +255,12 @@ Item {
             failedImageSource = ""
     }
     onLayoutHeightChanged: syncLayoutHeight()
+    onCardHoveredChanged: {
+        if (cardHovered)
+            hoverStarted()
+        else
+            hoverEnded()
+    }
     onRenderedLayoutHeightChanged: {
         if (inlineHeightAnimating)
             slotHeightChanged()
@@ -282,7 +288,7 @@ Item {
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
         color: card.colors.background
-        border.color: card.colors.border
+        border.color: card.cardHovered ? card.colors.secondary : card.colors.border
         border.width: card.borderWidth
         clip: true
         layer.enabled: true
@@ -306,12 +312,7 @@ Item {
         HoverHandler {
             id: cardHoverHandler
 
-            onHoveredChanged: {
-                if (hovered)
-                    card.hoverStarted()
-                else
-                    card.hoverEnded()
-            }
+            cursorShape: Qt.ArrowCursor
         }
 
         MouseArea {

@@ -56,10 +56,7 @@ const legacyProperties = [
 	"ethernetInfoProcessGeneration",
 	"ethernetInfoProcessRefreshesProfile",
 	"wifiInfo",
-	"wifiInfoRequestedInterface",
 	"wifiInfoAvailability",
-	"wifiInfoRequestGeneration",
-	"wifiInfoProcessGeneration",
 	"ethernetProfileBusy",
 	"ethernetProfileAwaitingRefresh",
 	"ethernetProfileActionGeneration",
@@ -212,7 +209,6 @@ const legacyMethods = [
 	"updateCpuUsage",
 	"updateMemoryUsage",
 	"refreshEthernetInfo",
-	"refreshWifiInfo",
 	"setEthernetProfileEnabled",
 	"refreshNetwork",
 	"dismissNotifications",
@@ -274,7 +270,6 @@ const ownershipContracts = {
 	],
 	NetworkService: [
 		"ethernetInfoProcess",
-		"wifiInfoProcess",
 		"ethernetProfileActionProcess",
 	],
 	NotificationService: [

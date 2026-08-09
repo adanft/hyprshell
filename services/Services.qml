@@ -62,11 +62,8 @@ Scope {
     property alias ethernetInfoRequestGeneration: networkService.ethernetInfoRequestGeneration
     property alias ethernetInfoProcessGeneration: networkService.ethernetInfoProcessGeneration
     property alias ethernetInfoProcessRefreshesProfile: networkService.ethernetInfoProcessRefreshesProfile
-    property alias wifiInfo: networkService.wifiInfo
-    property alias wifiInfoRequestedInterface: networkService.wifiInfoRequestedInterface
-    property alias wifiInfoAvailability: networkService.wifiInfoAvailability
-    property alias wifiInfoRequestGeneration: networkService.wifiInfoRequestGeneration
-    property alias wifiInfoProcessGeneration: networkService.wifiInfoProcessGeneration
+    readonly property alias wifiInfo: networkService.wifiInfo
+    readonly property alias wifiInfoAvailability: networkService.wifiInfoAvailability
     property alias ethernetProfileBusy: networkService.ethernetProfileBusy
     property alias ethernetProfileAwaitingRefresh: networkService.ethernetProfileAwaitingRefresh
     property alias ethernetProfileActionGeneration: networkService.ethernetProfileActionGeneration

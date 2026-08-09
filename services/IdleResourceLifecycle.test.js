@@ -147,9 +147,13 @@ assert.match(
 	networkService,
 	/running: root\.networkDetailsEnabled && root\.lanDevice !== null/,
 );
+// The wireless card reads NetworkDevice.address, which arrives by signal, so
+// there is no wireless poll left to gate - and nothing may reintroduce one.
+assert.doesNotMatch(networkService, /wifiInfoProcess|refreshWifiInfo/);
 assert.match(
 	networkService,
-	/running: root\.networkDetailsEnabled && root\.wifiDevice !== null/,
+	/wifiInfo:[\s\S]{0,120}?ipv4Address: wifiDevice\?\.address/,
+	"the wireless address comes from the device, not from a process",
 );
 assert.match(
 	networkMenu,

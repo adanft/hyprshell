@@ -215,12 +215,11 @@ Scope {
                             onAccepted: root.submitCurrentPassword()
                         }
 
-                        Rectangle {
+                        Item {
                             id: visibilityButton
                             width: root.theme.sizing.statusBarWifiPasswordVisibilityButtonWidth
                             height: parent.height
                             anchors.right: parent.right
-                            color: "transparent"
 
                             Text {
                                 anchors.centerIn: parent

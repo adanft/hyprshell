@@ -35,12 +35,9 @@ Column {
         font.styleName: root.theme.typography.styleRegular
     }
 
-    Rectangle {
+    Item {
         width: parent.width
         height: root.theme.sizing.statusBarNetworkQuickControlHeight
-        radius: root.theme.shape.radius12
-        color: "transparent"
-        border.width: 0
 
         Row {
             anchors.fill: parent
@@ -67,7 +64,7 @@ Column {
                 trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                 value: root.outputQuickVolume?.authoritativePercent ?? 0
                 available: root.outputAvailable
-                trackColor: Colors.surface
+                trackColor: Colors.surface_variant
                 fillColor: Colors.primary
                 handleColor: Colors.on_surface
                 handleBorderColor: Colors.primary

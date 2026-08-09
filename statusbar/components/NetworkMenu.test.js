@@ -221,6 +221,24 @@ for (const file of [
 	);
 }
 
+// Every slider in the panel is the same control: one height, one track tone.
+for (const file of [
+	"NetworkMenu",
+	"AudioMixerSection",
+	"AudioInputSection",
+	"AudioPlaybackStreamRow",
+]) {
+	const source = fs.readFileSync(`${componentDir}/${file}.qml`, "utf8");
+	for (const [, block] of source.matchAll(/QuickControlSlider \{([\s\S]*?)\n(\s*)\}/g)) {
+		assert.match(
+			block,
+			/height: root\.theme\.sizing\.statusBarNetworkQuickControlSliderHeight/,
+			`${file} sizes a slider differently`,
+		);
+		assert.match(block, /trackColor: Colors\.surface_variant/, `${file} tints a slider track differently`);
+	}
+}
+
 // The five detail sections are layout boxes, not painted surfaces.
 assert.doesNotMatch(detailContentBlock, /color: "transparent"/);
 for (const id of ["outputCard", "microphoneCard", "lanCard", "bluetoothDetails", "wifiCard"])

@@ -360,7 +360,7 @@ Item {
                                         trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                         value: root.outputQuickVolume?.authoritativePercent ?? 0
                                         available: root.outputAvailable
-                                        trackColor: Colors.surface
+                                        trackColor: Colors.surface_variant
                                         fillColor: Colors.primary
                                         handleColor: Colors.on_surface
                                         handleBorderColor: Colors.primary
@@ -407,7 +407,7 @@ Item {
                                         trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                         value: root.services.brightness.brightnessLevel
                                         available: root.services.brightness.brightnessAvailable
-                                        trackColor: Colors.surface
+                                        trackColor: Colors.surface_variant
                                         fillColor: Colors.primary
                                         handleColor: Colors.on_surface
                                         handleBorderColor: Colors.primary

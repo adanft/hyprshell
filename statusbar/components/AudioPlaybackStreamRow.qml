@@ -179,11 +179,12 @@ Rectangle {
                 id: volumeSlider
                 theme: root.theme
                 width: parent.width - root.theme.sizing.statusBarNetworkQuickControlSliderHeight - parent.spacing
-                height: parent.height
+                height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                anchors.verticalCenter: parent.verticalCenter
                 trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                 value: root.percent
                 available: root.available
-                trackColor: "transparent"
+                trackColor: Colors.surface_variant
                 fillColor: Colors.primary
                 handleColor: Colors.on_surface
                 handleBorderColor: Colors.primary

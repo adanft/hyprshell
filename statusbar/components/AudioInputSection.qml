@@ -53,7 +53,7 @@ Column {
                 trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                 value: Math.max(0, root.services.audio.sourceVolume)
                 available: root.services.audio.microphoneAvailable
-                trackColor: Colors.surface
+                trackColor: Colors.surface_variant
                 fillColor: Colors.primary
                 handleColor: Colors.on_surface
                 handleBorderColor: Colors.primary

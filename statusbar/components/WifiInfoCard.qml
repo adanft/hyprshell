@@ -44,7 +44,7 @@ Rectangle {
         id: glyph
 
         anchors.left: parent.left
-        anchors.leftMargin: card.theme.spacing.space16
+        anchors.leftMargin: card.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
         // One glyph in every state: the tone, the dot and the label already say
         // three times over whether the link is up.
@@ -58,7 +58,7 @@ Rectangle {
         id: state
 
         anchors.right: parent.right
-        anchors.rightMargin: card.theme.spacing.space16
+        anchors.rightMargin: card.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
         spacing: card.theme.spacing.space6
 
@@ -104,7 +104,7 @@ Rectangle {
             text: card.bareAddress
             color: Colors.on_surface_variant
             font.pixelSize: card.theme.typography.sizeSm
-            font.styleName: card.theme.typography.styleMedium
+            font.styleName: card.theme.typography.styleRegular
             elide: Text.ElideRight
         }
     }

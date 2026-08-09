@@ -799,11 +799,11 @@ assert.doesNotMatch(
 );
 assert.match(
 	mixerQml,
-	/id: outputDevicesList[\s\S]*spacing: root\.theme\.spacing\.space8/,
+	/id: outputDevicesList[\s\S]*spacing: root\.theme\.spacing\.space6/,
 );
 assert.match(
 	mixerQml,
-	/id: playbackStreamsList[\s\S]*spacing: root\.theme\.spacing\.space8/,
+	/id: playbackStreamsList[\s\S]*spacing: root\.theme\.spacing\.space6/,
 );
 assert.match(
 	mixerQml,

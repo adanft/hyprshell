@@ -36,6 +36,7 @@ TestCase {
                                  space16: 16,
                                  space12: 12,
                                  space8: 8,
+                                 space6: 6,
                                  space2: 2
                              },
                              sizing: {

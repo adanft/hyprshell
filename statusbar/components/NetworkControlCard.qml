@@ -37,8 +37,8 @@ Rectangle {
 
     Row {
         anchors.fill: parent
-        anchors.margins: card.theme.spacing.space8
-        spacing: card.theme.spacing.space8
+        anchors.margins: card.theme.spacing.space12
+        spacing: card.theme.spacing.space6
 
         Rectangle {
             id: iconButton
@@ -131,7 +131,7 @@ Rectangle {
         id: bodyArea
         objectName: "bodyArea"
         anchors.fill: parent
-        anchors.leftMargin: card.theme.spacing.space8 * 2 + card.iconSize
+        anchors.leftMargin: card.theme.spacing.space12 * 2 + card.iconSize
         enabled: card.detailAvailable
         hoverEnabled: true
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor

@@ -45,8 +45,8 @@ Rectangle {
         anchors.left: deviceIcon.right
         anchors.right: actionButton.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: root.theme.spacing.space8
-        anchors.rightMargin: root.theme.spacing.space8
+        anchors.leftMargin: root.theme.spacing.space12
+        anchors.rightMargin: root.theme.spacing.space12
         spacing: root.theme.spacing.space2
 
         Text {
@@ -55,6 +55,7 @@ Rectangle {
             color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
+            font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
 
@@ -64,6 +65,7 @@ Rectangle {
             color: root.active ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
+            font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
     }
@@ -74,7 +76,7 @@ Rectangle {
         width: actionLabel.implicitWidth + root.theme.spacing.space16
         height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
         anchors.right: parent.right
-        anchors.rightMargin: root.theme.spacing.space8
+        anchors.rightMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
         radius: root.theme.shape.radius8
         color: actionInput.containsMouse || actionInput.activeFocus ? Colors.hover : "transparent"
@@ -88,6 +90,7 @@ Rectangle {
                                                                                                     ? Colors.on_surface_variant : Colors.primary)
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
+            font.styleName: root.theme.typography.styleMedium
         }
 
         MouseArea {

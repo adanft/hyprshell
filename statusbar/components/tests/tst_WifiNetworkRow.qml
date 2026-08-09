@@ -32,6 +32,7 @@ TestCase {
                             space16: 16,
                             space12: 12,
                             space8: 8,
+                            space6: 6,
                             space4: 4,
                             space2: 2
                         },

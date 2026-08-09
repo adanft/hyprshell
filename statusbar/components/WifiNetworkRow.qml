@@ -42,7 +42,7 @@ Rectangle {
         anchors.right: actions.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: root.theme.spacing.space12
-        anchors.rightMargin: root.theme.spacing.space8
+        anchors.rightMargin: root.theme.spacing.space12
         spacing: root.theme.spacing.space2
 
         Text {
@@ -70,9 +70,9 @@ Rectangle {
     Row {
         id: actions
         anchors.right: parent.right
-        anchors.rightMargin: root.theme.spacing.space8
+        anchors.rightMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        spacing: root.theme.spacing.space4
+        spacing: root.theme.spacing.space6
 
         Rectangle {
             id: primaryButton

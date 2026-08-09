@@ -48,8 +48,8 @@ Rectangle {
     Column {
         anchors.left: deviceIcon.right
         anchors.right: actions.left
-        anchors.leftMargin: theme.spacing.space8
-        anchors.rightMargin: theme.spacing.space8
+        anchors.leftMargin: theme.spacing.space12
+        anchors.rightMargin: theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
         spacing: theme.spacing.space2
         Text {
@@ -78,9 +78,9 @@ Rectangle {
     Row {
         id: actions
         anchors.right: parent.right
-        anchors.rightMargin: theme.spacing.space8
+        anchors.rightMargin: theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        spacing: theme.spacing.space4
+        spacing: theme.spacing.space6
         BluetoothActionButton {
             id: primaryButton
             objectName: "primaryActionButton"

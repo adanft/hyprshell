@@ -83,8 +83,8 @@ Rectangle {
             anchors.left: streamIcon.right
             anchors.right: percentLabel.left
             anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: root.theme.spacing.space8
-            anchors.rightMargin: root.theme.spacing.space8
+            anchors.leftMargin: root.theme.spacing.space12
+            anchors.rightMargin: root.theme.spacing.space12
             spacing: root.theme.spacing.space2
 
             Text {
@@ -93,6 +93,7 @@ Rectangle {
                 color: Colors.on_surface
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeMd
+                font.styleName: root.theme.typography.styleSemibold
                 elide: Text.ElideRight
                 maximumLineCount: 1
             }
@@ -103,6 +104,7 @@ Rectangle {
                 color: Colors.on_surface_variant
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
+                font.styleName: root.theme.typography.styleRegular
                 elide: Text.ElideRight
                 maximumLineCount: 1
             }
@@ -116,6 +118,7 @@ Rectangle {
             text: root.percent + "%"
             color: Colors.on_surface_variant
             font.pixelSize: root.theme.typography.sizeSm
+            font.styleName: root.theme.typography.styleRegular
         }
     }
 
@@ -133,7 +136,7 @@ Rectangle {
 
         Row {
             anchors.fill: parent
-            spacing: root.theme.spacing.space8
+            spacing: root.theme.spacing.space6
 
             Rectangle {
                 width: root.theme.sizing.statusBarNetworkQuickControlSliderHeight

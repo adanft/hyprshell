@@ -211,12 +211,12 @@ Item {
                 id: menuLayout
                 anchors.fill: parent
                 anchors.margins: root.theme.spacing.space12
-                spacing: root.theme.spacing.space8
+                spacing: root.theme.spacing.space6
 
                 Column {
                     id: fixedShell
                     width: parent.width
-                    spacing: root.theme.spacing.space8
+                    spacing: root.theme.spacing.space6
 
                     Rectangle {
                         id: userCard
@@ -313,7 +313,7 @@ Item {
 
                         Row {
                             anchors.fill: parent
-                            spacing: root.theme.spacing.space8
+                            spacing: root.theme.spacing.space6
 
                             // No card behind the quick controls: the slider track is
                             // the only thing here that carries a surface.
@@ -324,7 +324,7 @@ Item {
                                 Row {
                                     anchors.fill: parent
                                     anchors.margins: root.theme.spacing.space12
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space6
 
                                     BarText {
                                         width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
@@ -371,7 +371,7 @@ Item {
                                 Row {
                                     anchors.fill: parent
                                     anchors.margins: root.theme.spacing.space12
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space6
 
                                     BarText {
                                         width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
@@ -413,7 +413,7 @@ Item {
 
                         Row {
                             anchors.fill: parent
-                            spacing: root.theme.spacing.space8
+                            spacing: root.theme.spacing.space6
 
                             NetworkControlCard {
                                 width: (parent.width - parent.spacing) / 2
@@ -464,7 +464,7 @@ Item {
 
                         Row {
                             anchors.fill: parent
-                            spacing: root.theme.spacing.space8
+                            spacing: root.theme.spacing.space6
 
                             NetworkControlCard {
                                 width: (parent.width - parent.spacing) / 2
@@ -583,7 +583,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: root.theme.spacing.space8
+                                spacing: root.theme.spacing.space6
 
                                 AudioMixerSection {
                                     id: audioMixerSection
@@ -615,7 +615,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: root.theme.spacing.space8
+                                spacing: root.theme.spacing.space6
 
                                 BarText {
                                     x: root.theme.spacing.space12
@@ -636,7 +636,7 @@ Item {
                                     Row {
                                         anchors.fill: parent
                                         anchors.margins: root.theme.spacing.space12
-                                        spacing: root.theme.spacing.space8
+                                        spacing: root.theme.spacing.space6
 
                                         BarText {
                                             width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
@@ -684,7 +684,7 @@ Item {
                                     id: microphoneDevicesSection
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space6
 
                                     Repeater {
                                         model: root.services.audio.audioSources ?? []
@@ -729,7 +729,7 @@ Item {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.margins: root.theme.spacing.space12
-                                spacing: root.theme.spacing.space8
+                                spacing: root.theme.spacing.space6
 
                                 BarText {
                                     text: "Network info"
@@ -820,7 +820,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: root.theme.spacing.space8
+                                spacing: root.theme.spacing.space6
 
                                 Item {
                                     id: bluetoothInfoHeader
@@ -853,7 +853,7 @@ Item {
                                         Row {
                                             id: scanContent
                                             anchors.centerIn: parent
-                                            spacing: root.theme.spacing.space4
+                                            spacing: root.theme.spacing.space6
 
                                             BarText {
                                                 anchors.verticalCenter: parent.verticalCenter
@@ -919,7 +919,7 @@ Item {
                                     visible: bluetoothDetailsColumn.connectedDevices.length > 0
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space6
 
                                     BarText {
                                         width: parent.width
@@ -955,7 +955,7 @@ Item {
                                     visible: bluetoothDetailsColumn.knownDevices.length > 0
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space6
 
                                     BarText {
                                         width: parent.width
@@ -992,7 +992,7 @@ Item {
                                              && bluetoothDetailsColumn.availableDevices.length > 0
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
-                                    spacing: root.theme.spacing.space8
+                                    spacing: root.theme.spacing.space6
 
                                     BarText {
                                         width: parent.width
@@ -1049,7 +1049,7 @@ Item {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.margins: root.theme.spacing.space12
-                                spacing: root.theme.spacing.space8
+                                spacing: root.theme.spacing.space6
 
                                 BarText {
                                     text: "Network info"
@@ -1077,6 +1077,7 @@ Item {
                                           ? "Network details unavailable" : "Loading network details…"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeSm
+                                    font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.WordWrap
                                 }
 
@@ -1085,6 +1086,8 @@ Item {
                                     width: parent.width
                                     text: root.connectionError
                                     color: Colors.error
+                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.Wrap
                                 }
 

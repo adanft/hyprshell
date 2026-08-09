@@ -14,7 +14,7 @@ Column {
 
     signal masterVolumeRequested(int value)
 
-    spacing: root.theme.spacing.space8
+    spacing: root.theme.spacing.space6
 
     ScriptModel {
         id: audioOutputsModel
@@ -45,7 +45,7 @@ Column {
         Row {
             anchors.fill: parent
             anchors.margins: root.theme.spacing.space12
-            spacing: root.theme.spacing.space8
+            spacing: root.theme.spacing.space6
 
             BarText {
                 width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
@@ -82,7 +82,7 @@ Column {
 
         x: root.theme.spacing.space12
         width: parent.width - root.theme.spacing.space24
-        spacing: root.theme.spacing.space8
+        spacing: root.theme.spacing.space6
 
         BarText {
             width: parent.width
@@ -95,7 +95,7 @@ Column {
         Column {
             id: outputDevicesList
             width: parent.width
-            spacing: root.theme.spacing.space8
+            spacing: root.theme.spacing.space6
 
             Repeater {
                 model: audioOutputsModel
@@ -132,7 +132,7 @@ Column {
 
         x: root.theme.spacing.space12
         width: parent.width - root.theme.spacing.space24
-        spacing: root.theme.spacing.space8
+        spacing: root.theme.spacing.space6
 
         BarText {
             width: parent.width
@@ -145,7 +145,7 @@ Column {
         Column {
             id: playbackStreamsList
             width: parent.width
-            spacing: root.theme.spacing.space8
+            spacing: root.theme.spacing.space6
 
             Repeater {
                 model: playbackStreamsModel

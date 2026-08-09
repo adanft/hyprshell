@@ -49,7 +49,8 @@ Rectangle {
             radius: card.theme.shape.radius12
             // No border: border.width defaults to 1, so naming a border colour
             // here would draw one. Inactive sits on the menu body's own tone.
-            color: card.active ? Colors.primary : Colors.shadow
+            // The icon owns its own hover: bodyArea deliberately starts past it.
+            color: toggleArea.containsMouse ? Colors.hover : (card.active ? Colors.primary : Colors.shadow)
             opacity: card.available ? 1 : card.theme.motion.opacityDisabled
             activeFocusOnTab: card.available && !card.busy
             Accessible.role: Accessible.Button
@@ -72,16 +73,19 @@ Rectangle {
             Text {
                 anchors.centerIn: parent
                 text: card.icon
-                color: card.active ? Colors.on_primary : Colors.on_surface_variant
+                color: toggleArea.containsMouse ? Colors.on_hover : (card.active ? Colors.on_primary :
+                                                                                  Colors.on_surface_variant)
                 font.family: card.theme.typography.iconFontFamily
                 font.pixelSize: card.theme.typography.sizeXl
                 font.styleName: card.theme.typography.styleRegular
             }
 
             MouseArea {
+                id: toggleArea
                 objectName: "toggleArea"
                 anchors.fill: parent
                 enabled: card.available && !card.busy
+                hoverEnabled: true
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: card.requestToggleAction()
             }

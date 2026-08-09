@@ -108,6 +108,10 @@ const sources = fs
 	.filter((file) => !file.includes(`${path.sep}.`))
 	.filter((file) => !file.startsWith(`${__dirname}${path.sep}`) && path.dirname(file) !== __dirname);
 
+const qml = sources.filter(
+	(file) => file.endsWith(".qml") && !file.includes(`${path.sep}tests${path.sep}`),
+);
+
 const strays = [];
 for (const file of sources) {
 	const text = fs.readFileSync(file, "utf8");
@@ -160,6 +164,43 @@ assert.deepEqual(
 	`pointer feedback must be hover/on_hover: ${offConvention.join(", ")}`,
 );
 
+// A colour that swaps on containsMouse is dead unless its MouseArea opts into
+// hover tracking, and hoverEnabled defaults to false. The wrong role is at
+// least visible; this one just never fires.
+const deadHover = [];
+for (const file of qml) {
+	const lines = fs.readFileSync(file, "utf8").split("\n");
+	const tracks = new Map();
+	lines.forEach((line, index) => {
+		const opening = /^(\s*)(?:\w+\.)?MouseArea\s*\{\s*$/.exec(line);
+		if (!opening) return;
+		const indent = opening[1].length;
+		const own = [];
+		for (let cursor = index + 1; cursor < lines.length; cursor++) {
+			const body = lines[cursor];
+			const bodyIndent = body.length - body.trimStart().length;
+			if (body.trim() && bodyIndent <= indent) break;
+			if (body.trim() && bodyIndent === indent + 4) own.push(body);
+		}
+		const declared = own.join("\n");
+		const named = /^\s*id:\s*(\w+)/m.exec(declared);
+		if (named) tracks.set(named[1], /^\s*hoverEnabled:\s*true/m.test(declared));
+	});
+	lines.forEach((line, index) => {
+		if (!/[cC]olor:/.test(line)) return;
+		for (const [, area] of line.matchAll(/(\w+)\.containsMouse/g))
+			if (tracks.get(area) === false)
+				deadHover.push(
+					`${path.relative(repository, file)}:${index + 1} reads ${area}.containsMouse, which never becomes true`,
+				);
+	});
+}
+assert.deepEqual(
+	deadHover,
+	[],
+	`a hover colour needs hoverEnabled: ${deadHover.join(", ")}`,
+);
+
 // The status bar dims an unavailable module to the same tone an empty
 // workspace uses, so "there is nothing here" reads identically across the bar.
 const EMPTY_WORKSPACE_ROLE = /return empty \? Colors\.outline :/;
@@ -200,9 +241,6 @@ const dimmed = sources.filter((file) =>
 // Everything above proves the roles are used. This proves nothing *else* is:
 // a colour can enter the shell as a literal, as a Qt constructor, from the
 // system palette, or by leaving a Qt default in place.
-const qml = sources.filter(
-	(file) => file.endsWith(".qml") && !file.includes(`${path.sep}tests${path.sep}`),
-);
 
 // "transparent" is the absence of a colour, and an OpacityMask stencil reads
 // only alpha, so its rgb is not a palette decision. Nothing else may be named.

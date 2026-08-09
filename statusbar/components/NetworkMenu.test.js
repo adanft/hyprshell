@@ -250,6 +250,10 @@ assert.match(modal, /anchors\.margins: root\.theme\.spacing\.appLauncherPadding/
 assert.match(modal, /spacing: root\.theme\.spacing\.appLauncherSectionSpacing/);
 assert.match(modal, /height: root\.theme\.sizing\.appLauncherSearchHeight/);
 assert.match(modal, /radius: root\.theme\.shape\.appLauncherSearchRadius/);
+// Its actions are pills, like every action in the control center. Close, Cancel
+// and Connect: three, and no fourth shape among them.
+assert.equal((modal.match(/radius: height \/ 2/g) || []).length, 3);
+assert.doesNotMatch(modal, /radius: root\.theme\.shape\.radius12/);
 
 // The five detail sections are layout boxes, not painted surfaces.
 assert.doesNotMatch(detailContentBlock, /color: "transparent"/);

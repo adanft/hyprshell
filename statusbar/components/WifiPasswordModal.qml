@@ -266,7 +266,7 @@ Scope {
                         Rectangle {
                             width: cancelLabel.implicitWidth + root.theme.spacing.space24
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
-                            radius: root.theme.shape.radius12
+                            radius: height / 2
                             color: cancelInput.containsMouse || cancelInput.activeFocus ? Colors.hover :
                                                                                           Colors.surface
 
@@ -299,7 +299,7 @@ Scope {
                         Rectangle {
                             width: connectLabel.implicitWidth + root.theme.spacing.space24
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
-                            radius: root.theme.shape.radius12
+                            radius: height / 2
                             color: Colors.primary
                             opacity: passwordInput.text.length > 0 && !root.busy ? 1 : root.theme.motion.opacityDisabled
 

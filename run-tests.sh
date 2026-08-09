@@ -18,6 +18,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 readonly SMOKE_TIMEOUT=30
 readonly SUCCESS_LINE='SMOKETEST: all components instantiated'
 readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
+readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
 # which is the normal case while a shell is running. Matched literally rather
@@ -112,6 +113,11 @@ fi
 
 if ! grep -qF "$CAPTURE_LINE" <<<"$smoke_output"; then
 	echo "-- FAILED: capture host was not proven to reuse status bar windows"
+	failed=1
+fi
+
+if ! grep -qF "$LIFECYCLE_LINE" <<<"$smoke_output"; then
+	echo "-- FAILED: notification image lifecycle harness did not complete"
 	failed=1
 fi
 

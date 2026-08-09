@@ -44,6 +44,8 @@ Scope {
     property var invalidLiveImageSources: ({})
     property var notificationImagePersistence: NotificationImagePersistence.createState()
     property var notificationImageCaptureHosts: []
+    property var notificationImageCaptureJobs: ({})
+    property int notificationImageCaptureGeneration: 0
     readonly property var notificationImageCaptureHost: notificationImageCaptureHosts.length > 0
                                                          ? notificationImageCaptureHosts[0] : null
 
@@ -59,6 +61,8 @@ Scope {
         Image {
             required property string entryId
             required property string targetPath
+            required property int captureGeneration
+            required property var captureHost
             property bool captureFinished: false
 
             width: root.theme.sizing.notificationCardIconSaveSize
@@ -69,13 +73,13 @@ Scope {
             fillMode: Image.PreserveAspectFit
             Component.onDestruction: {
                 if (!captureFinished && root.notificationImageLifecycleActive)
-                    root.handleNotificationImageSaveResult(entryId, null, targetPath, false, false)
+                    root.notificationImageItemDestroyed(entryId, captureGeneration)
             }
             onStatusChanged: {
                 if (status === Image.Ready)
-                    root.captureNotificationImage(entryId, this, targetPath, true)
+                    root.prepareNotificationImageCapture(entryId, captureGeneration)
                 else if (status === Image.Error)
-                    root.handleNotificationImageSaveResult(entryId, this, targetPath, false, true)
+                    root.failNotificationImageCapture(entryId, captureGeneration, true)
             }
         }
     }
@@ -177,6 +181,7 @@ Scope {
 
     Component.onDestruction: {
         root.notificationImageLifecycleActive = false
+        root.cancelAllNotificationImageJobs(false)
         if (root.notificationHistoryWritePending)
             root.saveNotificationHistory()
     }
@@ -313,13 +318,40 @@ Scope {
         return imageSource.startsWith("image://qsimage/") && root.invalidLiveImageSources[imageSource] === true
     }
 
-    function quarantineInvalidLiveImageSource(source) {
+    function quarantineInvalidLiveImageSource(source, excludedEntryId, excludedGeneration) {
         const imageSource = String(source || "")
         if (!imageSource.startsWith("image://qsimage/") || root.invalidLiveImageSources[imageSource] === true)
             return
         const next = Object.assign({}, root.invalidLiveImageSources)
         next[imageSource] = true
         root.invalidLiveImageSources = next
+        let historyChanged = false
+        root.notificationHistory.forEach(entry => {
+            if (entry && String(entry.image || "") === imageSource) {
+                entry.image = ""
+                historyChanged = true
+            }
+        })
+        root.notificationQueue.forEach(popup => {
+            if (popup && String(popup.image || "") === imageSource)
+                popup.image = ""
+        })
+        root.visibleNotifications.forEach(popup => {
+            if (popup && String(popup.image || "") === imageSource)
+                popup.image = ""
+        })
+        if (historyChanged) {
+            root.notificationHistory = root.notificationHistory.slice()
+            root.scheduleNotificationHistorySave()
+        }
+        root.notificationQueue = root.notificationQueue.slice()
+        root.visibleNotifications = root.visibleNotifications.slice()
+        Object.keys(root.notificationImageCaptureJobs).forEach(entryId => {
+            const job = root.notificationImageCaptureJobs[entryId]
+            if (job && job.source === imageSource
+                    && (entryId !== excludedEntryId || job.generation !== excludedGeneration))
+                root.cancelNotificationImageJob(entryId, job.generation, false)
+        })
     }
 
     function scheduleNotificationHistorySave() {
@@ -338,66 +370,163 @@ Scope {
 
     function unregisterNotificationImageCaptureHost(host) {
         root.notificationImageCaptureHosts = root.notificationImageCaptureHosts.filter(candidate => candidate && candidate !== host)
+        Object.keys(root.notificationImageCaptureJobs).forEach(entryId => {
+            const job = root.notificationImageCaptureJobs[entryId]
+            if (job && job.host === host)
+                root.cancelNotificationImageJob(entryId, job.generation, true)
+        })
     }
 
-    function materializeNotificationImage(entryId, attachedImageItem) {
+    function notificationImageEntry(entryId) {
+        return root.notificationHistory.find(item => item && item.id === entryId) || null
+    }
+
+    function activeNotificationImageJob(entryId, generation) {
+        const job = root.notificationImageCaptureJobs[entryId]
+        return job && job.generation === generation ? job : null
+    }
+
+    function notificationImageHostReady(host) {
+        return Boolean(host && root.notificationImageCaptureHosts.indexOf(host) !== -1 && host.Window.window)
+    }
+
+    function notificationImageItemReady(job) {
+        const imageItem = job ? job.imageItem : null
+        return Boolean(imageItem && imageItem.parent === job.host && imageItem.Window.window
+                       && imageItem.Window.window === job.host.Window.window
+                       && typeof imageItem.grabToImage === "function" && imageItem.status === Image.Ready)
+    }
+
+    function materializeNotificationImage(entryId) {
         if (!entryId || !root.notificationImageLifecycleActive)
             return
-        const entry = root.notificationHistory.find(item => item && item.id === entryId)
-        const imageReady = attachedImageItem && attachedImageItem.status === Image.Ready
-        const captureParent = imageReady ? attachedImageItem.parent : root.notificationImageCaptureHost
-        if (!captureParent || !captureParent.Window.window
+        const entry = root.notificationImageEntry(entryId)
+        const captureParent = root.notificationImageCaptureHost
+        if (!root.notificationImageHostReady(captureParent)
                 || !NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, true))
             return
-        const path = NotificationImagePersistence.notificationImagePath(entry, root.notificationImageCacheDirectory)
-        NotificationImagePersistence.begin(root.notificationImagePersistence, entryId, path)
-        if (imageReady) {
-            root.captureNotificationImage(entryId, attachedImageItem, path, false)
-            return
-        }
-        const imageItem = notificationImageCaptureComponent.createObject(captureParent, {
-            entryId: entryId,
-            targetPath: path,
-            source: entry.image
-        })
-        if (!imageItem)
-            root.handleNotificationImageSaveResult(entryId, null, path, false, false)
+        root.startNotificationImageCapture(entry, captureParent, entry.image)
     }
 
-    function captureNotificationImage(entryId, imageItem, path, ownsImageItem) {
-        if (!root.notificationImageLifecycleActive || !imageItem)
+    function startNotificationImageCapture(entry, captureParent, imageSource) {
+        const path = NotificationImagePersistence.notificationImagePath(entry, root.notificationImageCacheDirectory)
+        NotificationImagePersistence.begin(root.notificationImagePersistence, entry.id, path)
+        root.notificationImageCaptureGeneration += 1
+        const generation = root.notificationImageCaptureGeneration
+        const imageItem = notificationImageCaptureComponent.createObject(captureParent, {
+            entryId: entry.id,
+            targetPath: path,
+            captureGeneration: generation,
+            captureHost: captureParent,
+            source: ""
+        })
+        if (!imageItem) {
+            root.finishNotificationImageJob(entry.id, generation, path, false, true)
             return
+        }
+        const jobs = Object.assign({}, root.notificationImageCaptureJobs)
+        jobs[entry.id] = {
+            generation: generation,
+            host: captureParent,
+            imageItem: imageItem,
+            path: path,
+            source: String(entry.image || ""),
+            mkdir: null
+        }
+        root.notificationImageCaptureJobs = jobs
+        imageItem.source = imageSource
+    }
+
+    function prepareNotificationImageCapture(entryId, generation) {
+        const job = root.activeNotificationImageJob(entryId, generation)
+        if (!root.notificationImageLifecycleActive || !job || !root.notificationImageEntry(entryId)
+                || !root.notificationImageHostReady(job.host) || !root.notificationImageItemReady(job)) {
+            root.cancelNotificationImageJob(entryId, generation, true)
+            return
+        }
         const mkdir = notificationImageMkdirComponent.createObject(root)
+        if (!mkdir) {
+            root.cancelNotificationImageJob(entryId, generation, true)
+            return
+        }
+        job.mkdir = mkdir
         mkdir.onExited.connect(function (exitCode) {
             mkdir.destroy()
+            const currentJob = root.activeNotificationImageJob(entryId, generation)
+            if (!currentJob)
+                return
+            currentJob.mkdir = null
             if (exitCode !== 0) {
-                root.handleNotificationImageSaveResult(entryId, imageItem, path, false, ownsImageItem)
+                root.cancelNotificationImageJob(entryId, generation, true)
                 return
             }
-
+            if (!root.notificationImageLifecycleActive || !root.notificationImageEntry(entryId)
+                    || !root.notificationImageHostReady(currentJob.host)
+                    || !root.notificationImageItemReady(currentJob)) {
+                root.cancelNotificationImageJob(entryId, generation, true)
+                return
+            }
             const saveSize = root.theme.sizing.notificationCardIconSaveSize
-            imageItem.grabToImage(function (result) {
+            currentJob.imageItem.grabToImage(function (result) {
+                const completedJob = root.activeNotificationImageJob(entryId, generation)
+                if (!completedJob)
+                    return
                 let saved = false
                 try {
-                    saved = result.saveToFile(path)
+                    saved = Boolean(result && result.saveToFile(completedJob.path))
                 } catch (error) {
                     console.warn(`Failed to save notification image: ${error}`)
                 }
-
-                root.handleNotificationImageSaveResult(entryId, imageItem, path, saved, ownsImageItem)
+                root.finishNotificationImageJob(entryId, generation, completedJob.path, saved, true)
             }, Qt.size(saveSize, saveSize))
         })
         mkdir.exec(["mkdir", "-p", "--", root.notificationImageCacheDirectory])
     }
 
-    function handleNotificationImageSaveResult(entryId, imageItem, path, saved, ownsImageItem) {
-        const current = root.notificationHistory.find(item => item && item.id === entryId)
-        const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved,
-                                                               Boolean(current), root.notificationImageLifecycleActive)
-        if (imageItem && ownsImageItem) {
-            imageItem.captureFinished = true
-            imageItem.destroy()
+    function notificationImageItemDestroyed(entryId, generation) {
+        const job = root.activeNotificationImageJob(entryId, generation)
+        if (job)
+            root.finishNotificationImageJob(entryId, generation, job.path, false, true)
+    }
+
+    function failNotificationImageCapture(entryId, generation, invalidLiveSource) {
+        const job = root.activeNotificationImageJob(entryId, generation)
+        if (!job)
+            return
+        if (invalidLiveSource)
+            root.quarantineInvalidLiveImageSource(job.source, entryId, generation)
+        root.finishNotificationImageJob(entryId, generation, job.path, false, !invalidLiveSource)
+    }
+
+    function cancelNotificationImageJob(entryId, generation, retry) {
+        const job = root.activeNotificationImageJob(entryId, generation)
+        if (job)
+            root.finishNotificationImageJob(entryId, generation, job.path, false, retry)
+    }
+
+    function cancelAllNotificationImageJobs(retry) {
+        Object.keys(root.notificationImageCaptureJobs).forEach(entryId => {
+            const job = root.notificationImageCaptureJobs[entryId]
+            if (job)
+                root.cancelNotificationImageJob(entryId, job.generation, retry)
+        })
+    }
+
+    function finishNotificationImageJob(entryId, generation, path, saved, allowRetry) {
+        const job = root.activeNotificationImageJob(entryId, generation)
+        if (job) {
+            const jobs = Object.assign({}, root.notificationImageCaptureJobs)
+            delete jobs[entryId]
+            root.notificationImageCaptureJobs = jobs
+            if (job.imageItem) {
+                job.imageItem.captureFinished = true
+                job.imageItem.destroy()
+            }
         }
+        const current = root.notificationImageEntry(entryId)
+        const completionActive = root.notificationImageLifecycleActive && (saved || allowRetry)
+        const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved,
+                                                               Boolean(current), completionActive)
         if (outcome.orphan)
             root.deleteOwnedNotificationImage(outcome.orphan, true)
         if (outcome.persisted) {
@@ -408,7 +537,7 @@ Scope {
             return
         }
 
-        if (outcome.retry)
+        if (outcome.retry && allowRetry)
             Qt.callLater(function () {
                 if (root.notificationImageLifecycleActive)
                     root.materializeNotificationImage(entryId)

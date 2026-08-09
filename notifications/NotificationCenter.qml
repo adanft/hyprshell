@@ -216,7 +216,6 @@ PopupWindow {
                         width: notificationList.width
                         colors: popup.colors
                         notificationService: popup.services.notification
-                        allowLiveImage: true
                         isHistoryEntry: true
                         initialExpanded: popup.isNotificationExpanded(entryData)
                         notificationData: entryData

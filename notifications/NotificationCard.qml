@@ -57,8 +57,6 @@ Item {
     readonly property bool hasActions: actionCount > 0
     readonly property var defaultAction: findDefaultAction()
     readonly property bool hasDefaultAction: defaultAction !== null
-    readonly property string materializeEntryId: notificationData ? (notificationData.historyEntryId
-                                                                       || notificationData.id || "") : ""
     readonly property real headerHeight: Math.ceil(labelFontSize * bodyLineHeight)
     readonly property real titleHeight: Math.ceil(titleFontSize * bodyLineHeight)
     readonly property string bodyHtml: notificationData ? (notificationData.htmlBody || notificationData.body || "") :
@@ -374,12 +372,6 @@ Item {
                         smooth: true
                         mipmap: true
                         onStatusChanged: {
-                            if (status === Image.Ready && card.allowLiveImage && card.materializeEntryId
-                                    && card.notificationService
-                                    && typeof card.notificationService.materializeNotificationImage === "function")
-                                card.notificationService.materializeNotificationImage(
-                                            card.materializeEntryId, notificationImage)
-
                             const failedSource = source.toString()
                             if (status === Image.Error && card.allowLiveImage && failedSource.startsWith(
                                         "image://qsimage/")) {

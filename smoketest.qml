@@ -39,6 +39,9 @@ ShellRoot {
     readonly property int settleMs: 3000
     property bool captureCompleted: false
     property bool captureStarted: false
+    property bool notificationLifecycleCompleted: false
+    property var lifecycleHost: null
+    readonly property string lifecycleImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='blue'/%3E%3C/svg%3E"
 
     Services.Services {
         id: serviceState
@@ -110,6 +113,28 @@ ShellRoot {
         }
     }
 
+    Component {
+        id: lifecycleHostComponent
+
+        Item {
+            readonly property string captureHostKey: ""
+            readonly property var captureWindow: Window.window
+            width: 8
+            height: 8
+            x: -width - 1
+        }
+    }
+
+    Component {
+        id: lifecyclePopupComponent
+
+        Notifications.NotificationPopup {
+            width: 320
+            colors: Theme.Colors
+            services: serviceState
+        }
+    }
+
     function exerciseNotificationImageCapture(host) {
         if (!host || !host.Window.window) {
             console.error("SMOKETEST: notification capture host is not attached to a window")
@@ -134,6 +159,61 @@ ShellRoot {
         console.log(`SMOKETEST: capture top-level delta=0 | type=PanelWindow | hosts=${hosts.length} | windows=${hostWindows.length}`)
         smoketest.captureStarted = true
         smokeCaptureImageComponent.createObject(host)
+        smoketest.exerciseNotificationLifecycle(host)
+    }
+
+    function exerciseNotificationLifecycle(host) {
+        const service = serviceState.notification
+        const temporaryHost = lifecycleHostComponent.createObject(host)
+        smoketest.lifecycleHost = temporaryHost
+        service.registerNotificationImageCaptureHost(temporaryHost)
+        const first = {
+            id: "smoke-lifecycle-first",
+            image: "image://qsimage/smoke-first",
+            timestamp: 1,
+            notification: { id: 1 }
+        }
+        service.notificationHistory = [first]
+        service.startNotificationImageCapture(first, temporaryHost, smoketest.lifecycleImage)
+
+        // Popup/card destruction, center opening and DND must not own the capture.
+        const popupData = { id: 1, historyEntryId: first.id, image: first.image }
+        const popup = lifecyclePopupComponent.createObject(host, { popupData: popupData })
+        popup.destroy()
+        service.visibleNotifications = [popupData]
+        service.setNotificationCenterOpen(true)
+        service.toggleNotificationDnd()
+        if (Object.keys(service.notificationImageCaptureJobs).length !== 1) {
+            console.error("SMOKETEST: popup cleanup invalidated a service-owned image job")
+            Qt.quit()
+            return
+        }
+
+        // Host removal cancels by generation; the deferred retry may use a bar host.
+        service.unregisterNotificationImageCaptureHost(temporaryHost)
+        temporaryHost.destroy()
+        service.notificationHistory = service.notificationHistory.filter(entry => entry.id !== first.id)
+        service.removeOwnedNotificationImage(first)
+
+        const failed = {
+            id: "smoke-lifecycle-error",
+            image: "image://qsimage/smoke-error",
+            timestamp: 2,
+            notification: { id: 2 }
+        }
+        service.notificationHistory = service.notificationHistory.concat([failed])
+        const failedSource = failed.image
+        service.startNotificationImageCapture(failed, host, smoketest.lifecycleImage)
+        const failedJob = service.notificationImageCaptureJobs[failed.id]
+        service.failNotificationImageCapture(failed.id, failedJob.generation, true)
+        if (!service.isInvalidLiveImageSource(failedSource)
+                || service.notificationImageEntry(failed.id).image !== "") {
+            console.error("SMOKETEST: live image error did not converge to quarantine")
+            Qt.quit()
+            return
+        }
+
+        lifecycleSettleTimer.start()
     }
 
     Timer {
@@ -147,6 +227,24 @@ ShellRoot {
         }
     }
 
+    Timer {
+        id: lifecycleSettleTimer
+
+        interval: 1000
+        repeat: false
+        onTriggered: {
+            const service = serviceState.notification
+            if (Object.keys(service.notificationImageCaptureJobs).length !== 0
+                    || Object.keys(service.notificationImagePersistence.pending).length !== 0) {
+                console.error("SMOKETEST: notification lifecycle left pending jobs or retries")
+                Qt.quit()
+                return
+            }
+            smoketest.notificationLifecycleCompleted = true
+            console.log("SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed")
+        }
+    }
+
     // Touch one value from each theme singleton so that a broken qmldir entry
     // surfaces as a failed lookup instead of passing unnoticed.
     Timer {
@@ -156,6 +254,11 @@ ShellRoot {
         onTriggered: {
             if (!smoketest.captureCompleted) {
                 console.error("SMOKETEST: notification image capture did not complete")
+                Qt.quit()
+                return
+            }
+            if (!smoketest.notificationLifecycleCompleted) {
+                console.error("SMOKETEST: notification lifecycle did not complete")
                 Qt.quit()
                 return
             }

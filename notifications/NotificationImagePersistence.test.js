@@ -200,7 +200,7 @@ assert.doesNotMatch(
 assert.match(serviceSource, /NotificationImagePersistence\.orphanPaths/);
 assert.match(serviceSource, /"find",[\s\S]*"notif_\*\.png"/);
 assert.match(serviceSource, /notificationImageLifecycleActive = false/);
-assert.match(serviceSource, /if \(outcome\.retry\)[\s\S]*Qt\.callLater/);
+assert.match(serviceSource, /if \(outcome\.retry && allowRetry\)[\s\S]*Qt\.callLater/);
 assert.match(
 	serviceSource,
 	/root\.scheduleNotificationHistorySave\(\)\s*root\.materializeNotificationImage\(entry\.id\)/,
@@ -214,7 +214,7 @@ assert.doesNotMatch(
 	/notificationImageCaptureComponent\.createObject\(root/,
 	"capture images must never be created under the non-visual service Scope",
 );
-assert.match(serviceSource, /captureParent\.Window\.window/);
+assert.match(serviceSource, /notificationImageHostReady\(captureParent\)/);
 assert.match(barWindowSource, /PanelWindow \{/);
 assert.match(barWindowSource, /id: notificationImageCaptureHost/);
 assert.match(barWindowSource, /readonly property var captureWindow: window/);
@@ -228,17 +228,14 @@ assert.doesNotMatch(
 	"the notification service must not create a top-level capture surface",
 );
 assert.match(serviceSource, /hosts\.sort\([\s\S]*captureHostKey/);
-assert.match(serviceSource, /Component\.onDestruction:[\s\S]*handleNotificationImageSaveResult/);
+assert.match(serviceSource, /Component\.onDestruction:[\s\S]*notificationImageItemDestroyed/);
 assert.match(
 	serviceSource,
 	/current\.image = `file:\/\/\$\{path\}`[\s\S]*root\.scheduleNotificationHistorySave\(\)/,
 	"successful completion publishes the owned path and forces a history write",
 );
-assert.match(
-	cardSource,
-	/materializeNotificationImage\([\s\S]*notificationImage/,
-	"a scene-attached card remains a fallback when the persistent host is unavailable",
-);
+assert.doesNotMatch(cardSource, /materializeNotificationImage\(/,
+ "cards never lend their scene-owned image to the capture service");
 assert.match(
 	serviceSource,
 	/notification\.tracked = !notification\.transient && !policy\.hideFromCenter/,
@@ -267,7 +264,12 @@ assert.match(
 	cardSource,
 	/status === Image\.Error && card\.allowLiveImage && failedSource\.startsWith/,
 );
-assert.match(popupSource, /allowLiveImage: true/);
+assert.doesNotMatch(popupSource, /allowLiveImage: true/);
+assert.match(serviceSource, /property var notificationImageCaptureJobs/);
+assert.match(serviceSource, /property int notificationImageCaptureGeneration/);
+assert.match(serviceSource, /activeNotificationImageJob\(entryId, generation\)/);
+assert.match(serviceSource, /typeof imageItem\.grabToImage === "function"/);
+assert.match(serviceSource, /cancelNotificationImageJob\(entryId, job\.generation, true\)/);
 
 console.log(
 	"Notification image persistence: recovery, retry, and deletion safety passed",

@@ -93,14 +93,14 @@ Scope {
             Rectangle {
                 id: dialog
 
-                width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth, parent.width
-                                - root.theme.spacing.space16 * 2)
-                height: dialogContent.implicitHeight + root.theme.spacing.space16 * 2
+                width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth,
+                                parent.width - root.theme.spacing.appLauncherPadding * 2)
+                height: dialogContent.implicitHeight + root.theme.spacing.appLauncherPadding * 2
                 anchors.centerIn: parent
                 radius: root.theme.shape.appLauncherRadius
-                color: Qt.alpha(Colors.surface, 0.94)
-                border.color: Colors.outline
-                border.width: root.theme.shape.appLauncherBorderWidth
+                // Same body the launcher, screenshot tool and selectors use:
+                // opaque shadow, no border, one padding token.
+                color: Colors.shadow
 
                 MouseArea {
                     anchors.fill: parent
@@ -113,8 +113,8 @@ Scope {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    anchors.margins: root.theme.spacing.space16
-                    spacing: root.theme.spacing.space12
+                    anchors.margins: root.theme.spacing.appLauncherPadding
+                    spacing: root.theme.spacing.appLauncherSectionSpacing
 
                     Item {
                         width: parent.width
@@ -187,11 +187,12 @@ Scope {
 
                     Rectangle {
                         width: parent.width
-                        height: root.theme.sizing.statusBarWifiPasswordFieldHeight
-                        radius: root.theme.shape.radius12
+                        height: root.theme.sizing.appLauncherSearchHeight
+                        radius: root.theme.shape.appLauncherSearchRadius
                         color: Colors.surface
-                        border.color: passwordInput.activeFocus ? Colors.primary : Colors.outline
-                        border.width: root.theme.shape.borderThin
+                        // Focus rings paint only on focus here, as everywhere else.
+                        border.color: Colors.primary
+                        border.width: passwordInput.activeFocus ? root.theme.shape.focusBorderWidth : 0
 
                         TextInput {
                             id: passwordInput

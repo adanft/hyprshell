@@ -239,6 +239,18 @@ for (const file of [
 	}
 }
 
+// The Wi-Fi password dialog is one of the shell's overlays, so it takes their
+// body: opaque shadow, no border, and the shared padding and field tokens.
+const modal = fs.readFileSync(`${componentDir}/WifiPasswordModal.qml`, "utf8");
+assert.match(modal, /radius: root\.theme\.shape\.appLauncherRadius/);
+assert.match(modal, /color: Colors\.shadow/);
+assert.doesNotMatch(modal, /Qt\.alpha\(Colors\.surface/);
+assert.doesNotMatch(modal, /border\.width: root\.theme\.shape\.appLauncherBorderWidth/);
+assert.match(modal, /anchors\.margins: root\.theme\.spacing\.appLauncherPadding/);
+assert.match(modal, /spacing: root\.theme\.spacing\.appLauncherSectionSpacing/);
+assert.match(modal, /height: root\.theme\.sizing\.appLauncherSearchHeight/);
+assert.match(modal, /radius: root\.theme\.shape\.appLauncherSearchRadius/);
+
 // The five detail sections are layout boxes, not painted surfaces.
 assert.doesNotMatch(detailContentBlock, /color: "transparent"/);
 for (const id of ["outputCard", "microphoneCard", "lanCard", "bluetoothDetails", "wifiCard"])

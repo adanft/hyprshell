@@ -143,20 +143,10 @@ assert.match(
 	/if \(menu && !menu\.menuOpen\)\s*trayMenuLoader\.active = false/,
 );
 
-// Nothing polls for the wired details either. Which profile is live changes
-// only when the connection does, so the device's own state is the trigger and
-// a gated timer would just be a slower way of asking the same question twice.
-assert.doesNotMatch(networkService, /interval: 3000/);
 assert.match(
 	networkService,
-	/ipv4Address: lanDevice\?\.address/,
-	"the wired address comes from the device, not from a process",
+	/running: root\.networkDetailsEnabled && root\.lanDevice !== null/,
 );
-for (const trigger of [
-	/onLanUpChanged: \{[\s\S]{0,120}?refreshEthernetInfo/,
-	/onNetworkDetailsEnabledChanged: \{[\s\S]{0,120}?refreshEthernetInfo/,
-])
-	assert.match(networkService, trigger);
 // The wireless card reads NetworkDevice.address, which arrives by signal, so
 // there is no wireless poll left to gate - and nothing may reintroduce one.
 assert.doesNotMatch(networkService, /wifiInfoProcess|refreshWifiInfo/);

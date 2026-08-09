@@ -43,6 +43,9 @@ Scope {
     // Session-scoped quarantine; entries live only as long as this capability.
     property var invalidLiveImageSources: ({})
     property var notificationImagePersistence: NotificationImagePersistence.createState()
+    property var notificationImageCaptureHosts: []
+    readonly property var notificationImageCaptureHost: notificationImageCaptureHosts.length > 0
+                                                         ? notificationImageCaptureHosts[0] : null
 
     property bool notificationImageLifecycleActive: true
 
@@ -63,12 +66,11 @@ Scope {
             cache: true
             sourceSize: Qt.size(0, 0)
             fillMode: Image.PreserveAspectFit
-            visible: false
             onStatusChanged: {
                 if (status === Image.Ready)
-                    root.captureNotificationImage(entryId, this, targetPath)
+                    root.captureNotificationImage(entryId, this, targetPath, true)
                 else if (status === Image.Error)
-                    root.handleNotificationImageSaveResult(entryId, this, targetPath, false)
+                    root.handleNotificationImageSaveResult(entryId, this, targetPath, false, true)
             }
         }
     }
@@ -320,31 +322,48 @@ Scope {
         saveTimer.restart()
     }
 
-    function materializeNotificationImage(entryId) {
+    function registerNotificationImageCaptureHost(host) {
+        if (!host || root.notificationImageCaptureHosts.indexOf(host) !== -1)
+            return
+        root.notificationImageCaptureHosts = root.notificationImageCaptureHosts.concat([host])
+    }
+
+    function unregisterNotificationImageCaptureHost(host) {
+        root.notificationImageCaptureHosts = root.notificationImageCaptureHosts.filter(candidate => candidate && candidate !== host)
+    }
+
+    function materializeNotificationImage(entryId, attachedImageItem) {
         if (!entryId || !root.notificationImageLifecycleActive)
             return
         const entry = root.notificationHistory.find(item => item && item.id === entryId)
-        if (!NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, true))
+        const imageReady = attachedImageItem && attachedImageItem.status === Image.Ready
+        const captureParent = imageReady ? attachedImageItem.parent : root.notificationImageCaptureHost
+        if (!captureParent || !captureParent.Window.window
+                || !NotificationImagePersistence.canMaterialize(root.notificationImagePersistence, entry, true))
             return
         const path = NotificationImagePersistence.notificationImagePath(entry, root.notificationImageCacheDirectory)
         NotificationImagePersistence.begin(root.notificationImagePersistence, entryId, path)
-        const imageItem = notificationImageCaptureComponent.createObject(root, {
+        if (imageReady) {
+            root.captureNotificationImage(entryId, attachedImageItem, path, false)
+            return
+        }
+        const imageItem = notificationImageCaptureComponent.createObject(captureParent, {
             entryId: entryId,
             targetPath: path,
             source: entry.image
         })
         if (!imageItem)
-            root.handleNotificationImageSaveResult(entryId, null, path, false)
+            root.handleNotificationImageSaveResult(entryId, null, path, false, false)
     }
 
-    function captureNotificationImage(entryId, imageItem, path) {
+    function captureNotificationImage(entryId, imageItem, path, ownsImageItem) {
         if (!root.notificationImageLifecycleActive || !imageItem)
             return
         const mkdir = notificationImageMkdirComponent.createObject(root)
         mkdir.onExited.connect(function (exitCode) {
             mkdir.destroy()
             if (exitCode !== 0) {
-                root.handleNotificationImageSaveResult(entryId, imageItem, path, false)
+                root.handleNotificationImageSaveResult(entryId, imageItem, path, false, ownsImageItem)
                 return
             }
 
@@ -357,17 +376,17 @@ Scope {
                     console.warn(`Failed to save notification image: ${error}`)
                 }
 
-                root.handleNotificationImageSaveResult(entryId, imageItem, path, saved)
+                root.handleNotificationImageSaveResult(entryId, imageItem, path, saved, ownsImageItem)
             }, Qt.size(saveSize, saveSize))
         })
         mkdir.exec(["mkdir", "-p", "--", root.notificationImageCacheDirectory])
     }
 
-    function handleNotificationImageSaveResult(entryId, imageItem, path, saved) {
+    function handleNotificationImageSaveResult(entryId, imageItem, path, saved, ownsImageItem) {
         const current = root.notificationHistory.find(item => item && item.id === entryId)
         const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved,
                                                                Boolean(current), root.notificationImageLifecycleActive)
-        if (imageItem)
+        if (imageItem && ownsImageItem)
             imageItem.destroy()
         if (outcome.orphan)
             root.deleteOwnedNotificationImage(outcome.orphan, true)

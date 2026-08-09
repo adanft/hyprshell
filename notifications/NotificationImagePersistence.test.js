@@ -182,6 +182,10 @@ const popupSource = fs.readFileSync(
 	path.join(__dirname, "NotificationPopup.qml"),
 	"utf8",
 );
+const captureWindowSource = fs.readFileSync(
+	path.join(__dirname, "NotificationImageCaptureWindow.qml"),
+	"utf8",
+);
 assert.match(
 	serviceSource,
 	/onLoadFailed: error => \{\s*if \(error === 2\) \{\s*historyFileView\.writeAdapter\(\)\s*root\.sweepNotificationImageCache\(\)\s*\}\s*\}/,
@@ -203,16 +207,26 @@ assert.match(
 );
 assert.match(serviceSource, /id: notificationImageCaptureComponent/);
 assert.match(serviceSource, /required property string entryId/);
-assert.match(serviceSource, /NotificationImagePersistence\.begin[\s\S]*notificationImageCaptureComponent\.createObject/);
+assert.match(serviceSource, /notificationImageCaptureComponent\.createObject\(captureParent/);
+assert.doesNotMatch(
+	serviceSource,
+	/notificationImageCaptureComponent\.createObject\(root/,
+	"capture images must never be created under the non-visual service Scope",
+);
+assert.match(serviceSource, /captureParent\.Window\.window/);
+assert.match(captureWindowSource, /Window \{/);
+assert.match(captureWindowSource, /visible: true/);
+assert.match(captureWindowSource, /opacity: 0/);
+assert.match(captureWindowSource, /registerNotificationImageCaptureHost\(captureHost\)/);
 assert.match(
 	serviceSource,
 	/current\.image = `file:\/\/\$\{path\}`[\s\S]*root\.scheduleNotificationHistorySave\(\)/,
 	"successful completion publishes the owned path and forces a history write",
 );
-assert.doesNotMatch(
+assert.match(
 	cardSource,
-	/materializeNotificationImage/,
-	"visual cards never start duplicate persistence jobs",
+	/materializeNotificationImage\([\s\S]*notificationImage/,
+	"a scene-attached card remains a fallback when the persistent host is unavailable",
 );
 assert.match(
 	serviceSource,

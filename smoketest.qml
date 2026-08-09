@@ -37,9 +37,16 @@ ShellRoot {
     id: smoketest
 
     readonly property int settleMs: 3000
+    property bool captureCompleted: false
 
     Services.Services {
         id: serviceState
+    }
+
+    Notifications.NotificationImageCaptureWindow {
+        id: captureWindow
+
+        services: serviceState
     }
 
     Applauncher.AppLauncher {}
@@ -78,24 +85,68 @@ ShellRoot {
                 services: serviceState
                 barWindow: barWindow
             }
+
         }
     }
 
+    Component {
+        id: smokeCaptureImageComponent
+
+        Image {
+            width: 8
+            height: 8
+            source: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='red'/%3E%3C/svg%3E"
+            onStatusChanged: {
+                if (status === Image.Ready)
+                    grabToImage(result => {
+                        if (!result) {
+                            console.error("SMOKETEST: notification image capture failed")
+                            Qt.quit()
+                            return
+                        }
+                        smoketest.captureCompleted = true
+                        destroy()
+                    })
+                else if (status === Image.Error) {
+                    console.error("SMOKETEST: notification capture image failed to load")
+                    Qt.quit()
+                }
+            }
+        }
+    }
+
+    function exerciseNotificationImageCapture(host) {
+        if (!host || !host.Window.window) {
+            console.error("SMOKETEST: notification capture host is not attached to a window")
+            Qt.quit()
+            return
+        }
+        smokeCaptureImageComponent.createObject(host)
+    }
+
+    Component.onCompleted: Qt.callLater(() => smoketest.exerciseNotificationImageCapture(captureWindow.captureHost))
+
     // Touch one value from each theme singleton so that a broken qmldir entry
     // surfaces as a failed lookup instead of passing unnoticed.
-    Component.onCompleted: console.log("SMOKETEST: all components instantiated"
-                                       + ` | colors=${Theme.AppTheme.colors.text}`
-                                       + ` | typography=${Theme.AppTheme.typography.textFontFamily}`
-                                       + ` | shape=${Theme.AppTheme.shape.radius16}`
-                                       + ` | spacing=${Theme.AppTheme.spacing.space6}`
-                                       + ` | sizing=${Theme.AppTheme.sizing.size24}`
-                                       + ` | motion=${Theme.AppTheme.motion.durationNormal}`
-                                       + ` | icons=${Theme.Icons.search}`)
-
     Timer {
         interval: smoketest.settleMs
         running: true
         repeat: false
-        onTriggered: Qt.quit()
+        onTriggered: {
+            if (!smoketest.captureCompleted) {
+                console.error("SMOKETEST: notification image capture did not complete")
+                Qt.quit()
+                return
+            }
+            console.log("SMOKETEST: all components instantiated"
+                        + ` | colors=${Theme.AppTheme.colors.text}`
+                        + ` | typography=${Theme.AppTheme.typography.textFontFamily}`
+                        + ` | shape=${Theme.AppTheme.shape.radius16}`
+                        + ` | spacing=${Theme.AppTheme.spacing.space6}`
+                        + ` | sizing=${Theme.AppTheme.sizing.size24}`
+                        + ` | motion=${Theme.AppTheme.motion.durationNormal}`
+                        + ` | icons=${Theme.Icons.search}`)
+            Qt.quit()
+        }
     }
 }

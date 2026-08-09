@@ -20,6 +20,10 @@ ShellRoot {
         id: serviceState
     }
 
+    Notifications.NotificationImageCaptureWindow {
+        services: serviceState
+    }
+
     OverlayLifecycleLoader {
         id: appLauncherLoader
 

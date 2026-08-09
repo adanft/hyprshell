@@ -18,14 +18,11 @@ Scope {
     property int ethernetInfoRequestGeneration: 0
     property int ethernetInfoProcessGeneration: 0
     property bool ethernetInfoProcessRefreshesProfile: false
-    // The wireless card shows one thing, the address, and NetworkDevice
-    // publishes it with a change signal. Asking nmcli for it every three
-    // seconds meant a process pair per poll to learn something already pushed.
-    readonly property var wifiInfo: ({
-                                         ipv4Address: wifiDevice?.address ?? ""
-                                     })
-    readonly property string wifiInfoAvailability: !wifiDevice ? "unavailable" : (wifiInfo.ipv4Address.length
-                                                                                  > 0 ? "available" : "idle")
+    property var wifiInfo: NetworkState.parseNmcliDeviceInfo("")
+    property string wifiInfoRequestedInterface: ""
+    property string wifiInfoAvailability: "idle"
+    property int wifiInfoRequestGeneration: 0
+    property int wifiInfoProcessGeneration: 0
     property bool ethernetProfileBusy: false
     property bool ethernetProfileAwaitingRefresh: false
     property int ethernetProfileActionGeneration: 0
@@ -63,6 +60,8 @@ Scope {
         }
         Qt.callLater(refreshEthernetInfo)
     }
+    onWifiInterfaceChanged: resetWifiInfo()
+    onWifiUpChanged: resetWifiInfo()
 
     FileView {
         id: networkRxBytes
@@ -88,6 +87,13 @@ Scope {
         repeat: true
         triggeredOnStart: true
         onTriggered: root.refreshEthernetInfo()
+    }
+    Timer {
+        interval: 3000
+        running: root.networkDetailsEnabled && root.wifiDevice !== null
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root.refreshWifiInfo()
     }
     Timer {
         id: ethernetActionRefreshTimer
@@ -121,6 +127,28 @@ Scope {
         }
     }
     Process {
+        id: wifiInfoProcess
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (root.wifiInfoProcessGeneration === root.wifiInfoRequestGeneration
+                        && root.wifiInfoRequestedInterface === root.wifiInterface) {
+                    root.wifiInfo = NetworkState.parseNmcliDeviceInfo(this.text)
+                    root.wifiInfoAvailability = "available"
+                }
+            }
+        }
+        onExited: (exitCode, exitStatus) => {
+            const current = root.wifiInfoProcessGeneration === root.wifiInfoRequestGeneration
+                  && root.wifiInfoRequestedInterface === root.wifiInterface
+            if (exitCode !== 0 && current) {
+                root.wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+                root.wifiInfoAvailability = "unavailable"
+            }
+            if (!current && root.wifiInterface.length > 0)
+                Qt.callLater(root.refreshWifiInfo)
+        }
+    }
+    Process {
         id: ethernetProfileActionProcess
         stderr: StdioCollector {
             onStreamFinished: {
@@ -139,6 +167,13 @@ Scope {
     }
     Component.onCompleted: refreshNetwork()
 
+    function resetWifiInfo() {
+        wifiInfoRequestGeneration += 1
+        wifiInfoRequestedInterface = ""
+        wifiInfoAvailability = "idle"
+        wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+        Qt.callLater(refreshWifiInfo)
+    }
     function toggleWifiEnabled() {
         Networking.wifiEnabled = !Networking.wifiEnabled
     }
@@ -188,6 +223,24 @@ Scope {
         // is live. Wi-Fi still asks for the full set because its panel shows it.
         ethernetInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "GENERAL.CON-UUID,IP4.ADDRESS",
                                   "device", "show", lanInterface])
+    }
+    function refreshWifiInfo() {
+        if (wifiInfoProcess.running)
+            return
+        if (!/^[A-Za-z0-9._:-]{1,64}$/.test(wifiInterface)) {
+            wifiInfoRequestedInterface = ""
+            wifiInfoAvailability = "idle"
+            wifiInfo = NetworkState.parseNmcliDeviceInfo("")
+            return
+        }
+        if (wifiInfoAvailability !== "available")
+            wifiInfoAvailability = "loading"
+        wifiInfoRequestedInterface = wifiInterface
+        wifiInfoProcessGeneration = wifiInfoRequestGeneration
+        // Only what the wireless card shows. The SSID comes from the network
+        // list, and with no profile switching here the uuid is not needed.
+        wifiInfoProcess.exec(["timeout", "2s", "nmcli", "--terse", "--escape", "no", "--fields", "IP4.ADDRESS",
+                              "device", "show", wifiInterface])
     }
     function setEthernetProfileEnabled(profile) {
         const uuid = String(profile?.uuid || "")

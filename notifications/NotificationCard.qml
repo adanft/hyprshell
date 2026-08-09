@@ -90,11 +90,12 @@ Item {
         case NotificationUrgency.Critical:
             return card.colors.critical
         case NotificationUrgency.Low:
-            return card.colors.secondary
+            return card.colors.text
         default:
             return card.colors.info
         }
     }
+    readonly property color urgencyBarHoverColor: Qt.lighter(urgencyBarColor, 1.15)
     readonly property string fallbackIconName: "application-x-executable"
     readonly property string fallbackIconSource: {
         if (!notificationData)
@@ -288,7 +289,7 @@ Item {
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
         color: card.colors.background
-        border.color: card.cardHovered ? card.colors.secondary : card.colors.border
+        border.color: card.colors.border
         border.width: card.borderWidth
         clip: true
         layer.enabled: true
@@ -306,7 +307,7 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: card.urgencyBarWidth
-            color: card.urgencyBarColor
+            color: card.cardHovered ? card.urgencyBarHoverColor : card.urgencyBarColor
         }
 
         HoverHandler {

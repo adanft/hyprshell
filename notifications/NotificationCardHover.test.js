@@ -10,7 +10,20 @@ assert.match(
 );
 assert.match(
 	card,
-	/border\.color: card\.cardHovered \? card\.colors\.secondary : card\.colors\.border/,
+	/border\.color: card\.colors\.border/,
+);
+assert.doesNotMatch(card, /border\.color:.*cardHovered/);
+assert.match(
+	card,
+	/case NotificationUrgency\.Critical:\s*return card\.colors\.critical[\s\S]*?case NotificationUrgency\.Low:\s*return card\.colors\.text[\s\S]*?default:\s*return card\.colors\.info/,
+);
+assert.match(
+	card,
+	/readonly property color urgencyBarHoverColor: Qt\.lighter\(urgencyBarColor, 1\.15\)/,
+);
+assert.match(
+	card,
+	/color: card\.cardHovered \? card\.urgencyBarHoverColor : card\.urgencyBarColor/,
 );
 assert.match(card, /HoverHandler\s*{\s*id: cardHoverHandler\s*cursorShape: Qt\.ArrowCursor/);
 assert.match(

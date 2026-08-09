@@ -95,7 +95,7 @@ Item {
             return card.colors.info
         }
     }
-    readonly property color urgencyBarHoverColor: Qt.lighter(urgencyBarColor, 1.15)
+    readonly property color urgencyBarHoverColor: card.colors.success
     readonly property string fallbackIconName: "application-x-executable"
     readonly property string fallbackIconSource: {
         if (!notificationData)

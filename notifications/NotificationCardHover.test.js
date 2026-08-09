@@ -19,8 +19,9 @@ assert.match(
 );
 assert.match(
 	card,
-	/readonly property color urgencyBarHoverColor: Qt\.lighter\(urgencyBarColor, 1\.15\)/,
+	/readonly property color urgencyBarHoverColor: card\.colors\.success/,
 );
+assert.doesNotMatch(card, /Qt\.lighter\(urgencyBarColor/);
 assert.match(
 	card,
 	/color: card\.cardHovered \? card\.urgencyBarHoverColor : card\.urgencyBarColor/,

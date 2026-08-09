@@ -8,13 +8,12 @@ Item {
 
     required property var colors
     required property var services
+    required property string hoverOwnerId
     property var popupData: null
     property bool active: true
     property bool exiting: false
     property bool animateY: true
     property real enterOffset: width + theme.spacing.notificationPopupEnterOffsetMargin
-    property int autoCloseRemainingMs: 0
-    property bool autoCloseTimerInitialized: false
     readonly property int enterAnimationMs: theme.motion.durationEntrance
     readonly property int moveAnimationMs: theme.motion.durationNormal
     readonly property real layoutHeight: notificationCard.layoutHeight
@@ -39,42 +38,16 @@ Item {
         exiting = true
         enterAnimation.stop()
         exitAnimation.stop()
-        autoCloseTimer.stop()
         exitAnimation.start()
-    }
-
-    function resetAutoCloseTimer() {
-        autoCloseTimer.stop()
-        autoCloseTimerInitialized = false
-        if (!popup.popupData || !popup.services || typeof popup.services.notification.notificationPopupTimeout
-                !== "function") {
-            autoCloseRemainingMs = 0
-            return
-        }
-        if (typeof popup.popupData.autoCloseRemainingMs === "number") {
-            autoCloseRemainingMs = Math.max(0, popup.popupData.autoCloseRemainingMs)
-            autoCloseTimerInitialized = true
-            return
-        }
-
-        autoCloseRemainingMs = popup.services.notification.notificationPopupTimeout(popup.popupData.urgency)
-        autoCloseTimerInitialized = true
     }
 
     implicitWidth: width
     implicitHeight: allocatedLayoutHeight
     height: allocatedLayoutHeight
     visible: popupData !== null
-    onPopupDataChanged: {
-        autoCloseTimerInitialized = false
-        Qt.callLater(popup.resetAutoCloseTimer)
-    }
-    Component.onCompleted: {
-        Qt.callLater(popup.resetAutoCloseTimer)
-    }
-    onActiveChanged: {
-        if (!active)
-            autoCloseTimer.stop()
+    Component.onDestruction: {
+        if (popupData)
+            services.notification.setNotificationPopupHovered(hoverOwnerId, popupData.id, false)
     }
 
     NumberAnimation {
@@ -98,20 +71,6 @@ Item {
         onFinished: popup.exitFinished()
     }
 
-    Timer {
-        id: autoCloseTimer
-
-        interval: 250
-        repeat: true
-        running: popup.active && popup.visible && !popup.exiting && !notificationCard.cardHovered
-                 && autoCloseRemainingMs > 0
-        onTriggered: {
-            popup.autoCloseRemainingMs = Math.max(0, popup.autoCloseRemainingMs - interval)
-            if (popup.popupData && popup.autoCloseRemainingMs <= 0)
-                popup.services.notification.closeNotificationPopup(popup.popupData.id)
-        }
-    }
-
     NotificationCard {
         id: notificationCard
 
@@ -125,6 +84,11 @@ Item {
         timeText: popup.popupData ? popup.services.notification.notificationTimeText(popup.popupData) : ""
         onLayoutChanged: popup.layoutChanged()
         onSlotHeightChanged: popup.slotHeightChanged()
+        onCardHoveredChanged: {
+            if (popup.popupData)
+                popup.services.notification.setNotificationPopupHovered(popup.hoverOwnerId, popup.popupData.id,
+                                                                         cardHovered)
+        }
         onCloseRequested: {
             if (popup.popupData)
                 popup.services.notification.closeNotificationPopup(popup.popupData.id)

@@ -33,8 +33,9 @@ assert.match(
 );
 assert.match(
 	popup,
-	/running: popup\.active && popup\.visible && !popup\.exiting && !notificationCard\.cardHovered/,
+	/setNotificationPopupHovered\(popup\.hoverOwnerId, popup\.popupData\.id,[\s\S]*?cardHovered\)/,
 );
+assert.doesNotMatch(popup, /\bTimer\s*\{|closeNotificationPopup\(popup\.popupData\.id\)[\s\S]*?onTriggered/);
 
 for (const [id, click] of [
 	["closeMouse", "card.closeRequested()"],

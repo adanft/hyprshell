@@ -16,7 +16,7 @@ const owners = {
 			" ",
 		),
 	notification:
-		"notificationCount hasNotifications notifications notificationDnd visibleNotifications focusedNotificationScreenName dismissNotifications dismissNotificationHistoryEntry setNotificationCenterOpen toggleNotificationDnd setNotificationPopupAvailableHeight closeNotificationPopup invokeNotificationPopupAction notificationPopupTimeout notificationTimeText".split(
+		"notificationCount hasNotifications notifications notificationDnd visibleNotifications focusedNotificationScreenName dismissNotifications dismissNotificationHistoryEntry setNotificationCenterOpen toggleNotificationDnd setNotificationPopupAvailableHeight closeNotificationPopup invokeNotificationPopupAction notificationPopupTimeout notificationTimeText registerNotificationPopupManager unregisterNotificationPopupManager setNotificationPopupHovered".split(
 			" ",
 		),
 	batteryPower:

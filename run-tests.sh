@@ -19,6 +19,7 @@ readonly SMOKE_TIMEOUT=30
 readonly SUCCESS_LINE='SMOKETEST: all components instantiated'
 readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
 readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed'
+readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/single-close passed'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
 # which is the normal case while a shell is running. Matched literally rather
@@ -89,6 +90,19 @@ if [[ -z "${WAYLAND_DISPLAY:-}" && -z "${DISPLAY:-}" ]]; then
 	echo "   be instantiated without a compositor. Re-run inside a session, or"
 	echo "   use --js to run the Node tests alone."
 	exit 1
+fi
+
+echo
+echo "== QML notification timeout harness =="
+timeout_output=$(timeout 15 qs -p notification-timeout-harness.qml 2>&1)
+timeout_status=$?
+timeout_output=$(printf '%s\n' "$timeout_output" | sed -E 's/\x1b\[[0-9;]*m//g')
+if [[ "$timeout_status" -ne 0 ]] || ! grep -qF "$TIMEOUT_HARNESS_LINE" <<<"$timeout_output"; then
+	echo "-- FAILED: notification timeout harness"
+	printf '%s\n' "$timeout_output" | sed 's/^/   /'
+	failed=1
+else
+	echo "-- Notification timeout harness passed"
 fi
 
 # smoketest.qml calls Qt.quit() on its own; the timeout only catches a hang.

@@ -5,9 +5,12 @@ import Quickshell.Io
 import Quickshell.Services.Notifications
 import "../../notifications/NotificationImagePersistence.js" as NotificationImagePersistence
 import "NotificationTimeActivity.js" as NotificationTimeActivity
+import "NotificationPopupTimeoutState.js" as NotificationPopupTimeoutState
 
 Scope {
     id: root
+
+    signal notificationPopupClosed(int popupId)
 
     required property var theme
     readonly property int notificationCount: root.notificationHistory.length
@@ -35,6 +38,8 @@ Scope {
     property int notificationPopupSequence: 0
     property int notificationIngressSecond: 0
     property int notificationIngressCount: 0
+    property int notificationPopupManagerSequence: 0
+    property var notificationPopupTimeoutState: NotificationPopupTimeoutState.createState()
     property bool notificationTimeUpdateTick: false
     property bool notificationCenterOpen: false
     property var notificationHistory: []
@@ -166,6 +171,13 @@ Scope {
     }
 
     Timer {
+        interval: 50
+        running: root.visibleNotifications.length > 0
+        repeat: true
+        onTriggered: root.expireNotificationPopups()
+    }
+
+    Timer {
         interval: 30000
             running: NotificationTimeActivity.shouldUpdateNotificationTime({
                 centerOpen: root.notificationCenterOpen,
@@ -196,8 +208,7 @@ Scope {
         root.notificationHistory.forEach(entry => root.removeOwnedNotificationImage(entry))
         root.notificationHistory = []
         root.saveNotificationHistory()
-        root.notificationQueue = []
-        root.visibleNotifications = []
+        root.clearNotificationPopups()
     }
 
     function dismissNotificationHistoryEntry(entry) {
@@ -219,6 +230,8 @@ Scope {
     }
 
     function clearNotificationPopups() {
+        const popupIds = root.notificationQueue.concat(root.visibleNotifications).filter(popup => popup).map(popup => popup.id)
+        popupIds.forEach(id => NotificationPopupTimeoutState.removePopup(root.notificationPopupTimeoutState, id))
         root.notificationQueue = []
         root.visibleNotifications = []
     }
@@ -236,11 +249,15 @@ Scope {
         let queued = root.notificationQueue.slice()
         if (queued.length >= root.maxNotificationQueueSize) {
             let victimIndex = queued.findIndex(item => item && item.urgency !== NotificationUrgency.Critical)
-            if (victimIndex < 0 && popup.urgency !== NotificationUrgency.Critical)
+            if (victimIndex < 0 && popup.urgency !== NotificationUrgency.Critical) {
+                NotificationPopupTimeoutState.removePopup(root.notificationPopupTimeoutState, popup.id)
                 return
+            }
             if (victimIndex < 0)
                 victimIndex = 0
-            queued.splice(victimIndex, 1)
+            const removed = queued.splice(victimIndex, 1)[0]
+            if (removed)
+                NotificationPopupTimeoutState.removePopup(root.notificationPopupTimeoutState, removed.id)
         }
 
         root.notificationQueue = queued.concat([popup])
@@ -265,7 +282,7 @@ Scope {
     function createNotificationPopup(notification, policy, historyEntryId) {
         root.notificationPopupSequence += 1
         const body = root.stripImages(notification.body || "")
-        return {
+        const popup = {
             id: root.notificationPopupSequence,
             summary: root.stripImages(notification.summary || "Notification"),
             body: body,
@@ -282,6 +299,9 @@ Scope {
             historyEntryId: historyEntryId || "",
             createdAt: Date.now()
         }
+        NotificationPopupTimeoutState.addPopup(root.notificationPopupTimeoutState, popup.id,
+                                                root.notificationPopupTimeout(popup.urgency), Date.now())
+        return popup
     }
 
     function addNotificationToHistory(notification, policy) {
@@ -770,6 +790,11 @@ Scope {
             visible.unshift(queued.shift())
         root.visibleNotifications = visible
         root.notificationQueue = queued
+        const now = Date.now()
+        visible.forEach(popup => NotificationPopupTimeoutState.setActive(root.notificationPopupTimeoutState, popup.id, true,
+                                                                          now))
+        queued.forEach(popup => NotificationPopupTimeoutState.setActive(root.notificationPopupTimeoutState, popup.id, false,
+                                                                         now))
     }
 
     function setNotificationPopupAvailableHeight(height) {
@@ -784,8 +809,36 @@ Scope {
     }
 
     function closeNotificationPopup(id) {
+        const wasVisible = root.visibleNotifications.some(popup => popup && popup.id === id)
+        if (!wasVisible)
+            return
+        NotificationPopupTimeoutState.removePopup(root.notificationPopupTimeoutState, id)
         root.visibleNotifications = root.visibleNotifications.filter(popup => popup.id !== id)
         root.processNotificationPopupQueue()
+        root.notificationPopupClosed(id)
+    }
+
+    function registerNotificationPopupManager() {
+        root.notificationPopupManagerSequence += 1
+        return `notification-popup-manager-${root.notificationPopupManagerSequence}`
+    }
+
+    function unregisterNotificationPopupManager(managerId) {
+        NotificationPopupTimeoutState.releaseOwner(root.notificationPopupTimeoutState, managerId, Date.now())
+    }
+
+    function setNotificationPopupHovered(managerId, popupId, hovered) {
+        NotificationPopupTimeoutState.setHovered(root.notificationPopupTimeoutState, managerId, popupId, hovered, Date.now())
+    }
+
+    function notificationPopupRemainingMs(id) {
+        return NotificationPopupTimeoutState.remaining(root.notificationPopupTimeoutState, id, Date.now())
+    }
+
+    function expireNotificationPopups() {
+        const expiredIds = NotificationPopupTimeoutState.tick(root.notificationPopupTimeoutState, Date.now())
+        for (const id of expiredIds)
+            root.closeNotificationPopup(id)
     }
 
     function invokeNotificationPopupAction(id, action) {

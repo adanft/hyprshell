@@ -133,6 +133,7 @@ ShellRoot {
             width: 320
             colors: Theme.Colors
             services: serviceState
+            hoverOwnerId: "smoketest-lifecycle-popup"
         }
     }
 

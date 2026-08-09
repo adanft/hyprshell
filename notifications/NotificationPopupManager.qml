@@ -19,6 +19,7 @@ PopupWindow {
     property real stackHeight: 0
     property bool popupRepositionScheduled: false
     property bool popupRepositionWithoutYAnimation: false
+    property string hoverOwnerId: ""
     readonly property real maxStackHeight: Math.max(0, (barWindow.screen ? barWindow.screen.height :
                                                                           barWindow.height) - topMargin
                                                     - bottomMargin)
@@ -35,7 +36,8 @@ PopupWindow {
     function createPopupItem(popupData) {
         const item = popupComponent.createObject(popupLayer, {
                                                      "colors": root.colors,
-                                                     "services": root.services,
+                                                      "services": root.services,
+                                                      "hoverOwnerId": root.hoverOwnerId,
                                                      "active": true,
                                                      "width": root.popupWidth
                                                  })
@@ -62,9 +64,6 @@ PopupWindow {
     function clearPopupItems() {
         for (const item of popupItems) {
             if (item) {
-                if (item.popupData && item.autoCloseTimerInitialized && typeof item.autoCloseRemainingMs === "number")
-                    item.popupData.autoCloseRemainingMs = item.autoCloseRemainingMs
-
                 item.destroy()
             }
         }
@@ -221,8 +220,13 @@ PopupWindow {
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin
     Component.onCompleted: {
+        hoverOwnerId = services.notification.registerNotificationPopupManager()
         updatePopupCapacity()
         syncPopups()
+    }
+    Component.onDestruction: {
+        if (hoverOwnerId)
+            services.notification.unregisterNotificationPopupManager(hoverOwnerId)
     }
 
     Component {

@@ -41,6 +41,7 @@ ShellRoot {
     property bool captureStarted: false
     property bool notificationLifecycleCompleted: false
     property var lifecycleHost: null
+    property string lifecyclePublishedEntryId: ""
     readonly property string lifecycleImage: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='blue'/%3E%3C/svg%3E"
 
     Services.Services {
@@ -135,6 +136,16 @@ ShellRoot {
         }
     }
 
+    Component {
+        id: lifecycleCardComponent
+
+        Notifications.NotificationCard {
+            width: 320
+            colors: Theme.Colors
+            notificationService: serviceState.notification
+        }
+    }
+
     function exerciseNotificationImageCapture(host) {
         if (!host || !host.Window.window) {
             console.error("SMOKETEST: notification capture host is not attached to a window")
@@ -177,7 +188,7 @@ ShellRoot {
         service.startNotificationImageCapture(first, temporaryHost, smoketest.lifecycleImage)
 
         // Popup/card destruction, center opening and DND must not own the capture.
-        const popupData = { id: 1, historyEntryId: first.id, image: first.image }
+        const popupData = { id: 1, historyEntryId: first.id, image: smoketest.lifecycleImage }
         const popup = lifecyclePopupComponent.createObject(host, { popupData: popupData })
         popup.destroy()
         service.visibleNotifications = [popupData]
@@ -213,6 +224,16 @@ ShellRoot {
             return
         }
 
+        const published = {
+            id: "smoke-lifecycle-published",
+            image: smoketest.lifecycleImage,
+            timestamp: 3,
+            notification: { id: 3 }
+        }
+        smoketest.lifecyclePublishedEntryId = published.id
+        service.notificationHistory = service.notificationHistory.concat([published])
+        service.startNotificationImageCapture(published, host, published.image)
+
         lifecycleSettleTimer.start()
     }
 
@@ -234,12 +255,44 @@ ShellRoot {
         repeat: false
         onTriggered: {
             const service = serviceState.notification
+            const published = service.notificationImageEntry(smoketest.lifecyclePublishedEntryId)
             if (Object.keys(service.notificationImageCaptureJobs).length !== 0
                     || Object.keys(service.notificationImagePersistence.pending).length !== 0) {
                 console.error("SMOKETEST: notification lifecycle left pending jobs or retries")
                 Qt.quit()
                 return
             }
+            if (!published || published.ownedImage !== true || !String(published.image).startsWith("file://")) {
+                console.error("SMOKETEST: notification transaction published no verified owned image")
+                Qt.quit()
+                return
+            }
+            const missingPath = `${service.notificationImageCacheDirectory}/notif_4_4_4.png`
+            const missingSource = `file://${missingPath}`
+            const missingA = { id: "missing-a", image: missingSource, persistedImagePath: missingPath, ownedImage: true }
+            const missingB = { id: "missing-b", image: missingSource, persistedImagePath: missingPath, ownedImage: true }
+            service.notificationHistory = service.notificationHistory.concat([missingA, missingB])
+            service.visibleNotifications = [{ id: 41, historyEntryId: missingA.id, image: missingSource,
+                                                persistedImagePath: missingPath, ownedImage: true }]
+            service.notificationQueue = [{ id: 42, historyEntryId: missingB.id, image: missingSource,
+                                            persistedImagePath: missingPath, ownedImage: true }]
+            service.invalidateOwnedNotificationImage(missingSource)
+            service.invalidateOwnedNotificationImage(missingSource)
+            const cardA = lifecycleCardComponent.createObject(service.notificationImageCaptureHost, { notificationData: missingA })
+            const cardB = lifecycleCardComponent.createObject(service.notificationImageCaptureHosts[service.notificationImageCaptureHosts.length - 1],
+                                                               { notificationData: missingB })
+            if (Object.keys(service.invalidOwnedImageSources).length !== 1 || missingA.image !== "" || missingB.image !== ""
+                    || cardA.iconSource === missingSource || cardB.iconSource === missingSource) {
+                console.error("SMOKETEST: repeated owned image errors did not converge globally")
+                Qt.quit()
+                return
+            }
+            cardA.destroy()
+            cardB.destroy()
+            service.notificationHistory = service.notificationHistory.filter(entry => entry.id !== missingA.id
+                                                                               && entry.id !== missingB.id)
+            service.removeOwnedNotificationImage(published)
+            service.notificationHistory = service.notificationHistory.filter(entry => entry.id !== published.id)
             smoketest.notificationLifecycleCompleted = true
             console.log("SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed")
         }

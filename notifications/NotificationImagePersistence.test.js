@@ -4,8 +4,8 @@ const path = require("node:path");
 const persistence = require("./NotificationImagePersistence.js");
 
 const cacheDirectory = "/cache/qsrice/notification-images";
-const generatedPath = `${cacheDirectory}/notif_1700000000000_42.png`;
-const retryPath = generatedPath;
+const generatedPath = `${cacheDirectory}/notif_1700000000000_42_1.png`;
+const retryPath = `${cacheDirectory}/notif_1700000000000_42_2.png`;
 const liveImage = "image://qsimage/live-1";
 
 const entry = {
@@ -24,35 +24,37 @@ assert.equal(
 );
 assert.equal(persistence.isLiveImage(liveImage), true);
 assert.equal(
-	persistence.notificationImagePath(entry, cacheDirectory),
+	persistence.notificationImagePath(entry, cacheDirectory, 1),
 	generatedPath,
 );
 assert.equal(
 	persistence.notificationImagePath(
 		{ timestamp: 1700000000001, notification: {} },
 		cacheDirectory,
+		3,
 	),
-	`${cacheDirectory}/notif_1700000000001_0.png`,
+	`${cacheDirectory}/notif_1700000000001_0_3.png`,
 );
 const unsafePath = persistence.notificationImagePath(
 	{ timestamp: "../escape", notification: { id: "1/2" } },
 	cacheDirectory,
+	4,
 );
-assert.equal(unsafePath, `${cacheDirectory}/notif_0_0.png`);
+assert.equal(unsafePath, `${cacheDirectory}/notif_0_0_4.png`);
 assert.equal(persistence.isOwnedPath(unsafePath, cacheDirectory), true);
 
 const state = persistence.createState();
 assert.equal(persistence.canMaterialize(state, entry, false), false);
 assert.equal(persistence.canMaterialize(state, entry, true), true);
-persistence.begin(state, entry.id, generatedPath);
+persistence.begin(state, entry.id, 1, generatedPath, `${generatedPath}.part-1`);
 assert.equal(
 	persistence.canMaterialize(state, entry, true),
 	false,
 	"pending saves deduplicate",
 );
 assert.deepEqual(
-	persistence.complete(state, entry.id, generatedPath, true, true, true),
-	{ persisted: true, orphan: "", retry: false },
+	persistence.complete(state, entry.id, 1, true, true, true),
+	{ persisted: true, retry: false },
 );
 assert.equal(
 	persistence.canMaterialize(state, entry, true),
@@ -62,81 +64,93 @@ assert.equal(
 assert.equal(persistence.removeEntry(state, entry.id), generatedPath);
 
 const retryState = persistence.createState();
-persistence.begin(retryState, entry.id, generatedPath);
+persistence.begin(retryState, entry.id, 1, generatedPath, `${generatedPath}.part-1`);
 assert.deepEqual(
 	persistence.complete(
 		retryState,
 		entry.id,
-		generatedPath,
+		1,
 		false,
 		true,
 		true,
 	),
-	{ persisted: false, orphan: "", retry: true },
+	{ persisted: false, retry: true },
 	"the first save failure receives one retry",
 );
-persistence.begin(retryState, entry.id, retryPath);
+persistence.begin(retryState, entry.id, 2, retryPath, `${retryPath}.part-2`);
 assert.deepEqual(
-	persistence.complete(retryState, entry.id, retryPath, true, true, true),
-	{ persisted: true, orphan: "", retry: false },
+	persistence.complete(retryState, entry.id, 2, true, true, true),
+	{ persisted: true, retry: false },
 	"a retry can persist the live image",
 );
 
 const exhaustedRetryState = persistence.createState();
-persistence.begin(exhaustedRetryState, entry.id, generatedPath);
+persistence.begin(exhaustedRetryState, entry.id, 1, generatedPath, `${generatedPath}.part-1`);
 assert.equal(
 	persistence.complete(
 		exhaustedRetryState,
 		entry.id,
-		generatedPath,
+		1,
 		false,
 		true,
 		true,
 	).retry,
 	true,
 );
-persistence.begin(exhaustedRetryState, entry.id, retryPath);
+persistence.begin(exhaustedRetryState, entry.id, 2, retryPath, `${retryPath}.part-2`);
 assert.deepEqual(
 	persistence.complete(
 		exhaustedRetryState,
 		entry.id,
-		retryPath,
+		2,
 		false,
 		true,
 		true,
 	),
-	{ persisted: false, orphan: "", retry: false },
+	{ persisted: false, retry: false },
 	"the second failure falls back without an infinite retry loop",
 );
 
 const orphanState = persistence.createState();
-persistence.begin(orphanState, entry.id, generatedPath);
+persistence.begin(orphanState, entry.id, 1, generatedPath, `${generatedPath}.part-1`);
 persistence.removeEntry(orphanState, entry.id);
 assert.deepEqual(
-	persistence.complete(
-		orphanState,
-		entry.id,
-		generatedPath,
-		true,
-		false,
-		true,
-	),
-	{ persisted: false, orphan: generatedPath, retry: false },
-	"a removed entry cleans up an in-flight owned file",
+	persistence.complete(orphanState, entry.id, 1, true, false, true),
+	{ persisted: false, retry: false },
+	"a removed entry cannot publish an in-flight file",
 );
 const destroyedState = persistence.createState();
-persistence.begin(destroyedState, entry.id, generatedPath);
+persistence.begin(destroyedState, entry.id, 1, generatedPath, `${generatedPath}.part-1`);
 assert.deepEqual(
 	persistence.complete(
 		destroyedState,
 		entry.id,
-		generatedPath,
+		1,
 		true,
 		true,
 		false,
 	),
-	{ persisted: false, orphan: generatedPath, retry: false },
+	{ persisted: false, retry: false },
 	"destruction prevents stale publication and leaves a recoverable orphan",
+);
+
+const generationState = persistence.createState();
+persistence.begin(generationState, entry.id, 1, generatedPath, `${generatedPath}.part-1`);
+persistence.begin(generationState, entry.id, 2, retryPath, `${retryPath}.part-2`);
+assert.deepEqual(
+	persistence.complete(generationState, entry.id, 1, true, true, true),
+	{ persisted: false, retry: false },
+	"a stale generation cannot publish or consume the current reservation",
+);
+assert.equal(
+	persistence.canDeleteOrphan(generationState, [], retryPath, cacheDirectory),
+	false,
+	"the sweep revalidation preserves pending final paths",
+);
+assert.equal(
+	persistence.canDeleteOrphan(generationState, [], generatedPath, cacheDirectory),
+	true,
+	"an unreferenced stale generation remains sweepable",
 );
 
 assert.equal(persistence.isOwnedPath(generatedPath, cacheDirectory), true);
@@ -166,8 +180,8 @@ assert.deepEqual(
 		[{ ownedImage: true, persistedImagePath: generatedPath }],
 		cacheDirectory,
 	),
-	[],
-	"the orphan sweep preserves referenced files and excludes external paths",
+	[retryPath],
+	"the orphan sweep preserves referenced files and returns only owned unreferenced paths",
 );
 
 const serviceSource = fs.readFileSync(
@@ -198,6 +212,7 @@ assert.doesNotMatch(
 	"history parse/read failures preserve cache files",
 );
 assert.match(serviceSource, /NotificationImagePersistence\.orphanPaths/);
+assert.match(serviceSource, /NotificationImagePersistence\.canDeleteOrphan/);
 assert.match(serviceSource, /"find",[\s\S]*"notif_\*\.png"/);
 assert.match(serviceSource, /notificationImageLifecycleActive = false/);
 assert.match(serviceSource, /if \(outcome\.retry && allowRetry\)[\s\S]*Qt\.callLater/);
@@ -231,7 +246,7 @@ assert.match(serviceSource, /hosts\.sort\([\s\S]*captureHostKey/);
 assert.match(serviceSource, /Component\.onDestruction:[\s\S]*notificationImageItemDestroyed/);
 assert.match(
 	serviceSource,
-	/current\.image = `file:\/\/\$\{path\}`[\s\S]*root\.scheduleNotificationHistorySave\(\)/,
+	/current\.image = imageSource[\s\S]*root\.scheduleNotificationHistorySave\(\)/,
 	"successful completion publishes the owned path and forces a history write",
 );
 assert.doesNotMatch(cardSource, /materializeNotificationImage\(/,
@@ -262,9 +277,14 @@ assert.match(
 assert.match(cardSource, /property bool allowLiveImage: false/);
 assert.match(
 	cardSource,
-	/status === Image\.Error && card\.allowLiveImage && failedSource\.startsWith/,
+	/status === Image\.Error && failedSource\.length > 0/,
 );
-assert.doesNotMatch(popupSource, /allowLiveImage: true/);
+assert.match(popupSource, /allowLiveImage: true/);
+assert.match(serviceSource, /saveToFile\(completedJob\.tempPath\)/);
+assert.match(serviceSource, /\["test", "-s", job\.tempPath\]/);
+assert.match(serviceSource, /\["mv", "-f", "--", currentJob\.tempPath, currentJob\.path\]/);
+assert.match(serviceSource, /\["test", "-r", movedJob\.path\]/);
+assert.match(serviceSource, /function invalidateOwnedNotificationImage/);
 assert.match(serviceSource, /property var notificationImageCaptureJobs/);
 assert.match(serviceSource, /property int notificationImageCaptureGeneration/);
 assert.match(serviceSource, /activeNotificationImageJob\(entryId, generation\)/);

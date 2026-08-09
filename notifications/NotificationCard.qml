@@ -126,10 +126,13 @@ Item {
                                                       "image://")
     property string failedImageSource: ""
     readonly property bool iconSourceQuarantined: (notificationService
-                                                   && typeof notificationService.isInvalidLiveImageSource
-                                                   === "function" && notificationService.isInvalidLiveImageSource(
-                                                       iconSource)) || (failedImageSource.length > 0 && iconSource
-                                                                        === failedImageSource)
+                                                    && typeof notificationService.isInvalidLiveImageSource
+                                                    === "function" && notificationService.isInvalidLiveImageSource(
+                                                        iconSource)) || (notificationService
+                                                                        && typeof notificationService.isInvalidOwnedImageSource
+                                                                        === "function" && notificationService.isInvalidOwnedImageSource(
+                                                                            iconSource)) || (failedImageSource.length > 0 && iconSource
+                                                                         === failedImageSource)
 
     signal layoutChanged
     signal slotHeightChanged
@@ -373,13 +376,17 @@ Item {
                         mipmap: true
                         onStatusChanged: {
                             const failedSource = source.toString()
-                            if (status === Image.Error && card.allowLiveImage && failedSource.startsWith(
-                                        "image://qsimage/")) {
+                            if (status === Image.Error && failedSource.length > 0) {
                                 card.failedImageSource = failedSource
-                                if (card.notificationService
+                                if (card.allowLiveImage && failedSource.startsWith("image://qsimage/")
+                                        && card.notificationService
                                         && typeof card.notificationService.quarantineInvalidLiveImageSource
                                         === "function")
                                     card.notificationService.quarantineInvalidLiveImageSource(failedSource)
+                                else if (failedSource.startsWith("file://") && card.notificationService
+                                         && typeof card.notificationService.invalidateOwnedNotificationImage
+                                         === "function")
+                                    card.notificationService.invalidateOwnedNotificationImage(failedSource)
                             }
                         }
                     }

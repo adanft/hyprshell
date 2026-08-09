@@ -120,6 +120,7 @@ Item {
         colors: popup.colors
         notificationService: popup.services.notification
         notificationData: popup.popupData
+        allowLiveImage: true
         cornerRadius: popup.theme.shape.notificationCardRadius
         timeText: popup.popupData ? popup.services.notification.notificationTimeText(popup.popupData) : ""
         onLayoutChanged: popup.layoutChanged()

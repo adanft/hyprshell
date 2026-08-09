@@ -4,7 +4,6 @@ function createState() {
 	return {
 		pending: Object.create(null),
 		owned: Object.create(null),
-		removedPending: Object.create(null),
 		retries: Object.create(null),
 	};
 }
@@ -28,27 +27,29 @@ function canMaterialize(state, entry, ready) {
 	);
 }
 
-function begin(state, entryId, path) {
-	state.pending[entryId] = path;
-	return path;
+function begin(state, entryId, generation, finalPath, tempPath) {
+	const reservation = { generation, finalPath, tempPath };
+	state.pending[entryId] = reservation;
+	return reservation;
 }
 
-function complete(state, entryId, path, saved, entryStillExists, active) {
-	const pendingPath = state.pending[entryId];
-	const removedPendingPath = state.removedPending[entryId];
-	const ownsPath = pendingPath === path || removedPendingPath === path;
-	delete state.pending[entryId];
-	delete state.removedPending[entryId];
+function complete(state, entryId, generation, committed, entryStillExists, active) {
+	const pending = state.pending[entryId];
+	const current = pending && pending.generation === generation;
+	if (current) delete state.pending[entryId];
 
-	if (saved && ownsPath && entryStillExists && active) {
+	if (committed && current && entryStillExists && active) {
 		delete state.retries[entryId];
-		state.owned[entryId] = path;
-		return { persisted: true, orphan: "", retry: false };
+		state.owned[entryId] = {
+			generation,
+			path: pending.finalPath,
+		};
+		return { persisted: true, retry: false };
 	}
 
 	const retry =
-		!saved &&
-		ownsPath &&
+		!committed &&
+		current &&
 		entryStillExists &&
 		active &&
 		(state.retries[entryId] || 0) < MAX_SAVE_RETRIES;
@@ -56,22 +57,19 @@ function complete(state, entryId, path, saved, entryStillExists, active) {
 	else delete state.retries[entryId];
 	return {
 		persisted: false,
-		orphan: saved && ownsPath ? path : "",
 		retry: retry,
 	};
 }
 
 function removeEntry(state, entryId) {
-	const path = state.owned[entryId] || "";
-	if (state.pending[entryId])
-		state.removedPending[entryId] = state.pending[entryId];
+	const owned = state.owned[entryId];
 	delete state.owned[entryId];
 	delete state.pending[entryId];
 	delete state.retries[entryId];
-	return path;
+	return owned ? owned.path : "";
 }
 
-function notificationImagePath(entry, cacheDirectory) {
+function notificationImagePath(entry, cacheDirectory, generation) {
 	const normalize = (value) => {
 		const number = Number(value);
 		return Number.isFinite(number) && number >= 0 ? Math.floor(number) : 0;
@@ -79,7 +77,15 @@ function notificationImagePath(entry, cacheDirectory) {
 	const timestamp = (entry && (entry.timestamp || entry.createdAt)) || 0;
 	const nativeId =
 		(entry && entry.notification && entry.notification.id) || 0;
-	return `${cacheDirectory}/notif_${normalize(timestamp)}_${normalize(nativeId)}.png`;
+	return `${cacheDirectory}/notif_${normalize(timestamp)}_${normalize(nativeId)}_${normalize(generation)}.png`;
+}
+
+function notificationImageTempPath(finalPath, entryId, generation) {
+	const safeEntryId = String(entryId || "entry").replace(/[^A-Za-z0-9._-]/g, "_");
+	const slash = finalPath.lastIndexOf("/");
+	const directory = slash >= 0 ? finalPath.slice(0, slash + 1) : "";
+	const filename = slash >= 0 ? finalPath.slice(slash + 1) : finalPath;
+	return `${directory}.${filename}.part-${safeEntryId}-${generation}.png`;
 }
 
 function isOwnedPath(path, cacheDirectory) {
@@ -87,9 +93,35 @@ function isOwnedPath(path, cacheDirectory) {
 	return (
 		typeof path === "string" &&
 		path.startsWith(prefix) &&
-		/^notif_[A-Za-z0-9._-]+_[A-Za-z0-9._-]+\.png$/.test(
+			/^notif_[A-Za-z0-9._-]+_[A-Za-z0-9._-]+(?:_[A-Za-z0-9._-]+)?\.png$/.test(
 			path.slice(cacheDirectory.length + 1),
 		)
+	);
+}
+
+function isReservedPath(state, path) {
+	return Object.values(state.pending).some(
+		(reservation) =>
+			reservation &&
+			(reservation.finalPath === path || reservation.tempPath === path),
+	);
+}
+
+function isReferencedPath(history, path, cacheDirectory) {
+	return (history || []).some(
+		(entry) =>
+			entry &&
+			entry.ownedImage === true &&
+			entry.persistedImagePath === path &&
+			isOwnedPath(path, cacheDirectory),
+	);
+}
+
+function canDeleteOrphan(state, history, path, cacheDirectory) {
+	return (
+		isOwnedPath(path, cacheDirectory) &&
+		!isReservedPath(state, path) &&
+		!isReferencedPath(history, path, cacheDirectory)
 	);
 }
 
@@ -108,12 +140,14 @@ function orphanPaths(paths, history, cacheDirectory) {
 if (typeof module !== "undefined") {
 	module.exports = {
 		begin,
+		canDeleteOrphan,
 		canMaterialize,
 		complete,
 		createState,
 		historyImageSource,
 		isLiveImage,
 		notificationImagePath,
+		notificationImageTempPath,
 		isOwnedPath,
 		orphanPaths,
 		removeEntry,

@@ -105,6 +105,10 @@ Item {
         radius: width / 2
         color: control.handleColor
         border.color: control.handleBorderColor
+        // Spelled out because border.width defaults to 1: a caller that leaves
+        // handleBorderColor transparent gets no ring, and one that names a role
+        // gets exactly this width.
+        border.width: control.theme.shape.borderThin
     }
 
     MouseArea {

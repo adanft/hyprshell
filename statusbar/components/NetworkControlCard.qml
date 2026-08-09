@@ -47,8 +47,9 @@ Rectangle {
             height: card.iconSize
             anchors.verticalCenter: parent.verticalCenter
             radius: card.theme.shape.radius12
-            color: card.active ? Colors.primary : Colors.surface_variant
-            border.color: card.active ? Colors.primary : Colors.outline
+            // No border: border.width defaults to 1, so naming a border colour
+            // here would draw one. Inactive sits on the menu body's own tone.
+            color: card.active ? Colors.primary : Colors.shadow
             opacity: card.available ? 1 : card.theme.motion.opacityDisabled
             activeFocusOnTab: card.available && !card.busy
             Accessible.role: Accessible.Button

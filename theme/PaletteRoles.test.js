@@ -260,6 +260,36 @@ assert.deepEqual(
 	`a painted border must name its role: ${bareBorders.join(", ")}`,
 );
 
+// The mirror of the check above, and the one that actually bites: border.width
+// defaults to 1, so naming a border colour and nothing else silently draws a
+// hairline. Every border has to state both halves.
+const implicitBorders = [];
+for (const file of qml) {
+	const lines = fs.readFileSync(file, "utf8").split("\n");
+	lines.forEach((line, index) => {
+		const opening = /^(\s*)(?:\w+\.)?(?:Clipping)?Rectangle\s*\{\s*$/.exec(line);
+		if (!opening) return;
+		const indent = opening[1].length;
+		const own = [];
+		for (let cursor = index + 1; cursor < lines.length; cursor++) {
+			const body = lines[cursor];
+			const bodyIndent = body.length - body.trimStart().length;
+			if (body.trim() && bodyIndent <= indent) break;
+			if (body.trim() && bodyIndent === indent + 4) own.push(body);
+		}
+		const declared = own.join("\n");
+		if (/^\s*border\.color:/m.test(declared) && !/^\s*border\.width:/m.test(declared))
+			implicitBorders.push(
+				`${path.relative(repository, file)}:${index + 1} names a border colour without a width`,
+			);
+	});
+}
+assert.deepEqual(
+	implicitBorders,
+	[],
+	`border.width defaults to 1, so it must be stated: ${implicitBorders.join(", ")}`,
+);
+
 console.log(
 	`PaletteRoles: 16-role contract, Mocha values, surface ladder, distinct accents, one hover role, ${dimmed} modules dimming to outline, and ${qml.length} QML files painting nothing but roles passed`,
 );

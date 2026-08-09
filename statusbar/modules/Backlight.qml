@@ -8,7 +8,6 @@ Item {
     readonly property var icons: Icons
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
 
     readonly property int level: services.brightness.brightnessLevel
@@ -30,12 +29,12 @@ Item {
 
         BarText {
             text: root.icons.backlightLevels[root.iconIndex]
-            color: root.colors.text
+            color: Colors.on_surface
         }
 
         BarText {
             text: `${root.level}%`
-            color: root.colors.text
+            color: Colors.on_surface
         }
     }
 

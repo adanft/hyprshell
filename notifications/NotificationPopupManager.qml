@@ -7,7 +7,6 @@ PopupWindow {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     required property var barWindow
     readonly property int popupWidth: theme.sizing.notificationPopupWidth
@@ -35,7 +34,6 @@ PopupWindow {
 
     function createPopupItem(popupData) {
         const item = popupComponent.createObject(popupLayer, {
-                                                     "colors": root.colors,
                                                       "services": root.services,
                                                       "hoverOwnerId": root.hoverOwnerId,
                                                      "active": true,
@@ -215,7 +213,7 @@ PopupWindow {
     implicitWidth: popupWidth
     implicitHeight: Math.max(1, Math.min(stackHeight, maxStackHeight))
     visible: stackHeight > 0
-    color: root.colors.transparent
+    color: "transparent"
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin

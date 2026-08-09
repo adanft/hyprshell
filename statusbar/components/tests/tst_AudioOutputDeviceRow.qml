@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import ".."
+import "../../../theme"
 
 TestCase {
     id: testCase
@@ -20,18 +21,9 @@ TestCase {
             width: 380
             device: testCase.node
             icon: "O"
-            colors: testCase.colors
             theme: testCase.theme
         }
     }
-    property var colors: ({
-                              primary: "#88aaff",
-                              surface: "#202020",
-                              surfaceHover: "#303030",
-                              transparent: "transparent",
-                              text: "#fff",
-                              textSubtle: "#aaa"
-                          })
     property var theme: ({
                              motion: {
                                  opacityDisabled: 0.5

@@ -82,7 +82,6 @@ ShellRoot {
         id: firstManagerLoader
         active: true
         component: Notifications.NotificationPopupManager {
-            colors: Theme.Colors
             services: serviceState
             barWindow: root.harnessBarWindow
         }
@@ -92,7 +91,6 @@ ShellRoot {
         id: secondManagerLoader
         active: true
         component: Notifications.NotificationPopupManager {
-            colors: Theme.Colors
             services: serviceState
             barWindow: root.harnessBarWindow
         }

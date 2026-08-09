@@ -1,0 +1,4 @@
+singleton AppSettings 1.0 AppSettings.qml
+internal AppSettingsPersistence AppSettingsPersistence.qml
+singleton StockThemes 1.0 StockThemes.qml
+singleton GhosttyTheme 1.0 GhosttyTheme.qml

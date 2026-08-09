@@ -19,7 +19,7 @@ Rectangle {
     height: theme.sizing.screenshotToolActionHeight
     radius: theme.shape.screenshotToolActionRadius
     opacity: enabled ? 1 : theme.motion.opacityDisabled
-    color: hovered ? theme.colors.secondary : (selected ? theme.colors.primary : theme.colors.surfaceTransparent)
+    color: hovered ? Colors.hover : (selected ? Colors.primary : "transparent")
 
     Column {
         anchors.fill: parent
@@ -30,7 +30,7 @@ Rectangle {
             width: parent.width
             height: action.theme.sizing.screenshotToolActionIconSlotSize
             text: action.icon
-            color: action.active ? action.theme.colors.primaryText : action.theme.colors.info
+            color: action.hovered ? Colors.on_hover : (action.selected ? Colors.on_primary : Colors.tertiary)
             font.family: action.theme.typography.iconFontFamily
             font.pixelSize: action.theme.sizing.screenshotToolActionIconSize
             horizontalAlignment: Text.AlignHCenter
@@ -40,7 +40,7 @@ Rectangle {
         Shared.AppText {
             width: parent.width
             text: action.title
-            color: action.active ? action.theme.colors.primaryText : action.theme.colors.text
+            color: action.active ? Colors.on_primary : Colors.on_surface
             font.pixelSize: action.theme.typography.sizeLg
             font.styleName: action.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter

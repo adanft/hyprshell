@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import ".."
+import "../../../theme"
 
 TestCase {
     id: testCase
@@ -22,16 +23,6 @@ TestCase {
                           signalStrength: 0.8,
                           security: 0
                       })
-            colors: ({
-                         surface: "#202020",
-                         surfaceHover: "#303030",
-                         transparent: "transparent",
-                         primary: "#88aaff",
-                         text: "#ffffff",
-                         textSubtle: "#bbbbbb",
-                         textMuted: "#aaaaaa",
-                         danger: "#ff7777"
-                     })
             theme: ({
                         shape: {
                             radius12: 12,

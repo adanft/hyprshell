@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import ".."
+import "../../../theme"
 
 TestCase {
     id: testCase
@@ -16,14 +17,6 @@ TestCase {
                                 muted: false
                             }
                         })
-    property var colors: ({
-                              primary: "#88aaff",
-                              surface: "#202020",
-                              surfaceHover: "#303030",
-                              transparent: "transparent",
-                              text: "#fff",
-                              textSubtle: "#aaa"
-                          })
     property var theme: ({
                              motion: {
                                  opacityDisabled: 0.5
@@ -67,7 +60,6 @@ TestCase {
             volumeLowIcon: "L"
             volumeMediumIcon: "D"
             volumeHighIcon: "H"
-            colors: testCase.colors
             theme: testCase.theme
         }
     }

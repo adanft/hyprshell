@@ -9,7 +9,6 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     readonly property string profile: services.batteryPower.powerProfile
 
@@ -18,8 +17,8 @@ Item {
 
     BarText {
         anchors.centerIn: parent
-        color: root.profile === "performance" ? root.colors.danger : root.profile === "power-saver" ? root.colors.success :
-                                                                                                      root.colors.info
+        color: root.profile === "performance" ? Colors.error : root.profile === "power-saver" ? Colors.hover :
+                                                                                                      Colors.tertiary
         text: root.profile === "performance" ? root.icons.powerPerformance : root.profile === "power-saver"
                                                ? root.icons.powerSaver : root.icons.powerBalanced
         font.pixelSize: root.theme.sizing.statusBarIconSize

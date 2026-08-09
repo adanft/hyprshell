@@ -1,11 +1,11 @@
 import QtQuick
 import "NetworkMenu.js" as NetworkMenuLogic
+import "../../theme"
 
 Rectangle {
     id: root
 
     required property var network
-    required property var colors
     required property var theme
     property var openSecurityValue: 0
 
@@ -29,7 +29,7 @@ Rectangle {
 
     height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
-    color: colors.surface
+    color: Colors.surface
     border.width: 0
 
     Accessible.role: Accessible.ListItem
@@ -48,7 +48,7 @@ Rectangle {
         Text {
             width: parent.width
             text: root.network?.name || ""
-            color: root.network?.connected ? root.colors.primary : root.colors.text
+            color: root.network?.connected ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
             font.styleName: root.theme.typography.styleRegular
@@ -59,7 +59,7 @@ Rectangle {
             objectName: "wifiNetworkMeta"
             width: parent.width
             text: NetworkMenuLogic.wifiNetworkMeta(root.network, root.openSecurityValue)
-            color: root.network?.connected ? root.colors.primary : root.colors.textSubtle
+            color: root.network?.connected ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             font.styleName: root.theme.typography.styleRegular
@@ -80,8 +80,8 @@ Rectangle {
             width: primaryLabel.implicitWidth + root.theme.spacing.space16
             height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
             radius: root.theme.shape.radius8
-            color: primaryInput.containsMouse || primaryInput.activeFocus ? root.colors.surfaceHover :
-                                                                            root.colors.transparent
+            color: primaryInput.containsMouse || primaryInput.activeFocus ? Colors.hover :
+                                                                            "transparent"
 
             opacity: root.actionBusy ? root.theme.motion.opacityDisabled : 1
 
@@ -90,7 +90,8 @@ Rectangle {
                 objectName: "primaryActionLabel"
                 anchors.centerIn: parent
                 text: root.actionBusy ? "Please wait…" : (root.network?.connected ? "Disconnect" : "Connect")
-                color: root.network?.connected ? root.colors.danger : root.colors.primary
+                color: primaryInput.containsMouse || primaryInput.activeFocus ? Colors.on_hover :
+                                                                                 (root.network?.connected ? Colors.error : Colors.primary)
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
                 font.styleName: root.theme.typography.styleRegular
@@ -125,14 +126,14 @@ Rectangle {
             width: root.forgetAvailable ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
             height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
             radius: root.theme.shape.radius8
-            color: forgetInput.containsMouse || forgetInput.activeFocus ? root.colors.surfaceHover :
-                                                                          root.colors.transparent
+            color: forgetInput.containsMouse || forgetInput.activeFocus ? Colors.hover :
+                                                                          "transparent"
 
             Text {
                 id: forgetLabel
                 anchors.centerIn: parent
                 text: "Forget"
-                color: root.colors.danger
+                color: forgetInput.containsMouse || forgetInput.activeFocus ? Colors.on_hover : Colors.error
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
                 font.styleName: root.theme.typography.styleRegular

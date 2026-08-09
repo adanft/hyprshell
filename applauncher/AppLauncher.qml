@@ -187,7 +187,7 @@ Scope {
                 height: launcher.theme.sizing.appLauncherSearchHeight
                 anchors.horizontalCenter: parent.horizontalCenter
                 radius: launcher.theme.shape.appLauncherSearchRadius
-                color: launcher.theme.colors.surface
+                color: Colors.surface
 
                 Shared.AppText {
                     anchors.left: parent.left
@@ -195,7 +195,7 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                     width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     text: launcher.icons.search
-                    color: launcher.theme.colors.textSubtle
+                    color: Colors.on_surface_variant
                     font.family: launcher.theme.typography.iconFontFamily
                     font.pixelSize: launcher.theme.typography.sizeLg
                     font.styleName: launcher.theme.typography.styleMedium
@@ -209,7 +209,7 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: searchInput.text.length === 0
                     text: "Search..."
-                    color: launcher.theme.colors.textSubtle
+                    color: Colors.on_surface_variant
                     font.pixelSize: launcher.theme.typography.sizeLg
                     font.styleName: launcher.theme.typography.styleMedium
                 }
@@ -222,9 +222,9 @@ Scope {
                                         + launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     anchors.rightMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
                     clip: true
-                    color: launcher.theme.colors.text
-                    selectionColor: launcher.theme.colors.selection
-                    selectedTextColor: launcher.theme.colors.selectionText
+                    color: Colors.on_surface
+                    selectionColor: Colors.primary
+                    selectedTextColor: Colors.on_primary
                     font.family: launcher.theme.typography.textFontFamily
                     font.pixelSize: launcher.theme.typography.sizeLg
                     font.styleName: launcher.theme.typography.styleMedium
@@ -270,7 +270,7 @@ Scope {
                     visible: launcher.filteredApps.length === 0
                     width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
                     text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
-                    color: launcher.theme.colors.textSubtle
+                    color: Colors.on_surface_variant
                     font.pixelSize: launcher.theme.typography.sizeMd
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
@@ -304,7 +304,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: launcher.theme.colors.transparent
+        color: "transparent"
         surfaceFormat.opaque: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -318,7 +318,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: launcher.theme.colors.scrim
+            color: Qt.alpha(Colors.shadow, 0.25)
             focus: true
             Keys.onEscapePressed: launcher.close()
             Keys.onLeftPressed: launcher.moveSelection(-1)
@@ -343,7 +343,7 @@ Scope {
                 height: Math.min(parent.height - launcher.theme.spacing.appLauncherScreenMargin,
                                  launcher.theme.sizing.appLauncherMaxHeight)
                 radius: launcher.theme.shape.appLauncherRadius
-                color: launcher.theme.colors.background
+                color: Colors.shadow
 
                 MouseArea {
                     anchors.fill: parent

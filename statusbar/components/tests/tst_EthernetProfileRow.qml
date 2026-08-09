@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import ".."
+import "../../../theme"
 
 TestCase {
     id: testCase
@@ -18,15 +19,6 @@ TestCase {
                           id: "Office LAN",
                           uuid: "profile-1"
                       })
-            colors: ({
-                         transparent: "transparent",
-                         surface: "#202020",
-                         surfaceHover: "#303030",
-                         text: "#ffffff",
-                         textSubtle: "#aaaaaa",
-                         primary: "#88aaff",
-                         danger: "#ff7777"
-                     })
             theme: ({
                         shape: {
                             radius12: 12,

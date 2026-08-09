@@ -12,7 +12,6 @@ PopupWindow {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     required property var barWindow
     readonly property int contentPadding: theme.spacing.notificationCenterPadding
@@ -57,7 +56,7 @@ PopupWindow {
                                                    theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
     visible: false
     grabFocus: true
-    color: popup.colors.transparent
+    color: "transparent"
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width
                             - theme.spacing.notificationCenterScreenMargin)
@@ -73,8 +72,8 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: popup.theme.shape.notificationCenterRadius
-        color: popup.colors.surface
-        border.color: popup.colors.border
+        color: Colors.surface
+        border.color: Colors.outline
         border.width: popup.theme.shape.notificationCenterBorderWidth
 
         Column {
@@ -94,7 +93,7 @@ PopupWindow {
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: `Notifications (${popup.services.notification.notificationCount})`
-                    color: popup.colors.text
+                    color: Colors.on_surface
                     font.family: popup.theme.typography.textFontFamily
                 }
 
@@ -111,16 +110,18 @@ PopupWindow {
                     width: popup.theme.sizing.notificationCenterClearButtonHeight
                     height: popup.theme.sizing.notificationCenterClearButtonHeight
                     radius: width / 2
-                    color: popup.services.notification.notificationDnd ? popup.colors.primary :
+                    color: popup.services.notification.notificationDnd ? Colors.primary :
                                                                          (dndMouse.containsMouse || dndMouse.activeFocus ?
-                                                                          popup.colors.secondary :
-                                                                          popup.colors.transparent)
+                                                                          Colors.hover :
+                                                                          "transparent")
 
                     AppText {
                         anchors.fill: parent
                         text: popup.icons.notificationsDnd
-                        color: popup.services.notification.notificationDnd || dndMouse.containsMouse ?
-                                   popup.colors.primaryText : popup.colors.textSubtle
+                        color: popup.services.notification.notificationDnd ? Colors.on_primary :
+                                                                             (dndMouse.containsMouse || dndMouse.activeFocus ?
+                                                                              Colors.on_hover :
+                                                                              Colors.on_surface_variant)
                         font.family: popup.theme.typography.iconFontFamily
                         font.pixelSize: popup.theme.sizing.notificationCenterHeaderIconSize
                         horizontalAlignment: Text.AlignHCenter
@@ -152,12 +153,12 @@ PopupWindow {
                     height: popup.theme.sizing.notificationCenterClearButtonHeight
                     radius: height / 2
                     visible: popup.services.notification.hasNotifications
-                    color: clearMouse.containsMouse || clearMouse.activeFocus ? popup.colors.secondary : popup.colors.transparent
+                    color: clearMouse.containsMouse || clearMouse.activeFocus ? Colors.hover : "transparent"
 
                     AppText {
                         anchors.fill: parent
                         text: popup.icons.notificationsClear
-                        color: clearMouse.containsMouse ? popup.colors.primaryText : popup.colors.textSubtle
+                        color: clearMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                         font.family: popup.theme.typography.iconFontFamily
                         font.pixelSize: popup.theme.sizing.notificationCenterHeaderIconSize
                         horizontalAlignment: Text.AlignHCenter
@@ -189,7 +190,7 @@ PopupWindow {
                     anchors.centerIn: parent
                     visible: !popup.services.notification.hasNotifications
                     text: "No notifications"
-                    color: popup.colors.textSubtle
+                    color: Colors.on_surface_variant
                     font.family: popup.theme.typography.textFontFamily
                     font.pixelSize: popup.theme.typography.sizeMd
                 }
@@ -214,7 +215,6 @@ PopupWindow {
                         readonly property var entryData: popup.services.notification.notifications[index] || null
 
                         width: notificationList.width
-                        colors: popup.colors
                         notificationService: popup.services.notification
                         isHistoryEntry: true
                         initialExpanded: popup.isNotificationExpanded(entryData)

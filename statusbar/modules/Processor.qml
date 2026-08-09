@@ -9,14 +9,13 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     readonly property color moduleColor: {
         if (services.systemStats.cpuUsage > 80)
-            return colors.danger
+            return Colors.error
         if (services.systemStats.cpuUsage > 60)
-            return colors.warning
-        return colors.text
+            return Colors.secondary
+        return Colors.on_surface
     }
 
     implicitWidth: content.implicitWidth

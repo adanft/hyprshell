@@ -1,9 +1,9 @@
 import QtQuick
+import "../../theme"
 
 Rectangle {
     id: card
 
-    required property var colors
     required property var theme
     property string icon: ""
     property string title: ""
@@ -22,7 +22,7 @@ Rectangle {
     signal toggled
 
     radius: theme.shape.radius12
-    color: bodyArea.containsMouse ? colors.surfaceHover : colors.surface
+    color: bodyArea.containsMouse ? Colors.hover : Colors.surface
     border.width: 0
 
     function requestBodyAction() {
@@ -47,8 +47,8 @@ Rectangle {
             height: card.iconSize
             anchors.verticalCenter: parent.verticalCenter
             radius: card.theme.shape.radius12
-            color: card.active ? card.colors.primary : card.colors.surfaceHover
-            border.color: card.active ? card.colors.primary : card.colors.border
+            color: card.active ? Colors.primary : Colors.surface_variant
+            border.color: card.active ? Colors.primary : Colors.outline
             opacity: card.available ? 1 : card.theme.motion.opacityDisabled
             activeFocusOnTab: card.available && !card.busy
             Accessible.role: Accessible.Button
@@ -63,15 +63,15 @@ Rectangle {
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                color: card.colors.transparent
-                border.color: card.colors.primary
+                color: "transparent"
+                border.color: Colors.primary
                 border.width: parent.activeFocus ? card.theme.shape.focusBorderWidth : 0
             }
 
             Text {
                 anchors.centerIn: parent
                 text: card.icon
-                color: card.active ? card.colors.background : card.colors.textMuted
+                color: card.active ? Colors.on_primary : Colors.on_surface_variant
                 font.family: card.theme.typography.iconFontFamily
                 font.pixelSize: card.theme.typography.sizeXl
                 font.styleName: card.theme.typography.styleRegular
@@ -94,7 +94,7 @@ Rectangle {
             Text {
                 width: parent.width
                 text: card.title
-                color: card.colors.text
+                color: bodyArea.containsMouse ? Colors.on_hover : Colors.on_surface
                 font.family: card.theme.typography.textFontFamily
                 font.pixelSize: card.theme.typography.sizeMd
                 font.styleName: card.theme.typography.styleSemibold
@@ -104,7 +104,8 @@ Rectangle {
             Text {
                 width: parent.width
                 text: card.subtitle
-                color: card.active ? card.colors.primary : card.colors.textSubtle
+                color: bodyArea.containsMouse ? Colors.on_hover : (card.active ? Colors.primary :
+                                                                                       Colors.on_surface_variant)
                 font.family: card.theme.typography.textFontFamily
                 font.styleName: card.theme.typography.styleRegular
                 font.pixelSize: card.theme.typography.sizeSm
@@ -116,8 +117,8 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         radius: card.radius
-        color: card.colors.transparent
-        border.color: card.colors.primary
+        color: "transparent"
+        border.color: Colors.primary
         border.width: bodyArea.activeFocus ? card.theme.shape.focusBorderWidth : 0
     }
 

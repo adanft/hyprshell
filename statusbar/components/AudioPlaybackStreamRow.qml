@@ -1,11 +1,11 @@
 import QtQuick
 import "NetworkMenu.js" as NetworkMenuLogic
+import "../../theme"
 
 Rectangle {
     id: root
 
     required property var stream
-    required property var colors
     required property var theme
     required property string icon
     required property string volumeUnavailableIcon
@@ -48,7 +48,7 @@ Rectangle {
     height: root.theme.spacing.space12 + playbackStreamHeader.height + root.theme.spacing.space8 + playbackStreamSliderZone.height
             + root.theme.spacing.space12
     radius: root.theme.shape.radius12
-    color: root.colors.surface
+    color: Colors.surface
     opacity: root.available ? 1 : root.theme.motion.opacityDisabled
 
     Accessible.role: Accessible.ListItem
@@ -73,7 +73,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: root.icon
-            color: root.colors.text
+            color: Colors.on_surface
             horizontalAlignment: Text.AlignHCenter
             font.family: root.theme.typography.iconFontFamily
             font.pixelSize: root.theme.typography.sizeLg
@@ -90,7 +90,7 @@ Rectangle {
             Text {
                 width: parent.width
                 text: NetworkMenuLogic.playbackStreamLabel(root.stream)
-                color: root.colors.text
+                color: Colors.on_surface
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeMd
                 elide: Text.ElideRight
@@ -100,7 +100,7 @@ Rectangle {
             Text {
                 width: parent.width
                 text: NetworkMenuLogic.playbackStreamDescription(root.stream)
-                color: root.colors.textSubtle
+                color: Colors.on_surface_variant
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
                 elide: Text.ElideRight
@@ -114,7 +114,7 @@ Rectangle {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: root.percent + "%"
-            color: root.colors.textSubtle
+            color: Colors.on_surface_variant
             font.pixelSize: root.theme.typography.sizeSm
         }
     }
@@ -139,14 +139,15 @@ Rectangle {
                 width: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                 height: parent.height
                 radius: root.theme.shape.radius8
-                color: root.muted ? root.colors.primary : (muteInput.containsMouse || muteInput.activeFocus
-                                                           ? root.colors.surfaceHover : root.colors.transparent)
+                color: root.muted ? Colors.primary : (muteInput.containsMouse || muteInput.activeFocus
+                                                           ? Colors.hover : "transparent")
 
                 Text {
                     objectName: "playbackStreamVolumeIcon"
                     anchors.centerIn: parent
                     text: root.volumeStateIcon
-                    color: root.muted ? root.colors.surface : root.colors.text
+                    color: root.muted ? Colors.on_primary : (muteInput.containsMouse || muteInput.activeFocus
+                                                                  ? Colors.on_hover : Colors.on_surface)
                     font.family: root.theme.typography.iconFontFamily
                     font.pixelSize: root.theme.typography.sizeLg
                 }
@@ -179,10 +180,10 @@ Rectangle {
                 trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                 value: root.percent
                 available: root.available
-                trackColor: root.colors.transparent
-                fillColor: root.colors.primary
-                handleColor: root.colors.text
-                handleBorderColor: root.colors.primary
+                trackColor: "transparent"
+                fillColor: Colors.primary
+                handleColor: Colors.on_surface
+                handleBorderColor: Colors.primary
                 unavailableText: "Playback stream unavailable"
                 onLiveValueRequested: value => root.requestVolume(value)
             }

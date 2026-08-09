@@ -9,9 +9,12 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
-    readonly property color moduleColor: services.bluetooth.bluetoothConnectedCount > 0 ? colors.primary : colors.text
+    readonly property bool moduleDisabled: !services.bluetooth.bluetoothAvailable
+                                           || !services.bluetooth.bluetoothPowered
+    readonly property color moduleColor: moduleDisabled ? Colors.outline :
+                                                          (services.bluetooth.bluetoothConnectedCount > 0 ?
+                                                           Colors.primary : Colors.on_surface)
 
     function icon() {
         if (!services.bluetooth.bluetoothPowered)

@@ -4,6 +4,7 @@ import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Wayland
 import "../theme"
+import "../theme/runtime"
 
 Scope {
     id: selector
@@ -113,7 +114,7 @@ Scope {
                     width: parent.width - extensionFiltersRow.width - selector.theme.spacing.space12
                     height: parent.height
                     radius: selector.theme.shape.appLauncherSearchRadius
-                    color: selector.theme.colors.surface
+                    color: Colors.surface
 
                     Shared.AppText {
                         anchors.left: parent.left
@@ -121,7 +122,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         width: selector.theme.sizing.appLauncherSearchIconSlotWidth
                         text: selector.icons.search
-                        color: selector.theme.colors.textSubtle
+                        color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
                         font.pixelSize: selector.theme.typography.sizeLg
                         font.styleName: selector.theme.typography.styleMedium
@@ -135,7 +136,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: searchInput.text.length === 0
                         text: "Search..."
-                        color: selector.theme.colors.textSubtle
+                        color: Colors.on_surface_variant
                         font.pixelSize: selector.theme.typography.sizeLg
                         font.styleName: selector.theme.typography.styleMedium
                     }
@@ -148,9 +149,9 @@ Scope {
                                             + selector.theme.sizing.appLauncherSearchIconSlotWidth
                         anchors.rightMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
                         clip: true
-                        color: selector.theme.colors.text
-                        selectionColor: selector.theme.colors.selection
-                        selectedTextColor: selector.theme.colors.selectionText
+                        color: Colors.on_surface
+                        selectionColor: Colors.primary
+                        selectedTextColor: Colors.on_primary
                         font.family: selector.theme.typography.textFontFamily
                         font.pixelSize: selector.theme.typography.sizeLg
                         font.styleName: selector.theme.typography.styleMedium
@@ -198,7 +199,7 @@ Scope {
                     width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
                     text: selector.searchText.length > 0 ? `No wallpapers match "${selector.searchText}"` :
                                                            `No wallpapers found. Add images to ${selector.wallpapersDir}`
-                    color: selector.theme.colors.textMuted
+                    color: Colors.on_surface_variant
                     font.pixelSize: selector.theme.typography.sizeLg
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
@@ -260,7 +261,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: selector.theme.colors.transparent
+        color: "transparent"
         surfaceFormat.opaque: false
 
         WlrLayershell.layer: WlrLayer.Overlay
@@ -275,7 +276,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: selector.theme.colors.scrim
+            color: Qt.alpha(Colors.shadow, 0.25)
             focus: true
 
             Keys.onEscapePressed: selector.close()
@@ -299,7 +300,7 @@ Scope {
                 height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin,
                                  selector.theme.sizing.wallpaperSelectorMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
-                color: selector.theme.colors.background
+                color: Colors.shadow
 
                 MouseArea {
                     anchors.fill: parent

@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import ".."
+import "../../../theme"
 
 TestCase {
     id: testCase
@@ -15,16 +16,6 @@ TestCase {
         NetworkControlCard {
             width: 200
             height: 54
-            colors: ({
-                         surface: "#202020",
-                         surfaceHover: "#303030",
-                         primary: "#88aaff",
-                         border: "#555555",
-                         text: "#ffffff",
-                         textMuted: "#aaaaaa",
-                         textSubtle: "#888888",
-                         background: "#101010"
-                     })
             theme: ({
                         shape: {
                             radius12: 12,

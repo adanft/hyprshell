@@ -1,10 +1,10 @@
 import QtQuick
 import "NetworkMenu.js" as NetworkMenuLogic
+import "../../theme"
 
 Rectangle {
     id: root
     required property var device
-    required property var colors
     required property var theme
     property bool pending: false
     property bool powered: true
@@ -18,7 +18,7 @@ Rectangle {
                                                                           || device.trusted))
     height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
-    color: colors.surface
+    color: Colors.surface
     Accessible.role: Accessible.ListItem
     Accessible.name: device ? [device.name || device.deviceName || "Bluetooth device", ", ", NetworkMenuLogic.bluetoothDeviceState(
                                    device)].join("") : "Bluetooth device"
@@ -40,7 +40,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: theme.sizing.statusBarNetworkQuickControlIconWidth
         text: NetworkMenuLogic.bluetoothDeviceIcon(root.device)
-        color: root.device?.connected ? colors.primary : colors.text
+        color: root.device?.connected ? Colors.primary : Colors.on_surface
         font.family: theme.typography.iconFontFamily
         font.pixelSize: theme.typography.sizeXl
         horizontalAlignment: Text.AlignHCenter
@@ -55,7 +55,7 @@ Rectangle {
         Text {
             width: parent.width
             text: root.device?.name || root.device?.deviceName || "Unknown device"
-            color: root.colors.text
+            color: Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
             font.styleName: root.theme.typography.styleRegular
@@ -68,7 +68,7 @@ Rectangle {
                                                                                                  ? " · " + NetworkMenuLogic.bluetoothBatteryText(
                                                                                                        root.device) :
                                                                                                    "")
-            color: root.colors.textSubtle
+            color: Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             font.styleName: root.theme.typography.styleRegular
@@ -114,13 +114,14 @@ Rectangle {
         width: labelText.implicitWidth + root.theme.spacing.space16
         height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
         radius: root.theme.shape.radius8
-        color: input.containsMouse || input.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+        color: input.containsMouse || input.activeFocus ? Colors.hover : "transparent"
         opacity: enabled ? 1 : root.theme.motion.opacityDisabled
         Text {
             id: labelText
             anchors.centerIn: parent
             text: parent.label
-            color: parent.danger ? root.colors.danger : root.colors.primary
+            color: input.containsMouse || input.activeFocus ? Colors.on_hover : (parent.danger
+                                                                                        ? Colors.error : Colors.primary)
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             font.styleName: root.theme.typography.styleRegular

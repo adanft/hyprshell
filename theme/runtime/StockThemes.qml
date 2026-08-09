@@ -6,6 +6,8 @@ import QtQml
 import Quickshell
 import Quickshell.Io
 import "HyprlandThemeCommand.js" as HyprlandThemeCommand
+import ".."
+import "../PaletteRoles.js" as PaletteRoles
 import "ThemeSyncState.js" as ThemeSyncState
 
 QtObject {
@@ -18,44 +20,21 @@ QtObject {
     property var hyprlandState: ThemeSyncState.createHyprlandState()
     property bool externalThemeSyncReady: false
 
-    readonly property string sourceFile: `${Quickshell.shellDir}/theme/themes.json`
+    readonly property string sourceFile: `${Quickshell.shellDir}/theme/runtime/themes.json`
     readonly property var availableThemes: list()
     readonly property var themeData: theme(currentTheme)
-    readonly property var fallbackThemes: ({
-                                               "catppuccin": {
-                                                   displayName: "Catppuccin",
-                                                   transparent: "transparent",
-                                                   mask: "black",
-                                                   scrim: "#40000000",
-                                                   background: "#1e1e2e",
-                                                   panel: "#f0181825",
-                                                   surface: "#181825",
-                                                   surfaceTransparent: "#0011111b",
-                                                   surfaceHover: "#45475a",
-                                                   surfaceActive: "#313244",
-                                                   surfaceInverse: "#11111b",
-                                                   border: "#45475a",
-                                                   borderStrong: "#7f849c",
-                                                   text: "#cdd6f4",
-                                                   textMuted: "#bac2de",
-                                                   textSubtle: "#7f849c",
-                                                   textInactive: "#45475a",
-                                                   primary: "#cba6f7",
-                                                   primaryText: "#11111b",
-                                                   secondary: "#94e2d5",
-                                                   focus: "#cba6f7",
-                                                   selection: "#cba6f7",
-                                                   selectionText: "#11111b",
-                                                   info: "#89b4fa",
-                                                   link: "#89b4fa",
-                                                   success: "#a6e3a1",
-                                                   warning: "#f9e2af",
-                                                   danger: "#f38ba8",
-                                                   critical: "#f38ba8",
-                                                   previewColors: ["#cba6f7", "#94e2d5", "#89b4fa", "#a6e3a1", "#f9e2af",
-                                                       "#f38ba8"]
-                                               }
-                                           })
+
+    // Colors is a plain palette holder with no Quickshell dependency, so the
+    // active theme is pushed into it rather than pulled out of here. That keeps
+    // every component that reads a colour loadable outside the shell runtime.
+    onThemeDataChanged: Colors.palette = themeData
+
+    // Themes are exactly 16 roles. PaletteRoles validates them; nothing is
+    // derived, so what a layout paints is what a theme authored.
+    readonly property var fallbackRoles: ({
+                                              "catppuccin": PaletteRoles.FALLBACK_PALETTE
+                                          })
+    readonly property var fallbackThemes: PaletteRoles.readPalettes(fallbackRoles)
 
     readonly property var sourceView: FileView {
         path: stockThemes.sourceFile
@@ -72,7 +51,10 @@ QtObject {
         onFileChanged: reload()
     }
 
-    Component.onCompleted: startupCoordinator.request(false)
+    Component.onCompleted: {
+        Colors.palette = themeData
+        startupCoordinator.request(false)
+    }
     readonly property var startupCoordinator: ThemeStartupCoordinator {
         currentTheme: stockThemes.currentTheme
         settingsReady: AppSettings.startupReady
@@ -95,20 +77,13 @@ QtObject {
         return Object.keys(themes)
     }
 
+    // A palette is already exactly displayName plus the 16 roles, so the
+    // selector gets the whole thing rather than a hand-picked subset that
+    // would have to be kept in step with it.
     function list() {
-        return names().map(name => ({
-            name,
-            displayName: themes[name].displayName,
-            primary: themes[name].primary,
-            secondary: themes[name].secondary,
-            previewColors: themes[name].previewColors,
-            background: themes[name].background,
-            surface: themes[name].surface,
-            surfaceActive: themes[name].surfaceActive,
-            border: themes[name].border,
-            focus: themes[name].focus,
-            text: themes[name].text
-        }))
+        return names().map(name => Object.assign({
+            name
+        }, themes[name]))
     }
 
         function normalizeName(name) {
@@ -204,11 +179,11 @@ QtObject {
 
         function load() {
         try {
-        const parsedThemes = JSON.parse(sourceView.text())
-        if (!parsedThemes || !parsedThemes[defaultName()])
+        const parsedRoles = JSON.parse(sourceView.text())
+        if (!parsedRoles || !parsedRoles[defaultName()])
         throw new Error("themes.json must include catppuccin")
 
-        themes = parsedThemes
+        themes = PaletteRoles.readPalettes(parsedRoles)
     } catch (error) {
         console.warn(`Failed to load stock themes from ${sourceFile}: ${error}`)
         themes = fallbackThemes

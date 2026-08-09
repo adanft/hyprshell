@@ -10,21 +10,21 @@ assert.match(
 );
 assert.match(
 	card,
-	/border\.color: card\.colors\.border/,
+	/border\.color: Colors\.outline/,
 );
 assert.doesNotMatch(card, /border\.color:.*cardHovered/);
 assert.match(
 	card,
-	/case NotificationUrgency\.Critical:\s*return card\.colors\.critical[\s\S]*?case NotificationUrgency\.Low:\s*return card\.colors\.text[\s\S]*?default:\s*return card\.colors\.info/,
+	/case NotificationUrgency\.Critical:\s*return Colors\.error[\s\S]*?case NotificationUrgency\.Low:\s*return Colors\.on_surface[\s\S]*?default:\s*return Colors\.tertiary/,
 );
 assert.match(
 	card,
-	/readonly property color urgencyBarHoverColor: card\.colors\.success/,
+	/readonly property color urgencyBarColor: {/,
 );
 assert.doesNotMatch(card, /Qt\.lighter\(urgencyBarColor/);
 assert.match(
 	card,
-	/color: card\.cardHovered \? card\.urgencyBarHoverColor : card\.urgencyBarColor/,
+	/color: card\.cardHovered \? Colors\.hover : card\.urgencyBarColor/,
 );
 assert.match(card, /HoverHandler\s*{\s*id: cardHoverHandler\s*cursorShape: Qt\.ArrowCursor/);
 assert.match(

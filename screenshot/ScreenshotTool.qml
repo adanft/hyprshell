@@ -149,7 +149,7 @@ Scope {
                     Shared.AppText {
                         anchors.verticalCenter: parent.verticalCenter
                         text: ""
-                        color: tool.theme.colors.info
+                        color: Colors.tertiary
                         font.family: tool.theme.typography.iconFontFamily
                         font.pixelSize: tool.theme.sizing.size24
                     }
@@ -159,7 +159,7 @@ Scope {
 
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Timer"
-                        color: tool.theme.colors.text
+                        color: Colors.on_surface
                         font.pixelSize: tool.theme.typography.sizeMd
                         font.styleName: tool.theme.typography.styleSemibold
                     }
@@ -200,7 +200,7 @@ Scope {
                     Shared.AppText {
                         anchors.verticalCenter: parent.verticalCenter
                         text: ""
-                        color: tool.theme.colors.info
+                        color: Colors.tertiary
                         font.family: tool.theme.typography.iconFontFamily
                         font.pixelSize: tool.theme.sizing.size24
                     }
@@ -210,7 +210,7 @@ Scope {
 
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Cursor"
-                        color: tool.theme.colors.text
+                        color: Colors.on_surface
                         font.pixelSize: tool.theme.typography.sizeMd
                         font.styleName: tool.theme.typography.styleSemibold
                     }
@@ -224,7 +224,7 @@ Scope {
                     width: tool.theme.sizing.screenshotToolCursorSwitchWidth
                     height: tool.theme.sizing.screenshotToolCursorSwitchHeight
                     radius: height / 2
-                    color: tool.includeCursor ? tool.theme.colors.primary : tool.theme.colors.surfaceActive
+                    color: tool.includeCursor ? Colors.primary : Colors.surface_variant
 
                     Rectangle {
                         width: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
@@ -234,7 +234,7 @@ Scope {
                         x: tool.includeCursor ? parent.width - width
                                                 - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin :
                                                 tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
-                        color: tool.theme.colors.primaryText
+                        color: Colors.on_primary
 
                         Behavior on x {
                             NumberAnimation {
@@ -264,7 +264,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: tool.theme.colors.transparent
+        color: "transparent"
         surfaceFormat.opaque: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -280,7 +280,7 @@ Scope {
             id: overlay
 
             anchors.fill: parent
-            color: tool.theme.colors.scrim
+            color: Qt.alpha(Colors.shadow, 0.25)
             focus: true
             Keys.onEscapePressed: tool.close()
             Keys.onLeftPressed: tool.moveSelection(-1)
@@ -307,7 +307,7 @@ Scope {
                 height: Math.min(contentLoader.height + tool.theme.spacing.screenshotToolPadding * 2,
                                  parent.height - tool.theme.spacing.screenshotToolScreenMargin)
                 radius: tool.theme.shape.screenshotToolRadius
-                color: tool.theme.colors.background
+                color: Colors.shadow
 
                 MouseArea {
                     anchors.fill: parent

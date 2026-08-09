@@ -28,9 +28,9 @@ for (const invalid of [
 }
 
 const theme = {
-	focus: "#E6B450",
-	borderStrong: "#5a6673",
-	background: "#0d1017",
+	primary: "#E6B450",
+	outline: "#5a6673",
+	shadow: "#0d1017",
 };
 const expectedExpression =
 	'hl.config({ general = { col = { active_border = "rgb(e6b450)", inactive_border = "rgb(5a6673)" } }, misc = { background_color = "rgb(0d1017)" } })';
@@ -42,7 +42,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(command.processArguments(theme))), [
 	expectedExpression,
 ]);
 assert.throws(
-	() => command.configExpression({ ...theme, focus: "red" }),
+	() => command.configExpression({ ...theme, primary: "red" }),
 	/invalid Hyprland color/i,
 );
 

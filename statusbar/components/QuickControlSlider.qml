@@ -1,23 +1,24 @@
 import QtQuick
 import QtQuick.Controls as Controls
+import "../../theme"
 
 Item {
     id: control
 
-    // Injected like every other row in this directory, rather than read from
-    // the AppTheme singleton. Reaching for the singleton pulls in AppSettings
-    // and therefore the Quickshell plugin, which makes this component and
-    // anything embedding it impossible to load under qmltestrunner.
+    // Still injected rather than read from the AppTheme singleton. Colours no
+    // longer need this — theme/runtime now holds everything that pulls in the
+    // Quickshell plugin — but the sizing and motion tokens this reads are still
+    // stubbed by tst_QuickControlSlider.
     required property var theme
 
     property real value: 0
     property bool available: true
     property int liveUpdateInterval: 75
     property real trackHeight: theme.sizing.statusBarSliderTrackHeight
-    property color trackColor: theme.colors.transparent
-    property color fillColor: theme.colors.text
-    property color handleColor: theme.colors.text
-    property color handleBorderColor: theme.colors.transparent
+    property color trackColor: "transparent"
+    property color fillColor: Colors.on_surface
+    property color handleColor: Colors.on_surface
+    property color handleBorderColor: "transparent"
     property string unavailableText: "Unavailable"
 
     readonly property bool interactionActive: draftActive

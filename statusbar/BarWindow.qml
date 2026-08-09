@@ -10,14 +10,13 @@ PanelWindow {
     readonly property var theme: AppTheme
     readonly property alias notificationImageCaptureHost: notificationImageCaptureHost
 
-    required property var colors
     required property var services
 
     signal openNotificationCenterRequested
 
     implicitHeight: theme.sizing.statusBarOuterHeight
     exclusiveZone: theme.sizing.statusBarOuterHeight
-    color: window.colors.transparent
+    color: "transparent"
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "qs-statusbar"
     objectName: `qs-statusbar:${window.screen ? window.screen.name : ""}`
@@ -50,7 +49,6 @@ PanelWindow {
         anchors.leftMargin: window.theme.spacing.space6
         anchors.rightMargin: window.theme.spacing.space6
         anchors.bottomMargin: 0
-        colors: window.colors
         services: window.services
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()
@@ -78,7 +76,6 @@ PanelWindow {
         active: false
 
         NetworkMenu {
-            colors: window.colors
             services: window.services
             barWindow: window
         }

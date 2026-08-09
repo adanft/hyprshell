@@ -10,6 +10,7 @@ import "screenshot" as Screenshot
 import "services" as Services
 import "statusbar" as Statusbar
 import "theme" as Theme
+import "theme/runtime" as ThemeRuntime
 import "themeselector" as Themeselector
 import "wallpaperselector" as Wallpaperselector
 
@@ -105,7 +106,7 @@ ShellRoot {
         }
 
         function set(name: string): void {
-            Theme.Colors.setTheme(name)
+            ThemeRuntime.StockThemes.setTheme(name)
         }
     }
 
@@ -118,7 +119,6 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-            colors: Theme.Colors
             services: serviceState
 
             function toggleNotificationCenter() {
@@ -135,14 +135,12 @@ ShellRoot {
                 property var ownerWindow: barWindow
 
                 Notifications.NotificationCenter {
-                    colors: Theme.Colors
                     services: serviceState
                     barWindow: notificationCenterLoader.ownerWindow
                 }
             }
 
             Notifications.NotificationPopupManager {
-                colors: Theme.Colors
                 services: serviceState
                 barWindow: barWindow
             }

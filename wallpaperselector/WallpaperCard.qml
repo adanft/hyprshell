@@ -18,7 +18,7 @@ Rectangle {
 
     signal activated
 
-    color: theme.colors.transparent
+    color: "transparent"
 
     Column {
         anchors.fill: parent
@@ -30,9 +30,9 @@ Rectangle {
             width: parent.width
             height: card.theme.sizing.wallpaperCardHeight
             radius: card.theme.shape.wallpaperThumbnailRadius
-            color: card.theme.colors.transparent
+            color: "transparent"
             border.width: (card.hovered || card.selected || card.isActive) ? card.theme.shape.wallpaperCardBorderWidth : 0
-            border.color: card.hovered ? card.theme.colors.secondary : (card.selected ? card.theme.colors.primary : card.theme.colors.info)
+            border.color: card.hovered ? Theme.Colors.hover : (card.selected ? Theme.Colors.primary : Theme.Colors.tertiary)
 
             Image {
                 id: thumbnailImage
@@ -62,7 +62,9 @@ Rectangle {
 
                 anchors.fill: thumbnailImage
                 radius: Math.max(0, imageFrame.radius - card.theme.shape.wallpaperCardBorderWidth)
-                color: card.theme.colors.mask
+                // An OpacityMask stencil: only its alpha is read, so this is
+                // not a palette decision and does not belong to any role.
+                color: "black"
                 layer.enabled: true
                 visible: false
             }
@@ -71,7 +73,7 @@ Rectangle {
         Shared.AppText {
             width: parent.width
             text: card.label
-            color: card.theme.colors.text
+            color: Theme.Colors.on_surface
             font.pixelSize: card.theme.typography.sizeMd
             font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter

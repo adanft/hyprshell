@@ -7,7 +7,6 @@ Scope {
     id: root
 
     required property var screen
-    required property var colors
     required property var theme
     property var network: null
     property string errorText: ""
@@ -49,7 +48,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: root.colors.transparent
+        color: "transparent"
         surfaceFormat.opaque: false
 
         WlrLayershell.layer: WlrLayer.Overlay
@@ -80,7 +79,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: root.colors.scrim
+            color: Qt.alpha(Colors.shadow, 0.25)
             focus: true
 
             Keys.onEscapePressed: root.cancelled()
@@ -99,8 +98,8 @@ Scope {
                 height: dialogContent.implicitHeight + root.theme.spacing.space16 * 2
                 anchors.centerIn: parent
                 radius: root.theme.shape.appLauncherRadius
-                color: root.colors.panel
-                border.color: root.colors.border
+                color: Qt.alpha(Colors.surface, 0.94)
+                border.color: Colors.outline
                 border.width: root.theme.shape.appLauncherBorderWidth
 
                 MouseArea {
@@ -132,7 +131,7 @@ Scope {
                             Text {
                                 width: parent.width
                                 text: "Connect to Wi-Fi"
-                                color: root.colors.text
+                                color: Colors.on_surface
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
                                 font.styleName: root.theme.typography.styleMedium
@@ -142,7 +141,7 @@ Scope {
                             Text {
                                 width: parent.width
                                 text: root.network ? `Enter password for ${root.network.name}` : "Enter password"
-                                color: root.colors.textSubtle
+                                color: Colors.on_surface_variant
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeSm
                                 font.styleName: root.theme.typography.styleRegular
@@ -157,13 +156,14 @@ Scope {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             radius: root.theme.shape.radius8
-                            color: closeInput.containsMouse || closeInput.activeFocus ? root.colors.surfaceHover :
-                                                                                        root.colors.transparent
+                            color: closeInput.containsMouse || closeInput.activeFocus ? Colors.hover :
+                                                                                        "transparent"
 
                             Text {
                                 anchors.centerIn: parent
                                 text: root.icons.close
-                                color: root.colors.textMuted
+                                color: closeInput.containsMouse || closeInput.activeFocus ? Colors.on_hover :
+                                                                                            Colors.on_surface_variant
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
                                 font.styleName: root.theme.typography.styleRegular
@@ -189,8 +189,8 @@ Scope {
                         width: parent.width
                         height: root.theme.sizing.statusBarWifiPasswordFieldHeight
                         radius: root.theme.shape.radius12
-                        color: root.colors.surface
-                        border.color: passwordInput.activeFocus ? root.colors.primary : root.colors.border
+                        color: Colors.surface
+                        border.color: passwordInput.activeFocus ? Colors.primary : Colors.outline
                         border.width: root.theme.shape.borderThin
 
                         TextInput {
@@ -201,9 +201,9 @@ Scope {
                             anchors.bottom: parent.bottom
                             anchors.leftMargin: root.theme.spacing.space12
                             anchors.rightMargin: root.theme.spacing.space8
-                            color: root.colors.text
-                            selectionColor: root.colors.primary
-                            selectedTextColor: root.colors.background
+                            color: Colors.on_surface
+                            selectionColor: Colors.primary
+                            selectedTextColor: Colors.on_primary
                             echoMode: TextInput.Password
                             verticalAlignment: TextInput.AlignVCenter
                             font.family: root.theme.typography.textFontFamily
@@ -220,13 +220,13 @@ Scope {
                             width: root.theme.sizing.statusBarWifiPasswordVisibilityButtonWidth
                             height: parent.height
                             anchors.right: parent.right
-                            color: root.colors.transparent
+                            color: "transparent"
 
                             Text {
                                 anchors.centerIn: parent
                                 text: passwordInput.echoMode === TextInput.Password ? root.icons.passwordHidden :
                                                                                       root.icons.passwordVisible
-                                color: root.colors.textMuted
+                                color: Colors.on_surface_variant
                                 font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
                                 font.styleName: root.theme.typography.styleRegular
@@ -252,7 +252,7 @@ Scope {
                         visible: root.errorText.length > 0
                         width: parent.width
                         text: root.errorText
-                        color: root.colors.danger
+                        color: Colors.error
                         font.family: root.theme.typography.textFontFamily
                         font.pixelSize: root.theme.typography.sizeSm
                         font.styleName: root.theme.typography.styleRegular
@@ -267,14 +267,15 @@ Scope {
                             width: cancelLabel.implicitWidth + root.theme.spacing.space24
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
-                            color: cancelInput.containsMouse || cancelInput.activeFocus ? root.colors.surfaceHover :
-                                                                                          root.colors.surface
+                            color: cancelInput.containsMouse || cancelInput.activeFocus ? Colors.hover :
+                                                                                          Colors.surface
 
                             Text {
                                 id: cancelLabel
                                 anchors.centerIn: parent
                                 text: "Cancel"
-                                color: root.colors.text
+                                color: cancelInput.containsMouse || cancelInput.activeFocus ? Colors.on_hover :
+                                                                                              Colors.on_surface
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
                                 font.styleName: root.theme.typography.styleMedium
@@ -299,14 +300,14 @@ Scope {
                             width: connectLabel.implicitWidth + root.theme.spacing.space24
                             height: root.theme.sizing.statusBarWifiPasswordActionHeight
                             radius: root.theme.shape.radius12
-                            color: root.colors.primary
+                            color: Colors.primary
                             opacity: passwordInput.text.length > 0 && !root.busy ? 1 : root.theme.motion.opacityDisabled
 
                             Text {
                                 id: connectLabel
                                 anchors.centerIn: parent
                                 text: root.busy ? "Please wait…" : "Connect"
-                                color: root.colors.background
+                                color: Colors.on_primary
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeMd
                                 font.styleName: root.theme.typography.styleMedium

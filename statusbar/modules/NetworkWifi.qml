@@ -10,10 +10,11 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     readonly property bool connected: services.network.wifiUp && services.network.wifiSignal > 0
-    readonly property color moduleColor: connected ? colors.primary : colors.text
+    readonly property bool moduleDisabled: !Networking.wifiHardwareEnabled || !Networking.wifiEnabled
+    readonly property color moduleColor: moduleDisabled ? Colors.outline : (connected ? Colors.primary :
+                                                                            Colors.on_surface)
 
     function icon() {
         if (connected)

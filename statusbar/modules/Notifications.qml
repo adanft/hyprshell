@@ -9,9 +9,13 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
-    readonly property color moduleColor: services.notification.notificationDnd ? colors.primary : colors.text
+    // Do Not Disturb silences notifications the way muting silences audio, so
+    // it dims for the same reason. Nothing pending is the empty state, the same
+    // way a workspace with no windows is empty.
+    readonly property bool moduleDisabled: services.notification.notificationDnd
+                                           || !services.notification.hasNotifications
+    readonly property color moduleColor: moduleDisabled ? Colors.outline : Colors.on_surface
 
     signal openRequested
 
@@ -39,7 +43,7 @@ Item {
         width: root.theme.sizing.notificationBadgeSize
         height: root.theme.sizing.notificationBadgeSize
         radius: root.theme.shape.notificationBadgeRadius
-        color: root.colors.danger
+        color: Colors.error
         visible: root.services.notification.hasNotifications
         anchors.top: parent.top
         anchors.topMargin: root.theme.spacing.notificationBadgeTopMargin

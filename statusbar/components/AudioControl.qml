@@ -8,13 +8,15 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     property bool source: false
     readonly property bool available: source ? services.audio.microphoneAvailable : Boolean(services.audio.sink?.audio)
     readonly property int volume: source ? services.audio.sourceVolume : services.audio.sinkVolume
     readonly property bool muted: source ? services.audio.sourceMuted : services.audio.sinkMuted
-    readonly property color textColor: available ? colors.text : colors.textMuted
+    // Muted and unavailable are one state here: iconText() already collapses
+    // them into the same glyph, so the colour follows.
+    readonly property bool moduleDisabled: !available || muted
+    readonly property color textColor: moduleDisabled ? Colors.outline : Colors.on_surface
 
     function iconText() {
         if (!available || muted)
@@ -56,8 +58,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: root.theme.shape.radius8
-        color: root.colors.transparent
-        border.color: root.colors.primary
+        color: "transparent"
+        border.color: Colors.primary
         border.width: input.activeFocus ? root.theme.shape.focusBorderWidth : 0
     }
 

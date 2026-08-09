@@ -17,12 +17,12 @@ Rectangle {
     width: theme.sizing.screenshotToolTimerOptionWidth
     height: theme.sizing.screenshotToolTimerOptionHeight
     radius: theme.shape.screenshotToolTimerOptionRadius
-    color: hovered ? theme.colors.secondary : (selected ? theme.colors.primary : theme.colors.surfaceTransparent)
+    color: hovered ? Colors.hover : (selected ? Colors.primary : "transparent")
 
     Shared.AppText {
         anchors.centerIn: parent
         text: String(option.value)
-        color: option.active ? option.theme.colors.primaryText : option.theme.colors.text
+        color: option.hovered ? Colors.on_hover : (option.selected ? Colors.on_primary : Colors.on_surface)
         font.pixelSize: option.theme.typography.sizeMd
         font.styleName: option.theme.typography.styleMedium
     }

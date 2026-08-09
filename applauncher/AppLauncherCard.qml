@@ -2,6 +2,7 @@ import "../shared/components" as Shared
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import "../theme"
 
 Rectangle {
     id: card
@@ -20,7 +21,7 @@ Rectangle {
     width: theme.sizing.appLauncherCardWidth
     height: theme.sizing.appLauncherCardHeight
     radius: theme.shape.appLauncherCardRadius
-    color: hovered ? theme.colors.secondary : (selected ? theme.colors.primary : theme.colors.surfaceTransparent)
+    color: hovered ? Colors.hover : (selected ? Colors.primary : "transparent")
 
     Column {
         anchors.fill: parent
@@ -43,7 +44,7 @@ Rectangle {
         Shared.AppText {
             width: parent.width
             text: card.app ? (card.app.name || "Unnamed") : "Unnamed"
-            color: card.active ? card.theme.colors.primaryText : card.theme.colors.text
+            color: card.hovered ? Colors.on_hover : (card.selected ? Colors.on_primary : Colors.on_surface)
             font.pixelSize: card.theme.typography.sizeLg
             font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter

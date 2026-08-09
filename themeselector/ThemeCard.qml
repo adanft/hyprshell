@@ -12,14 +12,15 @@ Rectangle {
     property bool isActive: false
     readonly property bool hovered: mouseArea.containsMouse
     readonly property bool active: selected || hovered
-    readonly property color previewBackground: themeData && themeData.background ? themeData.background :
-                                                                                   theme.colors.background
-    readonly property color previewSurface: themeData && themeData.surface ? themeData.surface : previewBackground
-    readonly property color previewText: themeData && themeData.text ? themeData.text : theme.colors.text
-    readonly property color previewBorder: themeData && themeData.border ? themeData.border : theme.colors.border
-    readonly property var previewColors: themeData && themeData.previewColors && themeData.previewColors.length >= 4
-                                         ? themeData.previewColors.slice(0, 4) : [previewText, previewBorder,
-                                                                                  previewSurface, previewBackground]
+    readonly property color previewBackground: themeData && themeData.surface ? themeData.surface :
+                                                                                Colors.surface
+    readonly property color previewText: themeData && themeData.on_surface ? themeData.on_surface :
+                                                                           Colors.on_surface
+    readonly property color previewBorder: themeData && themeData.outline ? themeData.outline : Colors.outline
+    // The four accents a theme is recognised by, straight off its roles.
+    readonly property var previewColors: themeData && themeData.primary ? [themeData.primary, themeData.hover,
+        themeData.tertiary, themeData.secondary] : [Colors.primary, Colors.hover, Colors.tertiary,
+        Colors.secondary]
     readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
     readonly property int nameLineHeight: theme.typography.sizeMd + theme.spacing.space4
 
@@ -31,7 +32,7 @@ Rectangle {
     radius: theme.shape.appLauncherCardRadius
     color: previewBackground
     border.width: (hovered || selected || isActive) ? theme.shape.wallpaperCardBorderWidth : 0
-    border.color: hovered ? theme.colors.secondary : (selected ? theme.colors.primary : theme.colors.info)
+    border.color: hovered ? Colors.hover : (selected ? Colors.primary : Colors.tertiary)
 
     Column {
         anchors.centerIn: parent

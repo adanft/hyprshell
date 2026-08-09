@@ -7,9 +7,9 @@ function normalizedHex(color) {
 }
 
 function configExpression(theme) {
-	var activeBorder = normalizedHex(theme && theme.focus);
-	var inactiveBorder = normalizedHex(theme && theme.borderStrong);
-	var background = normalizedHex(theme && theme.background);
+	var activeBorder = normalizedHex(theme && theme.primary);
+	var inactiveBorder = normalizedHex(theme && theme.outline);
+	var background = normalizedHex(theme && theme.shadow);
 
 	return (
 		'hl.config({ general = { col = { active_border = "rgb(' +

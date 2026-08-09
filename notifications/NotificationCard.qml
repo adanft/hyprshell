@@ -12,7 +12,6 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var notificationService
     property var notificationData: null
     property bool allowLiveImage: false
@@ -80,22 +79,20 @@ Item {
         const actionSpace = hasActions ? spacing + actionButtonHeight : 0
         return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
     }
-    readonly property color urgencyTimeColor: card.colors.info
     readonly property int urgencyBarWidth: theme.spacing.notificationCardUrgencyBarWidth
     readonly property color urgencyBarColor: {
         if (!notificationData)
-            return card.colors.info
+            return Colors.tertiary
 
         switch (notificationData.urgency) {
         case NotificationUrgency.Critical:
-            return card.colors.critical
+            return Colors.error
         case NotificationUrgency.Low:
-            return card.colors.text
+            return Colors.on_surface
         default:
-            return card.colors.info
+            return Colors.tertiary
         }
     }
-    readonly property color urgencyBarHoverColor: card.colors.success
     readonly property string fallbackIconName: "application-x-executable"
     readonly property string fallbackIconSource: {
         if (!notificationData)
@@ -288,8 +285,8 @@ Item {
         width: parent.width
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
-        color: card.colors.background
-        border.color: card.colors.border
+        color: Colors.shadow
+        border.color: Colors.outline
         border.width: card.borderWidth
         clip: true
         layer.enabled: true
@@ -307,7 +304,7 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: card.urgencyBarWidth
-            color: card.cardHovered ? card.urgencyBarHoverColor : card.urgencyBarColor
+            color: card.cardHovered ? Colors.hover : card.urgencyBarColor
         }
 
         HoverHandler {
@@ -409,7 +406,7 @@ Item {
                         width: card.iconSize
                         height: card.iconSize
                         text: card.icons.notificationsEmpty
-                        color: card.colors.text
+                        color: Colors.on_surface
                         font.family: card.iconFont
                         font.pixelSize: card.iconSize
                         horizontalAlignment: Text.AlignHCenter
@@ -430,7 +427,7 @@ Item {
                             width: Math.min(implicitWidth, parent.width - timeSeparator.implicitWidth
                                             - timeLabel.implicitWidth - parent.spacing * 2)
                             text: card.notificationData ? (card.notificationData.appName || "App") : "App"
-                            color: card.colors.textSubtle
+                            color: Colors.on_surface_variant
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
                             elide: Text.ElideRight
@@ -440,7 +437,7 @@ Item {
                             id: timeSeparator
 
                             text: timeLabel.text.length > 0 ? card.icons.textSeparatorBullet : ""
-                            color: card.colors.textSubtle
+                            color: Colors.on_surface_variant
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
                         }
@@ -449,7 +446,7 @@ Item {
                             id: timeLabel
 
                             text: card.timeText
-                            color: card.urgencyTimeColor
+                            color: Colors.tertiary
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
                             elide: Text.ElideRight
@@ -459,7 +456,7 @@ Item {
                     Text {
                         width: parent.width
                         text: card.notificationData ? (card.notificationData.summary || "Notification") : "Notification"
-                        color: card.colors.primary
+                        color: Colors.primary
                         font.family: card.textFont
                         font.pixelSize: card.titleFontSize
                         font.styleName: card.theme.typography.styleSemibold
@@ -484,8 +481,8 @@ Item {
                             width: parent.width
                             text: card.bodyHtml
                             textFormat: Text.StyledText
-                            color: card.colors.text
-                            linkColor: card.colors.link
+                            color: Colors.on_surface
+                            linkColor: Colors.tertiary
                             font.family: card.textFont
                             font.pixelSize: card.bodyFontSize
                             wrapMode: Text.WordWrap
@@ -531,7 +528,7 @@ Item {
                                                 card.actionButtonMinWidth)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
-                                color: actionMouse.containsMouse || actionMouse.activeFocus ? card.colors.secondary : card.colors.surface
+                                color: actionMouse.containsMouse || actionMouse.activeFocus ? Colors.hover : Colors.surface
                                 border.width: 0
 
                                 Text {
@@ -539,7 +536,7 @@ Item {
 
                                     anchors.centerIn: parent
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
-                                    color: actionMouse.containsMouse ? card.colors.primaryText : card.colors.textMuted
+                                    color: actionMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                                     font.family: card.textFont
                                     font.pixelSize: card.theme.typography.sizeSm
                                     font.styleName: card.theme.typography.styleMedium
@@ -578,12 +575,12 @@ Item {
                         width: card.closeButtonSize
                         height: card.closeButtonSize
                         radius: card.theme.shape.notificationCardCloseButtonRadius
-                        color: closeMouse.containsMouse || closeMouse.activeFocus ? card.colors.secondary : card.colors.surfaceHover
+                        color: closeMouse.containsMouse || closeMouse.activeFocus ? Colors.hover : Colors.surface_variant
 
                         Text {
                             anchors.fill: parent
                             text: card.isHistoryEntry ? card.icons.trash : card.icons.close
-                            color: closeMouse.containsMouse ? card.colors.primaryText : card.colors.textSubtle
+                            color: closeMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                             font.family: card.iconFont
                             font.pixelSize: card.closeIconFontSize
                             horizontalAlignment: Text.AlignHCenter
@@ -622,12 +619,12 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: card.theme.shape.notificationCardCloseButtonRadius
-                color: expandMouse.containsMouse || expandMouse.activeFocus ? card.colors.secondary : card.colors.surfaceHover
+                color: expandMouse.containsMouse || expandMouse.activeFocus ? Colors.hover : Colors.surface_variant
 
                 Text {
                     anchors.fill: parent
                     text: card.expanded ? card.icons.chevronUp : card.icons.chevronDown
-                    color: expandMouse.containsMouse ? card.colors.primaryText : card.colors.textSubtle
+                    color: expandMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                     font.family: card.iconFont
                     font.pixelSize: card.closeIconFontSize
                     horizontalAlignment: Text.AlignHCenter
@@ -658,7 +655,9 @@ Item {
 
         anchors.fill: cardRect
         radius: card.cornerRadius
-        color: card.colors.mask
+        // An OpacityMask stencil: only its alpha is read, so this is not a
+        // palette decision and does not belong to any role.
+        color: "black"
         visible: false
         layer.enabled: true
     }

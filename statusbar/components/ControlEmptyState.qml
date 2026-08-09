@@ -1,16 +1,16 @@
 import QtQuick
+import "../../theme"
 
 Rectangle {
     id: root
 
-    required property var colors
     required property var theme
     property string title: ""
     property string description: ""
 
     height: theme.sizing.statusBarControlEmptyStateHeight
     radius: theme.shape.radius12
-    color: colors.surface
+    color: Colors.surface
     border.width: 0
 
     Column {
@@ -23,7 +23,7 @@ Rectangle {
         Text {
             width: parent.width
             text: root.title
-            color: root.colors.text
+            color: Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
             font.styleName: root.theme.typography.styleRegular
@@ -33,7 +33,7 @@ Rectangle {
         Text {
             width: parent.width
             text: root.description
-            color: root.colors.textSubtle
+            color: Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             font.styleName: root.theme.typography.styleRegular

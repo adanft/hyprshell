@@ -43,5 +43,14 @@ assert.doesNotMatch(
 	wifi,
 	/enableNetworkThroughput|activeNetworkRxRate|activeNetworkTxRate/,
 );
+// Silencing a module reads the same as a module that has nothing to offer:
+// muting audio, enabling Do Not Disturb, and an unavailable device all dim.
+const notifications = read("Notifications.qml");
+assert.match(audio, /moduleDisabled:\s*!available \|\| muted/);
+assert.match(
+	notifications,
+	/moduleDisabled:\s*services\.notification\.notificationDnd[\s\S]{0,80}?!services\.notification\.hasNotifications/,
+);
+
 assert.match(wifi, /Row\s*\{[\s\S]*?\n {4}\}\n\n {4}MouseArea/);
 assert.match(bluetooth, /Row\s*\{[\s\S]*?\n {4}\}\n\n {4}MouseArea/);

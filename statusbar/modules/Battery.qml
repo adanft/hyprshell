@@ -8,7 +8,6 @@ Item {
     readonly property var icons: Icons
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
 
     readonly property int level: services.batteryPower.batteryLevel
@@ -30,13 +29,13 @@ Item {
     }
     readonly property color textColor: {
         if (services.batteryPower.batteryEmpty || services.batteryPower.batteryCritical)
-            return colors.critical
+            return Colors.error
         if (services.batteryPower.batteryLow || services.batteryPower.batteryPendingDischarge)
-            return colors.danger
+            return Colors.error
         if (services.batteryPower.batteryCharging || services.batteryPower.batteryPendingCharge
                 || services.batteryPower.batteryFull)
-            return colors.primary
-        return colors.text
+            return Colors.primary
+        return Colors.on_surface
     }
 
     visible: services.batteryPower.batteryAvailable

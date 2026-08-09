@@ -1,6 +1,7 @@
 import QtQuick
 import QtTest
 import ".."
+import "../../../theme"
 
 TestCase {
     id: testCase
@@ -10,7 +11,7 @@ TestCase {
     height: 120
 
     // Mirrors the tokens QuickControlSlider reads, with the values from
-    // theme/Sizing.qml, theme/Spacing.qml, theme/Motion.qml and theme/Colors.qml.
+    // theme/Sizing.qml, theme/Spacing.qml and theme/Motion.qml.
     property var theme: ({
                              sizing: {
                                  statusBarSliderTrackHeight: 5,
@@ -22,10 +23,6 @@ TestCase {
                              motion: {
                                  opacityDisabled: 0.45
                              },
-                             colors: {
-                                 transparent: "transparent",
-                                 text: "#ffffff"
-                             }
                          })
 
     Component {

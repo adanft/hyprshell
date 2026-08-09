@@ -4,6 +4,9 @@ import QtQuick
 Text {
     readonly property var theme: AppTheme
 
+    // Qt defaults an uncoloured Text to black, which is unreadable on every
+    // surface this shell paints. Body text is on_surface unless overridden.
+    color: Colors.on_surface
     font.family: theme.typography.textFontFamily
     font.pixelSize: theme.typography.sizeLg
     font.styleName: theme.typography.styleSemibold

@@ -1,11 +1,11 @@
 import QtQuick
 import "NetworkMenu.js" as NetworkMenuLogic
+import "../../theme"
 
 Rectangle {
     id: root
 
     required property var source
-    required property var colors
     required property var theme
     required property string icon
     property bool active: false
@@ -19,7 +19,7 @@ Rectangle {
 
     height: root.theme.sizing.statusBarNetworkDeviceRowHeight
     radius: root.theme.shape.radius12
-    color: root.colors.surface
+    color: Colors.surface
 
     Accessible.role: Accessible.ListItem
     Accessible.name: [NetworkMenuLogic.audioSourceLabel(root.source), ", ", NetworkMenuLogic.audioSourceStatus(
@@ -33,7 +33,7 @@ Rectangle {
         anchors.leftMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
         text: root.icon
-        color: root.active ? root.colors.primary : root.colors.text
+        color: root.active ? Colors.primary : Colors.on_surface
         horizontalAlignment: Text.AlignHCenter
         font.family: root.theme.typography.iconFontFamily
         font.pixelSize: root.theme.typography.sizeLg
@@ -50,7 +50,7 @@ Rectangle {
         Text {
             width: parent.width
             text: NetworkMenuLogic.audioSourceLabel(root.source)
-            color: root.active ? root.colors.primary : root.colors.text
+            color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
             elide: Text.ElideRight
@@ -59,7 +59,7 @@ Rectangle {
         Text {
             width: parent.width
             text: NetworkMenuLogic.audioSourceStatus(root.source, root.active ? root.source : null)
-            color: root.active ? root.colors.primary : root.colors.textSubtle
+            color: root.active ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             elide: Text.ElideRight
@@ -75,14 +75,15 @@ Rectangle {
         anchors.rightMargin: root.theme.spacing.space8
         anchors.verticalCenter: parent.verticalCenter
         radius: root.theme.shape.radius8
-        color: actionInput.containsMouse || actionInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+        color: actionInput.containsMouse || actionInput.activeFocus ? Colors.hover : "transparent"
 
         Text {
             id: actionLabel
 
             anchors.centerIn: parent
             text: root.active ? "Active" : "Use"
-            color: root.active ? root.colors.textSubtle : root.colors.primary
+            color: actionInput.containsMouse || actionInput.activeFocus ? Colors.on_hover : (root.active
+                                                                                                    ? Colors.on_surface_variant : Colors.primary)
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
         }

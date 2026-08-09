@@ -19,27 +19,27 @@ Scope {
         {
             "icon": icons.lockSession,
             "command": ["loginctl", "lock-session"],
-            "primary": theme.colors.warning
+            "primary": Colors.secondary
         },
         {
             "icon": icons.suspendSession,
             "command": ["systemctl", "suspend"],
-            "primary": theme.colors.info
+            "primary": Colors.tertiary
         },
         {
             "icon": icons.logoutSession,
             "command": ["hyprctl", "dispatch", "hl.dsp.exit()"],
-            "primary": theme.colors.primary
+            "primary": Colors.primary
         },
         {
             "icon": icons.rebootSession,
             "command": ["systemctl", "reboot"],
-            "primary": theme.colors.success
+            "primary": Colors.hover
         },
         {
             "icon": icons.powerOffSession,
             "command": ["systemctl", "poweroff"],
-            "primary": theme.colors.danger
+            "primary": Colors.error
         }
     ]
 
@@ -107,7 +107,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: powerMenu.theme.colors.transparent
+        color: "transparent"
         surfaceFormat.opaque: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -121,7 +121,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: powerMenu.theme.colors.scrim
+            color: Qt.alpha(Colors.shadow, 0.25)
             focus: true
             Keys.onEscapePressed: powerMenu.confirming ? powerMenu.cancelConfirm() : powerMenu.close()
             Keys.onLeftPressed: powerMenu.moveSelection(-1)
@@ -173,7 +173,7 @@ Scope {
 
             ActionButton {
                 icon: powerMenu.icons.confirm
-                primary: powerMenu.theme.colors.success
+                primary: Colors.hover
                 selected: powerMenu.confirmSelectedIndex === 0
                 onHovered: powerMenu.confirmSelectedIndex = 0
                 onActivated: powerMenu.runCommand(powerMenu.pendingCommand)
@@ -181,7 +181,7 @@ Scope {
 
             ActionButton {
                 icon: powerMenu.icons.cancel
-                primary: powerMenu.theme.colors.danger
+                primary: Colors.error
                 selected: powerMenu.confirmSelectedIndex === 1
                 onHovered: powerMenu.confirmSelectedIndex = 1
                 onActivated: powerMenu.cancelConfirm()

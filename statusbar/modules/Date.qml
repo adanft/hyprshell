@@ -9,18 +9,17 @@ Row {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
 
     spacing: theme.spacing.space6
 
     BarText {
         text: root.icons.date
-        color: root.colors.text
+        color: Colors.on_surface
     }
 
     BarText {
         text: root.services.date
-        color: root.colors.text
+        color: Colors.on_surface
     }
 }

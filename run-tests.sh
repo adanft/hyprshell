@@ -19,6 +19,7 @@ readonly SMOKE_TIMEOUT=30
 readonly SUCCESS_LINE='SMOKETEST: all components instantiated'
 readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
 readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed'
+readonly ROLES_LINE='SMOKETEST: 16 colour roles resolved'
 readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/single-close passed'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
@@ -64,7 +65,7 @@ else
 	readonly QMLTESTRUNNER="$resolved_qmltestrunner"
 	# Each file runs from its own directory, because the tests reach their
 	# subjects through a relative import.
-	for test_file in statusbar/components/tests/tst_*.qml theme/tests/tst_*.qml; do
+	for test_file in statusbar/components/tests/tst_*.qml theme/runtime/tests/tst_*.qml; do
 		test_dir=$(dirname "$test_file")
 		test_name=$(basename "$test_file")
 		if output=$(cd "$test_dir" && timeout 60 "$QMLTESTRUNNER" -input "$test_name" 2>&1); then
@@ -132,6 +133,13 @@ fi
 
 if ! grep -qF "$LIFECYCLE_LINE" <<<"$smoke_output"; then
 	echo "-- FAILED: notification image lifecycle harness did not complete"
+	failed=1
+fi
+
+# A colour role whose QML binding never took reads as black, which no static
+# check can see. The smoke test compares every role against its palette.
+if ! grep -qF "$ROLES_LINE" <<<"$smoke_output"; then
+	echo "-- FAILED: the 16 colour roles did not resolve to their palette"
 	failed=1
 fi
 

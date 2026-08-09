@@ -12,7 +12,6 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var barWindow
     readonly property bool hasItems: trayItems.count > 0
 
@@ -97,7 +96,6 @@ Item {
         active: false
 
         TrayMenu {
-            colors: root.colors
             barWindow: root.barWindow
         }
     }

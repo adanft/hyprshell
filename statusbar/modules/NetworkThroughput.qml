@@ -9,12 +9,12 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     readonly property bool networkAvailable: services.network.activeNetworkInterface.length > 0
-    readonly property color neutralColor: colors.text
-    readonly property color txColor: networkAvailable ? colors.danger : colors.text
-    readonly property color rxColor: networkAvailable ? colors.info : colors.text
+    readonly property bool moduleDisabled: !networkAvailable
+    readonly property color neutralColor: moduleDisabled ? Colors.outline : Colors.on_surface
+    readonly property color txColor: moduleDisabled ? Colors.outline : Colors.error
+    readonly property color rxColor: moduleDisabled ? Colors.outline : Colors.tertiary
 
     function formatRate(bytes) {
         if (bytes === undefined || bytes === null || isNaN(bytes))

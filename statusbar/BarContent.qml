@@ -1,9 +1,9 @@
 import QtQuick
+import "../theme"
 
 Item {
     id: root
 
-    required property var colors
     required property var services
     required property var barWindow
 
@@ -12,7 +12,6 @@ Item {
 
     BarLayout {
         anchors.fill: parent
-        colors: root.colors
         services: root.services
         barWindow: root.barWindow
         onOpenNotificationCenterRequested: root.openNotificationCenterRequested()

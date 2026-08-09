@@ -1,11 +1,11 @@
 import QtQuick
 import "NetworkMenu.js" as NetworkMenuLogic
+import "../../theme"
 
 Rectangle {
     id: root
 
     required property var profile
-    required property var colors
     required property var theme
     property bool active: false
     property bool busy: false
@@ -20,7 +20,7 @@ Rectangle {
 
     height: theme.sizing.statusBarNetworkDeviceRowHeight
     radius: theme.shape.radius12
-    color: colors.surface
+    color: Colors.surface
     border.width: 0
 
     Accessible.role: Accessible.ListItem
@@ -37,7 +37,7 @@ Rectangle {
         Text {
             width: parent.width
             text: NetworkMenuLogic.ethernetProfileLabel(root.profile)
-            color: root.active ? root.colors.primary : root.colors.text
+            color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
             font.styleName: root.theme.typography.styleRegular
@@ -47,7 +47,7 @@ Rectangle {
         Text {
             objectName: "ethernetProfileStatus"
             text: root.pending ? "Please wait…" : (root.active ? "Active" : "Available")
-            color: root.active ? root.colors.primary : root.colors.textSubtle
+            color: root.active ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             font.styleName: root.theme.typography.styleRegular
@@ -62,14 +62,15 @@ Rectangle {
         anchors.rightMargin: root.theme.spacing.space8
         anchors.verticalCenter: parent.verticalCenter
         radius: root.theme.shape.radius8
-        color: actionInput.containsMouse || actionInput.activeFocus ? root.colors.surfaceHover : root.colors.transparent
+        color: actionInput.containsMouse || actionInput.activeFocus ? Colors.hover : "transparent"
         opacity: root.busy ? root.theme.motion.opacityDisabled : 1
 
         Text {
             id: actionLabel
             anchors.centerIn: parent
             text: root.active ? "Disable" : "Enable"
-            color: root.active ? root.colors.danger : root.colors.primary
+            color: actionInput.containsMouse || actionInput.activeFocus ? Colors.on_hover : (root.active
+                                                                                                    ? Colors.error : Colors.primary)
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
             font.styleName: root.theme.typography.styleRegular

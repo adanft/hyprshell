@@ -30,6 +30,7 @@ import "services" as Services
 import "statusbar" as Statusbar
 import "statusbar/components" as BarComponents
 import "theme" as Theme
+import "theme/runtime" as ThemeRuntime
 import "themeselector" as Themeselector
 import "wallpaperselector" as Wallpaperselector
 
@@ -58,7 +59,6 @@ ShellRoot {
     // standalone compile error cannot hide behind a closed menu.
     BarComponents.WifiPasswordModal {
         screen: Quickshell.screens[0]
-        colors: Theme.Colors
         theme: Theme.AppTheme
     }
 
@@ -71,16 +71,13 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-            colors: Theme.Colors
             services: serviceState
 
             Notifications.NotificationCenter {
-                colors: Theme.Colors
                 services: serviceState
                 barWindow: barWindow
             }
             Notifications.NotificationPopupManager {
-                colors: Theme.Colors
                 services: serviceState
                 barWindow: barWindow
             }
@@ -131,7 +128,6 @@ ShellRoot {
 
         Notifications.NotificationPopup {
             width: 320
-            colors: Theme.Colors
             services: serviceState
             hoverOwnerId: "smoketest-lifecycle-popup"
         }
@@ -142,7 +138,6 @@ ShellRoot {
 
         Notifications.NotificationCard {
             width: 320
-            colors: Theme.Colors
             notificationService: serviceState.notification
         }
     }
@@ -316,8 +311,22 @@ ShellRoot {
                 Qt.quit()
                 return
             }
+            // A QML colour property whose binding never took reads as opaque
+            // black, and nothing else in the suite can see that: the theme data
+            // is correct, only the property is dead. Compare every role against
+            // the palette it came from.
+            const palette = ThemeRuntime.StockThemes.themeData
+            const unresolved = Object.keys(palette).filter(role => role !== "displayName").filter(role => {
+                return String(Theme.Colors[role]).toLowerCase() !== String(palette[role]).toLowerCase()
+            })
+            if (unresolved.length > 0) {
+                console.error(`SMOKETEST: colour roles did not resolve: ${unresolved.join(", ")}`)
+                Qt.quit()
+                return
+            }
+            console.log(`SMOKETEST: ${Object.keys(palette).length - 1} colour roles resolved`)
             console.log("SMOKETEST: all components instantiated"
-                        + ` | colors=${Theme.AppTheme.colors.text}`
+                        + ` | colors=${Theme.Colors.on_surface}`
                         + ` | typography=${Theme.AppTheme.typography.textFontFamily}`
                         + ` | shape=${Theme.AppTheme.shape.radius16}`
                         + ` | spacing=${Theme.AppTheme.spacing.space6}`

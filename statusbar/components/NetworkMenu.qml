@@ -17,7 +17,6 @@ Item {
     readonly property string hostname: NetworkMenuLogic.hostnameOrFallback(hostnameFile.loaded ? hostnameFile.text() :
                                                                                                  "")
     readonly property string userInitial: NetworkMenuLogic.userInitial(username)
-    required property var colors
     required property var services
     required property var barWindow
 
@@ -161,7 +160,7 @@ Item {
 
         visible: root.menuOpen
         screen: root.barWindow.screen
-        color: root.colors.transparent
+        color: "transparent"
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "qs-statusbar-network-menu"
@@ -199,8 +198,8 @@ Item {
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8,
                                                             root.menuAnchorY))
             radius: root.theme.shape.radius16
-            color: root.colors.background
-            border.color: root.colors.border
+            color: Colors.shadow
+            border.color: Colors.outline
             border.width: root.theme.shape.borderThin
 
             MouseArea {
@@ -224,7 +223,7 @@ Item {
                         width: parent.width
                         height: root.theme.sizing.statusBarNetworkUserCardHeight
                         radius: root.theme.shape.radius12
-                        color: root.colors.surface
+                        color: Colors.surface
                         border.width: 0
 
                         Row {
@@ -237,13 +236,13 @@ Item {
                                 height: root.theme.sizing.statusBarNetworkAvatarSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 radius: width / 2
-                                color: root.colors.primary
+                                color: Colors.primary
 
                                 BarText {
                                     anchors.centerIn: parent
                                     text: root.userInitial
                                     visible: avatarImage.status !== Image.Ready
-                                    color: root.colors.background
+                                    color: Colors.shadow
                                     font.family: root.theme.typography.textFontFamily
                                     font.pixelSize: root.theme.typography.actionIconFontSize
                                     font.styleName: root.theme.typography.styleSemibold
@@ -252,7 +251,7 @@ Item {
                                 ClippingRectangle {
                                     anchors.fill: parent
                                     radius: width / 2
-                                    color: root.colors.transparent
+                                    color: "transparent"
 
                                     Image {
                                         id: avatarImage
@@ -270,8 +269,8 @@ Item {
                                 Rectangle {
                                     anchors.fill: parent
                                     radius: width / 2
-                                    color: root.colors.transparent
-                                    border.color: root.colors.primary
+                                    color: "transparent"
+                                    border.color: Colors.primary
                                     border.width: root.theme.shape.borderMedium
                                 }
                             }
@@ -284,7 +283,7 @@ Item {
                                 BarText {
                                     width: parent.width
                                     text: root.username
-                                    color: root.colors.text
+                                    color: Colors.on_surface
                                     font.family: root.theme.typography.textFontFamily
                                     font.pixelSize: root.theme.typography.sizeLg
                                     font.styleName: root.theme.typography.styleSemibold
@@ -299,7 +298,7 @@ Item {
                                         const minutes = totalMinutes % 60
                                         return `up ${days} days, ${hours} hours, ${minutes} minutes`
                                     }
-                                    color: root.colors.textMuted
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeSm
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -320,7 +319,7 @@ Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
                                 radius: root.theme.shape.radius12
-                                color: root.colors.surface
+                                color: Colors.surface
                                 border.width: 0
 
                                 Row {
@@ -333,7 +332,7 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
                                         text: root.outputIcon
-                                        color: volumeSlider.enabled ? root.colors.text : root.colors.textMuted
+                                        color: volumeSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                                         font.family: root.theme.typography.iconFontFamily
                                         font.pixelSize: root.theme.typography.sizeXl
                                         font.styleName: root.theme.typography.styleRegular
@@ -349,10 +348,10 @@ Item {
                                         trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                         value: root.outputQuickVolume?.authoritativePercent ?? 0
                                         available: root.outputAvailable
-                                        trackColor: root.colors.surface
-                                        fillColor: root.colors.primary
-                                        handleColor: root.colors.text
-                                        handleBorderColor: root.colors.primary
+                                        trackColor: Colors.surface
+                                        fillColor: Colors.primary
+                                        handleColor: Colors.on_surface
+                                        handleBorderColor: Colors.primary
                                         unavailableText: root.services.audio.quickVolume?.errorText
                                                          || "Volume unavailable"
                                         onLiveValueRequested: value => {
@@ -368,7 +367,7 @@ Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
                                 radius: root.theme.shape.radius12
-                                color: root.colors.surface
+                                color: Colors.surface
                                 border.width: 0
 
                                 Row {
@@ -381,7 +380,7 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
                                         text: root.icons.brightnessControl
-                                        color: brightnessSlider.enabled ? root.colors.text : root.colors.textMuted
+                                        color: brightnessSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                                         font.family: root.theme.typography.iconFontFamily
                                         font.pixelSize: root.theme.typography.sizeXl
                                         font.styleName: root.theme.typography.styleRegular
@@ -397,10 +396,10 @@ Item {
                                         trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                         value: root.services.brightness.brightnessLevel
                                         available: root.services.brightness.brightnessAvailable
-                                        trackColor: root.colors.surface
-                                        fillColor: root.colors.primary
-                                        handleColor: root.colors.text
-                                        handleBorderColor: root.colors.primary
+                                        trackColor: Colors.surface
+                                        fillColor: Colors.primary
+                                        handleColor: Colors.on_surface
+                                        handleBorderColor: Colors.primary
                                         unavailableText: "Brightness unavailable"
                                         onLiveValueRequested: value => root.services.brightness.setBrightness(value)
                                     }
@@ -421,7 +420,6 @@ Item {
                             NetworkControlCard {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
-                                colors: root.colors
                                 theme: root.theme
                                 icon: root.services.network.lanUp ? root.icons.ethernet :
                                                                     root.icons.ethernetDisconnected
@@ -442,7 +440,6 @@ Item {
                             NetworkControlCard {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
-                                colors: root.colors
                                 theme: root.theme
                                 icon: root.services.network.wifiUp ? root.icons.wifiConnected : (Networking.wifiEnabled
                                                                                                  ? root.icons.wifiEnabled :
@@ -474,7 +471,6 @@ Item {
                             NetworkControlCard {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
-                                colors: root.colors
                                 theme: root.theme
                                 icon: root.outputIcon
                                 title: root.outputSinkLabel
@@ -494,7 +490,6 @@ Item {
                             NetworkControlCard {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
-                                colors: root.colors
                                 theme: root.theme
                                 icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
                                                                         root.icons.microphone
@@ -521,7 +516,6 @@ Item {
                         id: bluetoothCard
                         width: (parent.width - root.theme.spacing.space8) / 2
                         height: root.theme.sizing.statusBarNetworkQuickControlHeight
-                        colors: root.colors
                         theme: root.theme
                         icon: !root.services.bluetooth.bluetoothAvailable ? root.icons.bluetoothOff : (
                                                                                 root.services.bluetooth.bluetoothConnectedCount
@@ -583,7 +577,7 @@ Item {
                             visible: root.expandedNetworkSection === "output"
                             width: parent.width
                             height: outputColumn.implicitHeight + root.theme.spacing.space24
-                            color: root.colors.transparent
+                            color: "transparent"
                             border.width: 0
 
                             Column {
@@ -597,7 +591,6 @@ Item {
                                     id: audioMixerSection
                                     width: parent.width
                                     audio: root.services.audio
-                                    colors: root.colors
                                     theme: root.theme
                                     icons: root.icons
                                     outputQuickVolume: root.outputQuickVolume
@@ -616,7 +609,7 @@ Item {
                             visible: root.expandedNetworkSection === "microphone"
                             width: parent.width
                             height: microphoneColumn.implicitHeight + root.theme.spacing.space24
-                            color: root.colors.transparent
+                            color: "transparent"
                             border.width: 0
 
                             Column {
@@ -630,7 +623,7 @@ Item {
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
                                     text: "Input volume"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -639,7 +632,7 @@ Item {
                                     width: parent.width
                                     height: root.theme.sizing.statusBarNetworkQuickControlHeight
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.transparent
+                                    color: "transparent"
                                     border.width: 0
 
                                     Row {
@@ -653,7 +646,7 @@ Item {
                                             horizontalAlignment: Text.AlignHCenter
                                             text: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
                                                                                     root.icons.microphone
-                                            color: microphoneSlider.enabled ? root.colors.text : root.colors.textMuted
+                                            color: microphoneSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                                             font.family: root.theme.typography.iconFontFamily
                                             font.pixelSize: root.theme.typography.sizeXl
                                             font.styleName: root.theme.typography.styleRegular
@@ -670,10 +663,10 @@ Item {
                                             trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                                             value: Math.max(0, root.services.audio.sourceVolume)
                                             available: root.services.audio.microphoneAvailable
-                                            trackColor: root.colors.surface
-                                            fillColor: root.colors.primary
-                                            handleColor: root.colors.text
-                                            handleBorderColor: root.colors.primary
+                                            trackColor: Colors.surface
+                                            fillColor: Colors.primary
+                                            handleColor: Colors.on_surface
+                                            handleBorderColor: Colors.primary
                                             unavailableText: "Microphone unavailable"
                                             onLiveValueRequested: value => root.services.audio.setSourceVolume(value)
                                         }
@@ -684,7 +677,7 @@ Item {
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
                                     text: "Input devices"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -705,7 +698,6 @@ Item {
                                             icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
                                                                                     root.icons.microphone
                                             active: modelData === root.services.audio.source
-                                            colors: root.colors
                                             theme: root.theme
                                             onSelectRequested: source => root.services.audio.selectAudioSource(source)
                                         }
@@ -714,7 +706,6 @@ Item {
                                     ControlEmptyState {
                                         visible: (root.services.audio.audioSources?.length ?? 0) === 0
                                         width: parent.width
-                                        colors: root.colors
                                         theme: root.theme
                                         title: root.services.audio.microphoneAvailable
                                                ? "No additional microphone inputs" : "Microphone unavailable"
@@ -731,7 +722,7 @@ Item {
                             visible: root.expandedNetworkSection === "ethernet"
                             width: parent.width
                             height: lanColumn.implicitHeight + root.theme.spacing.space24
-                            color: root.colors.transparent
+                            color: "transparent"
                             border.width: 0
 
                             Column {
@@ -744,7 +735,7 @@ Item {
 
                                 BarText {
                                     text: "Network info"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -753,7 +744,7 @@ Item {
                                     width: parent.width
                                     height: networkInfoColumn.implicitHeight + root.theme.spacing.space16
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.surface
+                                    color: Colors.surface
                                     border.width: 0
 
                                     Column {
@@ -767,7 +758,7 @@ Item {
                                         BarText {
                                             width: parent.width
                                             text: root.services.network.lanDevice?.name || "No wired adapter"
-                                            color: root.colors.text
+                                            color: Colors.on_surface
                                             font.pixelSize: root.theme.typography.sizeMd
                                             font.styleName: root.theme.typography.styleRegular
                                             elide: Text.ElideRight
@@ -780,8 +771,8 @@ Item {
                                                                                                  ? "Connected" :
                                                                                                    "Cable connected") :
                                                                                              "Cable disconnected"
-                                            color: root.services.network.lanUp ? root.colors.primary :
-                                                                                 root.colors.textMuted
+                                            color: root.services.network.lanUp ? Colors.primary :
+                                                                                 Colors.on_surface_variant
 
                                             font.pixelSize: root.theme.typography.sizeSm
                                             font.styleName: root.theme.typography.styleRegular
@@ -790,47 +781,40 @@ Item {
                                         NetworkInfoRow {
                                             label: "Profile"
                                             value: root.services.network.ethernetInfo.connectionName || ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "IPv4"
                                             value: root.services.network.ethernetInfo.ipv4Address || ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "Gateway"
                                             value: root.services.network.ethernetInfo.ipv4Gateway
                                                    || root.services.network.ethernetInfo.ipv6Gateway || ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "DNS"
                                             value: [...(root.services.network.ethernetInfo.ipv4Dns || []), ...(
                                                     root.services.network.ethernetInfo.ipv6Dns || [])].join(", ")
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "IPv6"
                                             value: root.services.network.ethernetInfo.ipv6Address || ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "MAC"
                                             value: root.services.network.ethernetInfo.macAddress
                                                    || root.services.network.lanDevice?.address || ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "Link speed"
                                             value: root.services.network.lanDevice?.linkSpeed > 0
                                                    ? [root.services.network.lanDevice.linkSpeed, " Mb/s"].join("") : ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                     }
@@ -841,7 +825,7 @@ Item {
                                              || root.services.network.ethernetProfileError.length > 0
                                     width: parent.width
                                     text: root.services.network.ethernetProfileError || root.connectionError
-                                    color: root.colors.danger
+                                    color: Colors.error
                                     font.pixelSize: root.theme.typography.sizeSm
                                     font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.Wrap
@@ -851,13 +835,13 @@ Item {
                                     visible: (root.services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
                                     width: parent.width
                                     height: root.theme.shape.borderThin
-                                    color: root.colors.border
+                                    color: Colors.outline
                                 }
 
                                 BarText {
                                     visible: (root.services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
                                     text: "Connection profiles"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -872,7 +856,6 @@ Item {
                                         active: modelData.uuid === root.services.network.ethernetInfo.activeUuid
                                         busy: root.services.network.ethernetProfileBusy
                                         pending: modelData.uuid === root.services.network.ethernetProfilePendingUuid
-                                        colors: root.colors
                                         theme: root.theme
                                         onToggleRequested: profile => root.services.network.setEthernetProfileEnabled(
                                                                           profile)
@@ -886,7 +869,7 @@ Item {
                             visible: root.expandedNetworkSection === "bluetooth"
                             width: parent.width
                             height: bluetoothDetailsColumn.implicitHeight + root.theme.spacing.space24
-                            color: root.colors.transparent
+                            color: "transparent"
                             border.width: 0
 
                             Column {
@@ -924,7 +907,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.top: parent.top
                                         text: "Bluetooth"
-                                        color: root.colors.textSubtle
+                                        color: Colors.on_surface_variant
                                         font.pixelSize: root.theme.typography.sizeMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
@@ -938,7 +921,7 @@ Item {
                                         anchors.top: parent.top
                                         radius: height / 2
                                         color: scanInput.containsMouse || scanInput.activeFocus
-                                               ? root.colors.surfaceHover : root.colors.transparent
+                                               ? Colors.surface_variant : "transparent"
 
                                         Row {
                                             id: scanContent
@@ -947,7 +930,7 @@ Item {
 
                                             Text {
                                                 text: root.icons.bluetoothOn
-                                                color: root.colors.primary
+                                                color: Colors.primary
                                                 font.family: root.theme.typography.iconFontFamily
                                                 font.pixelSize: root.theme.typography.sizeMd
                                             }
@@ -955,7 +938,7 @@ Item {
                                             Text {
                                                 text: root.services.bluetooth.bluetoothDiscovering ? "Scanning…" :
                                                                                                      "Scan"
-                                                color: root.colors.primary
+                                                color: Colors.primary
                                                 font.family: root.theme.typography.textFontFamily
                                                 font.pixelSize: root.theme.typography.sizeSm
                                                 font.styleName: root.theme.typography.styleRegular
@@ -985,7 +968,7 @@ Item {
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
                                     text: root.services.bluetooth.bluetoothError
-                                    color: root.colors.danger
+                                    color: Colors.error
                                     font.pixelSize: root.theme.typography.sizeSm
                                     font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.Wrap
@@ -1001,7 +984,7 @@ Item {
                                     BarText {
                                         width: parent.width
                                         text: "Connected devices"
-                                        color: root.colors.textSubtle
+                                        color: Colors.on_surface_variant
                                         font.pixelSize: root.theme.typography.sizeMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
@@ -1013,7 +996,6 @@ Item {
 
                                             width: bluetoothConnectedSection.width
                                             device: modelData
-                                            colors: root.colors
                                             theme: root.theme
                                             powered: root.services.bluetooth.bluetoothPowered
                                             primaryActionVisible: root.services.bluetooth.bluetoothPowered
@@ -1038,7 +1020,7 @@ Item {
                                     BarText {
                                         width: parent.width
                                         text: "Known devices"
-                                        color: root.colors.textSubtle
+                                        color: Colors.on_surface_variant
                                         font.pixelSize: root.theme.typography.sizeMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
@@ -1050,7 +1032,6 @@ Item {
 
                                             width: bluetoothKnownSection.width
                                             device: modelData
-                                            colors: root.colors
                                             theme: root.theme
                                             powered: root.services.bluetooth.bluetoothPowered
                                             primaryActionVisible: root.services.bluetooth.bluetoothPowered
@@ -1076,7 +1057,7 @@ Item {
                                     BarText {
                                         width: parent.width
                                         text: "Available devices"
-                                        color: root.colors.textSubtle
+                                        color: Colors.on_surface_variant
                                         font.pixelSize: root.theme.typography.sizeMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
@@ -1088,7 +1069,6 @@ Item {
 
                                             width: bluetoothAvailableSection.width
                                             device: modelData
-                                            colors: root.colors
                                             theme: root.theme
                                             powered: root.services.bluetooth.bluetoothPowered
                                             primaryActionVisible: root.services.bluetooth.bluetoothPowered
@@ -1108,7 +1088,7 @@ Item {
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
                                     text: "Scanning for Bluetooth devices…"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeSm
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -1120,7 +1100,7 @@ Item {
                             visible: root.expandedNetworkSection === "wifi"
                             width: parent.width
                             height: wifiColumn.implicitHeight + root.theme.spacing.space24
-                            color: root.colors.transparent
+                            color: "transparent"
                             border.width: 0
 
                             Column {
@@ -1133,7 +1113,7 @@ Item {
 
                                 BarText {
                                     text: "Network info"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -1142,7 +1122,7 @@ Item {
                                     width: parent.width
                                     height: wifiNetworkInfoColumn.implicitHeight + root.theme.spacing.space16
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.surface
+                                    color: Colors.surface
                                     border.width: 0
 
                                     Column {
@@ -1156,7 +1136,7 @@ Item {
                                         BarText {
                                             width: parent.width
                                             text: root.services.network.wifiInterface || "No Wi-Fi adapter"
-                                            color: root.colors.text
+                                            color: Colors.on_surface
                                             font.pixelSize: root.theme.typography.sizeMd
                                             font.styleName: root.theme.typography.styleRegular
                                             elide: Text.ElideRight
@@ -1172,8 +1152,8 @@ Item {
                                                                                                     root.services.network.wifiUp
                                                                                                     ? "Connected" :
                                                                                                       "Not connected")))
-                                            color: root.services.network.wifiUp ? root.colors.primary :
-                                                                                  root.colors.textMuted
+                                            color: root.services.network.wifiUp ? Colors.primary :
+                                                                                  Colors.on_surface_variant
 
                                             font.pixelSize: root.theme.typography.sizeSm
                                             font.styleName: root.theme.typography.styleRegular
@@ -1185,7 +1165,7 @@ Item {
                                             width: parent.width
                                             text: root.services.network.wifiInfoAvailability === "unavailable"
                                                   ? "Network details unavailable" : "Loading network details…"
-                                            color: root.colors.textSubtle
+                                            color: Colors.on_surface_variant
                                             font.pixelSize: root.theme.typography.sizeSm
                                             font.styleName: root.theme.typography.styleRegular
                                             wrapMode: Text.WordWrap
@@ -1197,7 +1177,6 @@ Item {
                                                                                     root.services.network.wifiInfo.connectionName
                                                                                     || root.services.network.connectedWifiNetwork
                                                                                     ?.name || "")
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
@@ -1205,7 +1184,6 @@ Item {
                                             value: root.wifiActivationPending ? "" : NetworkMenuLogic.wifiSecurityLabel(
                                                                                     root.services.network.connectedWifiNetwork,
                                                                                     WifiSecurityType.None)
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
@@ -1213,7 +1191,6 @@ Item {
                                             value: root.wifiActivationPending ? "" :
                                                                                 NetworkMenuLogic.wifiSignalQualityText(
                                                                                     root.services.network.connectedWifiNetwork)
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
@@ -1221,7 +1198,6 @@ Item {
                                             value: root.wifiActivationPending ? "" : (
                                                                                     root.services.network.wifiInfo.ipv4Address
                                                                                     || "")
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
@@ -1230,7 +1206,6 @@ Item {
                                                                                     root.services.network.wifiInfo.ipv4Gateway
                                                                                     || root.services.network.wifiInfo.ipv6Gateway
                                                                                     || "")
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
@@ -1238,14 +1213,12 @@ Item {
                                             value: root.wifiActivationPending ? "" : (
                                                                                     root.services.network.wifiInfo.ipv6Address
                                                                                     || "")
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                         NetworkInfoRow {
                                             label: "MAC"
                                             value: root.services.network.wifiInfo.macAddress
                                                    || root.services.network.wifiDevice?.address || ""
-                                            colors: root.colors
                                             theme: root.theme
                                         }
                                     }
@@ -1255,13 +1228,13 @@ Item {
                                     visible: root.connectionError.length > 0
                                     width: parent.width
                                     text: root.connectionError
-                                    color: root.colors.danger
+                                    color: Colors.error
                                     wrapMode: Text.Wrap
                                 }
 
                                 BarText {
                                     text: "Available networks"
-                                    color: root.colors.textSubtle
+                                    color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
@@ -1274,7 +1247,6 @@ Item {
                                         required property var modelData
                                         width: wifiColumn.width
                                         network: modelData
-                                        colors: root.colors
                                         theme: root.theme
                                         openSecurityValue: WifiSecurityType.None
 
@@ -1300,7 +1272,7 @@ Item {
                                     width: parent.width
                                     height: root.theme.sizing.statusBarControlEmptyStateHeight
                                     radius: root.theme.shape.radius12
-                                    color: root.colors.surface
+                                    color: Colors.surface
                                     border.width: 0
 
                                     Column {
@@ -1318,7 +1290,7 @@ Item {
                                                                                  !Networking.wifiEnabled
                                                                                  ? "Wi-Fi is disabled" :
                                                                                    "No networks found"))
-                                            color: root.colors.text
+                                            color: Colors.on_surface
                                             font.pixelSize: root.theme.typography.sizeMd
                                             font.styleName: root.theme.typography.styleRegular
                                             elide: Text.ElideRight
@@ -1332,7 +1304,7 @@ Item {
                                                                                                 !Networking.wifiEnabled
                                                                                                 ? "Enable Wi-Fi to scan for networks" :
                                                                                                   "Scanning continues automatically"))
-                                            color: root.colors.textSubtle
+                                            color: Colors.on_surface_variant
                                             font.pixelSize: root.theme.typography.sizeSm
                                             font.styleName: root.theme.typography.styleRegular
                                             elide: Text.ElideRight
@@ -1349,7 +1321,6 @@ Item {
 
     WifiPasswordModal {
         screen: root.barWindow.screen
-        colors: root.colors
         theme: root.theme
         network: root.pendingNetwork
         errorText: root.connectionError

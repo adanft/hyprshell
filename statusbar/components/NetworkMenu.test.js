@@ -174,7 +174,7 @@ assert.match(
 	/font\.family: root\.theme\.typography\.textFontFamily/,
 );
 assert.match(detailContentBlock, /radius: height \/ 2/);
-assert.match(detailContentBlock, /root\.colors\.transparent/);
+assert.match(detailContentBlock, /color: "transparent"/);
 assert.match(bluetoothRowQml, /signal primaryActionRequested/);
 assert.match(bluetoothRowQml, /property bool primaryActionVisible: true/);
 assert.match(bluetoothRowQml, /visible: root\.primaryActionVisible/);
@@ -841,7 +841,7 @@ assert.match(
 	playbackRowQml,
 	/id: playbackStreamSliderZone[\s\S]*Row \{[\s\S]*QuickControlSlider \{/,
 );
-assert.match(playbackRowQml, /color: root\.muted[\s\S]*root\.colors\.primary/);
+assert.match(playbackRowQml, /color: root\.muted[\s\S]*Colors\.primary/);
 assert.match(
 	playbackRowQml,
 	/Accessible\.name:\s*\[\s*root\.muted\s*\?\s*"Unmute"\s*:\s*"Mute"\s*,\s*" "\s*,\s*NetworkMenuLogic\.playbackStreamLabel\s*\(\s*root\.stream\s*\)\s*\]\.join\(\s*""\s*\)/,

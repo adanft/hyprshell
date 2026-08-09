@@ -1,5 +1,6 @@
 import "../shared/components" as Shared
 import "../theme"
+import "../theme/runtime"
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -41,7 +42,7 @@ Scope {
         const query = searchText.trim().toLowerCase()
         return themes.filter(themeData => {
             const matchesQuery = query.length === 0 || themeData.displayName.toLowerCase().includes(query)
-            const variant = isDarkBackground(themeData.background) ? "dark" : "light"
+            const variant = isDarkBackground(themeData.surface) ? "dark" : "light"
             const matchesVariant = activeVariants.length === 0 || activeVariants.includes(variant)
             return matchesQuery && matchesVariant
         })
@@ -94,7 +95,7 @@ Scope {
         const selectedTheme = filteredThemes[selectedIndex]
         if (!selectedTheme)
             return
-        theme.colors.setTheme(selectedTheme.name)
+        StockThemes.setTheme(selectedTheme.name)
         close()
     }
 
@@ -104,7 +105,7 @@ Scope {
     }
 
     function selectTheme(name) {
-        theme.colors.setTheme(name)
+        StockThemes.setTheme(name)
     }
 
     function handleNavigationKey(event) {
@@ -178,7 +179,7 @@ Scope {
                     width: parent.width - variantFiltersRow.width - selector.theme.spacing.space12
                     height: parent.height
                     radius: selector.theme.shape.appLauncherSearchRadius
-                    color: selector.theme.colors.surface
+                    color: Colors.surface
 
                     Shared.AppText {
                         anchors.left: parent.left
@@ -186,7 +187,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         width: selector.theme.sizing.appLauncherSearchIconSlotWidth
                         text: selector.icons.search
-                        color: selector.theme.colors.textSubtle
+                        color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
                         font.pixelSize: selector.theme.typography.sizeLg
                         font.styleName: selector.theme.typography.styleMedium
@@ -200,7 +201,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: searchInput.text.length === 0
                         text: "Search..."
-                        color: selector.theme.colors.textSubtle
+                        color: Colors.on_surface_variant
                         font.pixelSize: selector.theme.typography.sizeLg
                         font.styleName: selector.theme.typography.styleMedium
                     }
@@ -213,9 +214,9 @@ Scope {
                                             + selector.theme.sizing.appLauncherSearchIconSlotWidth
                         anchors.rightMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
                         clip: true
-                        color: selector.theme.colors.text
-                        selectionColor: selector.theme.colors.selection
-                        selectedTextColor: selector.theme.colors.selectionText
+                        color: Colors.on_surface
+                        selectionColor: Colors.primary
+                        selectedTextColor: Colors.on_primary
                         font.family: selector.theme.typography.textFontFamily
                         font.pixelSize: selector.theme.typography.sizeLg
                         font.styleName: selector.theme.typography.styleMedium
@@ -268,7 +269,7 @@ Scope {
                     width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
                     text: selector.searchText.length > 0 || selector.activeVariants.length > 0 ?
                               "No themes match your filters" : "No themes found"
-                    color: selector.theme.colors.textMuted
+                    color: Colors.on_surface_variant
                     font.pixelSize: selector.theme.typography.sizeLg
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
@@ -287,7 +288,7 @@ Scope {
                         height: themeGrid.cardHeight
                         themeData: modelData
                         selected: selector.selectedIndex === index
-                        isActive: modelData.name === selector.theme.colors.currentTheme
+                        isActive: modelData.name === StockThemes.currentTheme
                         onActivated: selector.activateIndex(index)
                     }
                 }
@@ -304,7 +305,7 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         mask: null
-        color: selector.theme.colors.transparent
+        color: "transparent"
         surfaceFormat.opaque: false
 
         WlrLayershell.layer: WlrLayer.Overlay
@@ -319,7 +320,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: selector.theme.colors.scrim
+            color: Qt.alpha(Colors.shadow, 0.25)
             focus: true
 
             Keys.onEscapePressed: selector.close()
@@ -344,7 +345,7 @@ Scope {
                 height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin,
                                  selector.theme.sizing.themeSelectorMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
-                color: selector.theme.colors.background
+                color: Colors.shadow
 
                 MouseArea {
                     anchors.fill: parent

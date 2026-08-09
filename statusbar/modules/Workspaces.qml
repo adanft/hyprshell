@@ -14,7 +14,6 @@ Item {
                                                                                  monitor.name.length > 0
                                                                                  && monitor.name
                                                                                  === focusedMonitor.name))
-    required property var colors
     required property var screen
     required property var services
 
@@ -61,11 +60,12 @@ Item {
 
     function workspaceColor(urgent, active, monitorFocused, hovered, empty) {
         if (urgent)
-            return colors.danger
-        if (active)
-            return monitorFocused ? colors.primary : colors.info
+            return Colors.error
         if (hovered)
-            return colors.secondary
-        return empty ? colors.textInactive : colors.textSubtle
+            return Colors.hover
+        if (active)
+            return monitorFocused ? Colors.primary : Colors.tertiary
+
+        return empty ? Colors.outline : Colors.on_surface_variant
     }
 }

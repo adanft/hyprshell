@@ -9,7 +9,6 @@ Item {
     readonly property var theme: AppTheme
     readonly property var icons: Icons
 
-    required property var colors
     required property var services
     required property var barWindow
 
@@ -26,13 +25,11 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            colors: root.colors
             padding: root.theme.spacing.space16
 
             Workspaces {
                 id: workspaces
 
-                colors: root.colors
                 services: root.services
                 screen: root.barWindow.screen
             }
@@ -43,17 +40,14 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            colors: root.colors
             padding: root.theme.spacing.space12 + root.theme.spacing.space6
             contentSpacing: root.theme.spacing.space6 * 2
 
             Processor {
-                colors: root.colors
                 services: root.services
             }
 
             Ram {
-                colors: root.colors
                 services: root.services
             }
         }
@@ -66,13 +60,11 @@ Item {
             width: tray.implicitWidth
             height: root.theme.sizing.statusBarHeight
             visible: tray.hasItems
-            colors: root.colors
-            backgroundColor: root.colors.transparent
+            backgroundColor: "transparent"
 
             Tray {
                 id: tray
 
-                colors: root.colors
                 barWindow: root.barWindow
             }
         }
@@ -92,8 +84,7 @@ Item {
                 id: networkMenuButton
                 width: root.theme.sizing.statusBarIconSize
                 height: root.theme.sizing.statusBarHeight
-                colors: root.colors
-                backgroundColor: root.colors.transparent
+                backgroundColor: "transparent"
 
                 Item {
                     width: root.theme.sizing.statusBarIconSize
@@ -102,7 +93,7 @@ Item {
                     BarText {
                         anchors.centerIn: parent
                         text: root.icons.controlCenter
-                        color: root.colors.info
+                        color: Colors.tertiary
                         font.family: root.theme.typography.iconFontFamily
                         font.pixelSize: root.theme.typography.statusBarIconFontSize
                     }
@@ -125,13 +116,11 @@ Item {
             height: root.theme.sizing.statusBarHeight
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            colors: root.colors
             padding: root.theme.spacing.space12
 
             Time {
                 id: timeWidget
 
-                colors: root.colors
                 services: root.services
             }
         }
@@ -146,11 +135,9 @@ Item {
             Background {
                 width: root.theme.sizing.statusBarIconSize
                 height: root.theme.sizing.statusBarHeight
-                colors: root.colors
-                backgroundColor: root.colors.transparent
+                backgroundColor: "transparent"
 
                 PowerProfile {
-                    colors: root.colors
                     services: root.services
                 }
             }
@@ -167,7 +154,6 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            colors: root.colors
             padding: root.theme.spacing.space12 + root.theme.spacing.space6
 
             Row {
@@ -176,42 +162,34 @@ Item {
                 spacing: root.theme.spacing.space6 * 2
 
                 NetworkThroughput {
-                    colors: root.colors
                     services: root.services
                 }
 
                 NetworkWifi {
-                    colors: root.colors
                     services: root.services
                 }
 
                 Bluetooth {
-                    colors: root.colors
                     services: root.services
                 }
 
                 Sound {
-                    colors: root.colors
                     services: root.services
                 }
 
                 Backlight {
-                    colors: root.colors
                     services: root.services
                 }
 
                 Battery {
-                    colors: root.colors
                     services: root.services
                 }
 
                 Microphone {
-                    colors: root.colors
                     services: root.services
                 }
 
                 Notifications {
-                    colors: root.colors
                     services: root.services
                     onOpenRequested: root.openNotificationCenterRequested()
                 }
@@ -223,13 +201,11 @@ Item {
         Background {
             width: implicitWidth
             height: root.theme.sizing.statusBarHeight
-            colors: root.colors
             padding: root.theme.spacing.space12
 
             Date {
                 id: dateModule
 
-                colors: root.colors
                 services: root.services
             }
         }

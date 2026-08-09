@@ -1,11 +1,11 @@
 import QtQuick
 import Quickshell
+import "../../theme"
 
 Column {
     id: root
 
     required property var audio
-    required property var colors
     required property var theme
     required property var icons
     required property var outputQuickVolume
@@ -30,7 +30,7 @@ Column {
         x: root.theme.spacing.space12
         width: parent.width - root.theme.spacing.space24
         text: "Output volume"
-        color: root.colors.textSubtle
+        color: Colors.on_surface_variant
         font.pixelSize: root.theme.typography.sizeMd
         font.styleName: root.theme.typography.styleRegular
     }
@@ -39,7 +39,7 @@ Column {
         width: parent.width
         height: root.theme.sizing.statusBarNetworkQuickControlHeight
         radius: root.theme.shape.radius12
-        color: root.colors.transparent
+        color: "transparent"
         border.width: 0
 
         Row {
@@ -52,7 +52,7 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
                 text: root.outputIcon
-                color: outputVolumeSlider.enabled ? root.colors.text : root.colors.textMuted
+                color: outputVolumeSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                 font.family: root.theme.typography.iconFontFamily
                 font.pixelSize: root.theme.typography.sizeXl
                 font.styleName: root.theme.typography.styleRegular
@@ -67,10 +67,10 @@ Column {
                 trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
                 value: root.outputQuickVolume?.authoritativePercent ?? 0
                 available: root.outputAvailable
-                trackColor: root.colors.surface
-                fillColor: root.colors.primary
-                handleColor: root.colors.text
-                handleBorderColor: root.colors.primary
+                trackColor: Colors.surface
+                fillColor: Colors.primary
+                handleColor: Colors.on_surface
+                handleBorderColor: Colors.primary
                 unavailableText: root.outputQuickVolume?.errorText || "Volume unavailable"
                 onLiveValueRequested: value => root.masterVolumeRequested(value)
             }
@@ -87,7 +87,7 @@ Column {
         BarText {
             width: parent.width
             text: "Output devices"
-            color: root.colors.textSubtle
+            color: Colors.on_surface_variant
             font.pixelSize: root.theme.typography.sizeMd
             font.styleName: root.theme.typography.styleRegular
         }
@@ -106,7 +106,6 @@ Column {
                     device: modelData
                     active: modelData === root.audio.sink
                     icon: root.icons.audioOutput
-                    colors: root.colors
                     theme: root.theme
                     onSelectRequested: device => root.audio.selectAudioSink(device)
                 }
@@ -115,7 +114,6 @@ Column {
             ControlEmptyState {
                 visible: (root.audio.audioOutputs?.length ?? 0) === 0
                 width: parent.width
-                colors: root.colors
                 theme: root.theme
                 title: "No audio outputs"
                 description: "Connect an output device to select it here"
@@ -139,7 +137,7 @@ Column {
         BarText {
             width: parent.width
             text: "Playback streams"
-            color: root.colors.textSubtle
+            color: Colors.on_surface_variant
             font.pixelSize: root.theme.typography.sizeMd
             font.styleName: root.theme.typography.styleRegular
         }
@@ -162,7 +160,6 @@ Column {
                     volumeLowIcon: root.icons.volumeLow
                     volumeMediumIcon: root.icons.volumeMedium
                     volumeHighIcon: root.icons.volumeHigh
-                    colors: root.colors
                     theme: root.theme
                     onMuteRequested: stream => root.audio.togglePlaybackStreamMute(stream)
                     onVolumeRequested: (stream, value) => root.audio.requestPlaybackStreamVolume(stream, value)
@@ -172,7 +169,6 @@ Column {
             ControlEmptyState {
                 visible: (root.audio.playbackStreams?.length ?? 0) === 0
                 width: parent.width
-                colors: root.colors
                 theme: root.theme
                 title: "No active playback streams"
                 description: "Applications playing audio appear here"

@@ -16,12 +16,12 @@ Rectangle {
     width: theme.sizing.wallpaperExtensionFilterWidth
     height: theme.sizing.appLauncherSearchHeight
     radius: theme.shape.wallpaperExtensionFilterRadius
-    color: hovered ? theme.colors.secondary : (selected ? theme.colors.primary : theme.colors.surface)
+    color: hovered ? Theme.Colors.hover : (selected ? Theme.Colors.primary : Theme.Colors.surface)
 
     Shared.AppText {
         anchors.centerIn: parent
         text: chip.icon
-        color: (chip.hovered || chip.selected) ? chip.theme.colors.primaryText : chip.theme.colors.text
+        color: chip.hovered ? Theme.Colors.on_hover : (chip.selected ? Theme.Colors.on_primary : Theme.Colors.on_surface)
         font.family: chip.theme.typography.iconFontFamily
         font.pixelSize: chip.theme.sizing.size24
     }

@@ -6,7 +6,6 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var services
     required property string hoverOwnerId
     property var popupData: null
@@ -76,7 +75,6 @@ Item {
 
         x: popup.enterOffset
         width: parent.width
-        colors: popup.colors
         notificationService: popup.services.notification
         notificationData: popup.popupData
         allowLiveImage: true

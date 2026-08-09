@@ -103,12 +103,12 @@ assert.match(
 );
 assert.match(
 	shell,
-	/Notifications\.NotificationCenter\s*{\s*colors: Theme\.Colors\s*services: serviceState\s*barWindow: notificationCenterLoader\.ownerWindow/,
+	/Notifications\.NotificationCenter\s*{\s*services: serviceState\s*barWindow: notificationCenterLoader\.ownerWindow/,
 );
 
 assert.match(
 	shell,
-	/function set\(name: string\): void\s*{\s*Theme\.Colors\.setTheme\(name\);?\s*}/,
+	/function set\(name: string\): void\s*{\s*ThemeRuntime\.StockThemes\.setTheme\(name\);?\s*}/,
 );
 
 for (const eagerWindow of [
@@ -127,7 +127,7 @@ for (const eagerWindow of [
 
 assert.match(
 	shell,
-	/Notifications\.NotificationPopupManager\s*{\s*colors: Theme\.Colors\s*services: serviceState\s*barWindow: barWindow/,
+	/Notifications\.NotificationPopupManager\s*{\s*services: serviceState\s*barWindow: barWindow/,
 	"notification popup manager must remain resident to preserve stack state",
 );
 assert.equal(shell.includes("id: notificationPopupLoader"), false);

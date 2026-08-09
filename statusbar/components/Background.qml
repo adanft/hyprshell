@@ -6,9 +6,8 @@ Rectangle {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     default property alias content: contentRow.data
-    property color backgroundColor: colors.background
+    property color backgroundColor: Colors.shadow
     property int padding: 0
     property int contentSpacing: 0
 

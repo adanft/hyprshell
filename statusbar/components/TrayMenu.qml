@@ -11,7 +11,6 @@ Item {
 
     readonly property var theme: AppTheme
 
-    required property var colors
     required property var barWindow
     property var currentTrayItem: null
     property bool menuOpen: false
@@ -118,7 +117,7 @@ Item {
 
         visible: root.menuOpen && root.currentTrayItem && root.currentTrayItem.hasMenu
         screen: root.barWindow.screen
-        color: root.colors.transparent
+        color: "transparent"
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "qs-statusbar-tray-menu"
@@ -149,8 +148,8 @@ Item {
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8,
                                                             root.menuAnchorY))
             radius: root.theme.shape.radius12
-            color: root.colors.background
-            border.color: root.colors.border
+            color: Colors.shadow
+            border.color: Colors.outline
             border.width: root.theme.shape.borderThin
 
             MouseArea {
@@ -170,7 +169,7 @@ Item {
                     width: parent.width
                     height: root.theme.sizing.statusBarTrayMenuItemHeight
                     radius: root.theme.shape.radius8
-                    color: backArea.containsMouse ? root.colors.surfaceHover : root.colors.transparent
+                    color: backArea.containsMouse ? Colors.hover : "transparent"
 
                     Row {
                         anchors.left: parent.left
@@ -181,7 +180,7 @@ Item {
                         BarText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.icons.trayBack
-                            color: root.colors.text
+                            color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.sizeLg
                         }
@@ -189,7 +188,7 @@ Item {
                         BarText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Back"
-                            color: root.colors.text
+                            color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.sizeLg
                             font.styleName: root.theme.typography.styleRegular
@@ -219,8 +218,8 @@ Item {
                         width: menuColumn.width
                         height: separator ? root.theme.shape.borderThin : root.theme.sizing.statusBarTrayMenuItemHeight
                         radius: separator ? 0 : root.theme.shape.radius8
-                        color: separator ? root.colors.border : entryMouseArea.containsMouse ? root.colors.surfaceHover :
-                                                                                               root.colors.transparent
+                        color: separator ? Colors.outline : entryMouseArea.containsMouse ? Colors.hover :
+                                                                                               "transparent"
 
                         MouseArea {
                             id: entryMouseArea
@@ -263,14 +262,14 @@ Item {
                                 radius: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType === 2 ? width / 2 :
                                                                                                               root.theme.shape.radius3
                                 border.width: root.theme.shape.borderThin
-                                border.color: root.colors.borderStrong
-                                color: root.colors.transparent
+                                border.color: Colors.outline
+                                color: "transparent"
 
                                 Text {
                                     anchors.centerIn: parent
                                     visible: menuEntryRoot.modelData && menuEntryRoot.modelData.checkState === 2
                                     text: root.icons.trayCheck
-                                    color: root.colors.info
+                                    color: entryMouseArea.containsMouse ? Colors.on_hover : Colors.tertiary
                                     font.pixelSize: root.theme.typography.sizeSm
                                 }
                             }
@@ -289,7 +288,8 @@ Item {
                                                 - root.theme.sizing.statusBarTrayMenuTextRightReserve)
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: menuEntryRoot.modelData ? (menuEntryRoot.modelData.text || "") : ""
-                                color: menuEntryRoot.enabledEntry ? root.colors.text : root.colors.textSubtle
+                                color: entryMouseArea.containsMouse ? Colors.on_hover : (menuEntryRoot.enabledEntry
+                                                                                             ? Colors.on_surface : Colors.on_surface_variant)
                                 font.family: root.theme.typography.textFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
                                 font.styleName: root.theme.typography.styleRegular
@@ -300,7 +300,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.hasChildren
                                 text: root.icons.traySubmenu
-                                color: root.colors.textMuted
+                                color: entryMouseArea.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                                 font.family: root.theme.typography.textFontFamily
                             }
                         }

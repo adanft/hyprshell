@@ -7,7 +7,7 @@ QtObject {
     readonly property string date: "󰨳"
     readonly property string window: "󰰤"
     readonly property string search: ""
-    readonly property string controlCenter: ""
+    readonly property string controlCenter: ""
     readonly property var themePreviewNavigation: ["", search, "", ""]
     readonly property string networkThroughput: ""
     readonly property string ethernetPort: "󰈀"

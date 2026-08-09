@@ -17,6 +17,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
 readonly SMOKE_TIMEOUT=30
 readonly SUCCESS_LINE='SMOKETEST: all components instantiated'
+readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
 # which is the normal case while a shell is running. Matched literally rather
@@ -106,6 +107,16 @@ fi
 
 if ! grep -qF "$SUCCESS_LINE" <<<"$smoke_output"; then
 	echo "-- FAILED: smoke test never reported success"
+	failed=1
+fi
+
+if ! grep -qF "$CAPTURE_LINE" <<<"$smoke_output"; then
+	echo "-- FAILED: capture host was not proven to reuse status bar windows"
+	failed=1
+fi
+
+if grep -qF 'NotificationImageCaptureWindow' <<<"$smoke_output"; then
+	echo "-- FAILED: dedicated notification capture window was instantiated"
 	failed=1
 fi
 

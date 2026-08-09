@@ -38,15 +38,10 @@ ShellRoot {
 
     readonly property int settleMs: 3000
     property bool captureCompleted: false
+    property bool captureStarted: false
 
     Services.Services {
         id: serviceState
-    }
-
-    Notifications.NotificationImageCaptureWindow {
-        id: captureWindow
-
-        services: serviceState
     }
 
     Applauncher.AppLauncher {}
@@ -121,10 +116,36 @@ ShellRoot {
             Qt.quit()
             return
         }
+        if (!host.captureWindow || host.captureWindow.objectName.indexOf("qs-statusbar:") !== 0) {
+            console.error("SMOKETEST: notification capture host is not owned by a status bar")
+            Qt.quit()
+            return
+        }
+        const hosts = serviceState.notification.notificationImageCaptureHosts
+        const hostWindows = hosts.map(candidate => candidate.captureWindow)
+        const uniqueHostWindows = hostWindows.filter((candidate, index) => hostWindows.indexOf(candidate) === index)
+        if (hosts.length !== Quickshell.screens.length
+                || uniqueHostWindows.length !== hosts.length
+                || hosts.some(candidate => !candidate.Window.window)) {
+            console.error("SMOKETEST: capture hosts do not map one-to-one to status bar windows")
+            Qt.quit()
+            return
+        }
+        console.log(`SMOKETEST: capture top-level delta=0 | type=PanelWindow | hosts=${hosts.length} | windows=${hostWindows.length}`)
+        smoketest.captureStarted = true
         smokeCaptureImageComponent.createObject(host)
     }
 
-    Component.onCompleted: Qt.callLater(() => smoketest.exerciseNotificationImageCapture(captureWindow.captureHost))
+    Timer {
+        interval: 50
+        running: !smoketest.captureStarted
+        repeat: true
+        onTriggered: {
+            const host = serviceState.notification.notificationImageCaptureHost
+            if (host)
+                smoketest.exerciseNotificationImageCapture(host)
+        }
+    }
 
     // Touch one value from each theme singleton so that a broken qmldir entry
     // surfaces as a failed lookup instead of passing unnoticed.

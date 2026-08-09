@@ -8,6 +8,7 @@ PanelWindow {
     id: window
 
     readonly property var theme: AppTheme
+    readonly property alias notificationImageCaptureHost: notificationImageCaptureHost
 
     required property var colors
     required property var services
@@ -19,11 +20,28 @@ PanelWindow {
     color: window.colors.transparent
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "qs-statusbar"
+    objectName: `qs-statusbar:${window.screen ? window.screen.name : ""}`
 
     anchors {
         top: true
         left: true
         right: true
+    }
+
+    Item {
+        id: notificationImageCaptureHost
+
+        readonly property string captureHostKey: window.screen ? window.screen.name : ""
+        readonly property var captureWindow: window
+
+        width: window.theme.sizing.notificationCardIconSaveSize
+        height: width
+        x: -width - 1
+        enabled: false
+        visible: true
+
+        Component.onCompleted: window.services.notification.registerNotificationImageCaptureHost(notificationImageCaptureHost)
+        Component.onDestruction: window.services.notification.unregisterNotificationImageCaptureHost(notificationImageCaptureHost)
     }
 
     BarContent {

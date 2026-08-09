@@ -59,6 +59,7 @@ Scope {
         Image {
             required property string entryId
             required property string targetPath
+            property bool captureFinished: false
 
             width: root.theme.sizing.notificationCardIconSaveSize
             height: width
@@ -66,6 +67,10 @@ Scope {
             cache: true
             sourceSize: Qt.size(0, 0)
             fillMode: Image.PreserveAspectFit
+            Component.onDestruction: {
+                if (!captureFinished && root.notificationImageLifecycleActive)
+                    root.handleNotificationImageSaveResult(entryId, null, targetPath, false, false)
+            }
             onStatusChanged: {
                 if (status === Image.Ready)
                     root.captureNotificationImage(entryId, this, targetPath, true)
@@ -325,7 +330,10 @@ Scope {
     function registerNotificationImageCaptureHost(host) {
         if (!host || root.notificationImageCaptureHosts.indexOf(host) !== -1)
             return
-        root.notificationImageCaptureHosts = root.notificationImageCaptureHosts.concat([host])
+        const hosts = root.notificationImageCaptureHosts.filter(candidate => candidate)
+        hosts.push(host)
+        hosts.sort((left, right) => String(left.captureHostKey || "").localeCompare(String(right.captureHostKey || "")))
+        root.notificationImageCaptureHosts = hosts
     }
 
     function unregisterNotificationImageCaptureHost(host) {
@@ -386,8 +394,10 @@ Scope {
         const current = root.notificationHistory.find(item => item && item.id === entryId)
         const outcome = NotificationImagePersistence.complete(root.notificationImagePersistence, entryId, path, saved,
                                                                Boolean(current), root.notificationImageLifecycleActive)
-        if (imageItem && ownsImageItem)
+        if (imageItem && ownsImageItem) {
+            imageItem.captureFinished = true
             imageItem.destroy()
+        }
         if (outcome.orphan)
             root.deleteOwnedNotificationImage(outcome.orphan, true)
         if (outcome.persisted) {

@@ -182,10 +182,11 @@ const popupSource = fs.readFileSync(
 	path.join(__dirname, "NotificationPopup.qml"),
 	"utf8",
 );
-const captureWindowSource = fs.readFileSync(
-	path.join(__dirname, "NotificationImageCaptureWindow.qml"),
+const barWindowSource = fs.readFileSync(
+	path.join(__dirname, "../statusbar/BarWindow.qml"),
 	"utf8",
 );
+const shellSource = fs.readFileSync(path.join(__dirname, "../shell.qml"), "utf8");
 assert.match(
 	serviceSource,
 	/onLoadFailed: error => \{\s*if \(error === 2\) \{\s*historyFileView\.writeAdapter\(\)\s*root\.sweepNotificationImageCache\(\)\s*\}\s*\}/,
@@ -214,10 +215,20 @@ assert.doesNotMatch(
 	"capture images must never be created under the non-visual service Scope",
 );
 assert.match(serviceSource, /captureParent\.Window\.window/);
-assert.match(captureWindowSource, /Window \{/);
-assert.match(captureWindowSource, /visible: true/);
-assert.match(captureWindowSource, /opacity: 0/);
-assert.match(captureWindowSource, /registerNotificationImageCaptureHost\(captureHost\)/);
+assert.match(barWindowSource, /PanelWindow \{/);
+assert.match(barWindowSource, /id: notificationImageCaptureHost/);
+assert.match(barWindowSource, /readonly property var captureWindow: window/);
+assert.match(barWindowSource, /x: -width - 1/);
+assert.match(barWindowSource, /registerNotificationImageCaptureHost\(notificationImageCaptureHost\)/);
+assert.match(barWindowSource, /unregisterNotificationImageCaptureHost\(notificationImageCaptureHost\)/);
+assert.doesNotMatch(shellSource, /NotificationImageCaptureWindow/);
+assert.doesNotMatch(
+	serviceSource,
+	/(?:Window|PanelWindow|PopupWindow)\s*\{/,
+	"the notification service must not create a top-level capture surface",
+);
+assert.match(serviceSource, /hosts\.sort\([\s\S]*captureHostKey/);
+assert.match(serviceSource, /Component\.onDestruction:[\s\S]*handleNotificationImageSaveResult/);
 assert.match(
 	serviceSource,
 	/current\.image = `file:\/\/\$\{path\}`[\s\S]*root\.scheduleNotificationHistorySave\(\)/,

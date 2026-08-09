@@ -52,7 +52,7 @@ PanelWindow {
         services: window.services
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()
-        onOpenNetworkMenuRequested: anchorItem => {
+        onOpenNetworkMenuRequested: (anchorItem, section) => {
             networkMenuLoader.requestedOpen = !networkMenuLoader.requestedOpen
             if (!networkMenuLoader.requestedOpen) {
                 if (networkMenuLoader.item && networkMenuLoader.item.menuOpen)
@@ -65,7 +65,7 @@ PanelWindow {
             networkMenuLoader.active = true
             Qt.callLater(() => {
                 if (networkMenuLoader.requestedOpen && networkMenuLoader.item)
-                    networkMenuLoader.item.open(anchorItem)
+                    networkMenuLoader.item.open(anchorItem, section)
             })
         }
     }

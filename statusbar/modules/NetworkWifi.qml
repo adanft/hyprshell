@@ -11,6 +11,8 @@ Item {
     readonly property var theme: AppTheme
 
     required property var services
+
+    signal openRequested
     readonly property bool connected: services.network.wifiUp && services.network.wifiSignal > 0
     readonly property bool moduleDisabled: !Networking.wifiHardwareEnabled || !Networking.wifiEnabled
     readonly property color moduleColor: moduleDisabled ? Colors.outline : (connected ? Colors.primary :
@@ -51,10 +53,17 @@ Item {
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         activeFocusOnTab: enabled
         Accessible.role: Accessible.Button
-        Accessible.name: Networking.wifiEnabled ? "Disable Wi-Fi" : "Enable Wi-Fi"
-        onClicked: root.services.network.toggleWifiEnabled()
-        Keys.onSpacePressed: root.services.network.toggleWifiEnabled()
-        Keys.onReturnPressed: root.services.network.toggleWifiEnabled()
-        Keys.onEnterPressed: root.services.network.toggleWifiEnabled()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        Accessible.name: "Open Wi-Fi controls"
+        Accessible.description: Networking.wifiEnabled ? "On" : "Off"
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton)
+                root.services.network.toggleWifiEnabled()
+            else
+                root.openRequested()
+        }
+        Keys.onSpacePressed: root.openRequested()
+        Keys.onReturnPressed: root.openRequested()
+        Keys.onEnterPressed: root.openRequested()
     }
 }

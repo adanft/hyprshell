@@ -13,7 +13,7 @@ Item {
     required property var barWindow
 
     signal openNotificationCenterRequested
-    signal openNetworkMenuRequested(var anchorItem)
+    signal openNetworkMenuRequested(var anchorItem, string section)
 
     Row {
         id: leftAnchor
@@ -101,7 +101,7 @@ Item {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: root.openNetworkMenuRequested(networkMenuButton)
+                        onClicked: root.openNetworkMenuRequested(networkMenuButton, "")
                     }
                 }
             }
@@ -162,19 +162,29 @@ Item {
                 spacing: root.theme.spacing.space6 * 2
 
                 NetworkThroughput {
+                    id: throughputModule
                     services: root.services
+                    // No section of its own: it reports whichever interface is
+                    // live, which may be either of them.
+                    onOpenRequested: root.openNetworkMenuRequested(throughputModule, "")
                 }
 
                 NetworkWifi {
+                    id: wifiModule
                     services: root.services
+                    onOpenRequested: root.openNetworkMenuRequested(wifiModule, "wifi")
                 }
 
                 Bluetooth {
+                    id: bluetoothModule
                     services: root.services
+                    onOpenRequested: root.openNetworkMenuRequested(bluetoothModule, "bluetooth")
                 }
 
                 Sound {
+                    id: soundModule
                     services: root.services
+                    onOpenRequested: root.openNetworkMenuRequested(soundModule, "output")
                 }
 
                 Backlight {
@@ -186,7 +196,9 @@ Item {
                 }
 
                 Microphone {
+                    id: microphoneModule
                     services: root.services
+                    onOpenRequested: root.openNetworkMenuRequested(microphoneModule, "microphone")
                 }
 
                 Notifications {

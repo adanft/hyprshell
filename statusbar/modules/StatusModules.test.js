@@ -18,14 +18,38 @@ const bluetoothService = fs.readFileSync(
 	"utf8",
 );
 
-assert.match(
-	wifi,
-	/onClicked:\s*root\.services\.network\.toggleWifiEnabled\(\)/,
-);
-assert.match(
-	bluetooth,
-	/onClicked:\s*root\.services\.bluetooth\.toggleBluetoothPowered\(\)/,
-);
+const throughput = read("NetworkThroughput.qml");
+
+// One gesture means one thing across the whole bar: left opens the panel on
+// this module's section, right performs the module's own destructive action.
+// Left used to toggle here, which put "open" and "turn off" on the same click
+// depending on which module you aimed at.
+for (const [name, source, toggle] of [
+	["NetworkWifi", wifi, "root.services.network.toggleWifiEnabled()"],
+	["Bluetooth", bluetooth, "root.services.bluetooth.toggleBluetoothPowered()"],
+	["AudioControl", audio, "root.services.audio.toggleMute(root.source)"],
+]) {
+	assert.match(
+		source,
+		/acceptedButtons: Qt\.LeftButton \| Qt\.RightButton/,
+		`${name} must answer both buttons`,
+	);
+	assert.match(
+		source,
+		new RegExp(
+			`mouse\\.button === Qt\\.RightButton\\)\\s*\\n\\s*${toggle.replace(/[.()|]/g, "\\$&")}`,
+		),
+		`${name} must put its toggle on the right button`,
+	);
+	assert.match(source, /else\s*\n\s*root\.openRequested\(\)/, `${name} must open on the left`);
+	assert.match(source, /signal openRequested/, `${name} must offer the open signal`);
+}
+
+// The throughput readout is the exception: nothing to turn off, so it only
+// opens, and it must not grow a right-button action by accident.
+assert.match(throughput, /signal openRequested/);
+assert.match(throughput, /onClicked: root\.openRequested\(\)/);
+assert.doesNotMatch(throughput, /acceptedButtons|RightButton/);
 assert.match(
 	networkService,
 	/Networking\.wifiEnabled\s*=\s*!Networking\.wifiEnabled/,

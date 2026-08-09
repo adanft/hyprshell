@@ -10,6 +10,8 @@ Item {
 
     required property var services
     property bool source: false
+
+    signal openRequested
     readonly property bool available: source ? services.audio.microphoneAvailable : Boolean(services.audio.sink?.audio)
     readonly property int volume: source ? services.audio.sourceVolume : services.audio.sinkVolume
     readonly property bool muted: source ? services.audio.sourceMuted : services.audio.sinkMuted
@@ -71,14 +73,21 @@ Item {
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         activeFocusOnTab: enabled
         Accessible.role: Accessible.Button
-        Accessible.name: root.source ? (root.muted ? "Unmute microphone" : "Mute microphone") : (root.muted
-                                                                                                 ? "Unmute audio" :
-                                                                                                   "Mute audio")
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        Accessible.name: root.source ? "Open microphone controls" : "Open volume controls"
         Accessible.description: root.available ? (root.muted ? "Muted" : `${root.volume}%`) : "Unavailable"
-        onClicked: root.services.audio.toggleMute(root.source)
-        Keys.onSpacePressed: root.services.audio.toggleMute(root.source)
-        Keys.onReturnPressed: root.services.audio.toggleMute(root.source)
-        Keys.onEnterPressed: root.services.audio.toggleMute(root.source)
+        // Left opens the panel, right silences. The destructive half of a module
+        // is the one that needs aiming for, and every module in the bar reads
+        // the same way round.
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton)
+                root.services.audio.toggleMute(root.source)
+            else
+                root.openRequested()
+        }
+        Keys.onSpacePressed: root.openRequested()
+        Keys.onReturnPressed: root.openRequested()
+        Keys.onEnterPressed: root.openRequested()
         onWheel: wheel => {
             const delta = wheel.angleDelta.y
             if (!root.available || delta === 0)

@@ -10,6 +10,8 @@ Item {
     readonly property var theme: AppTheme
 
     required property var services
+
+    signal openRequested
     readonly property bool moduleDisabled: !services.bluetooth.bluetoothAvailable
                                            || !services.bluetooth.bluetoothPowered
     readonly property color moduleColor: moduleDisabled ? Colors.outline :
@@ -54,10 +56,17 @@ Item {
         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         activeFocusOnTab: enabled
         Accessible.role: Accessible.Button
-        Accessible.name: root.services.bluetooth.bluetoothPowered ? "Disable Bluetooth" : "Enable Bluetooth"
-        onClicked: root.services.bluetooth.toggleBluetoothPowered()
-        Keys.onSpacePressed: root.services.bluetooth.toggleBluetoothPowered()
-        Keys.onReturnPressed: root.services.bluetooth.toggleBluetoothPowered()
-        Keys.onEnterPressed: root.services.bluetooth.toggleBluetoothPowered()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        Accessible.name: "Open Bluetooth controls"
+        Accessible.description: root.services.bluetooth.bluetoothPowered ? "On" : "Off"
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton)
+                root.services.bluetooth.toggleBluetoothPowered()
+            else
+                root.openRequested()
+        }
+        Keys.onSpacePressed: root.openRequested()
+        Keys.onReturnPressed: root.openRequested()
+        Keys.onEnterPressed: root.openRequested()
     }
 }

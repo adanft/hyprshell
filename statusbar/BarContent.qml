@@ -8,13 +8,13 @@ Item {
     required property var barWindow
 
     signal openNotificationCenterRequested
-    signal openNetworkMenuRequested(var anchorItem)
+    signal openNetworkMenuRequested(var anchorItem, string section)
 
     BarLayout {
         anchors.fill: parent
         services: root.services
         barWindow: root.barWindow
         onOpenNotificationCenterRequested: root.openNotificationCenterRequested()
-        onOpenNetworkMenuRequested: anchorItem => root.openNetworkMenuRequested(anchorItem)
+        onOpenNetworkMenuRequested: (anchorItem, section) => root.openNetworkMenuRequested(anchorItem, section)
     }
 }

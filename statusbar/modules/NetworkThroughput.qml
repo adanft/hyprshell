@@ -10,6 +10,8 @@ Item {
     readonly property var theme: AppTheme
 
     required property var services
+
+    signal openRequested
     readonly property bool networkAvailable: services.network.activeNetworkInterface.length > 0
     readonly property bool moduleDisabled: !networkAvailable
     readonly property color neutralColor: moduleDisabled ? Colors.outline : Colors.on_surface
@@ -56,5 +58,19 @@ Item {
             text: root.formatRate(root.services.network.activeNetworkRxRate)
             color: root.rxColor
         }
+    }
+
+    // A readout, not a switch: there is no throughput to turn off, so this only
+    // opens the panel.
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        activeFocusOnTab: true
+        Accessible.role: Accessible.Button
+        Accessible.name: "Open network controls"
+        onClicked: root.openRequested()
+        Keys.onSpacePressed: root.openRequested()
+        Keys.onReturnPressed: root.openRequested()
+        Keys.onEnterPressed: root.openRequested()
     }
 }

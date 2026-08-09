@@ -13,7 +13,6 @@ QtObject {
     readonly property string ethernetPort: "󰈀"
     readonly property string ethernet: "󰈁"
     readonly property string ethernetDisconnected: "󰈂"
-    readonly property string ipAddress: "󰩟"
     readonly property string brightnessControl: "󰌵"
     readonly property string processor: "󰓅"
     readonly property string memory: "󰍛"

@@ -141,7 +141,7 @@ Rectangle {
             Rectangle {
                 width: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
                 height: parent.height
-                radius: root.theme.shape.radius8
+                radius: height / 2
                 color: root.muted ? Colors.primary : (muteInput.containsMouse || muteInput.activeFocus
                                                            ? Colors.hover : "transparent")
 

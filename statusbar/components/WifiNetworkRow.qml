@@ -51,7 +51,7 @@ Rectangle {
             color: root.network?.connected ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
-            font.styleName: root.theme.typography.styleRegular
+            font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
 
@@ -78,8 +78,8 @@ Rectangle {
             id: primaryButton
             objectName: "primaryActionButton"
             width: primaryLabel.implicitWidth + root.theme.spacing.space16
-            height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
-            radius: root.theme.shape.radius8
+            height: root.theme.sizing.statusBarControlActionHeight
+            radius: height / 2
             color: primaryInput.containsMouse || primaryInput.activeFocus ? Colors.hover :
                                                                             "transparent"
 
@@ -124,8 +124,8 @@ Rectangle {
             // collapsed to zero whenever an ancestor was hidden, even though
             // the button was meant to be shown.
             width: root.forgetAvailable ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
-            height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
-            radius: root.theme.shape.radius8
+            height: root.theme.sizing.statusBarControlActionHeight
+            radius: height / 2
             color: forgetInput.containsMouse || forgetInput.activeFocus ? Colors.hover :
                                                                           "transparent"
 

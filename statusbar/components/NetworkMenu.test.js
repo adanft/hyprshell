@@ -178,6 +178,49 @@ assert.doesNotMatch(
 	"an empty list must use ControlEmptyState, not rebuild it",
 );
 
+// Action buttons are pills of one height, and no component borrows the tray
+// menu's row height to get there.
+const componentDir = __dirname;
+for (const file of fs
+	.readdirSync(componentDir)
+	.filter((name) => name.endsWith(".qml") && name !== "TrayMenu.qml" && name !== "AudioControl.qml")) {
+	const source = fs.readFileSync(`${componentDir}/${file}`, "utf8");
+	assert.doesNotMatch(
+		source,
+		/statusBarTrayMenuItemHeight/,
+		`${file} must not borrow the tray menu row height`,
+	);
+	assert.doesNotMatch(
+		source,
+		/radius: (?:root\.)?theme\.shape\.radius8/,
+		`${file} must use a pill for actions, not radius8`,
+	);
+	for (const [, block] of source.matchAll(/text: [\w.]*icons\.\w+[\s\S]{0,220}?\n\s{16,}\}/g))
+		if (/font\.family:/.test(block))
+			assert.match(
+				block,
+				/font\.family: [\w.]*typography\.iconFontFamily/,
+				`${file} draws a glyph with the text font`,
+			);
+}
+
+// Every row titles itself the same way: Semibold at sizeMd.
+for (const file of [
+	"EthernetProfileRow",
+	"WifiNetworkRow",
+	"BluetoothDeviceRow",
+	"AudioOutputDeviceRow",
+	"MicrophoneSourceRow",
+	"AudioPlaybackStreamRow",
+]) {
+	const source = fs.readFileSync(`${componentDir}/${file}.qml`, "utf8");
+	assert.match(
+		source,
+		/font\.pixelSize: root\.theme\.typography\.sizeMd\s*\n\s*font\.styleName: root\.theme\.typography\.styleSemibold/,
+		`${file} must title itself Semibold at sizeMd`,
+	);
+}
+
 // The five detail sections are layout boxes, not painted surfaces.
 assert.doesNotMatch(detailContentBlock, /color: "transparent"/);
 for (const id of ["outputCard", "microphoneCard", "lanCard", "bluetoothDetails", "wifiCard"])

@@ -155,7 +155,7 @@ Scope {
                             height: root.theme.sizing.statusBarWifiPasswordCloseButtonSize
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            radius: root.theme.shape.radius8
+                            radius: height / 2
                             color: closeInput.containsMouse || closeInput.activeFocus ? Colors.hover :
                                                                                         "transparent"
 
@@ -164,7 +164,7 @@ Scope {
                                 text: root.icons.close
                                 color: closeInput.containsMouse || closeInput.activeFocus ? Colors.on_hover :
                                                                                             Colors.on_surface_variant
-                                font.family: root.theme.typography.textFontFamily
+                                font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.sizeLg
                                 font.styleName: root.theme.typography.styleRegular
                             }

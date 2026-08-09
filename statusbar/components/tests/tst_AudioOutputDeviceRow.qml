@@ -42,6 +42,7 @@ TestCase {
                              sizing: {
                                  statusBarNetworkDeviceRowHeight: 48,
                                  statusBarTrayMenuItemHeight: 36,
+                                 statusBarControlActionHeight: 28,
                                  statusBarNetworkQuickControlIconWidth: 22
                              },
                              typography: {

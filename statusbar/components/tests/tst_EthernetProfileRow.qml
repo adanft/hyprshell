@@ -34,7 +34,8 @@ TestCase {
                             space2: 2
                         },
                         sizing: {
-                            statusBarTrayMenuItemHeight: 36
+                            statusBarTrayMenuItemHeight: 36,
+                            statusBarControlActionHeight: 28
                         },
                         typography: {
                             sizeSm: 11,

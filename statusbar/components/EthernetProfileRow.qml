@@ -40,7 +40,7 @@ Rectangle {
             color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
-            font.styleName: root.theme.typography.styleRegular
+            font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
 
@@ -57,11 +57,11 @@ Rectangle {
     Rectangle {
         id: actionButton
         width: actionLabel.implicitWidth + root.theme.spacing.space16
-        height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
+        height: root.theme.sizing.statusBarControlActionHeight
         anchors.right: parent.right
         anchors.rightMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        radius: root.theme.shape.radius8
+        radius: height / 2
         color: actionInput.containsMouse || actionInput.activeFocus ? Colors.hover : "transparent"
         opacity: root.busy ? root.theme.motion.opacityDisabled : 1
 

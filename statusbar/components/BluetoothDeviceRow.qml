@@ -55,10 +55,10 @@ Rectangle {
         Text {
             width: parent.width
             text: root.device?.name || root.device?.deviceName || "Unknown device"
-            color: Colors.on_surface
+            color: root.device?.connected ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
-            font.styleName: root.theme.typography.styleRegular
+            font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
         Text {
@@ -112,8 +112,8 @@ Rectangle {
         property bool danger: false
         signal triggered
         width: labelText.implicitWidth + root.theme.spacing.space16
-        height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
-        radius: root.theme.shape.radius8
+        height: root.theme.sizing.statusBarControlActionHeight
+        radius: height / 2
         color: input.containsMouse || input.activeFocus ? Colors.hover : "transparent"
         opacity: enabled ? 1 : root.theme.motion.opacityDisabled
         Text {

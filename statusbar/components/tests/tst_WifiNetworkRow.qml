@@ -38,6 +38,7 @@ TestCase {
                         },
                         sizing: {
                             statusBarTrayMenuItemHeight: 36,
+                            statusBarControlActionHeight: 28,
                             statusBarNetworkDeviceRowHeight: 48
                         },
                         motion: {

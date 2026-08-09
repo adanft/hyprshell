@@ -74,11 +74,11 @@ Rectangle {
         id: actionButton
 
         width: actionLabel.implicitWidth + root.theme.spacing.space16
-        height: root.theme.sizing.statusBarTrayMenuItemHeight - root.theme.spacing.space8
+        height: root.theme.sizing.statusBarControlActionHeight
         anchors.right: parent.right
         anchors.rightMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        radius: root.theme.shape.radius8
+        radius: height / 2
         color: actionInput.containsMouse || actionInput.activeFocus ? Colors.hover : "transparent"
 
         Text {

@@ -72,7 +72,9 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: popup.theme.shape.notificationCenterRadius
-        color: Colors.surface
+        // The panel is the deep surface here and the cards lift off it, which is
+        // the reverse of a card standing on its own over the desktop.
+        color: Colors.shadow
         border.color: Colors.outline
         border.width: popup.theme.shape.notificationCenterBorderWidth
 

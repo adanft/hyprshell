@@ -285,7 +285,10 @@ Item {
         width: parent.width
         height: card.renderedLayoutHeight
         radius: card.cornerRadius
-        color: Colors.shadow
+        // A card floating over the desktop is the deepest thing on screen, so it
+        // sits on shadow. Inside the centre it is the opposite: the panel is the
+        // deep surface and each card has to lift off it.
+        color: card.isHistoryEntry ? Colors.surface : Colors.shadow
         border.color: Colors.outline
         border.width: card.borderWidth
         clip: true

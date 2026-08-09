@@ -315,12 +315,11 @@ Item {
                             anchors.fill: parent
                             spacing: root.theme.spacing.space8
 
-                            Rectangle {
+                            // No card behind the quick controls: the slider track is
+                            // the only thing here that carries a surface.
+                            Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
-                                radius: root.theme.shape.radius12
-                                color: Colors.surface
-                                border.width: 0
 
                                 Row {
                                     anchors.fill: parent
@@ -363,12 +362,11 @@ Item {
                                 }
                             }
 
-                            Rectangle {
+                            // No card behind the quick controls: the slider track is
+                            // the only thing here that carries a surface.
+                            Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
-                                radius: root.theme.shape.radius12
-                                color: Colors.surface
-                                border.width: 0
 
                                 Row {
                                     anchors.fill: parent

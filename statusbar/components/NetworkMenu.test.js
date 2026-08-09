@@ -168,6 +168,16 @@ assert.doesNotMatch(
 	"no section may inset its children by hand",
 );
 
+// Both audio panels are components, so neither grows back into this file, and
+// every empty list uses ControlEmptyState rather than rebuilding it.
+assert.match(detailContentBlock, /AudioMixerSection\s*\{/);
+assert.match(detailContentBlock, /AudioInputSection\s*\{/);
+assert.doesNotMatch(
+	qml,
+	/statusBarControlEmptyStateHeight/,
+	"an empty list must use ControlEmptyState, not rebuild it",
+);
+
 // The five detail sections are layout boxes, not painted surfaces.
 assert.doesNotMatch(detailContentBlock, /color: "transparent"/);
 for (const id of ["outputCard", "microphoneCard", "lanCard", "bluetoothDetails", "wifiCard"])

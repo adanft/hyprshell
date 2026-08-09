@@ -33,6 +33,17 @@ Item {
     readonly property real uptimeSeconds: networkController.uptimeSeconds
     readonly property bool hasEthernetProfiles: (services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
     readonly property bool scanningBluetooth: services.bluetooth.bluetoothDiscovering
+    readonly property bool wifiUsable: Networking.wifiHardwareEnabled && Boolean(services.network.wifiDevice)
+    readonly property string wifiEmptyTitle: !wifiUsable ? "Wi-Fi unavailable"
+                                                         : (wifiActivationPending ? "Enabling Wi-Fi…"
+                                                                                  : (!Networking.wifiEnabled
+                                                                                     ? "Wi-Fi is disabled"
+                                                                                     : "No networks found"))
+    readonly property string wifiEmptyDescription: !wifiUsable ? "No wireless adapter is available"
+                                                              : (wifiActivationPending ? "Preparing wireless scan"
+                                                                                       : (!Networking.wifiEnabled
+                                                                                          ? "Enable Wi-Fi to scan for networks"
+                                                                                          : "Scanning continues automatically"))
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled && Networking.wifiEnabled &&
                                                  !wifiActivationPending && services.network.wifiDevice
                                                  ? NetworkMenuLogic.sortedWifiNetworks(
@@ -617,94 +628,11 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space6
 
-                                BarText {
+                                AudioInputSection {
                                     width: parent.width
-                                    text: "Input volume"
-                                    color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeMd
-                                    font.styleName: root.theme.typography.styleRegular
-                                }
-
-                                Item {
-                                    width: parent.width
-                                    height: root.theme.sizing.statusBarNetworkQuickControlHeight
-
-                                    Row {
-                                        anchors.fill: parent
-                                        anchors.margins: root.theme.spacing.space12
-                                        spacing: root.theme.spacing.space6
-
-                                        BarText {
-                                            width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            horizontalAlignment: Text.AlignHCenter
-                                            text: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
-                                                                                    root.icons.microphone
-                                            color: microphoneSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
-                                            font.family: root.theme.typography.iconFontFamily
-                                            font.pixelSize: root.theme.typography.sizeXl
-                                            font.styleName: root.theme.typography.styleRegular
-                                        }
-
-                                        QuickControlSlider {
-                                            id: microphoneSlider
-                                            theme: root.theme
-                                            width: parent.width
-                                                   - root.theme.sizing.statusBarNetworkQuickControlIconWidth
-                                                   - parent.spacing
-                                            height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
-                                            value: Math.max(0, root.services.audio.sourceVolume)
-                                            available: root.services.audio.microphoneAvailable
-                                            trackColor: Colors.surface
-                                            fillColor: Colors.primary
-                                            handleColor: Colors.on_surface
-                                            handleBorderColor: Colors.primary
-                                            unavailableText: "Microphone unavailable"
-                                            onLiveValueRequested: value => root.services.audio.setSourceVolume(value)
-                                        }
-                                    }
-                                }
-
-                                BarText {
-                                    width: parent.width
-                                    text: "Input devices"
-                                    color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeMd
-                                    font.styleName: root.theme.typography.styleRegular
-                                }
-
-                                Column {
-                                    id: microphoneDevicesSection
-                                    width: parent.width
-                                    spacing: root.theme.spacing.space6
-
-                                    Repeater {
-                                        model: root.services.audio.audioSources ?? []
-
-                                        MicrophoneSourceRow {
-                                            required property var modelData
-                                            width: parent.width
-                                            source: modelData
-                                            icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
-                                                                                    root.icons.microphone
-                                            active: modelData === root.services.audio.source
-                                            theme: root.theme
-                                            onSelectRequested: source => root.services.audio.selectAudioSource(source)
-                                        }
-                                    }
-
-                                    ControlEmptyState {
-                                        visible: (root.services.audio.audioSources?.length ?? 0) === 0
-                                        width: parent.width
-                                        theme: root.theme
-                                        title: root.services.audio.microphoneAvailable
-                                               ? "No additional microphone inputs" : "Microphone unavailable"
-                                        description: root.services.audio.microphoneAvailable
-                                                     ? "The active microphone is already selected" :
-                                                       "Connect an input device to control it here"
-                                    }
+                                    theme: root.theme
+                                    services: root.services
+                                    onInputVolumeRequested: value => root.services.audio.setSourceVolume(value)
                                 }
                             }
                         }
@@ -1000,14 +928,13 @@ Item {
                                     }
                                 }
 
-                                BarText {
+                                ControlEmptyState {
                                     visible: root.scanningBluetooth
                                              && bluetoothDetailsColumn.availableDevices.length === 0
                                     width: parent.width
-                                    text: "Scanning for Bluetooth devices…"
-                                    color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeSm
-                                    font.styleName: root.theme.typography.styleRegular
+                                    theme: root.theme
+                                    title: "Scanning…"
+                                    description: "Looking for Bluetooth devices nearby"
                                 }
                             }
                         }
@@ -1101,49 +1028,12 @@ Item {
                                     }
                                 }
 
-                                Rectangle {
+                                ControlEmptyState {
                                     visible: root.availableWifiNetworks.length === 0
                                     width: parent.width
-                                    height: root.theme.sizing.statusBarControlEmptyStateHeight
-                                    radius: root.theme.shape.radius12
-                                    color: Colors.surface
-                                    border.width: 0
-
-                                    Column {
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.margins: root.theme.spacing.space12
-                                        spacing: root.theme.spacing.space2
-
-                                        BarText {
-                                            width: parent.width
-                                            text: !Networking.wifiHardwareEnabled || !root.services.network.wifiDevice
-                                                  ? "Wi-Fi unavailable" : (root.wifiActivationPending
-                                                                           ? "Enabling Wi-Fi…" : (
-                                                                                 !Networking.wifiEnabled
-                                                                                 ? "Wi-Fi is disabled" :
-                                                                                   "No networks found"))
-                                            color: Colors.on_surface
-                                            font.pixelSize: root.theme.typography.sizeMd
-                                            font.styleName: root.theme.typography.styleRegular
-                                            elide: Text.ElideRight
-                                        }
-
-                                        BarText {
-                                            width: parent.width
-                                            text: !Networking.wifiHardwareEnabled || !root.services.network.wifiDevice
-                                                  ? "No wireless adapter is available" : (root.wifiActivationPending
-                                                                                          ? "Preparing wireless scan" : (
-                                                                                                !Networking.wifiEnabled
-                                                                                                ? "Enable Wi-Fi to scan for networks" :
-                                                                                                  "Scanning continues automatically"))
-                                            color: Colors.on_surface_variant
-                                            font.pixelSize: root.theme.typography.sizeSm
-                                            font.styleName: root.theme.typography.styleRegular
-                                            elide: Text.ElideRight
-                                        }
-                                    }
+                                    theme: root.theme
+                                    title: root.wifiEmptyTitle
+                                    description: root.wifiEmptyDescription
                                 }
                             }
                         }

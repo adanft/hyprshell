@@ -114,25 +114,22 @@ assert.doesNotMatch(
 	/bluetoothDetailsLegacy|bluetoothDeviceDelegateLegacy|width: parent\.width - 180|width: 90/,
 );
 assert.match(detailContentBlock, /BluetoothDeviceRow/);
-assert.match(detailContentBlock, /text: root\.icons\.bluetoothOn/);
+// The Bluetooth panel has no header of its own: scanning shares the line that
+// labels the info card, and the card itself carries no controls.
+assert.doesNotMatch(detailContentBlock, /id: bluetoothDetailHeader|id: bluetoothDetailTitle/);
+assert.match(detailContentBlock, /BluetoothInfoCard\s*\{/);
+assert.match(detailContentBlock, /id: bluetoothInfoHeader/);
 assert.match(
 	detailContentBlock,
-	/width: scanContent\.implicitWidth \+ root\.theme\.spacing\.space12/,
+	/id: bluetoothInfoTitle[\s\S]*?text: "Bluetooth info"/,
 );
-assert.match(
-	detailContentBlock,
-	/height: scanContent\.implicitHeight \+ root\.theme\.spacing\.space8/,
-);
-assert.match(detailContentBlock, /id: scanButton/);
-assert.match(detailContentBlock, /id: bluetoothDetailTitle/);
-assert.match(
-	detailContentBlock,
-	/id: bluetoothDetailTitle[\s\S]*anchors\.top: parent\.top/,
-);
-assert.match(
-	detailContentBlock,
-	/id: scanButton[\s\S]*anchors\.top: parent\.top/,
-);
+assert.match(detailContentBlock, /id: scanButton[\s\S]*?anchors\.right: parent\.right/);
+assert.match(detailContentBlock, /radius: height \/ 2/);
+assert.match(detailContentBlock, /onClicked: root\.toggleBluetoothScan\(\)/);
+
+const infoCard = fs.readFileSync(`${__dirname}/BluetoothInfoCard.qml`, "utf8");
+assert.doesNotMatch(infoCard, /scan|Scan/);
+
 const bluetoothDetailsColumnBlock = objectBlockById(
 	qml,
 	"bluetoothDetailsColumn",
@@ -153,7 +150,7 @@ assert.doesNotMatch(
 	"Bluetooth detail column must not apply a global outer inset",
 );
 for (const id of [
-	"bluetoothDetailHeader",
+	"bluetoothInfoHeader",
 	"bluetoothConnectedSection",
 	"bluetoothKnownSection",
 	"bluetoothAvailableSection",
@@ -165,15 +162,6 @@ for (const id of [
 		`${id} must use the AudioMixerSection horizontal inset`,
 	);
 }
-assert.match(
-	detailContentBlock,
-	/height: Math\.max\(bluetoothDetailTitle\.implicitHeight, scanButton\.visible\s*\?\s*scanButton\.height\s*:\s*0\)/,
-);
-assert.match(
-	detailContentBlock,
-	/font\.family: root\.theme\.typography\.textFontFamily/,
-);
-assert.match(detailContentBlock, /radius: height \/ 2/);
 assert.match(detailContentBlock, /color: "transparent"/);
 assert.match(bluetoothRowQml, /signal primaryActionRequested/);
 assert.match(bluetoothRowQml, /property bool primaryActionVisible: true/);

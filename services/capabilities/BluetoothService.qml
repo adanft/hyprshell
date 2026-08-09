@@ -10,6 +10,8 @@ Scope {
     readonly property bool bluetoothAvailable: bluetoothAdapter !== null
     readonly property bool bluetoothPowered: bluetoothAvailable ? bluetoothAdapter.enabled : false
     readonly property bool bluetoothDiscovering: bluetoothAvailable ? bluetoothAdapter.discovering : false
+    readonly property string bluetoothAdapterName: bluetoothAvailable ? bluetoothAdapter.name : ""
+    readonly property bool bluetoothDiscoverable: bluetoothAvailable ? bluetoothAdapter.discoverable : false
     readonly property var bluetoothDevices: bluetoothAdapter?.devices?.values ?? []
     readonly property int bluetoothConnectedCount: bluetoothDevices.filter(device => device && device.connected).length
     readonly property bool bluetoothBusy: bluetoothPairProcess.running || bluetoothDevices.some(device => device && (

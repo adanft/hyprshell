@@ -23,6 +23,7 @@ QtObject {
     readonly property string bluetoothOff: "󰂲"
     readonly property string bluetoothConnected: "󰂱"
     readonly property string bluetoothOn: "󰂯"
+    readonly property string bluetoothAdapter: ""
     readonly property string microphoneMuted: ""
     readonly property string microphone: ""
     readonly property string audioOutput: "󰓃"

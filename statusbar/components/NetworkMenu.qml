@@ -823,17 +823,17 @@ Item {
                                 spacing: root.theme.spacing.space8
 
                                 Item {
-                                    id: bluetoothDetailHeader
+                                    id: bluetoothInfoHeader
                                     x: root.theme.spacing.space12
                                     width: parent.width - root.theme.spacing.space24
-                                    height: Math.max(bluetoothDetailTitle.implicitHeight, scanButton.visible
-                                                     ? scanButton.height : 0)
+                                    height: Math.max(bluetoothInfoTitle.implicitHeight,
+                                                     scanButton.visible ? scanButton.height : 0)
 
                                     BarText {
-                                        id: bluetoothDetailTitle
+                                        id: bluetoothInfoTitle
                                         anchors.left: parent.left
-                                        anchors.top: parent.top
-                                        text: "Bluetooth"
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Bluetooth info"
                                         color: Colors.on_surface_variant
                                         font.pixelSize: root.theme.typography.sizeMd
                                         font.styleName: root.theme.typography.styleRegular
@@ -843,32 +843,33 @@ Item {
                                         id: scanButton
                                         visible: root.services.bluetooth.bluetoothPowered
                                         width: scanContent.implicitWidth + root.theme.spacing.space12
-                                        height: scanContent.implicitHeight + root.theme.spacing.space8
+                                        height: scanContent.implicitHeight + root.theme.spacing.space4
                                         anchors.right: parent.right
-                                        anchors.top: parent.top
+                                        anchors.verticalCenter: parent.verticalCenter
                                         radius: height / 2
-                                        color: scanInput.containsMouse || scanInput.activeFocus
-                                               ? Colors.surface_variant : "transparent"
+                                        color: scanInput.containsMouse || scanInput.activeFocus ? Colors.hover :
+                                                                                                   "transparent"
 
                                         Row {
                                             id: scanContent
                                             anchors.centerIn: parent
                                             spacing: root.theme.spacing.space4
 
-                                            Text {
-                                                text: root.icons.bluetoothOn
-                                                color: Colors.primary
+                                            BarText {
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: root.icons.search
+                                                color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
                                                 font.family: root.theme.typography.iconFontFamily
-                                                font.pixelSize: root.theme.typography.sizeMd
+                                                font.pixelSize: root.theme.typography.sizeSm
                                             }
 
-                                            Text {
+                                            BarText {
+                                                anchors.verticalCenter: parent.verticalCenter
                                                 text: root.services.bluetooth.bluetoothDiscovering ? "Scanning…" :
                                                                                                      "Scan"
-                                                color: Colors.primary
-                                                font.family: root.theme.typography.textFontFamily
+                                                color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
                                                 font.pixelSize: root.theme.typography.sizeSm
-                                                font.styleName: root.theme.typography.styleRegular
+                                                font.styleName: root.theme.typography.styleMedium
                                             }
                                         }
 
@@ -888,6 +889,17 @@ Item {
                                             Keys.onEnterPressed: root.toggleBluetoothScan()
                                         }
                                     }
+                                }
+
+                                BluetoothInfoCard {
+                                    x: root.theme.spacing.space12
+                                    width: parent.width - root.theme.spacing.space24
+                                    theme: root.theme
+                                    adapterName: root.services.bluetooth.bluetoothAdapterName
+                                    available: root.services.bluetooth.bluetoothAvailable
+                                    powered: root.services.bluetooth.bluetoothPowered
+                                    discoverable: root.services.bluetooth.bluetoothDiscoverable
+                                    connectedCount: root.services.bluetooth.bluetoothConnectedCount
                                 }
 
                                 BarText {

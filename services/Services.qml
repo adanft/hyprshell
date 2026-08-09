@@ -121,6 +121,8 @@ Scope {
     readonly property alias bluetoothPowered: bluetoothService.bluetoothPowered
     readonly property alias bluetoothConnectedCount: bluetoothService.bluetoothConnectedCount
     readonly property alias bluetoothDiscovering: bluetoothService.bluetoothDiscovering
+    readonly property alias bluetoothAdapterName: bluetoothService.bluetoothAdapterName
+    readonly property alias bluetoothDiscoverable: bluetoothService.bluetoothDiscoverable
     readonly property alias bluetoothDevices: bluetoothService.bluetoothDevices
     readonly property alias bluetoothBusy: bluetoothService.bluetoothBusy
     readonly property alias bluetoothError: bluetoothService.bluetoothError

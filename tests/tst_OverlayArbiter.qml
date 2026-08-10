@@ -13,7 +13,6 @@ TestCase {
         id: fakeLoaderComponent
         QtObject {
             property bool requestedVisible: false
-            property var targetScreen: null
             property int opens: 0
             property int closes: 0
 
@@ -38,24 +37,6 @@ TestCase {
         }
     }
 
-    // Stands in for OverlayScreenResolver, which cannot run here because it
-    // reaches into Hyprland. Which screen it picks is OverlayScreen's job and is
-    // covered by OverlayScreen.test.js.
-    Component {
-        id: fakeResolverComponent
-        QtObject {
-            property var screen: ({
-                    "name": "DP-1"
-                })
-            property int calls: 0
-
-            function focusedScreen() {
-                calls += 1
-                return screen
-            }
-        }
-    }
-
     Component {
         id: arbiterComponent
         OverlayArbiter {}
@@ -65,15 +46,12 @@ TestCase {
         const loaders = []
         for (let index = 0; index < loaderCount; index++)
             loaders.push(fakeLoaderComponent.createObject(testCase))
-        const resolver = fakeResolverComponent.createObject(testCase)
         const arbiter = arbiterComponent.createObject(testCase, {
-            "loaders": loaders,
-            "screenResolver": resolver
+            "loaders": loaders
         })
         return {
             arbiter: arbiter,
-            loaders: loaders,
-            resolver: resolver
+            loaders: loaders
         }
     }
 
@@ -128,53 +106,6 @@ TestCase {
         compare(built.loaders[0].closes, 1, "the closing toggle did not close its own overlay")
         compare(built.loaders[1].opens, 0, "an unrelated overlay was opened")
         compare(built.loaders[2].opens, 0, "an unrelated overlay was opened")
-    }
-
-    // The screen has to be handed over before open(), because a PanelWindow
-    // picks its output when it maps.
-    function test_opening_hands_the_overlay_the_focused_screen() {
-        const built = buildArbiter(2)
-        built.arbiter.open(built.loaders[0])
-        compare(built.loaders[0].targetScreen, built.resolver.screen, "open() did not hand the overlay the focused screen")
-    }
-
-    function test_an_opening_toggle_hands_the_overlay_the_focused_screen() {
-        const built = buildArbiter(2)
-        built.arbiter.toggle(built.loaders[0])
-        compare(built.loaders[0].targetScreen, built.resolver.screen, "an opening toggle did not hand over the focused screen")
-    }
-
-    // Resolved per open, not once: the user may have moved to another monitor
-    // between two opens.
-    function test_each_open_resolves_the_screen_again() {
-        const built = buildArbiter(2)
-        built.arbiter.open(built.loaders[0])
-        built.resolver.screen = ({
-                "name": "HDMI-A-1"
-            })
-        built.arbiter.open(built.loaders[1])
-        compare(built.loaders[1].targetScreen, built.resolver.screen, "the second open reused the first screen")
-        compare(built.resolver.calls, 2, "the resolver was not consulted once per open")
-    }
-
-    function test_a_closing_toggle_does_not_consult_the_resolver() {
-        const built = buildArbiter(2)
-        built.arbiter.open(built.loaders[0])
-        built.arbiter.toggle(built.loaders[0])
-        compare(built.resolver.calls, 1, "a closing toggle re-resolved the screen")
-    }
-
-    // A shell that wires no resolver must still open its overlays; they land on
-    // the default output rather than nowhere.
-    function test_a_missing_resolver_still_opens_the_overlay() {
-        const loader = fakeLoaderComponent.createObject(testCase)
-        const arbiter = arbiterComponent.createObject(testCase, {
-            "loaders": [loader],
-            "screenResolver": null
-        })
-        arbiter.open(loader)
-        verify(loader.requestedVisible, "a missing resolver stopped the overlay from opening")
-        compare(loader.targetScreen, null, "a missing resolver invented a screen")
     }
 
     function test_an_empty_set_is_harmless() {

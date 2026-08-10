@@ -17,17 +17,10 @@ import "wallpaperselector" as Wallpaperselector
 ShellRoot {
     id: shell
 
-    // Eager on purpose: it is the read of Hyprland.monitors that makes
-    // focusedMonitor answer, and the overlays it serves are lazily loaded.
-    OverlayScreenResolver {
-        id: overlayScreenResolver
-    }
-
     OverlayArbiter {
         id: overlayArbiter
 
         loaders: [appLauncherLoader, powerMenuLoader, wallpaperSelectorLoader, themeSelectorLoader, screenshotToolLoader]
-        screenResolver: overlayScreenResolver
     }
 
     Services.Services {

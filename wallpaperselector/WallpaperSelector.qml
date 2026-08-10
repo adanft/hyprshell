@@ -9,10 +9,6 @@ import "../theme/runtime"
 Scope {
     id: selector
 
-    // Set by OverlayLifecycleLoader just before this maps, so the
-    // overlay opens on the monitor the user is actually working on.
-    property var targetScreen: null
-
     readonly property var theme: AppTheme
     readonly property var icons: Icons
     property alias visible: panel.visible
@@ -260,7 +256,6 @@ Scope {
         id: panel
 
         visible: false
-        screen: selector.targetScreen
         aboveWindows: true
         focusable: true
         exclusionMode: ExclusionMode.Ignore

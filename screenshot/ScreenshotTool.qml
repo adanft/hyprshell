@@ -8,10 +8,6 @@ import "ScreenshotCommand.js" as ScreenshotCommand
 Scope {
     id: tool
 
-    // Set by OverlayLifecycleLoader just before this maps, so the
-    // overlay opens on the monitor the user is actually working on.
-    property var targetScreen: null
-
     readonly property var theme: AppTheme
     readonly property var icons: Icons
     readonly property var delayOptions: [0, 3, 5, 10, 15]
@@ -263,7 +259,6 @@ Scope {
         id: panel
 
         visible: false
-        screen: tool.targetScreen
         aboveWindows: true
         focusable: true
         exclusionMode: ExclusionMode.Ignore

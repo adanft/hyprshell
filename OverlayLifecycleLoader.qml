@@ -6,9 +6,6 @@ LazyLoader {
 
     property bool requestedVisible: false
     property bool directVisibility: false
-    // The screen the overlay should map on, handed down just before it is
-    // shown. Items that do not declare targetScreen simply never receive it.
-    property var targetScreen: null
     property int _lifecycleGeneration: 0
     property var _observedItem: null
     property bool _itemPresented: false
@@ -84,10 +81,6 @@ LazyLoader {
                 return
             root._dispatchedGeneration = generation
             root._dispatchedItem = loadedItem
-            // Assigned before the item is shown, because a PanelWindow picks its
-            // output when it maps.
-            if (root.targetScreen && loadedItem.targetScreen !== undefined)
-                loadedItem.targetScreen = root.targetScreen
             root._openingPending = false
             if (root.directVisibility)
                 loadedItem.visible = true

@@ -5,20 +5,14 @@ import QtQuick
 import QtQml
 import Quickshell
 import Quickshell.Io
-import "HyprlandThemeCommand.js" as HyprlandThemeCommand
 import ".."
 import "../PaletteRoles.js" as PaletteRoles
-import "ThemeSyncState.js" as ThemeSyncState
 
 QtObject {
     id: stockThemes
 
     property var themes: fallbackThemes
     readonly property string currentTheme: normalizeName(AppSettings.currentTheme)
-    property var pendingHyprlandTheme: null
-    property bool hyprlandSyncBusy: false
-    property var hyprlandState: ThemeSyncState.createHyprlandState()
-    property bool externalThemeSyncReady: false
 
     readonly property string sourceFile: `${Quickshell.shellDir}/theme/runtime/themes.json`
     readonly property var availableThemes: list()
@@ -63,12 +57,6 @@ QtObject {
         }
     }
 
-    readonly property var externalThemeSyncTimer: Timer {
-        interval: 0
-        repeat: false
-        onTriggered: startupCoordinator.request(false)
-    }
-
     function defaultName() {
         return "catppuccin"
     }
@@ -104,7 +92,6 @@ QtObject {
     }
 
         function scheduleExternalThemeSync(force) {
-        externalThemeSyncReady = true
         startupCoordinator.request(force)
     }
 
@@ -112,69 +99,22 @@ QtObject {
         const normalizedTheme = normalizeName(themeId)
         const nextTheme = theme(normalizedTheme)
         GhosttyTheme.sync(normalizedTheme, force)
-        syncHyprlandTheme(nextTheme, force)
+        syncHyprTheme(nextTheme)
     }
 
-        function syncHyprlandTheme(nextTheme, force) {
-        const decision = ThemeSyncState.requestHyprland(hyprlandState, nextTheme, force)
-        if (decision.action !== "start")
-        return
-        startHyprlandTheme(decision.request)
+        function syncHyprTheme(nextTheme) {
+        HyprTheme.sync(nextTheme, AppSettings.currentWallpaper, AppTheme.typography.textFontFamily)
     }
 
-        function startHyprlandTheme(request) {
-        let processArgs
-        try {
-        processArgs = HyprlandThemeCommand.processArguments(request.theme)
-    } catch (error) {
-        hyprlandState.busy = false
-        hyprlandState.pending = null
-        console.warn(`Failed to build Hyprland theme command: ${error}`)
-        return
-    }
-        hyprlandSyncBusy = true
-        let process
-        try {
-        process = hyprlandProcessComponent.createObject(stockThemes)
-    } catch (error) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, false)
-        hyprlandSyncBusy = hyprlandState.busy
-        console.warn(`Failed to create Hyprland theme process: ${error}`)
-        if (next.action === "start")
-        startHyprlandTheme(next.request)
-        return
-    }
-        if (!process) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, false)
-        hyprlandSyncBusy = hyprlandState.busy
-        console.warn("Failed to create Hyprland theme process")
-        if (next.action === "start")
-        startHyprlandTheme(next.request)
-        return
-    }
-        process.onExited.connect(function (exitCode) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, exitCode === 0)
-        if (exitCode !== 0)
-        console.warn(`Failed to apply Hyprland theme (exit ${exitCode})`)
-        process.destroy()
-        hyprlandSyncBusy = hyprlandState.busy
-        if (next.action === "start")
-        startHyprlandTheme(next.request)
-    })
-        try {
-        process.exec(processArgs)
-    } catch (error) {
-        const next = ThemeSyncState.finishHyprland(hyprlandState, request.signature, false)
-        process.destroy()
-        hyprlandSyncBusy = hyprlandState.busy
-        console.warn(`Failed to start Hyprland theme process: ${error}`)
-        if (next.action === "start")
-        startHyprlandTheme(next.request)
-    }
-    }
-
-        readonly property Component hyprlandProcessComponent: Component {
-        Process {}
+    // theme.conf carries the wallpaper as well as the palette, because the lock
+    // screen shows both. A wallpaper is picked without touching the theme, so
+    // waiting for a theme change would leave the lock screen on the last
+    // wallpaper the theme happened to be changed under.
+    readonly property var wallpaperFollows: Connections {
+        target: AppSettings
+        function onCurrentWallpaperChanged() {
+            stockThemes.syncHyprTheme(stockThemes.themeData)
+        }
     }
 
         function load() {

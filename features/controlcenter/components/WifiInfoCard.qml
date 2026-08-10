@@ -66,7 +66,7 @@ Rectangle {
 
         AppText {
             anchors.verticalCenter: parent.verticalCenter
-            text: card.icons.system.workspaceDot
+            text: card.icons.ui.dot
             color: card.tone
             font.family: card.theme.typography.iconFontFamily
             font.pixelSize: card.theme.typography.textSm

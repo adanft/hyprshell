@@ -78,7 +78,7 @@ Rectangle {
 
             AppText {
                 anchors.verticalCenter: parent.verticalCenter
-                text: card.icons.system.workspaceDot
+                text: card.icons.ui.dot
                 color: stateInput.containsMouse ? Colors.on_hover : card.tone
                 font.family: card.theme.typography.iconFontFamily
                 font.pixelSize: card.theme.typography.textSm

@@ -82,7 +82,6 @@ QtObject {
         readonly property string clock: "󱑂"
         readonly property string calendar: "󰨳"
         readonly property string window: "󰰤"
-        readonly property string workspaceDot: ""
         readonly property string controlCentre: ""
     }
 
@@ -121,6 +120,7 @@ QtObject {
         readonly property string chevronRight: "›"
         readonly property string passwordHidden: "󰈈"
         readonly property string passwordVisible: "󰈉"
+        readonly property string dot: ""
         readonly property string bullet: "•"
         readonly property string timer: ""
         readonly property string cursor: ""

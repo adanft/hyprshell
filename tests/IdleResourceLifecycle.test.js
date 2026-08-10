@@ -8,11 +8,11 @@ const read = (relativePath) =>
 
 const shell = read("shell.qml");
 const overlayLifecycleLoader = read("OverlayLifecycleLoader.qml");
-const barWindow = read("statusbar/BarWindow.qml");
-const tray = read("tray/Tray.qml");
-const controlCenter = read("controlcenter/ControlCenter.qml");
+const barWindow = read("features/statusbar/BarWindow.qml");
+const tray = read("features/tray/Tray.qml");
+const controlCenter = read("features/controlcenter/ControlCenter.qml");
 const controlCenterController = read(
-	"controlcenter/ControlCenterController.qml",
+	"features/controlcenter/ControlCenterController.qml",
 );
 const networkService = read("services/capabilities/NetworkService.qml");
 
@@ -147,11 +147,11 @@ assert.equal(overlayArbiter.includes("_lifecycleGeneration"), false);
 // compositor place the overlay on the monitor the user is on, and pinning it to
 // a resolved screen took that away.
 for (const [overlayPath, namespace] of [
-	["applauncher/AppLauncher.qml", "qs-applauncher"],
-	["powermenu/PowerMenu.qml", "qs-powermenu"],
-	["wallpaperselector/WallpaperSelector.qml", "qs-wallpaperselector"],
-	["themeselector/ThemeSelector.qml", "qs-themeselector"],
-	["screenshot/ScreenshotTool.qml", "qs-screenshot"],
+	["features/applauncher/AppLauncher.qml", "qs-applauncher"],
+	["features/powermenu/PowerMenu.qml", "qs-powermenu"],
+	["features/wallpaperselector/WallpaperSelector.qml", "qs-wallpaperselector"],
+	["features/themeselector/ThemeSelector.qml", "qs-themeselector"],
+	["features/screenshot/ScreenshotTool.qml", "qs-screenshot"],
 ]) {
 	const overlay = read(overlayPath);
 	assert.match(

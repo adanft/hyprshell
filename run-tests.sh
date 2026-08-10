@@ -66,7 +66,7 @@ else
 	readonly QMLTESTRUNNER="$resolved_qmltestrunner"
 	# Each file runs from its own directory, because the tests reach their
 	# subjects through a relative import.
-	for test_file in tests/tst_*.qml controlcenter/tests/tst_*.qml theme/runtime/tests/tst_*.qml; do
+	for test_file in tests/tst_*.qml features/controlcenter/tests/tst_*.qml theme/runtime/tests/tst_*.qml; do
 		test_dir=$(dirname "$test_file")
 		test_name=$(basename "$test_file")
 		if output=$(cd "$test_dir" && timeout 60 "$QMLTESTRUNNER" -input "$test_name" 2>&1); then

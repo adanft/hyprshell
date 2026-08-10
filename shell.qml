@@ -3,16 +3,16 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "applauncher" as Applauncher
-import "notifications" as Notifications
-import "powermenu" as Powermenu
-import "screenshot" as Screenshot
+import "features/applauncher" as Applauncher
+import "features/notifications" as Notifications
+import "features/powermenu" as Powermenu
+import "features/screenshot" as Screenshot
 import "services" as Services
-import "statusbar" as Statusbar
+import "features/statusbar" as Statusbar
 import "theme" as Theme
 import "theme/runtime" as ThemeRuntime
-import "themeselector" as Themeselector
-import "wallpaperselector" as Wallpaperselector
+import "features/themeselector" as Themeselector
+import "features/wallpaperselector" as Wallpaperselector
 
 ShellRoot {
     id: shell

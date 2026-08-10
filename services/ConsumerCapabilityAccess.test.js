@@ -135,21 +135,21 @@ for (const source of [
 	assertAccepted(source);
 }
 
-const moduleDirectory = path.join(root, "statusbar/modules");
+const moduleDirectory = path.join(root, "features/statusbar/modules");
 const consumerPaths = fs
 	.readdirSync(moduleDirectory, { withFileTypes: true })
 	.filter((entry) => entry.isFile() && entry.name.endsWith(".qml"))
-	.map((entry) => path.posix.join("statusbar/modules", entry.name));
+	.map((entry) => path.posix.join("features/statusbar/modules", entry.name));
 
 const explicitConsumerPaths = [
 	// Tray left statusbar/modules for its own slice, so the directory sweep
 	// above no longer reaches it. Named here rather than lost.
-	"tray/Tray.qml",
-	"statusbar/components/AudioControl.qml",
-	"controlcenter/ControlCenter.qml",
-	"notifications/NotificationPopupManager.qml",
-	"notifications/NotificationPopup.qml",
-	"notifications/NotificationCenter.qml",
+	"features/tray/Tray.qml",
+	"features/statusbar/components/AudioControl.qml",
+	"features/controlcenter/ControlCenter.qml",
+	"features/notifications/NotificationPopupManager.qml",
+	"features/notifications/NotificationPopup.qml",
+	"features/notifications/NotificationCenter.qml",
 ];
 
 for (const relativePath of explicitConsumerPaths) {

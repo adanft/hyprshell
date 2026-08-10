@@ -2,7 +2,7 @@
 
 import QtQuick
 import Quickshell
-import "notifications" as Notifications
+import "features/notifications" as Notifications
 import "services" as Services
 import "theme" as Theme
 

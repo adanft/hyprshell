@@ -205,7 +205,7 @@ assert.deepEqual(
 // workspace uses, so "there is nothing here" reads identically across the bar.
 const EMPTY_WORKSPACE_ROLE = /return empty \? Colors\.outline :/;
 const workspaces = fs.readFileSync(
-	path.join(repository, "statusbar/modules/Workspaces.qml"),
+	path.join(repository, "features/statusbar/modules/Workspaces.qml"),
 	"utf8",
 );
 assert.match(

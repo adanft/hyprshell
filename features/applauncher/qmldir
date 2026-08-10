@@ -1,0 +1,3 @@
+singleton AppLauncherSizing 1.0 AppLauncherSizing.qml
+AppLauncher 1.0 AppLauncher.qml
+AppLauncherCard 1.0 AppLauncherCard.qml

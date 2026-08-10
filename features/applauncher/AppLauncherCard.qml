@@ -18,8 +18,8 @@ Rectangle {
 
     signal activated
 
-    width: theme.sizing.appLauncherCardWidth
-    height: theme.sizing.appLauncherCardHeight
+    width: sizing.actionTileWidth
+    height: sizing.actionTileHeight
     radius: theme.shape.appLauncherCardRadius
     color: hovered ? Colors.hover : (selected ? Colors.primary : "transparent")
 
@@ -30,13 +30,13 @@ Rectangle {
 
         Item {
             width: parent.width
-            height: card.theme.sizing.appLauncherIconSlotSize
+            height: sizing.actionTileIconSlotSize
 
             IconImage {
                 anchors.centerIn: parent
-                width: card.theme.sizing.appLauncherIconSize
-                height: card.theme.sizing.appLauncherIconSize
-                implicitSize: card.theme.sizing.appLauncherIconSize
+                width: AppLauncherSizing.iconSize
+                height: AppLauncherSizing.iconSize
+                implicitSize: AppLauncherSizing.iconSize
                 source: card.iconSource
             }
         }

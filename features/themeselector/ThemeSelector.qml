@@ -150,7 +150,7 @@ Scope {
 
             Item {
                 width: content.contentWidth
-                height: selector.theme.sizing.appLauncherSearchHeight
+                height: selector.theme.sizing.searchFieldHeight
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 Row {
@@ -185,7 +185,7 @@ Scope {
                         anchors.left: parent.left
                         anchors.leftMargin: selector.theme.spacing.space16
                         anchors.verticalCenter: parent.verticalCenter
-                        width: selector.theme.sizing.appLauncherSearchIconSlotWidth
+                        width: selector.theme.sizing.searchFieldIconSlotWidth
                         text: selector.icons.ui.search
                         color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
@@ -197,7 +197,7 @@ Scope {
                     Shared.AppText {
                         anchors.left: parent.left
                         anchors.leftMargin: selector.theme.spacing.space16
-                                            + selector.theme.sizing.appLauncherSearchIconSlotWidth
+                                            + selector.theme.sizing.searchFieldIconSlotWidth
                         anchors.verticalCenter: parent.verticalCenter
                         visible: searchInput.text.length === 0
                         text: "Search..."
@@ -211,7 +211,7 @@ Scope {
 
                         anchors.fill: parent
                         anchors.leftMargin: selector.theme.spacing.space16
-                                            + selector.theme.sizing.appLauncherSearchIconSlotWidth
+                                            + selector.theme.sizing.searchFieldIconSlotWidth
                         anchors.rightMargin: selector.theme.spacing.space16
                         clip: true
                         color: Colors.on_surface
@@ -253,7 +253,7 @@ Scope {
 
                 width: parent.width
                 height: Math.max(0, parent.height - parent.spacing
-                                 - selector.theme.sizing.appLauncherSearchHeight)
+                                 - selector.theme.sizing.searchFieldHeight)
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 flow: GridView.FlowLeftToRight

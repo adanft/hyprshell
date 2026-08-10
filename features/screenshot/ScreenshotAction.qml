@@ -15,8 +15,8 @@ Rectangle {
 
     signal activated
 
-    width: theme.sizing.screenshotToolActionWidth
-    height: theme.sizing.screenshotToolActionHeight
+    width: theme.sizing.actionTileWidth
+    height: theme.sizing.actionTileHeight
     radius: theme.shape.screenshotToolActionRadius
     opacity: enabled ? 1 : theme.motion.opacityDisabled
     color: hovered ? Colors.hover : (selected ? Colors.primary : "transparent")
@@ -28,7 +28,7 @@ Rectangle {
 
         Shared.AppText {
             width: parent.width
-            height: action.theme.sizing.screenshotToolActionIconSlotSize
+            height: action.theme.sizing.actionTileIconSlotSize
             text: action.icon
             color: action.hovered ? Colors.on_hover : (action.selected ? Colors.on_primary : Colors.tertiary)
             font.family: action.theme.typography.iconFontFamily

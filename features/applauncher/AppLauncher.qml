@@ -175,8 +175,8 @@ Scope {
             property alias searchField: searchInput
             property alias appGrid: grid
             readonly property int columns: Math.min(4, Math.max(1, Math.floor(width
-                                                                              / launcher.theme.sizing.appLauncherGridCellWidth)))
-            readonly property int gridWidth: columns * launcher.theme.sizing.appLauncherGridCellWidth
+                                                                              / AppLauncherSizing.gridCellWidth)))
+            readonly property int gridWidth: columns * AppLauncherSizing.gridCellWidth
 
             anchors.fill: parent
             anchors.margins: launcher.theme.spacing.space18
@@ -184,7 +184,7 @@ Scope {
 
             Rectangle {
                 width: content.gridWidth
-                height: launcher.theme.sizing.appLauncherSearchHeight
+                height: launcher.theme.sizing.searchFieldHeight
                 anchors.horizontalCenter: parent.horizontalCenter
                 radius: launcher.theme.shape.appLauncherSearchRadius
                 color: Colors.surface
@@ -193,7 +193,7 @@ Scope {
                     anchors.left: parent.left
                     anchors.leftMargin: launcher.theme.spacing.space16
                     anchors.verticalCenter: parent.verticalCenter
-                    width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                    width: launcher.theme.sizing.searchFieldIconSlotWidth
                     text: launcher.icons.ui.search
                     color: Colors.on_surface_variant
                     font.family: launcher.theme.typography.iconFontFamily
@@ -205,7 +205,7 @@ Scope {
                 Shared.AppText {
                     anchors.left: parent.left
                     anchors.leftMargin: launcher.theme.spacing.space16
-                                        + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                                        + launcher.theme.sizing.searchFieldIconSlotWidth
                     anchors.verticalCenter: parent.verticalCenter
                     visible: searchInput.text.length === 0
                     text: "Search..."
@@ -219,7 +219,7 @@ Scope {
 
                     anchors.fill: parent
                     anchors.leftMargin: launcher.theme.spacing.space16
-                                        + launcher.theme.sizing.appLauncherSearchIconSlotWidth
+                                        + launcher.theme.sizing.searchFieldIconSlotWidth
                     anchors.rightMargin: launcher.theme.spacing.space16
                     clip: true
                     color: Colors.on_surface
@@ -257,11 +257,11 @@ Scope {
                 readonly property int columns: content.columns
 
                 width: columns * cellWidth
-                height: parent.height - launcher.theme.sizing.appLauncherSearchHeight - parent.spacing
+                height: parent.height - launcher.theme.sizing.searchFieldHeight - parent.spacing
                 anchors.horizontalCenter: parent.horizontalCenter
                 clip: true
-                cellWidth: launcher.theme.sizing.appLauncherGridCellWidth
-                cellHeight: launcher.theme.sizing.appLauncherGridCellHeight
+                cellWidth: AppLauncherSizing.gridCellWidth
+                cellHeight: AppLauncherSizing.gridCellHeight
                 model: launcher.filteredApps
                 currentIndex: launcher.selectedIndex
 
@@ -340,9 +340,9 @@ Scope {
 
                 anchors.centerIn: parent
                 width: Math.min(parent.width - launcher.theme.spacing.space128,
-                                launcher.theme.sizing.appLauncherMaxWidth)
+                                AppLauncherSizing.maxWidth)
                 height: Math.min(parent.height - launcher.theme.spacing.space128,
-                                 launcher.theme.sizing.appLauncherMaxHeight)
+                                 AppLauncherSizing.maxHeight)
                 radius: launcher.theme.shape.appLauncherRadius
                 color: Colors.shadow
 

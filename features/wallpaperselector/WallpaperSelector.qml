@@ -85,7 +85,7 @@ Scope {
 
             Item {
                 width: content.gridWidth
-                height: selector.theme.sizing.appLauncherSearchHeight
+                height: selector.theme.sizing.searchFieldHeight
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 Row {
@@ -120,7 +120,7 @@ Scope {
                         anchors.left: parent.left
                         anchors.leftMargin: selector.theme.spacing.space16
                         anchors.verticalCenter: parent.verticalCenter
-                        width: selector.theme.sizing.appLauncherSearchIconSlotWidth
+                        width: selector.theme.sizing.searchFieldIconSlotWidth
                         text: selector.icons.ui.search
                         color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
@@ -132,7 +132,7 @@ Scope {
                     Shared.AppText {
                         anchors.left: parent.left
                         anchors.leftMargin: selector.theme.spacing.space16
-                                            + selector.theme.sizing.appLauncherSearchIconSlotWidth
+                                            + selector.theme.sizing.searchFieldIconSlotWidth
                         anchors.verticalCenter: parent.verticalCenter
                         visible: searchInput.text.length === 0
                         text: "Search..."
@@ -146,7 +146,7 @@ Scope {
 
                         anchors.fill: parent
                         anchors.leftMargin: selector.theme.spacing.space16
-                                            + selector.theme.sizing.appLauncherSearchIconSlotWidth
+                                            + selector.theme.sizing.searchFieldIconSlotWidth
                         anchors.rightMargin: selector.theme.spacing.space16
                         clip: true
                         color: Colors.on_surface
@@ -185,7 +185,7 @@ Scope {
                 readonly property int columns: content.columns
 
                 width: columns * cellWidth
-                height: parent.height - selector.theme.sizing.appLauncherSearchHeight - parent.spacing
+                height: parent.height - selector.theme.sizing.searchFieldHeight - parent.spacing
                 anchors.horizontalCenter: parent.horizontalCenter
                 clip: true
                 cellWidth: content.cellWidth

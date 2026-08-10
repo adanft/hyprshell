@@ -14,7 +14,7 @@ Rectangle {
     signal activated
 
     width: theme.sizing.wallpaperExtensionFilterWidth
-    height: theme.sizing.appLauncherSearchHeight
+    height: theme.sizing.searchFieldHeight
     radius: theme.shape.wallpaperExtensionFilterRadius
     color: hovered ? Theme.Colors.hover : (selected ? Theme.Colors.primary : Theme.Colors.surface)
 

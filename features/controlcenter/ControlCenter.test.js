@@ -270,7 +270,7 @@ assert.doesNotMatch(modal, /Qt\.alpha\(Colors\.surface/);
 assert.doesNotMatch(modal, /border\.width: root\.theme\.shape\.appLauncherBorderWidth/);
 assert.match(modal, /anchors\.margins: root\.theme\.spacing\.space18/);
 assert.match(modal, /spacing: root\.theme\.spacing\.space18/);
-assert.match(modal, /height: root\.theme\.sizing\.appLauncherSearchHeight/);
+assert.match(modal, /height: root\.theme\.sizing\.searchFieldHeight/);
 assert.match(modal, /radius: root\.theme\.shape\.appLauncherSearchRadius/);
 // Its actions are pills, like every action in the control center. Close, Cancel
 // and Connect: three, and no fourth shape among them.

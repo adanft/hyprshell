@@ -187,7 +187,7 @@ Scope {
 
                     Rectangle {
                         width: parent.width
-                        height: root.theme.sizing.appLauncherSearchHeight
+                        height: root.theme.sizing.searchFieldHeight
                         radius: root.theme.shape.appLauncherSearchRadius
                         color: Colors.surface
                         // No focus ring. The dialog puts the caret in this field

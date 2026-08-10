@@ -10,17 +10,17 @@ QtObject {
     readonly property int size30: 30
     readonly property int size32: 32
     readonly property int size34: 34
+    // Read by the launcher, both selectors, their filter chips and the wifi
+    // password dialog: it is the shell's search field, not the launcher's.
+// One square tile, drawn by the launcher's app cards and by the screenshot
+    // tool's mode actions. Shared because they are deliberately the same tile,
+    // which is what the screenshot tokens used to say by aliasing the launcher's.
+    readonly property int actionTileWidth: 104
+    readonly property int actionTileHeight: 104
+    readonly property int actionTileIconSlotSize: 56
 
-    readonly property int appLauncherMaxWidth: 476
-    readonly property int appLauncherMaxHeight: 536
-    readonly property int appLauncherSearchHeight: 42
-    readonly property int appLauncherSearchIconSlotWidth: size24
-    readonly property int appLauncherGridCellWidth: 110
-    readonly property int appLauncherGridCellHeight: 110
-    readonly property int appLauncherCardWidth: 104
-    readonly property int appLauncherCardHeight: 104
-    readonly property int appLauncherIconSlotSize: 56
-    readonly property int appLauncherIconSize: 52
+    readonly property int searchFieldHeight: 42
+    readonly property int searchFieldIconSlotWidth: size24
     readonly property int themeSelectorPaletteDotSize: size28
     readonly property int themeSelectorGridColumns: 3
     readonly property int themeSelectorMaxWidth: 504
@@ -39,9 +39,6 @@ QtObject {
     readonly property int wallpaperGridColumns: 4
     readonly property int wallpaperExtensionFilterWidth: 42
 
-    readonly property int screenshotToolActionWidth: appLauncherCardWidth
-    readonly property int screenshotToolActionHeight: appLauncherCardHeight
-    readonly property int screenshotToolActionIconSlotSize: appLauncherIconSlotSize
     readonly property int screenshotToolTimerOptionWidth: 40
     readonly property int screenshotToolTimerOptionHeight: 40
     readonly property int screenshotToolCursorSwitchWidth: 40

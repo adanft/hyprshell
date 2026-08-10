@@ -3,10 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Notifications
-// The service reaches into the notifications slice for this. That is a
-// platform capability depending on a feature, which is the wrong way round;
-// the move made it visible but did not create it.
-import "../../features/notifications/NotificationImagePersistence.js" as NotificationImagePersistence
+import "NotificationImagePersistence.js" as NotificationImagePersistence
 import "NotificationTimeActivity.js" as NotificationTimeActivity
 import "NotificationPopupTimeoutState.js" as NotificationPopupTimeoutState
 

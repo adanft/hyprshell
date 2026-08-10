@@ -185,19 +185,19 @@ assert.deepEqual(
 );
 
 const serviceSource = fs.readFileSync(
-	path.join(__dirname, "../../services/capabilities/NotificationService.qml"),
+	path.join(__dirname, "NotificationService.qml"),
 	"utf8",
 );
 const cardSource = fs.readFileSync(
-	path.join(__dirname, "NotificationCard.qml"),
+	path.join(__dirname, "../../features/notifications/NotificationCard.qml"),
 	"utf8",
 );
 const popupSource = fs.readFileSync(
-	path.join(__dirname, "NotificationPopup.qml"),
+	path.join(__dirname, "../../features/notifications/NotificationPopup.qml"),
 	"utf8",
 );
 const barWindowSource = fs.readFileSync(
-	path.join(__dirname, "../statusbar/BarWindow.qml"),
+	path.join(__dirname, "../../features/statusbar/BarWindow.qml"),
 	"utf8",
 );
 const shellSource = fs.readFileSync(path.join(__dirname, "../../shell.qml"), "utf8");

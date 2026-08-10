@@ -201,17 +201,26 @@ assert.deepEqual(
 	`a hover colour needs hoverEnabled: ${deadHover.join(", ")}`,
 );
 
-// The status bar dims an unavailable module to the same tone an empty
-// workspace uses, so "there is nothing here" reads identically across the bar.
-const EMPTY_WORKSPACE_ROLE = /return empty \? Colors\.outline :/;
+// An empty workspace used to be painted colors.outline, the same tone an
+// unavailable module is dimmed to, so "there is nothing here" read identically
+// across the bar. It no longer does: a workspace is now a chip that carries its
+// own colour, and emptiness is that chip turned down rather than a different
+// tone. The modules keep outline between them, so the rule below still holds
+// for them; the workspaces are a deliberate exception, and this is where that is
+// written down.
 const workspaces = fs.readFileSync(
 	path.join(repository, "features/statusbar/modules/Workspaces.qml"),
 	"utf8",
 );
+assert.doesNotMatch(
+	workspaces,
+	/Colors\.outline/,
+	"a workspace no longer borrows the disabled-module tone",
+);
 assert.match(
 	workspaces,
-	EMPTY_WORKSPACE_ROLE,
-	"an empty workspace must stay on colors.outline; it is the reference tone",
+	/opacity: empty && resting \? root\.emptyOpacity : 1/,
+	"emptiness dims the whole chip, so the number keeps its contrast against its own circle",
 );
 
 const disabled = [];

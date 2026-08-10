@@ -23,6 +23,11 @@ Row {
     required property var screen
     required property var services
 
+    // A workspace with nothing in it is the same chip turned down, not a chip in
+    // another colour: dimming the whole thing keeps the number's contrast against
+    // its own circle instead of fading the two apart.
+    readonly property real emptyOpacity: 0.25
+
     spacing: theme.spacing.space4
 
     Repeater {
@@ -41,11 +46,16 @@ Row {
             readonly property bool urgent: root.services.workspace.statusUrgentWorkspaceIds[modelData] ?? false
             readonly property bool empty: !(root.services.workspace.statusOccupiedWorkspaceIds[modelData] ?? false)
             readonly property bool hovered: mouseArea.containsMouse
+            // Emptiness only speaks when nothing else is: the workspace you are
+            // standing on is never dimmed for having no windows yet, and neither
+            // is one asking for attention or under the pointer.
+            readonly property bool resting: !active && !hovered && !urgent
 
             width: active ? StatusBarSizing.workspaceSlotSize * 2 : StatusBarSizing.workspaceSlotSize
             height: StatusBarSizing.workspaceSlotSize
             radius: root.theme.shape.radiusFull
-            color: root.workspaceFill(urgent, active, root.monitorFocused, hovered, empty)
+            color: root.workspaceFill(urgent, active, root.monitorFocused, hovered)
+            opacity: empty && resting ? root.emptyOpacity : 1
 
             Behavior on width {
                 NumberAnimation {
@@ -57,8 +67,7 @@ Row {
             AppText {
                 anchors.centerIn: parent
                 text: pill.modelData
-                color: root.workspaceNumberColor(pill.urgent, pill.active, root.monitorFocused, pill.hovered,
-                                                 pill.empty)
+                color: root.workspaceNumberColor(pill.urgent, pill.active, root.monitorFocused, pill.hovered)
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.textSm
                 font.styleName: root.theme.typography.styleSemibold
@@ -79,11 +88,10 @@ Row {
         root.services.workspace.focusWorkspace(workspaceId)
     }
 
-    // Every workspace keeps its circle. The tone is the one its dot used to
-    // carry, so the row says the same things it always did — urgent, focused
-    // here, focused elsewhere, holding windows, empty — and the number is what
-    // was added rather than what replaced it.
-    function workspaceFill(urgent, active, monitorFocused, hovered, empty) {
+    // Every workspace keeps its circle, and a resting one is the theme's blue.
+    // Emptiness is not a colour here — it is the same chip at a quarter, applied
+    // to the whole pill above.
+    function workspaceFill(urgent, active, monitorFocused, hovered) {
         if (urgent)
             return Colors.error
         if (hovered)
@@ -91,14 +99,13 @@ Row {
         if (active)
             return monitorFocused ? Colors.primary : Colors.tertiary
 
-        return empty ? Colors.outline : Colors.on_surface_variant
+        return Colors.tertiary
     }
 
     // The number takes the foreground of whatever it is sitting on, the way the
     // launcher's cards do: a hovered pill carries the same dark tone a hovered
-    // app card gives its label. The resting fills have no paired foreground of
-    // their own, so the number is cut out of them in the bar's own surface.
-    function workspaceNumberColor(urgent, active, monitorFocused, hovered, empty) {
+    // app card gives its label.
+    function workspaceNumberColor(urgent, active, monitorFocused, hovered) {
         if (urgent)
             return Colors.on_error
         if (hovered)
@@ -106,6 +113,6 @@ Row {
         if (active)
             return monitorFocused ? Colors.on_primary : Colors.on_tertiary
 
-        return Colors.shadow
+        return Colors.on_tertiary
     }
 }

@@ -535,9 +535,15 @@ assert.match(
 	detailFlickableBlock,
 	/detailViewportHeight\([\s\S]*quickControlHeight/,
 );
+// The detail pane scrolls by wheel and drag and draws no bar. It used to show
+// one whenever the content overflowed; the panel is a short surface over the
+// desktop, and a rail down its edge reads as chrome on something that has none.
+// interactive still gates on overflow, so the pane stops taking flicks when
+// everything fits.
+assert.doesNotMatch(detailFlickableBlock, /ScrollBar/);
 assert.match(
 	detailFlickableBlock,
-	/Controls\.ScrollBar\.vertical:[\s\S]*AlwaysOn[\s\S]*AlwaysOff/,
+	/interactive: root\.activeDetail && height > 0 && contentHeight > height/,
 );
 assert.match(
 	qml,

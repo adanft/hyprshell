@@ -1,7 +1,6 @@
 import "../../shared/components"
 import "../../theme"
 import QtQuick
-import QtQuick.Controls as Controls
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
@@ -212,16 +211,10 @@ PopupWindow {
                     model: popup.visible && popup.services.notification.hasNotifications
                            ? popup.services.notification.notifications : []
                     onModelChanged: popup.pruneExpandedNotifications()
+                    // Scrolls by wheel and drag with no bar drawn: the panel is a
+                    // short surface over the desktop, and a rail down its edge reads
+                    // as chrome on something that has none.
                     boundsBehavior: Flickable.StopAtBounds
-
-                    // The list always scrolled, but said nothing about it: a
-                    // clipped column with no indicator gives no reason to think
-                    // there is more below. Same rule as the control centre's
-                    // detail pane — shown only while the content overflows.
-                    Controls.ScrollBar.vertical: Controls.ScrollBar {
-                        policy: notificationList.height > 0 && notificationList.contentHeight
-                                > notificationList.height ? Controls.ScrollBar.AlwaysOn : Controls.ScrollBar.AlwaysOff
-                    }
 
                     delegate: NotificationCard {
                         required property int index

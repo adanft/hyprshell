@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls as Controls
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
@@ -582,17 +581,15 @@ Item {
                     contentWidth: width
                     contentHeight: detailContent.implicitHeight
                     clip: true
+                    // No scrollbar: wheel and drag only, matching the notification
+                    // centre. interactive already gates on overflow, so the pane stops
+                    // taking flicks when everything fits.
                     boundsBehavior: Flickable.StopAtBounds
                     flickableDirection: Flickable.VerticalFlick
                     interactive: root.activeDetail && height > 0 && contentHeight > height
                     onContentHeightChanged: root.clampDetailContentY()
                     onHeightChanged: root.clampDetailContentY()
                     Component.onCompleted: root.clampDetailContentY()
-
-                    Controls.ScrollBar.vertical: Controls.ScrollBar {
-                        policy: root.activeDetail && detailFlickable.height > 0 && detailFlickable.contentHeight
-                                > detailFlickable.height ? Controls.ScrollBar.AlwaysOn : Controls.ScrollBar.AlwaysOff
-                    }
 
                     Column {
                         id: detailContent

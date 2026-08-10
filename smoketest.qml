@@ -55,7 +55,7 @@ ShellRoot {
     Themeselector.ThemeSelector {}
     Wallpaperselector.WallpaperSelector {}
 
-    // Reached through NetworkMenu at runtime, instantiated here so that a
+    // Reached through ControlCenter at runtime, instantiated here so that a
     // standalone compile error cannot hide behind a closed menu.
     BarComponents.WifiPasswordModal {
         screen: Quickshell.screens[0]

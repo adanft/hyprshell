@@ -10,9 +10,9 @@ const shell = read("shell.qml");
 const overlayLifecycleLoader = read("OverlayLifecycleLoader.qml");
 const barWindow = read("statusbar/BarWindow.qml");
 const tray = read("statusbar/modules/Tray.qml");
-const networkMenu = read("statusbar/components/NetworkMenu.qml");
-const networkController = read(
-	"statusbar/components/NetworkMenuController.qml",
+const controlCenter = read("statusbar/components/ControlCenter.qml");
+const controlCenterController = read(
+	"statusbar/components/ControlCenterController.qml",
 );
 const networkService = read("services/capabilities/NetworkService.qml");
 
@@ -211,10 +211,10 @@ assert.match(
 );
 assert.equal(shell.includes("id: notificationPopupLoader"), false);
 
-assert.match(barWindow, /LazyLoader\s*{\s*id: networkMenuLoader/);
+assert.match(barWindow, /LazyLoader\s*{\s*id: controlCenterLoader/);
 assert.match(
 	barWindow,
-	/if \(menu && !menu\.menuOpen\)\s*{\s*networkMenuLoader\.requestedOpen = false;?\s*networkMenuLoader\.active = false/,
+	/if \(menu && !menu\.menuOpen\)\s*{\s*controlCenterLoader\.requestedOpen = false;?\s*controlCenterLoader\.active = false/,
 );
 assert.match(tray, /LazyLoader\s*{\s*id: trayMenuLoader/);
 assert.match(
@@ -231,15 +231,15 @@ assert.match(
 	/running: root\.networkDetailsEnabled && root\.wifiDevice !== null/,
 );
 assert.match(
-	networkMenu,
-	/pendingNetwork: networkController\.pendingNetwork[\s\S]*NetworkMenuController\s*{[\s\S]*handleWifiNetworkConnectionFailed/,
+	controlCenter,
+	/pendingNetwork: controlCenterController\.pendingNetwork[\s\S]*ControlCenterController\s*{[\s\S]*handleWifiNetworkConnectionFailed/,
 );
-assert.equal(networkMenu.includes("wifiScannerStartTimer"), false);
-assert.equal(networkMenu.includes("enableNetworkDetails()"), false);
-assert.match(networkController, /networkService\.enableNetworkDetails\(\)/);
-assert.match(networkController, /networkService\.disableNetworkDetails\(\)/);
+assert.equal(controlCenter.includes("wifiScannerStartTimer"), false);
+assert.equal(controlCenter.includes("enableNetworkDetails()"), false);
+assert.match(controlCenterController, /networkService\.enableNetworkDetails\(\)/);
+assert.match(controlCenterController, /networkService\.disableNetworkDetails\(\)/);
 assert.match(
-	networkController,
+	controlCenterController,
 	/Component\.onDestruction: root\.dispatch\(\{\s*type: "destroy"\s*\}\)/,
 );
 assert.match(

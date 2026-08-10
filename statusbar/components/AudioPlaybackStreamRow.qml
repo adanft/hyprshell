@@ -1,5 +1,5 @@
 import QtQuick
-import "NetworkMenu.js" as NetworkMenuLogic
+import "ControlCenter.js" as ControlCenterLogic
 import "../../theme"
 
 Rectangle {
@@ -15,10 +15,10 @@ Rectangle {
     required property string volumeHighIcon
     property bool available: Boolean(root.stream?.audio && Number.isFinite(Number(root.stream.audio.volume)))
     readonly property alias slider: volumeSlider
-    readonly property int percent: NetworkMenuLogic.audioNodePercent(root.stream) ?? 0
+    readonly property int percent: ControlCenterLogic.audioNodePercent(root.stream) ?? 0
     readonly property bool muted: Boolean(root.stream?.audio?.muted)
     readonly property string volumeStateIcon: {
-        const kind = NetworkMenuLogic.audioNodeIconKind(root.stream)
+        const kind = ControlCenterLogic.audioNodeIconKind(root.stream)
         if (kind === "unavailable")
             return root.volumeUnavailableIcon
         if (kind === "muted")
@@ -52,7 +52,7 @@ Rectangle {
     opacity: root.available ? 1 : root.theme.motion.opacityDisabled
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: [NetworkMenuLogic.playbackStreamLabel(root.stream), ", ", root.muted ? "Muted" : root.percent + "%"].join(
+    Accessible.name: [ControlCenterLogic.playbackStreamLabel(root.stream), ", ", root.muted ? "Muted" : root.percent + "%"].join(
         "")
 
     Item {
@@ -89,7 +89,7 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: NetworkMenuLogic.playbackStreamLabel(root.stream)
+                text: ControlCenterLogic.playbackStreamLabel(root.stream)
                 color: Colors.on_surface
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeMd
@@ -100,7 +100,7 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: NetworkMenuLogic.playbackStreamDescription(root.stream)
+                text: ControlCenterLogic.playbackStreamDescription(root.stream)
                 color: Colors.on_surface_variant
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.sizeSm
@@ -165,7 +165,7 @@ Rectangle {
                     cursorShape: muteInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
                     Accessible.role: Accessible.Button
-                    Accessible.name: [root.muted ? "Unmute" : "Mute", " ", NetworkMenuLogic.playbackStreamLabel(
+                    Accessible.name: [root.muted ? "Unmute" : "Mute", " ", ControlCenterLogic.playbackStreamLabel(
                             root.stream)].join("")
 
                     onClicked: root.requestMute()

@@ -1,5 +1,5 @@
 import QtQuick
-import "NetworkMenu.js" as NetworkMenuLogic
+import "ControlCenter.js" as ControlCenterLogic
 import "../../theme"
 
 Rectangle {
@@ -12,7 +12,7 @@ Rectangle {
     signal primaryActionRequested
     signal forgetRequested
 
-    readonly property bool forgetAvailable: NetworkMenuLogic.canForgetNetwork(network)
+    readonly property bool forgetAvailable: ControlCenterLogic.canForgetNetwork(network)
     readonly property bool actionBusy: Boolean(network?.stateChanging)
 
     function requestPrimaryAction() {
@@ -33,7 +33,7 @@ Rectangle {
     border.width: 0
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: network ? `${network.name}, ${NetworkMenuLogic.networkStatus(network)}` : "Wi-Fi network"
+    Accessible.name: network ? `${network.name}, ${ControlCenterLogic.networkStatus(network)}` : "Wi-Fi network"
 
     Column {
         id: networkDetails
@@ -58,7 +58,7 @@ Rectangle {
         Text {
             objectName: "wifiNetworkMeta"
             width: parent.width
-            text: NetworkMenuLogic.wifiNetworkMeta(root.network, root.openSecurityValue)
+            text: ControlCenterLogic.wifiNetworkMeta(root.network, root.openSecurityValue)
             color: root.network?.connected ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm

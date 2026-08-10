@@ -1,5 +1,5 @@
 import QtQuick
-import "NetworkMenuWorkflow.js" as Workflow
+import "ControlCenterWorkflow.js" as Workflow
 
 QtObject {
     id: root

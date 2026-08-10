@@ -6,7 +6,7 @@ import Quickshell.Networking
 import Quickshell.Wayland
 import Quickshell.Widgets
 import "../../theme"
-import "NetworkMenu.js" as NetworkMenuLogic
+import "ControlCenter.js" as ControlCenterLogic
 
 Item {
     id: root
@@ -14,23 +14,23 @@ Item {
     readonly property var theme: AppTheme
     readonly property var icons: Icons
     readonly property string username: Quickshell.env("USER") || Quickshell.env("LOGNAME") || "User"
-    readonly property string hostname: NetworkMenuLogic.hostnameOrFallback(hostnameFile.loaded ? hostnameFile.text() :
+    readonly property string hostname: ControlCenterLogic.hostnameOrFallback(hostnameFile.loaded ? hostnameFile.text() :
                                                                                                  "")
-    readonly property string userInitial: NetworkMenuLogic.userInitial(username)
+    readonly property string userInitial: ControlCenterLogic.userInitial(username)
     required property var services
     required property var barWindow
 
     property bool menuOpen: false
     property real menuAnchorX: 0
     property real menuAnchorY: theme.sizing.statusBarSurfaceTopOffset
-    readonly property var pendingNetwork: networkController.pendingNetwork
-    readonly property bool wifiActivationPending: networkController.wifiActivationPending
-    readonly property string connectionError: networkController.connectionError
-    readonly property string expandedNetworkSection: networkController.expandedNetworkSection
+    readonly property var pendingNetwork: controlCenterController.pendingNetwork
+    readonly property bool wifiActivationPending: controlCenterController.wifiActivationPending
+    readonly property string connectionError: controlCenterController.connectionError
+    readonly property string expandedNetworkSection: controlCenterController.expandedNetworkSection
     readonly property bool activeDetail: expandedNetworkSection === "output" || expandedNetworkSection === "microphone"
                                          || expandedNetworkSection === "ethernet" || expandedNetworkSection === "wifi"
                                          || expandedNetworkSection === "bluetooth"
-    readonly property real uptimeSeconds: networkController.uptimeSeconds
+    readonly property real uptimeSeconds: controlCenterController.uptimeSeconds
     readonly property bool hasEthernetProfiles: (services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
     readonly property bool scanningBluetooth: services.bluetooth.bluetoothDiscovering
     readonly property bool wifiUsable: Networking.wifiHardwareEnabled && Boolean(services.network.wifiDevice)
@@ -46,18 +46,18 @@ Item {
                                                                                           : "Scanning continues automatically"))
     readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled && Networking.wifiEnabled &&
                                                  !wifiActivationPending && services.network.wifiDevice
-                                                 ? NetworkMenuLogic.sortedWifiNetworks(
+                                                 ? ControlCenterLogic.sortedWifiNetworks(
                                                        services.network.wifiDevice.networks?.values ?? []) : []
     property int quickControlRequestSequence: 0
     readonly property var outputQuickVolume: root.services.audio.quickVolume
-    readonly property bool outputAvailable: NetworkMenuLogic.outputAvailable(root.services.audio.sink,
+    readonly property bool outputAvailable: ControlCenterLogic.outputAvailable(root.services.audio.sink,
                                                                              root.outputQuickVolume)
-    readonly property string outputSummary: NetworkMenuLogic.outputSummary(root.outputAvailable,
+    readonly property string outputSummary: ControlCenterLogic.outputSummary(root.outputAvailable,
                                                                            root.services.audio.sinkMuted,
                                                                            root.outputQuickVolume?.authoritativePercent)
-    readonly property string outputSinkLabel: NetworkMenuLogic.audioOutputLabel(root.services.audio.sink,
+    readonly property string outputSinkLabel: ControlCenterLogic.audioOutputLabel(root.services.audio.sink,
                                                                                 "Audio output")
-    readonly property string outputIconKind: NetworkMenuLogic.volumeIconKind(root.outputAvailable,
+    readonly property string outputIconKind: ControlCenterLogic.volumeIconKind(root.outputAvailable,
                                                                              root.services.audio.sinkMuted,
                                                                              root.outputQuickVolume
                                                                              ?.authoritativePercent)
@@ -72,8 +72,8 @@ Item {
                                                                                                                        ? root.icons.volumeMedium :
                                                                                                                          root.icons.volumeHigh)))
 
-    NetworkMenuController {
-        id: networkController
+    ControlCenterController {
+        id: controlCenterController
         networkService: root.services.network
         networking: Networking
         menuOpen: root.menuOpen
@@ -100,7 +100,7 @@ Item {
     // A status bar module passes its own, so clicking the speaker lands on the
     // volume controls rather than on whatever was open last time.
     function open(anchorItem, section) {
-        networkController.expandNetworkSection(section || "")
+        controlCenterController.expandNetworkSection(section || "")
         if (anchorItem) {
             // Only x follows the module that was clicked. The top edge comes
             // from the bar, not from the module, so the panel no longer shifts
@@ -110,13 +110,13 @@ Item {
             menuAnchorX = globalPosition.x - screenX
             menuAnchorY = theme.sizing.statusBarSurfaceTopOffset
         }
-        networkController.prepareOpen()
+        controlCenterController.prepareOpen()
         menuOpen = true
     }
 
     function close() {
         stopBluetoothScan()
-        networkController.requestClose()
+        controlCenterController.requestClose()
     }
 
     function startBluetoothScan() {
@@ -146,7 +146,7 @@ Item {
     }
 
     function clampDetailContentY() {
-        detailFlickable.contentY = NetworkMenuLogic.clampDetailContentY(root.activeDetail, detailFlickable.contentY,
+        detailFlickable.contentY = ControlCenterLogic.clampDetailContentY(root.activeDetail, detailFlickable.contentY,
                                                                         detailFlickable.contentHeight,
                                                                         detailFlickable.height)
     }
@@ -188,7 +188,7 @@ Item {
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-        WlrLayershell.namespace: "qs-statusbar-network-menu"
+        WlrLayershell.namespace: "qs-statusbar-control-center"
 
         anchors {
             top: true
@@ -211,9 +211,9 @@ Item {
         Rectangle {
             id: menuContainer
 
-            width: Math.max(0, Math.min(root.theme.sizing.statusBarNetworkMenuWidth, menuWindow.width
+            width: Math.max(0, Math.min(root.theme.sizing.statusBarControlCenterWidth, menuWindow.width
                                         - root.theme.spacing.space16))
-            height: NetworkMenuLogic.menuCenterHeight(menuWindow.height, root.theme.spacing.space16, 360,
+            height: ControlCenterLogic.menuCenterHeight(menuWindow.height, root.theme.spacing.space16, 360,
                                                       root.theme.spacing.space24, fixedShell.implicitHeight,
                                                       root.theme.spacing.space8, root.activeDetail,
                                                       detailContent.implicitHeight,
@@ -456,8 +456,8 @@ Item {
                                            ?.network !== undefined
                                 busy: root.services.network.lanDevice?.network?.stateChanging ?? false
                                 expanded: root.expandedNetworkSection === "ethernet"
-                                onBodyClicked: networkController.toggleNetworkSection("ethernet")
-                                onToggled: networkController.toggleEthernet()
+                                onBodyClicked: controlCenterController.toggleNetworkSection("ethernet")
+                                onToggled: controlCenterController.toggleEthernet()
                             }
 
                             NetworkControlCard {
@@ -470,14 +470,14 @@ Item {
                                 title: "Wi-Fi"
                                 subtitle: !Networking.wifiHardwareEnabled ? "Unavailable" : (!Networking.wifiEnabled
                                                                                              ? "Disabled" :
-                                                                                               NetworkMenuLogic.wifiSummary(
+                                                                                               ControlCenterLogic.wifiSummary(
                                                                                                    root.services.network.connectedWifiNetwork,
                                                                                                    true))
                                 active: Networking.wifiEnabled
                                 available: Networking.wifiHardwareEnabled
                                 expanded: root.expandedNetworkSection === "wifi"
-                                onBodyClicked: networkController.toggleNetworkSection("wifi")
-                                onToggled: networkController.toggleWifiEnabled()
+                                onBodyClicked: controlCenterController.toggleNetworkSection("wifi")
+                                onToggled: controlCenterController.toggleWifiEnabled()
                             }
                         }
                     }
@@ -506,7 +506,7 @@ Item {
                                 actionAccessibleName: root.services.audio.sinkMuted ? "Unmute output" : "Mute output"
                                 detailAccessibleName: expanded ? "Hide output volume" : "Show output volume"
                                 stateDescription: subtitle
-                                onBodyClicked: networkController.toggleNetworkSection("output")
+                                onBodyClicked: controlCenterController.toggleNetworkSection("output")
                                 onToggled: root.services.audio.toggleMute(false)
                             }
 
@@ -517,8 +517,8 @@ Item {
                                 icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
                                                                         root.icons.microphone
 
-                                title: NetworkMenuLogic.audioSourceLabel(root.services.audio.source, "Microphone")
-                                subtitle: NetworkMenuLogic.microphoneSummary(root.services.audio.microphoneAvailable,
+                                title: ControlCenterLogic.audioSourceLabel(root.services.audio.source, "Microphone")
+                                subtitle: ControlCenterLogic.microphoneSummary(root.services.audio.microphoneAvailable,
                                                                              root.services.audio.sourceMuted,
                                                                              root.services.audio.sourceVolume)
                                 active: root.services.audio.microphoneAvailable && !root.services.audio.sourceMuted
@@ -529,7 +529,7 @@ Item {
                                                                                         "Mute microphone"
                                 detailAccessibleName: expanded ? "Hide microphone volume" : "Show microphone volume"
                                 stateDescription: subtitle
-                                onBodyClicked: networkController.toggleNetworkSection("microphone")
+                                onBodyClicked: controlCenterController.toggleNetworkSection("microphone")
                                 onToggled: root.services.audio.toggleMute(true)
                             }
                         }
@@ -547,7 +547,7 @@ Item {
                                                                                           ? root.icons.bluetoothOn :
                                                                                             root.icons.bluetoothOff))
                         title: "Bluetooth"
-                        subtitle: NetworkMenuLogic.bluetoothSummary(root.services.bluetooth.bluetoothAvailable,
+                        subtitle: ControlCenterLogic.bluetoothSummary(root.services.bluetooth.bluetoothAvailable,
                                                                     root.services.bluetooth.bluetoothPowered,
                                                                     root.services.bluetooth.bluetoothConnectedCount)
                         active: root.services.bluetooth.bluetoothPowered
@@ -558,7 +558,7 @@ Item {
                         detailAvailable: root.services.bluetooth.bluetoothAvailable
                         expanded: root.expandedNetworkSection === "bluetooth"
                         detailAccessibleName: expanded ? "Hide Bluetooth devices" : "Show Bluetooth devices"
-                        onBodyClicked: networkController.toggleNetworkSection("bluetooth")
+                        onBodyClicked: controlCenterController.toggleNetworkSection("bluetooth")
                         onToggled: {
                             if (root.services.bluetooth.bluetoothAdapter)
                                 root.services.bluetooth.bluetoothAdapter.enabled =
@@ -570,7 +570,7 @@ Item {
                 Flickable {
                     id: detailFlickable
                     width: parent.width
-                    height: NetworkMenuLogic.detailViewportHeight(root.activeDetail, detailContent.implicitHeight,
+                    height: ControlCenterLogic.detailViewportHeight(root.activeDetail, detailContent.implicitHeight,
                                                                   menuContainer.height - root.theme.spacing.space24
                                                                   - fixedShell.implicitHeight - (root.activeDetail
                                                                                                  ? root.theme.spacing.space8 :
@@ -721,18 +721,18 @@ Item {
 
                             Column {
                                 id: bluetoothDetailsColumn
-                                readonly property var bluetoothDevices: NetworkMenuLogic.bluetoothUniqueDevices(
+                                readonly property var bluetoothDevices: ControlCenterLogic.bluetoothUniqueDevices(
                                                                             root.services.bluetooth.bluetoothDevices)
                                 readonly property var connectedDevices: bluetoothDevices.filter(device
-                                                                                                => NetworkMenuLogic.bluetoothDeviceCategory(
+                                                                                                => ControlCenterLogic.bluetoothDeviceCategory(
                                                                                                        device)
                                                                                                    === "connected")
                                 readonly property var knownDevices: bluetoothDevices.filter(device
-                                                                                            => NetworkMenuLogic.bluetoothDeviceCategory(
+                                                                                            => ControlCenterLogic.bluetoothDeviceCategory(
                                                                                                    device)
                                                                                                === "known-disconnected")
                                 readonly property var availableDevices: bluetoothDevices.filter(device
-                                                                                                => NetworkMenuLogic.bluetoothDeviceCategory(
+                                                                                                => ControlCenterLogic.bluetoothDeviceCategory(
                                                                                                        device)
                                                                                                    === "available" &&
                                                                                                    !device.blocked
@@ -1021,17 +1021,17 @@ Item {
                                         Connections {
                                             target: networkRow.modelData
                                             function onConnectedChanged() {
-                                                networkController.handleWifiNetworkConnectedChanged(
+                                                controlCenterController.handleWifiNetworkConnectedChanged(
                                                             networkRow.modelData)
                                             }
                                             function onConnectionFailed(reason) {
-                                                networkController.handleWifiNetworkConnectionFailed(networkRow.modelData,
+                                                controlCenterController.handleWifiNetworkConnectionFailed(networkRow.modelData,
                                                                                                     reason)
                                             }
                                         }
 
-                                        onPrimaryActionRequested: networkController.connectNetwork(modelData)
-                                        onForgetRequested: networkController.forgetNetwork(modelData)
+                                        onPrimaryActionRequested: controlCenterController.connectNetwork(modelData)
+                                        onForgetRequested: controlCenterController.forgetNetwork(modelData)
                                     }
                                 }
 
@@ -1055,7 +1055,7 @@ Item {
         theme: root.theme
         network: root.pendingNetwork
         errorText: root.connectionError
-        onSubmitted: password => networkController.submitPassword(password)
-        onCancelled: networkController.cancelPasswordEntry()
+        onSubmitted: password => controlCenterController.submitPassword(password)
+        onCancelled: controlCenterController.cancelPasswordEntry()
     }
 }

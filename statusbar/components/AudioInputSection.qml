@@ -3,7 +3,7 @@ import "../../theme"
 
 // The microphone panel, shaped like AudioMixerSection: a labelled slider over a
 // labelled device list. Both audio sections are components so neither one grows
-// back into NetworkMenu.
+// back into ControlCenter.
 Column {
     id: root
 

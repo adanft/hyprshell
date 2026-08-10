@@ -91,7 +91,7 @@ QtObject {
     readonly property int statusBarIconSize: size24
     readonly property int statusBarWorkspaceSlotSize: size24
     readonly property int statusBarWindowTitleWidth: 420
-    readonly property int statusBarNetworkMenuWidth: 420
+    readonly property int statusBarControlCenterWidth: 420
     readonly property int statusBarNetworkUserCardHeight: 88
     readonly property int statusBarNetworkAvatarSize: 64
     readonly property int statusBarNetworkUserTextReserve: 76

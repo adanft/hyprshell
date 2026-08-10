@@ -143,7 +143,7 @@ const consumerPaths = fs
 
 const explicitConsumerPaths = [
 	"statusbar/components/AudioControl.qml",
-	"statusbar/components/NetworkMenu.qml",
+	"statusbar/components/ControlCenter.qml",
 	"notifications/NotificationPopupManager.qml",
 	"notifications/NotificationPopup.qml",
 	"notifications/NotificationCenter.qml",

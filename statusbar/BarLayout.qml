@@ -13,7 +13,7 @@ Item {
     required property var barWindow
 
     signal openNotificationCenterRequested
-    signal openNetworkMenuRequested(var anchorItem, string section)
+    signal openControlCenterRequested(var anchorItem, string section)
 
     Row {
         id: leftAnchor
@@ -81,7 +81,7 @@ Item {
             spacing: 0
 
             Background {
-                id: networkMenuButton
+                id: controlCenterButton
                 width: root.theme.sizing.statusBarIconSize
                 height: root.theme.sizing.statusBarHeight
                 backgroundColor: "transparent"
@@ -101,7 +101,7 @@ Item {
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: root.openNetworkMenuRequested(networkMenuButton, "")
+                        onClicked: root.openControlCenterRequested(controlCenterButton, "")
                     }
                 }
             }
@@ -166,25 +166,25 @@ Item {
                     services: root.services
                     // No section of its own: it reports whichever interface is
                     // live, which may be either of them.
-                    onOpenRequested: root.openNetworkMenuRequested(throughputModule, "")
+                    onOpenRequested: root.openControlCenterRequested(throughputModule, "")
                 }
 
                 NetworkWifi {
                     id: wifiModule
                     services: root.services
-                    onOpenRequested: root.openNetworkMenuRequested(wifiModule, "wifi")
+                    onOpenRequested: root.openControlCenterRequested(wifiModule, "wifi")
                 }
 
                 Bluetooth {
                     id: bluetoothModule
                     services: root.services
-                    onOpenRequested: root.openNetworkMenuRequested(bluetoothModule, "bluetooth")
+                    onOpenRequested: root.openControlCenterRequested(bluetoothModule, "bluetooth")
                 }
 
                 Sound {
                     id: soundModule
                     services: root.services
-                    onOpenRequested: root.openNetworkMenuRequested(soundModule, "output")
+                    onOpenRequested: root.openControlCenterRequested(soundModule, "output")
                 }
 
                 Backlight {
@@ -198,7 +198,7 @@ Item {
                 Microphone {
                     id: microphoneModule
                     services: root.services
-                    onOpenRequested: root.openNetworkMenuRequested(microphoneModule, "microphone")
+                    onOpenRequested: root.openControlCenterRequested(microphoneModule, "microphone")
                 }
 
                 Notifications {

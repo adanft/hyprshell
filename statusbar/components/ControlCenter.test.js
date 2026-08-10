@@ -2,8 +2,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 
-const source = fs.readFileSync(`${__dirname}/NetworkMenu.js`, "utf8");
-const qml = fs.readFileSync(`${__dirname}/NetworkMenu.qml`, "utf8");
+const source = fs.readFileSync(`${__dirname}/ControlCenter.js`, "utf8");
+const qml = fs.readFileSync(`${__dirname}/ControlCenter.qml`, "utf8");
 const playbackRowQml = fs.readFileSync(
 	`${__dirname}/AudioPlaybackStreamRow.qml`,
 	"utf8",
@@ -223,7 +223,7 @@ for (const file of [
 
 // Every slider in the panel is the same control: one height, one track tone.
 for (const file of [
-	"NetworkMenu",
+	"ControlCenter",
 	"AudioMixerSection",
 	"AudioInputSection",
 	"AudioPlaybackStreamRow",
@@ -379,7 +379,7 @@ assert.match(
 );
 assert.match(
 	qml,
-	/function close\(\) \{[\s\S]*stopBluetoothScan\(\)[\s\S]*networkController\.requestClose\(\)/,
+	/function close\(\) \{[\s\S]*stopBluetoothScan\(\)[\s\S]*controlCenterController\.requestClose\(\)/,
 );
 assert.doesNotMatch(
 	bluetoothServiceQml,
@@ -414,7 +414,7 @@ assert.match(bluetoothRowQml, /Keys\.onSpacePressed/);
 assert.match(qml, /expandedNetworkSection === "bluetooth"/);
 assert.match(
 	qml,
-	/onBodyClicked: networkController\.toggleNetworkSection\("bluetooth"\)/,
+	/onBodyClicked: controlCenterController\.toggleNetworkSection\("bluetooth"\)/,
 );
 assert.match(qml, /text: "Known devices"/);
 assert.match(qml, /model: bluetoothDetailsColumn\.connectedDevices/);
@@ -665,7 +665,7 @@ assert.equal(menu.bluetoothDeviceState({ pairing: true }), "Pairing…");
 assert.equal(menu.bluetoothDeviceState({ state: "Connecting" }), "Available");
 assert.equal(menu.bluetoothDeviceAction({ state: "Connecting" }), "pair");
 assert.doesNotMatch(
-	fs.readFileSync(`${__dirname}/NetworkMenu.js`, "utf8").replace(/\/\/.*$/gm, ""),
+	fs.readFileSync(`${__dirname}/ControlCenter.js`, "utf8").replace(/\/\/.*$/gm, ""),
 	/state === "(Connecting|Disconnecting)"/,
 	"comparing the state enum to a string is how that check went missing",
 );
@@ -945,7 +945,7 @@ assert.match(
 assert.match(playbackRowQml, /color: root\.muted[\s\S]*Colors\.primary/);
 assert.match(
 	playbackRowQml,
-	/Accessible\.name:\s*\[\s*root\.muted\s*\?\s*"Unmute"\s*:\s*"Mute"\s*,\s*" "\s*,\s*NetworkMenuLogic\.playbackStreamLabel\s*\(\s*root\.stream\s*\)\s*\]\.join\(\s*""\s*\)/,
+	/Accessible\.name:\s*\[\s*root\.muted\s*\?\s*"Unmute"\s*:\s*"Mute"\s*,\s*" "\s*,\s*ControlCenterLogic\.playbackStreamLabel\s*\(\s*root\.stream\s*\)\s*\]\.join\(\s*""\s*\)/,
 );
 assert.doesNotMatch(
 	playbackRowQml,
@@ -1013,5 +1013,5 @@ assert.equal(
 );
 
 console.log(
-	"NetworkMenu: identity, uptime, network state, and control actions passed",
+	"ControlCenter: identity, uptime, network state, and control actions passed",
 );

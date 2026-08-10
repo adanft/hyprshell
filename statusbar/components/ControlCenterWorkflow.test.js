@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 
-const source = fs.readFileSync(`${__dirname}/NetworkMenuWorkflow.js`, "utf8");
+const source = fs.readFileSync(`${__dirname}/ControlCenterWorkflow.js`, "utf8");
 const workflow = {};
 vm.createContext(workflow);
 vm.runInContext(source, workflow);

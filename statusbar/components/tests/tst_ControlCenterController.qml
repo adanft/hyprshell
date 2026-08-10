@@ -4,7 +4,7 @@ import ".."
 
 TestCase {
     id: testCase
-    name: "NetworkMenuController"
+    name: "ControlCenterController"
     when: windowShown
 
     Component {
@@ -81,7 +81,7 @@ TestCase {
     }
     Component {
         id: controllerComponent
-        NetworkMenuController {}
+        ControlCenterController {}
     }
     SignalSpy {
         id: closeSpy

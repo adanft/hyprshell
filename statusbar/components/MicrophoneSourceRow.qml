@@ -1,5 +1,5 @@
 import QtQuick
-import "NetworkMenu.js" as NetworkMenuLogic
+import "ControlCenter.js" as ControlCenterLogic
 import "../../theme"
 
 Rectangle {
@@ -22,7 +22,7 @@ Rectangle {
     color: Colors.surface
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: [NetworkMenuLogic.audioSourceLabel(root.source), ", ", NetworkMenuLogic.audioSourceStatus(
+    Accessible.name: [ControlCenterLogic.audioSourceLabel(root.source), ", ", ControlCenterLogic.audioSourceStatus(
             root.source, root.active ? root.source : null)].join("")
 
     Text {
@@ -49,7 +49,7 @@ Rectangle {
 
         Text {
             width: parent.width
-            text: NetworkMenuLogic.audioSourceLabel(root.source)
+            text: ControlCenterLogic.audioSourceLabel(root.source)
             color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
@@ -59,7 +59,7 @@ Rectangle {
 
         Text {
             width: parent.width
-            text: NetworkMenuLogic.audioSourceStatus(root.source, root.active ? root.source : null)
+            text: ControlCenterLogic.audioSourceStatus(root.source, root.active ? root.source : null)
             color: root.active ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeSm
@@ -102,8 +102,8 @@ Rectangle {
             cursorShape: actionInput.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
             Accessible.role: Accessible.Button
-            Accessible.name: root.active ? [NetworkMenuLogic.audioSourceLabel(root.source), " is active"].join("") :
-                                           ["Use ", NetworkMenuLogic.audioSourceLabel(root.source),
+            Accessible.name: root.active ? [ControlCenterLogic.audioSourceLabel(root.source), " is active"].join("") :
+                                           ["Use ", ControlCenterLogic.audioSourceLabel(root.source),
                                             " as microphone"].join("")
 
             onClicked: root.requestSelect()

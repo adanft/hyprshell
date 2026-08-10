@@ -52,43 +52,43 @@ PanelWindow {
         services: window.services
         barWindow: window
         onOpenNotificationCenterRequested: window.openNotificationCenterRequested()
-        onOpenNetworkMenuRequested: (anchorItem, section) => {
-            networkMenuLoader.requestedOpen = !networkMenuLoader.requestedOpen
-            if (!networkMenuLoader.requestedOpen) {
-                if (networkMenuLoader.item && networkMenuLoader.item.menuOpen)
-                    networkMenuLoader.item.close()
+        onOpenControlCenterRequested: (anchorItem, section) => {
+            controlCenterLoader.requestedOpen = !controlCenterLoader.requestedOpen
+            if (!controlCenterLoader.requestedOpen) {
+                if (controlCenterLoader.item && controlCenterLoader.item.menuOpen)
+                    controlCenterLoader.item.close()
                 else
-                    networkMenuLoader.active = false
+                    controlCenterLoader.active = false
                 return
             }
 
-            networkMenuLoader.active = true
+            controlCenterLoader.active = true
             Qt.callLater(() => {
-                if (networkMenuLoader.requestedOpen && networkMenuLoader.item)
-                    networkMenuLoader.item.open(anchorItem, section)
+                if (controlCenterLoader.requestedOpen && controlCenterLoader.item)
+                    controlCenterLoader.item.open(anchorItem, section)
             })
         }
     }
 
     LazyLoader {
-        id: networkMenuLoader
+        id: controlCenterLoader
         property bool requestedOpen: false
         active: false
 
-        NetworkMenu {
+        ControlCenter {
             services: window.services
             barWindow: window
         }
     }
 
     Connections {
-        target: networkMenuLoader.item
+        target: controlCenterLoader.item
         enabled: target !== null
         function onMenuOpenChanged() {
-            const menu = networkMenuLoader.item
+            const menu = controlCenterLoader.item
             if (menu && !menu.menuOpen) {
-                networkMenuLoader.requestedOpen = false
-                networkMenuLoader.active = false
+                controlCenterLoader.requestedOpen = false
+                controlCenterLoader.active = false
             }
         }
     }

@@ -1,5 +1,5 @@
 import QtQuick
-import "NetworkMenu.js" as NetworkMenuLogic
+import "ControlCenter.js" as ControlCenterLogic
 import "../../theme"
 
 Rectangle {
@@ -12,7 +12,7 @@ Rectangle {
     signal primaryActionRequested
     signal forgetRequested
 
-    readonly property string action: NetworkMenuLogic.bluetoothDeviceAction(device)
+    readonly property string action: ControlCenterLogic.bluetoothDeviceAction(device)
     readonly property bool busy: pending || action === "busy"
     readonly property bool forgetAvailable: Boolean(powered && device && (device.connected || device.paired
                                                                           || device.trusted))
@@ -20,7 +20,7 @@ Rectangle {
     radius: theme.shape.radius12
     color: Colors.surface
     Accessible.role: Accessible.ListItem
-    Accessible.name: device ? [device.name || device.deviceName || "Bluetooth device", ", ", NetworkMenuLogic.bluetoothDeviceState(
+    Accessible.name: device ? [device.name || device.deviceName || "Bluetooth device", ", ", ControlCenterLogic.bluetoothDeviceState(
                                    device)].join("") : "Bluetooth device"
 
     function requestPrimaryAction() {
@@ -39,7 +39,7 @@ Rectangle {
         anchors.leftMargin: theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
         width: theme.sizing.statusBarNetworkQuickControlIconWidth
-        text: NetworkMenuLogic.bluetoothDeviceIcon(root.device)
+        text: ControlCenterLogic.bluetoothDeviceIcon(root.device)
         color: root.device?.connected ? Colors.primary : Colors.on_surface
         font.family: theme.typography.iconFontFamily
         font.pixelSize: theme.typography.sizeXl
@@ -63,9 +63,9 @@ Rectangle {
         }
         Text {
             width: parent.width
-            text: root.busy ? "Working…" : NetworkMenuLogic.bluetoothDeviceState(root.device) + (NetworkMenuLogic.bluetoothBatteryText(
+            text: root.busy ? "Working…" : ControlCenterLogic.bluetoothDeviceState(root.device) + (ControlCenterLogic.bluetoothBatteryText(
                                                                                                      root.device)
-                                                                                                 ? " · " + NetworkMenuLogic.bluetoothBatteryText(
+                                                                                                 ? " · " + ControlCenterLogic.bluetoothBatteryText(
                                                                                                        root.device) :
                                                                                                    "")
             color: Colors.on_surface_variant

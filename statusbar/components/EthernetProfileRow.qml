@@ -1,5 +1,5 @@
 import QtQuick
-import "NetworkMenu.js" as NetworkMenuLogic
+import "ControlCenter.js" as ControlCenterLogic
 import "../../theme"
 
 Rectangle {
@@ -24,7 +24,7 @@ Rectangle {
     border.width: 0
 
     Accessible.role: Accessible.ListItem
-    Accessible.name: `${NetworkMenuLogic.ethernetProfileLabel(profile)}, ${active ? "Active" : "Available"}`
+    Accessible.name: `${ControlCenterLogic.ethernetProfileLabel(profile)}, ${active ? "Active" : "Available"}`
 
     Column {
         anchors.left: parent.left
@@ -36,7 +36,7 @@ Rectangle {
 
         Text {
             width: parent.width
-            text: NetworkMenuLogic.ethernetProfileLabel(root.profile)
+            text: ControlCenterLogic.ethernetProfileLabel(root.profile)
             color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
             font.pixelSize: root.theme.typography.sizeMd
@@ -85,7 +85,7 @@ Rectangle {
             enabled: !root.busy
             activeFocusOnTab: enabled
             Accessible.role: Accessible.Button
-            Accessible.name: [root.active ? "Disable" : "Enable", " ", NetworkMenuLogic.ethernetProfileLabel(
+            Accessible.name: [root.active ? "Disable" : "Enable", " ", ControlCenterLogic.ethernetProfileLabel(
                     root.profile)].join("")
             onClicked: root.requestToggle()
             Keys.onSpacePressed: root.requestToggle()

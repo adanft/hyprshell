@@ -319,7 +319,7 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: Qt.alpha(Colors.shadow, 0.25)
+            color: Qt.alpha(Colors.shadow, 0.3)
             focus: true
             Keys.onEscapePressed: launcher.close()
             Keys.onLeftPressed: launcher.moveSelection(-1)

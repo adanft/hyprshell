@@ -281,7 +281,7 @@ Scope {
             id: overlay
 
             anchors.fill: parent
-            color: Qt.alpha(Colors.shadow, 0.25)
+            color: Qt.alpha(Colors.shadow, 0.3)
             focus: true
             Keys.onEscapePressed: tool.close()
             Keys.onLeftPressed: tool.moveSelection(-1)

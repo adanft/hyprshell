@@ -1,10 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 
-const source = fs.readFileSync(
-	`${__dirname}/capabilities/NotificationService.qml`,
-	"utf8",
-);
+const source = fs.readFileSync(`${__dirname}/NotificationService.qml`, "utf8");
 assert.match(source, /property bool notificationHistoryWritePending: false/);
 assert.match(source, /blockWrites: true/);
 assert.match(source, /atomicWrites: true/);

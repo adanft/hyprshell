@@ -47,9 +47,9 @@ Item {
         color: Colors.error
         visible: root.services.notification.hasNotifications
         anchors.top: parent.top
-        anchors.topMargin: root.theme.spacing.notificationBadgeTopMargin
+        anchors.topMargin: root.theme.spacing.space6
         anchors.right: parent.right
-        anchors.rightMargin: root.theme.spacing.notificationBadgeRightMargin
+        anchors.rightMargin: 0
     }
 
     MouseArea {

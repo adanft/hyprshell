@@ -154,7 +154,7 @@ Scope {
         id: powerButtons
 
         Row {
-            spacing: powerMenu.theme.spacing.powerMenuActionSpacing
+            spacing: powerMenu.theme.spacing.space16
 
             Repeater {
                 model: powerMenu.actions
@@ -177,7 +177,7 @@ Scope {
         id: confirmButtons
 
         Row {
-            spacing: powerMenu.theme.spacing.powerMenuActionSpacing
+            spacing: powerMenu.theme.spacing.space16
 
             ActionButton {
                 icon: powerMenu.icons.ui.confirm

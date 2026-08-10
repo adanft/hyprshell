@@ -94,8 +94,8 @@ Scope {
                 id: dialog
 
                 width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth,
-                                parent.width - root.theme.spacing.appLauncherPadding * 2)
-                height: dialogContent.implicitHeight + root.theme.spacing.appLauncherPadding * 2
+                                parent.width - root.theme.spacing.space18 * 2)
+                height: dialogContent.implicitHeight + root.theme.spacing.space18 * 2
                 anchors.centerIn: parent
                 radius: root.theme.shape.appLauncherRadius
                 // Same body the launcher, screenshot tool and selectors use:
@@ -113,8 +113,8 @@ Scope {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    anchors.margins: root.theme.spacing.appLauncherPadding
-                    spacing: root.theme.spacing.appLauncherSectionSpacing
+                    anchors.margins: root.theme.spacing.space18
+                    spacing: root.theme.spacing.space18
 
                     Item {
                         width: parent.width

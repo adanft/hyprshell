@@ -72,15 +72,15 @@ Scope {
             property alias appGrid: grid
             readonly property int columns: selector.theme.sizing.wallpaperGridColumns
             readonly property int cellWidth: selector.theme.sizing.wallpaperCardWidth
-                                             + selector.theme.spacing.wallpaperGridGap
+                                             + selector.theme.spacing.space6
             readonly property int cellHeight: selector.theme.sizing.wallpaperCardHeight
-                                              + selector.theme.spacing.appLauncherCardSpacing
+                                              + selector.theme.spacing.space6
                                               + selector.theme.sizing.wallpaperCardLabelHeight
-                                              + selector.theme.spacing.wallpaperGridGap
+                                              + selector.theme.spacing.space6
             readonly property int gridWidth: columns * cellWidth
 
             anchors.fill: parent
-            anchors.margins: selector.theme.spacing.wallpaperSelectorPadding
+            anchors.margins: selector.theme.spacing.space12
             spacing: selector.theme.spacing.space12
 
             Item {
@@ -118,7 +118,7 @@ Scope {
 
                     Shared.AppText {
                         anchors.left: parent.left
-                        anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                        anchors.leftMargin: selector.theme.spacing.space16
                         anchors.verticalCenter: parent.verticalCenter
                         width: selector.theme.sizing.appLauncherSearchIconSlotWidth
                         text: selector.icons.ui.search
@@ -131,7 +131,7 @@ Scope {
 
                     Shared.AppText {
                         anchors.left: parent.left
-                        anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                        anchors.leftMargin: selector.theme.spacing.space16
                                             + selector.theme.sizing.appLauncherSearchIconSlotWidth
                         anchors.verticalCenter: parent.verticalCenter
                         visible: searchInput.text.length === 0
@@ -145,9 +145,9 @@ Scope {
                         id: searchInput
 
                         anchors.fill: parent
-                        anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                        anchors.leftMargin: selector.theme.spacing.space16
                                             + selector.theme.sizing.appLauncherSearchIconSlotWidth
-                        anchors.rightMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
+                        anchors.rightMargin: selector.theme.spacing.space16
                         clip: true
                         color: Colors.on_surface
                         selectionColor: Colors.primary
@@ -196,7 +196,7 @@ Scope {
                 Text {
                     anchors.centerIn: parent
                     visible: selector.filteredIndices.length === 0
-                    width: parent.width - selector.theme.spacing.wallpaperSelectorEmptyTextHorizontalMargin
+                    width: parent.width - selector.theme.spacing.space80
                     text: selector.searchText.length > 0 ? `No wallpapers match "${selector.searchText}"` :
                                                            `No wallpapers found. Add images to ${selector.wallpapersDir}`
                     color: Colors.on_surface_variant
@@ -226,7 +226,7 @@ Scope {
                         anchors.centerIn: parent
                         width: selector.theme.sizing.wallpaperCardWidth
                         height: selector.theme.sizing.wallpaperCardHeight
-                               + selector.theme.spacing.appLauncherCardSpacing
+                               + selector.theme.spacing.space6
                                + selector.theme.sizing.wallpaperCardLabelHeight
                         path: wallpaperPath
                         label: wallpaperLabel
@@ -296,9 +296,9 @@ Scope {
 
             Rectangle {
                 anchors.centerIn: parent
-                width: Math.min(parent.width - selector.theme.spacing.wallpaperSelectorScreenMargin,
+                width: Math.min(parent.width - selector.theme.spacing.space96,
                                 selector.theme.sizing.wallpaperSelectorMaxWidth)
-                height: Math.min(parent.height - selector.theme.spacing.wallpaperSelectorScreenMargin,
+                height: Math.min(parent.height - selector.theme.spacing.space96,
                                  selector.theme.sizing.wallpaperSelectorMaxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
                 color: Colors.shadow

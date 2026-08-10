@@ -113,13 +113,13 @@ Scope {
             readonly property int cursorRowHeight: Math.max(cursorLabel.implicitHeight, cursorSwitch.height)
             readonly property int timerRowHeight: Math.max(timerLabel.implicitHeight, timerOptions.height)
 
-            spacing: tool.theme.spacing.screenshotToolSectionSpacing
+            spacing: tool.theme.spacing.space18
 
             Row {
                 id: actionRow
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                spacing: tool.theme.spacing.screenshotToolActionRowSpacing
+                spacing: tool.theme.spacing.space6
 
                 Repeater {
                     model: 4
@@ -170,7 +170,7 @@ Scope {
 
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: tool.theme.spacing.screenshotToolTimerOptionSpacing
+                    spacing: tool.theme.spacing.space6
 
                     Repeater {
                         model: tool.delayOptions
@@ -232,8 +232,8 @@ Scope {
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
                         x: tool.includeCursor ? parent.width - width
-                                                - tool.theme.spacing.screenshotToolCursorSwitchKnobMargin :
-                                                tool.theme.spacing.screenshotToolCursorSwitchKnobMargin
+                                                - tool.theme.spacing.space3 :
+                                                tool.theme.spacing.space3
                         color: Colors.on_primary
 
                         Behavior on x {
@@ -303,10 +303,10 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(contentLoader.width + tool.theme.spacing.screenshotToolPadding * 2,
-                                parent.width - tool.theme.spacing.screenshotToolScreenMargin)
-                height: Math.min(contentLoader.height + tool.theme.spacing.screenshotToolPadding * 2,
-                                 parent.height - tool.theme.spacing.screenshotToolScreenMargin)
+                width: Math.min(contentLoader.width + tool.theme.spacing.space18 * 2,
+                                parent.width - tool.theme.spacing.space96)
+                height: Math.min(contentLoader.height + tool.theme.spacing.space18 * 2,
+                                 parent.height - tool.theme.spacing.space96)
                 radius: tool.theme.shape.screenshotToolRadius
                 color: Colors.shadow
 

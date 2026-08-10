@@ -22,7 +22,7 @@ Rectangle {
 
     Column {
         anchors.fill: parent
-        spacing: card.theme.spacing.appLauncherCardSpacing
+        spacing: card.theme.spacing.space6
 
         Rectangle {
             id: imageFrame

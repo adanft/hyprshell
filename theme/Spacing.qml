@@ -1,8 +1,16 @@
 pragma Singleton
 import QtQuick
 
+// The spacing scale, and nothing else.
+//
+// Every gap, margin and padding in the shell is one of these steps, named for
+// what it measures rather than for where it is used. Fifty semantic aliases used
+// to sit on top — eight different names meaning space12, each read exactly once —
+// so a call site named a concept and still told you nothing about the size, and
+// the file grew a name per use rather than a step per distance.
 QtObject {
     readonly property int space2: 2
+    readonly property int space3: 3
     readonly property int space4: 4
     readonly property int space6: 6
     readonly property int space8: 8
@@ -10,53 +18,11 @@ QtObject {
     readonly property int space16: 16
     readonly property int space18: 18
     readonly property int space24: 24
+
+    // Room around a full-screen surface rather than rhythm between elements,
+    // which is why these jump rather than step.
     readonly property int space52: 52
     readonly property int space80: 80
     readonly property int space96: 96
     readonly property int space128: 128
-
-    readonly property int appLauncherScreenMargin: space128
-    readonly property int appLauncherPadding: space18
-    readonly property int appLauncherSectionSpacing: space18
-    readonly property int appLauncherSearchHorizontalPadding: space16
-    readonly property int appLauncherEmptyTextHorizontalMargin: space80
-    readonly property int appLauncherCardPadding: space8
-    readonly property int appLauncherCardSpacing: space6
-
-    readonly property int powerMenuActionSpacing: space16
-
-    readonly property int wallpaperSelectorScreenMargin: space96
-    readonly property int themeSelectorPadding: space12
-    readonly property int wallpaperSelectorPadding: space12
-    readonly property int wallpaperSelectorEmptyTextHorizontalMargin: space80
-    readonly property int wallpaperGridGap: space6
-
-    readonly property int screenshotToolScreenMargin: space96
-    readonly property int screenshotToolPadding: appLauncherPadding
-    readonly property int screenshotToolSectionSpacing: appLauncherSectionSpacing
-    readonly property int screenshotToolActionRowSpacing: space6
-    readonly property int screenshotToolActionPadding: space8
-    readonly property int screenshotToolActionSpacing: appLauncherCardSpacing
-    readonly property int screenshotToolTimerOptionSpacing: appLauncherCardSpacing
-    readonly property int screenshotToolCursorSwitchKnobMargin: 3
-
-    readonly property int notificationBadgeTopMargin: space6
-    readonly property int notificationBadgeRightMargin: 0
-    readonly property int notificationPopupTopMargin: space52
-    readonly property int notificationPopupRightMargin: space12
-    readonly property int notificationPopupBottomMargin: space12
-    readonly property int notificationPopupSpacing: space6
-    readonly property int notificationPopupEnterOffsetMargin: space16
-    readonly property int notificationCenterPadding: space16
-    readonly property int notificationCenterScreenMargin: space6
-    readonly property int notificationCenterSectionSpacing: space12
-    readonly property int notificationCenterHeaderSpacing: space8
-    readonly property int notificationCenterListSpacing: space12
-    readonly property int notificationCardSpacing: space12
-    readonly property int notificationCardPadding: space12
-    readonly property int notificationCardExpandToggleGap: space6
-    readonly property int notificationCardActionSpacing: space6
-    readonly property int notificationCardActionButtonHorizontalPadding: space16
-
-    readonly property int statusBarSliderHitAreaVerticalMargin: space8
 }

@@ -25,8 +25,8 @@ Rectangle {
 
     Column {
         anchors.fill: parent
-        anchors.margins: card.theme.spacing.appLauncherCardPadding
-        spacing: card.theme.spacing.appLauncherCardSpacing
+        anchors.margins: card.theme.spacing.space8
+        spacing: card.theme.spacing.space6
 
         Item {
             width: parent.width

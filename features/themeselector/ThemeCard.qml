@@ -24,7 +24,7 @@ Rectangle {
     readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
     readonly property int nameLineHeight: theme.typography.textMd + theme.spacing.space4
 
-    implicitHeight: theme.spacing.appLauncherCardPadding * 2 + paletteDotSize + theme.spacing.appLauncherCardSpacing
+    implicitHeight: theme.spacing.space8 * 2 + paletteDotSize + theme.spacing.space6
                     + nameLineHeight
 
     signal activated
@@ -36,11 +36,11 @@ Rectangle {
 
     Column {
         anchors.centerIn: parent
-        spacing: card.theme.spacing.appLauncherCardSpacing
+        spacing: card.theme.spacing.space6
 
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: card.theme.spacing.appLauncherCardSpacing
+            spacing: card.theme.spacing.space6
 
             Repeater {
                 model: 4
@@ -60,7 +60,7 @@ Rectangle {
         }
 
         Shared.AppText {
-            width: card.width - card.theme.spacing.appLauncherCardPadding * 2
+            width: card.width - card.theme.spacing.space8 * 2
             height: card.nameLineHeight
             text: card.themeData.displayName
             color: card.previewText

@@ -12,7 +12,7 @@ Item {
     property bool active: true
     property bool exiting: false
     property bool animateY: true
-    property real enterOffset: width + theme.spacing.notificationPopupEnterOffsetMargin
+    property real enterOffset: width + theme.spacing.space16
     readonly property int enterAnimationMs: theme.motion.durationEntrance
     readonly property int moveAnimationMs: theme.motion.durationNormal
     readonly property real layoutHeight: notificationCard.layoutHeight
@@ -27,7 +27,7 @@ Item {
         exiting = false
         exitAnimation.stop()
         enterAnimation.stop()
-        enterOffset = width + theme.spacing.notificationPopupEnterOffsetMargin
+        enterOffset = width + theme.spacing.space16
         enterAnimation.start()
     }
 
@@ -64,7 +64,7 @@ Item {
 
         target: popup
         property: "enterOffset"
-        to: popup.width + popup.theme.spacing.notificationPopupEnterOffsetMargin
+        to: popup.width + popup.theme.spacing.space16
         duration: popup.enterAnimationMs
         easing.type: Easing.Linear
         onFinished: popup.exitFinished()

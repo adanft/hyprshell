@@ -179,8 +179,8 @@ Scope {
             readonly property int gridWidth: columns * launcher.theme.sizing.appLauncherGridCellWidth
 
             anchors.fill: parent
-            anchors.margins: launcher.theme.spacing.appLauncherPadding
-            spacing: launcher.theme.spacing.appLauncherSectionSpacing
+            anchors.margins: launcher.theme.spacing.space18
+            spacing: launcher.theme.spacing.space18
 
             Rectangle {
                 width: content.gridWidth
@@ -191,7 +191,7 @@ Scope {
 
                 Shared.AppText {
                     anchors.left: parent.left
-                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                    anchors.leftMargin: launcher.theme.spacing.space16
                     anchors.verticalCenter: parent.verticalCenter
                     width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     text: launcher.icons.ui.search
@@ -204,7 +204,7 @@ Scope {
 
                 Shared.AppText {
                     anchors.left: parent.left
-                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                    anchors.leftMargin: launcher.theme.spacing.space16
                                         + launcher.theme.sizing.appLauncherSearchIconSlotWidth
                     anchors.verticalCenter: parent.verticalCenter
                     visible: searchInput.text.length === 0
@@ -218,9 +218,9 @@ Scope {
                     id: searchInput
 
                     anchors.fill: parent
-                    anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                    anchors.leftMargin: launcher.theme.spacing.space16
                                         + launcher.theme.sizing.appLauncherSearchIconSlotWidth
-                    anchors.rightMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
+                    anchors.rightMargin: launcher.theme.spacing.space16
                     clip: true
                     color: Colors.on_surface
                     selectionColor: Colors.primary
@@ -268,7 +268,7 @@ Scope {
                 Shared.AppText {
                     anchors.centerIn: parent
                     visible: launcher.filteredApps.length === 0
-                    width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
+                    width: parent.width - launcher.theme.spacing.space80
                     text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
                     color: Colors.on_surface_variant
                     font.pixelSize: launcher.theme.typography.textMd
@@ -339,9 +339,9 @@ Scope {
                 id: container
 
                 anchors.centerIn: parent
-                width: Math.min(parent.width - launcher.theme.spacing.appLauncherScreenMargin,
+                width: Math.min(parent.width - launcher.theme.spacing.space128,
                                 launcher.theme.sizing.appLauncherMaxWidth)
-                height: Math.min(parent.height - launcher.theme.spacing.appLauncherScreenMargin,
+                height: Math.min(parent.height - launcher.theme.spacing.space128,
                                  launcher.theme.sizing.appLauncherMaxHeight)
                 radius: launcher.theme.shape.appLauncherRadius
                 color: Colors.shadow

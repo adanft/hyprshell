@@ -115,8 +115,8 @@ Item {
         id: pointerArea
         objectName: "pointerArea"
         anchors.fill: parent
-        anchors.topMargin: -control.theme.spacing.statusBarSliderHitAreaVerticalMargin
-        anchors.bottomMargin: -control.theme.spacing.statusBarSliderHitAreaVerticalMargin
+        anchors.topMargin: -control.theme.spacing.space8
+        anchors.bottomMargin: -control.theme.spacing.space8
         enabled: control.enabled
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton

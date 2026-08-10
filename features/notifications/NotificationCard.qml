@@ -29,9 +29,9 @@ Item {
     property real allocatedLayoutHeight: layoutHeight
     readonly property string textFont: theme.typography.textFontFamily
     readonly property string iconFont: theme.typography.iconFontFamily
-    readonly property int spacing: theme.spacing.notificationCardSpacing
-    readonly property int actionSpacing: theme.spacing.notificationCardActionSpacing
-    readonly property int cardPadding: theme.spacing.notificationCardPadding
+    readonly property int spacing: theme.spacing.space12
+    readonly property int actionSpacing: theme.spacing.space6
+    readonly property int cardPadding: theme.spacing.space12
     readonly property int borderWidth: theme.shape.notificationCardBorderWidth
     readonly property int iconSlotSize: theme.sizing.notificationCardIconSlotSize
     readonly property int iconSize: theme.sizing.notificationCardIconSize
@@ -39,7 +39,7 @@ Item {
     readonly property int actionButtonHeight: theme.sizing.notificationCardActionButtonHeight
     readonly property int actionButtonRadius: theme.shape.notificationCardActionButtonRadius
     readonly property int actionButtonMinWidth: theme.sizing.notificationCardActionButtonMinWidth
-    readonly property int actionButtonHorizontalPadding: theme.spacing.notificationCardActionButtonHorizontalPadding
+    readonly property int actionButtonHorizontalPadding: theme.spacing.space16
     readonly property int labelFontSize: theme.typography.textSm
     readonly property int titleFontSize: theme.typography.textBase
     readonly property int bodyFontSize: theme.typography.textMd
@@ -615,7 +615,7 @@ Item {
             width: card.closeButtonSize
             height: card.closeButtonSize
             x: parent.width - card.contentInsetRight - card.closeButtonSize
-               - card.theme.spacing.notificationCardExpandToggleGap - card.closeButtonSize
+               - card.theme.spacing.space6 - card.closeButtonSize
             y: card.contentInset
             visible: bodyContainer.canExpand || card.expanded
 

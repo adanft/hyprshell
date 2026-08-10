@@ -830,7 +830,7 @@ Scope {
 
     function setNotificationPopupAvailableHeight(height) {
         const availableHeight = Math.max(0, height || 0)
-        const popupSpacing = root.theme.spacing.notificationPopupSpacing
+        const popupSpacing = root.theme.spacing.space6
         const capacity = Math.max(root.minVisibleNotifications, Math.floor((availableHeight + popupSpacing) / (root.notificationPopupEstimatedHeight
                                                                                                                + popupSpacing)))
         if (root.notificationPopupCapacity === capacity)

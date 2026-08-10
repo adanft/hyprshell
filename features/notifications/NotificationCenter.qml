@@ -14,7 +14,7 @@ PopupWindow {
 
     required property var services
     required property var barWindow
-    readonly property int contentPadding: theme.spacing.notificationCenterPadding
+    readonly property int contentPadding: theme.spacing.space16
     readonly property int cardWidth: theme.sizing.notificationCenterCardWidth
     readonly property real heightRatio: theme.sizing.notificationCenterHeightRatio
     property var expandedNotificationIds: ({})
@@ -58,8 +58,8 @@ PopupWindow {
     grabFocus: true
     color: "transparent"
     anchor.window: barWindow
-    anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width
-                            - theme.spacing.notificationCenterScreenMargin)
+    anchor.rect.x: Math.max(theme.spacing.space6, barWindow.width - width
+                            - theme.spacing.space6)
     anchor.rect.y: theme.sizing.statusBarSurfaceTopOffset
     onVisibleChanged: popup.services.notification.setNotificationCenterOpen(visible)
 
@@ -81,14 +81,14 @@ PopupWindow {
         Column {
             anchors.fill: parent
             anchors.margins: popup.contentPadding
-            spacing: popup.theme.spacing.notificationCenterSectionSpacing
+            spacing: popup.theme.spacing.space12
 
             Row {
                 id: headerRow
 
                 width: parent.width
                 height: popup.theme.sizing.notificationCenterHeaderHeight
-                spacing: popup.theme.spacing.notificationCenterHeaderSpacing
+                spacing: popup.theme.spacing.space8
 
                 AppText {
                     id: headerTitle
@@ -204,7 +204,7 @@ PopupWindow {
                     visible: popup.services.notification.hasNotifications
                     clip: true
                     orientation: ListView.Vertical
-                    spacing: popup.theme.spacing.notificationCenterListSpacing
+                    spacing: popup.theme.spacing.space12
                     cacheBuffer: Math.max(0, height * 2)
                     reuseItems: false
                     model: popup.visible && popup.services.notification.hasNotifications

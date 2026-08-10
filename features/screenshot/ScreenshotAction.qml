@@ -23,8 +23,8 @@ Rectangle {
 
     Column {
         anchors.fill: parent
-        anchors.margins: action.theme.spacing.screenshotToolActionPadding
-        spacing: action.theme.spacing.screenshotToolActionSpacing
+        anchors.margins: action.theme.spacing.space8
+        spacing: action.theme.spacing.space6
 
         Shared.AppText {
             width: parent.width

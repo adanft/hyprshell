@@ -10,10 +10,10 @@ PopupWindow {
     required property var services
     required property var barWindow
     readonly property int popupWidth: theme.sizing.notificationPopupWidth
-    readonly property int topMargin: theme.spacing.notificationPopupTopMargin
-    readonly property int rightMargin: theme.spacing.notificationPopupRightMargin
-    readonly property int bottomMargin: theme.spacing.notificationPopupBottomMargin
-    readonly property int spacing: theme.spacing.notificationPopupSpacing
+    readonly property int topMargin: theme.spacing.space52
+    readonly property int rightMargin: theme.spacing.space12
+    readonly property int bottomMargin: theme.spacing.space12
+    readonly property int spacing: theme.spacing.space6
     property var popupItems: []
     property real stackHeight: 0
     property bool popupRepositionScheduled: false
@@ -215,7 +215,7 @@ PopupWindow {
     visible: stackHeight > 0
     color: "transparent"
     anchor.window: barWindow
-    anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width - rightMargin)
+    anchor.rect.x: Math.max(theme.spacing.space6, barWindow.width - width - rightMargin)
     anchor.rect.y: topMargin
     Component.onCompleted: {
         hoverOwnerId = services.notification.registerNotificationPopupManager()

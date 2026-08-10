@@ -14,6 +14,7 @@ LazyLoader {
     property int _dispatchedGeneration: -1
     property var _dispatchedItem: null
     property bool _openingPending: false
+    property var _visibleConnection: null
 
     active: false
 
@@ -89,9 +90,32 @@ LazyLoader {
         })
     }
 
+    // LazyLoader's default property is its component, so a Connections block
+    // written in here becomes that component — and every use site declares its
+    // own overlay into the same property, which silently wins. The block never
+    // instantiated, so nothing ever observed the item and active was never
+    // cleared: overlays were kept alive for the life of the shell. LazyLoader
+    // takes no sibling objects either, being a QObject, so the connection is
+    // made by hand and the handler is kept so it can be undone.
+    function _observeItem(loadedItem) {
+        if (_observedItem && _visibleConnection)
+            _observedItem.visibleChanged.disconnect(_visibleConnection)
+        _visibleConnection = null
+        _observedItem = loadedItem
+        if (!loadedItem)
+            return
+
+        // Closes over its own item, so a late signal from a replaced item can
+        // never be mistaken for one from the current item.
+        _visibleConnection = function () {
+            root._handleItemVisibleChanged(loadedItem)
+        }
+        loadedItem.visibleChanged.connect(_visibleConnection)
+    }
+
     function _handleItemChanged(loadedItem) {
         const previousItem = _observedItem
-        _observedItem = loadedItem
+        _observeItem(loadedItem)
         _itemPresented = loadedItem !== null && loadedItem.visible
         if (loadedItem !== previousItem) {
             _scheduledGeneration = -1
@@ -120,13 +144,4 @@ LazyLoader {
     }
 
     onItemChanged: _handleItemChanged(item)
-
-    Connections {
-        target: root._observedItem
-        enabled: target !== null
-
-        function onVisibleChanged() {
-            root._handleItemVisibleChanged(target)
-        }
-    }
 }

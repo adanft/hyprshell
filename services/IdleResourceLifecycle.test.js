@@ -38,13 +38,28 @@ for (const contract of [
 	/root\._scheduledGeneration !== generation \|\| root\._scheduledItem !== loadedItem[\s\S]*return;?/,
 	/generation !== root\._lifecycleGeneration[\s\S]*!root\.requestedVisible[\s\S]*root\.item !== loadedItem[\s\S]*return;?/,
 	/root\._openingPending = false;?[\s\S]*root\.directVisibility[\s\S]*loadedItem\.visible = true;?[\s\S]*loadedItem\.open\(\);?/,
-	/function _handleItemChanged\(loadedItem\)[\s\S]*const previousItem = _observedItem;?[\s\S]*_observedItem = loadedItem;?[\s\S]*_itemPresented = loadedItem !== null && loadedItem\.visible;?[\s\S]*loadedItem !== previousItem[\s\S]*_scheduledGeneration = -1;?[\s\S]*_dispatchedGeneration = -1;?[\s\S]*loadedItem && requestedVisible[\s\S]*_scheduleOpen\(_lifecycleGeneration, loadedItem\);?/,
+	/function _handleItemChanged\(loadedItem\)[\s\S]*const previousItem = _observedItem;?[\s\S]*_observeItem\(loadedItem\);?[\s\S]*_itemPresented = loadedItem !== null && loadedItem\.visible;?[\s\S]*loadedItem !== previousItem[\s\S]*_scheduledGeneration = -1;?[\s\S]*_dispatchedGeneration = -1;?[\s\S]*loadedItem && requestedVisible[\s\S]*_scheduleOpen\(_lifecycleGeneration, loadedItem\);?/,
 	/function _handleItemVisibleChanged\(loadedItem\)[\s\S]*loadedItem !== _observedItem[\s\S]*loadedItem\.visible[\s\S]*_itemPresented = true;?[\s\S]*_openingPending = false;?[\s\S]*if \(!_itemPresented\)[\s\S]*return;?[\s\S]*requestedVisible = false;?[\s\S]*active = false;?/,
 	/onItemChanged: _handleItemChanged\(item\)/,
-	/Connections\s*{[\s\S]*target: root\._observedItem[\s\S]*root\._handleItemVisibleChanged\(target\);?/,
+	// The item is observed by hand. This used to assert a Connections block
+	// instead, which is how the bug survived: the block was in the source, so
+	// the regex passed, but LazyLoader's default property is its component and
+	// every use site declared its overlay into the same property, so the block
+	// never instantiated. Nothing observed the item, active was never cleared,
+	// and closed overlays stayed alive. overlay-lifecycle-harness.qml is the
+	// real guard now, because it runs the loader instead of reading it.
+	/function _observeItem\(loadedItem\)[\s\S]*_observedItem\.visibleChanged\.disconnect\(_visibleConnection\);?[\s\S]*loadedItem\.visibleChanged\.connect\(_visibleConnection\);?/,
 ]) {
 	assert.match(overlayLifecycleLoader, contract);
 }
+
+// A Connections block here is silently swallowed by the component default
+// property, so it must never come back — it would look correct and do nothing.
+assert.doesNotMatch(
+	overlayLifecycleLoader,
+	/\bConnections\s*{/,
+	"a Connections block inside LazyLoader lands in its default property and never runs",
+);
 
 for (const loaderId of [
 	"appLauncherLoader",

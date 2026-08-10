@@ -21,6 +21,7 @@ readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
 readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed'
 readonly ROLES_LINE='SMOKETEST: 16 colour roles resolved'
 readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/dnd/single-close passed'
+readonly OVERLAY_LIFECYCLE_LINE='OVERLAY-LIFECYCLE-HARNESS: close/reopen/self-close all destroy the item'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
 # which is the normal case while a shell is running. Matched literally rather
@@ -104,6 +105,22 @@ if [[ "$timeout_status" -ne 0 ]] || ! grep -qF "$TIMEOUT_HARNESS_LINE" <<<"$time
 	failed=1
 else
 	echo "-- Notification timeout harness passed"
+fi
+
+# Whether a closed overlay is destroyed can only be seen by running the loader:
+# the source-text assertion that used to cover it passed for eight months while
+# the observing block never instantiated.
+echo
+echo "== QML overlay lifecycle harness =="
+lifecycle_output=$(timeout 15 qs -p overlay-lifecycle-harness.qml 2>&1)
+lifecycle_status=$?
+lifecycle_output=$(printf '%s\n' "$lifecycle_output" | sed -E 's/\x1b\[[0-9;]*m//g')
+if [[ "$lifecycle_status" -ne 0 ]] || ! grep -qF "$OVERLAY_LIFECYCLE_LINE" <<<"$lifecycle_output"; then
+	echo "-- FAILED: overlay lifecycle harness"
+	printf '%s\n' "$lifecycle_output" | sed 's/^/   /'
+	failed=1
+else
+	echo "-- Overlay lifecycle harness passed"
 fi
 
 # smoketest.qml calls Qt.quit() on its own; the timeout only catches a hang.

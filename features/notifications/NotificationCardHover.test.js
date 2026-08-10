@@ -50,6 +50,6 @@ for (const [id, click] of [
 	assert.ok(match[1].includes(`onClicked: ${click}`));
 }
 
-assert.match(card, /text: card\.expanded \? card\.icons\.chevronUp : card\.icons\.chevronDown/);
+assert.match(card, /text: card\.expanded \? card\.icons\.ui\.chevronUp : card\.icons\.ui\.chevronDown/);
 
 console.log("NotificationCard: whole-card hover pauses timeout and preserves controls");

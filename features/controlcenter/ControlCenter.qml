@@ -63,16 +63,16 @@ Item {
                                                                              root.services.audio.sinkMuted,
                                                                              root.outputQuickVolume
                                                                              ?.authoritativePercent)
-    readonly property string outputIcon: root.outputIconKind === "unavailable" ? root.icons.volumeUnavailable : (root.outputIconKind
+    readonly property string outputIcon: root.outputIconKind === "unavailable" ? root.icons.audio.volumeUnavailable : (root.outputIconKind
                                                                                                                  === "muted"
-                                                                                                                 ? root.icons.volumeMuted :
+                                                                                                                 ? root.icons.audio.volumeMuted :
                                                                                                                    (root.outputIconKind
                                                                                                                     === "low"
-                                                                                                                    ? root.icons.volumeLow :
+                                                                                                                    ? root.icons.audio.volumeLow :
                                                                                                                       (root.outputIconKind
                                                                                                                        === "medium"
-                                                                                                                       ? root.icons.volumeMedium :
-                                                                                                                         root.icons.volumeHigh)))
+                                                                                                                       ? root.icons.audio.volumeMedium :
+                                                                                                                         root.icons.audio.volumeHigh)))
 
     ControlCenterController {
         id: controlCenterController
@@ -404,7 +404,7 @@ Item {
                                         width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
-                                        text: root.icons.brightnessControl
+                                        text: root.icons.display.brightness
                                         color: brightnessSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                                         font.family: root.theme.typography.iconFontFamily
                                         font.pixelSize: root.theme.typography.textLg
@@ -446,8 +446,8 @@ Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
                                 theme: root.theme
-                                icon: root.services.network.lanUp ? root.icons.ethernet :
-                                                                    root.icons.ethernetDisconnected
+                                icon: root.services.network.lanUp ? root.icons.network.ethernet :
+                                                                    root.icons.network.ethernetDisconnected
 
                                 title: "Ethernet"
                                 subtitle: root.services.network.lanUp ? "Connected" : (root.services.network.lanDevice
@@ -466,9 +466,9 @@ Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
                                 theme: root.theme
-                                icon: root.services.network.wifiUp ? root.icons.wifiConnected : (Networking.wifiEnabled
-                                                                                                 ? root.icons.wifiEnabled :
-                                                                                                   root.icons.wifiDisconnected)
+                                icon: root.services.network.wifiUp ? root.icons.network.wifiConnected : (Networking.wifiEnabled
+                                                                                                 ? root.icons.network.wifiEnabled :
+                                                                                                   root.icons.network.wifiDisconnected)
                                 title: "Wi-Fi"
                                 subtitle: !Networking.wifiHardwareEnabled ? "Unavailable" : (!Networking.wifiEnabled
                                                                                              ? "Disabled" :
@@ -516,8 +516,8 @@ Item {
                                 width: (parent.width - parent.spacing) / 2
                                 height: parent.height
                                 theme: root.theme
-                                icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted :
-                                                                        root.icons.microphone
+                                icon: root.services.audio.sourceMuted ? root.icons.audio.microphoneMuted :
+                                                                        root.icons.audio.microphone
 
                                 title: ControlCenterLogic.audioSourceLabel(root.services.audio.source, "Microphone")
                                 subtitle: ControlCenterLogic.microphoneSummary(root.services.audio.microphoneAvailable,
@@ -542,12 +542,12 @@ Item {
                         width: (parent.width - root.theme.spacing.space8) / 2
                         height: root.theme.sizing.statusBarNetworkQuickControlHeight
                         theme: root.theme
-                        icon: !root.services.bluetooth.bluetoothAvailable ? root.icons.bluetoothOff : (
+                        icon: !root.services.bluetooth.bluetoothAvailable ? root.icons.bluetooth.off : (
                                                                                 root.services.bluetooth.bluetoothConnectedCount
-                                                                                > 0 ? root.icons.bluetoothConnected : (
+                                                                                > 0 ? root.icons.bluetooth.connected : (
                                                                                           root.services.bluetooth.bluetoothPowered
-                                                                                          ? root.icons.bluetoothOn :
-                                                                                            root.icons.bluetoothOff))
+                                                                                          ? root.icons.bluetooth.on :
+                                                                                            root.icons.bluetooth.off))
                         title: "Bluetooth"
                         subtitle: ControlCenterLogic.bluetoothSummary(root.services.bluetooth.bluetoothAvailable,
                                                                     root.services.bluetooth.bluetoothPowered,
@@ -778,7 +778,7 @@ Item {
 
                                             AppText {
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                text: root.icons.search
+                                                text: root.icons.ui.search
                                                 color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
                                                 font.family: root.theme.typography.iconFontFamily
                                                 font.pixelSize: root.theme.typography.textSm

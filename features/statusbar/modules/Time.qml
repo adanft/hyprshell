@@ -15,7 +15,7 @@ Row {
     spacing: theme.spacing.space6
 
     AppText {
-        text: root.icons.time
+        text: root.icons.system.clock
         color: Colors.on_surface
     }
 

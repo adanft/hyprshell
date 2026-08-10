@@ -22,7 +22,7 @@ Row {
 
     AppText {
         height: parent.height
-        text: root.activeToplevel ? root.icons.window : ""
+        text: root.activeToplevel ? root.icons.system.window : ""
         color: Colors.tertiary
         font.family: root.theme.typography.iconFontFamily
         font.pixelSize: root.theme.typography.textLg

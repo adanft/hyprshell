@@ -23,18 +23,18 @@ Item {
 
     function iconText() {
         if (!available || muted)
-            return source ? icons.microphoneMuted : icons.volumeMuted
+            return source ? icons.audio.microphoneMuted : icons.audio.volumeMuted
 
         if (source)
-            return icons.microphone
+            return icons.audio.microphone
 
         if (volume < 34)
-            return icons.volumeLow
+            return icons.audio.volumeLow
 
         if (volume < 67)
-            return icons.volumeMedium
+            return icons.audio.volumeMedium
 
-        return icons.volumeHigh
+        return icons.audio.volumeHigh
     }
 
     width: content.implicitWidth

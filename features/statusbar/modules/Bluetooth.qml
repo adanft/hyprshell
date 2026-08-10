@@ -21,12 +21,12 @@ Item {
 
     function icon() {
         if (!services.bluetooth.bluetoothPowered)
-            return icons.bluetoothOff
+            return icons.bluetooth.off
 
         if (services.bluetooth.bluetoothConnectedCount > 0)
-            return icons.bluetoothConnected
+            return icons.bluetooth.connected
 
-        return icons.bluetoothOn
+        return icons.bluetooth.on
     }
 
     implicitWidth: content.implicitWidth

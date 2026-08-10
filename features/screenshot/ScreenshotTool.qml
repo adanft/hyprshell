@@ -48,15 +48,15 @@ Scope {
     function actionIcon(index) {
         switch (index) {
         case 0:
-            return "󰍺"
+            return tool.icons.capture.allScreens
         case 1:
-            return "󰍹"
+            return tool.icons.capture.monitor
         case 2:
-            return ""
+            return tool.icons.capture.window
         case 3:
-            return "󰆞"
+            return tool.icons.capture.area
         default:
-            return "󰍹"
+            return tool.icons.capture.monitor
         }
     }
 
@@ -148,7 +148,7 @@ Scope {
 
                     Shared.AppText {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: ""
+                        text: tool.icons.ui.timer
                         color: Colors.tertiary
                         font.family: tool.theme.typography.iconFontFamily
                         font.pixelSize: tool.theme.typography.glyphMd
@@ -199,7 +199,7 @@ Scope {
 
                     Shared.AppText {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: ""
+                        text: tool.icons.ui.cursor
                         color: Colors.tertiary
                         font.family: tool.theme.typography.iconFontFamily
                         font.pixelSize: tool.theme.typography.glyphMd

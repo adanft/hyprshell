@@ -333,7 +333,7 @@ ShellRoot {
                         + ` | spacing=${Theme.AppTheme.spacing.space6}`
                         + ` | sizing=${Theme.AppTheme.sizing.size24}`
                         + ` | motion=${Theme.AppTheme.motion.durationNormal}`
-                        + ` | icons=${Theme.Icons.search}`)
+                        + ` | icons=${Theme.Icons.ui.search}`)
             Qt.quit()
         }
     }

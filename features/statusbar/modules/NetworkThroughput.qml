@@ -46,7 +46,7 @@ Item {
         spacing: root.theme.spacing.space6
 
         AppText {
-            text: root.icons.networkThroughput
+            text: root.icons.network.throughput
             color: root.neutralColor
         }
 

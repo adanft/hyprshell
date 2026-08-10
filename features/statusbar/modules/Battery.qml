@@ -12,21 +12,21 @@ Item {
     required property var services
 
     readonly property int level: services.batteryPower.batteryLevel
-    readonly property int iconIndex: Math.max(0, Math.min(icons.batteryLevels.length - 1, Math.ceil(level / (100
-                                                                                                             / icons.batteryLevels.length))
+    readonly property int iconIndex: Math.max(0, Math.min(icons.battery.levels.length - 1, Math.ceil(level / (100
+                                                                                                             / icons.battery.levels.length))
                                                           - 1))
     readonly property string iconText: {
         if (services.batteryPower.batteryCharging || services.batteryPower.batteryPendingCharge)
-            return icons.batteryCharging
+            return icons.battery.charging
         if (services.batteryPower.batteryFull)
-            return icons.batteryFull
+            return icons.battery.full
         if (services.batteryPower.batteryUnknown)
-            return icons.batteryUnknown
+            return icons.battery.unknown
         if (services.batteryPower.batteryEmpty)
-            return icons.batteryCritical
+            return icons.battery.critical
         if (services.batteryPower.batteryPendingDischarge)
-            return icons.batteryWarning
-        return icons.batteryLevels[iconIndex]
+            return icons.battery.warning
+        return icons.battery.levels[iconIndex]
     }
     readonly property color textColor: {
         if (services.batteryPower.batteryEmpty || services.batteryPower.batteryCritical)

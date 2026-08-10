@@ -166,7 +166,7 @@ Scope {
                         ThemeVariantFilter {
                             required property string modelData
 
-                            icon: modelData === "dark" ? "" : ""
+                            icon: modelData === "dark" ? selector.icons.appearance.dark : selector.icons.appearance.light
                             selected: selector.activeVariants.includes(modelData)
                             onActivated: selector.toggleVariantFilter(modelData)
                         }
@@ -186,7 +186,7 @@ Scope {
                         anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
                         anchors.verticalCenter: parent.verticalCenter
                         width: selector.theme.sizing.appLauncherSearchIconSlotWidth
-                        text: selector.icons.search
+                        text: selector.icons.ui.search
                         color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
                         font.pixelSize: selector.theme.typography.textBase

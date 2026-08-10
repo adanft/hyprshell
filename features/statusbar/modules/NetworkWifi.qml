@@ -21,8 +21,8 @@ Item {
 
     function icon() {
         if (connected)
-            return icons.wifiConnected
-        return Networking.wifiEnabled ? icons.wifiEnabled : icons.wifiDisconnected
+            return icons.network.wifiConnected
+        return Networking.wifiEnabled ? icons.network.wifiEnabled : icons.network.wifiDisconnected
     }
 
     implicitWidth: content.implicitWidth

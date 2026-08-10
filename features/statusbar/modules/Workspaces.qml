@@ -38,7 +38,7 @@ Item {
                 readonly property bool hovered: mouseArea.containsMouse
 
                 width: root.theme.sizing.statusBarWorkspaceSlotSize
-                text: root.icons.workspaceDot
+                text: root.icons.system.workspaceDot
                 color: root.workspaceColor(urgent, active, root.monitorFocused, hovered, empty)
                 font.family: root.theme.typography.iconFontFamily
                 horizontalAlignment: Text.AlignHCenter

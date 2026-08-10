@@ -408,7 +408,7 @@ Item {
                         anchors.centerIn: parent
                         width: card.iconSize
                         height: card.iconSize
-                        text: card.icons.notificationsEmpty
+                        text: card.icons.notification.bellEmpty
                         color: Colors.on_surface
                         font.family: card.iconFont
                         font.pixelSize: card.iconSize
@@ -439,7 +439,7 @@ Item {
                         Text {
                             id: timeSeparator
 
-                            text: timeLabel.text.length > 0 ? card.icons.textSeparatorBullet : ""
+                            text: timeLabel.text.length > 0 ? card.icons.ui.bullet : ""
                             color: Colors.on_surface_variant
                             font.family: card.textFont
                             font.pixelSize: card.labelFontSize
@@ -582,7 +582,7 @@ Item {
 
                         Text {
                             anchors.fill: parent
-                            text: card.isHistoryEntry ? card.icons.trash : card.icons.close
+                            text: card.isHistoryEntry ? card.icons.ui.trash : card.icons.ui.close
                             color: closeMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                             font.family: card.iconFont
                             font.pixelSize: card.closeIconFontSize
@@ -626,7 +626,7 @@ Item {
 
                 Text {
                     anchors.fill: parent
-                    text: card.expanded ? card.icons.chevronUp : card.icons.chevronDown
+                    text: card.expanded ? card.icons.ui.chevronUp : card.icons.ui.chevronDown
                     color: expandMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                     font.family: card.iconFont
                     font.pixelSize: card.closeIconFontSize

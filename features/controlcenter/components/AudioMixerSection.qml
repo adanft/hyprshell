@@ -100,7 +100,7 @@ Column {
                     width: outputDevicesList.width
                     device: modelData
                     active: modelData === root.audio.sink
-                    icon: root.icons.audioOutput
+                    icon: root.icons.audio.output
                     theme: root.theme
                     onSelectRequested: device => root.audio.selectAudioSink(device)
                 }
@@ -148,12 +148,12 @@ Column {
                     required property var modelData
                     width: playbackStreamsList.width
                     stream: modelData
-                    icon: root.icons.audioStream
-                    volumeUnavailableIcon: root.icons.volumeUnavailable
-                    volumeMutedIcon: root.icons.volumeMuted
-                    volumeLowIcon: root.icons.volumeLow
-                    volumeMediumIcon: root.icons.volumeMedium
-                    volumeHighIcon: root.icons.volumeHigh
+                    icon: root.icons.audio.stream
+                    volumeUnavailableIcon: root.icons.audio.volumeUnavailable
+                    volumeMutedIcon: root.icons.audio.volumeMuted
+                    volumeLowIcon: root.icons.audio.volumeLow
+                    volumeMediumIcon: root.icons.audio.volumeMedium
+                    volumeHighIcon: root.icons.audio.volumeHigh
                     theme: root.theme
                     onMuteRequested: stream => root.audio.togglePlaybackStreamMute(stream)
                     onVolumeRequested: (stream, value) => root.audio.requestPlaybackStreamVolume(stream, value)

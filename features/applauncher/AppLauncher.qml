@@ -194,7 +194,7 @@ Scope {
                     anchors.leftMargin: launcher.theme.spacing.appLauncherSearchHorizontalPadding
                     anchors.verticalCenter: parent.verticalCenter
                     width: launcher.theme.sizing.appLauncherSearchIconSlotWidth
-                    text: launcher.icons.search
+                    text: launcher.icons.ui.search
                     color: Colors.on_surface_variant
                     font.family: launcher.theme.typography.iconFontFamily
                     font.pixelSize: launcher.theme.typography.textBase

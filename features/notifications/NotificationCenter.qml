@@ -119,7 +119,7 @@ PopupWindow {
 
                     AppText {
                         anchors.fill: parent
-                        text: popup.icons.notificationsDnd
+                        text: popup.icons.notification.doNotDisturb
                         color: popup.services.notification.notificationDnd ? Colors.on_primary :
                                                                              (dndMouse.containsMouse || dndMouse.activeFocus ?
                                                                               Colors.on_hover :
@@ -159,7 +159,7 @@ PopupWindow {
 
                     AppText {
                         anchors.fill: parent
-                        text: popup.icons.notificationsClear
+                        text: popup.icons.notification.clear
                         color: clearMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                         font.family: popup.theme.typography.iconFontFamily
                         font.pixelSize: popup.theme.typography.glyphSm

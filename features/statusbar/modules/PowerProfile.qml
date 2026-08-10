@@ -20,8 +20,8 @@ Item {
         anchors.centerIn: parent
         color: root.profile === "performance" ? Colors.error : root.profile === "power-saver" ? Colors.hover :
                                                                                                       Colors.tertiary
-        text: root.profile === "performance" ? root.icons.powerPerformance : root.profile === "power-saver"
-                                               ? root.icons.powerSaver : root.icons.powerBalanced
+        text: root.profile === "performance" ? root.icons.powerProfile.performance : root.profile === "power-saver"
+                                               ? root.icons.powerProfile.saver : root.icons.powerProfile.balanced
         font.pixelSize: root.theme.typography.glyphMd
     }
 

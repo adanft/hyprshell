@@ -50,7 +50,7 @@ Rectangle {
 
                     width: card.paletteDotSize
                     height: card.paletteDotSize
-                    text: card.icons.workspaceDot
+                    text: card.icons.system.workspaceDot
                     color: card.previewColors[index]
                     font.family: card.theme.typography.iconFontFamily
                     font.pixelSize: card.theme.typography.glyphLg

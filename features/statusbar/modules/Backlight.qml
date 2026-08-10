@@ -12,8 +12,8 @@ Item {
     required property var services
 
     readonly property int level: services.brightness.brightnessLevel
-    readonly property int iconIndex: Math.max(0, Math.min(icons.backlightLevels.length - 1, Math.floor(level / 100 * (
-                                                                                                           icons.backlightLevels.length
+    readonly property int iconIndex: Math.max(0, Math.min(icons.display.backlightLevels.length - 1, Math.floor(level / 100 * (
+                                                                                                           icons.display.backlightLevels.length
                                                                                                            - 1))))
 
     visible: services.brightness.brightnessAvailable
@@ -29,7 +29,7 @@ Item {
         spacing: root.theme.spacing.space6
 
         AppText {
-            text: root.icons.backlightLevels[root.iconIndex]
+            text: root.icons.display.backlightLevels[root.iconIndex]
             color: Colors.on_surface
         }
 

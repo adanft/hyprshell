@@ -35,7 +35,7 @@ Item {
         spacing: root.theme.spacing.space6
 
         AppText {
-            text: root.icons.memory
+            text: root.icons.system.memory
             color: root.moduleColor
         }
 

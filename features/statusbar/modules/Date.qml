@@ -15,7 +15,7 @@ Row {
     spacing: theme.spacing.space6
 
     AppText {
-        text: root.icons.date
+        text: root.icons.system.calendar
         color: Colors.on_surface
     }
 

@@ -27,9 +27,9 @@ Scope {
     property int selectedIndex: 0
     readonly property var extensionFilters: ["png", "jpg", "gif"]
     readonly property var extensionFilterIcons: ({
-            "png": "󰵸",
-            "jpg": "󰈥",
-            "gif": "󰸭"
+            "png": Icons.fileFormat.png,
+            "jpg": Icons.fileFormat.jpg,
+            "gif": Icons.fileFormat.gif
         })
     property var activeExtensions: []
     readonly property var filteredIndices: computeFilteredIndices()
@@ -121,7 +121,7 @@ Scope {
                         anchors.leftMargin: selector.theme.spacing.appLauncherSearchHorizontalPadding
                         anchors.verticalCenter: parent.verticalCenter
                         width: selector.theme.sizing.appLauncherSearchIconSlotWidth
-                        text: selector.icons.search
+                        text: selector.icons.ui.search
                         color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
                         font.pixelSize: selector.theme.typography.textBase

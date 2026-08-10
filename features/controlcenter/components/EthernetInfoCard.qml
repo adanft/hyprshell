@@ -37,7 +37,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         // One glyph in every state: the tone, the dot and the label already
         // say three times over whether the link is up.
-        text: card.icons.ethernetPort
+        text: card.icons.network.ethernetPort
         color: card.tone
         font.family: card.theme.typography.iconFontFamily
         font.pixelSize: card.theme.typography.glyphLg
@@ -53,7 +53,7 @@ Rectangle {
 
         AppText {
             anchors.verticalCenter: parent.verticalCenter
-            text: card.icons.workspaceDot
+            text: card.icons.system.workspaceDot
             color: card.tone
             font.family: card.theme.typography.iconFontFamily
             font.pixelSize: card.theme.typography.textSm

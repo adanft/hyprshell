@@ -36,7 +36,7 @@ Column {
                 width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
-                text: root.services.audio.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                text: root.services.audio.sourceMuted ? root.icons.audio.microphoneMuted : root.icons.audio.microphone
                 color: microphoneSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                 font.family: root.theme.typography.iconFontFamily
                 font.pixelSize: root.theme.typography.textLg
@@ -85,7 +85,7 @@ Column {
 
                 width: parent.width
                 source: modelData
-                icon: root.services.audio.sourceMuted ? root.icons.microphoneMuted : root.icons.microphone
+                icon: root.services.audio.sourceMuted ? root.icons.audio.microphoneMuted : root.icons.audio.microphone
                 active: modelData === root.services.audio.source
                 theme: root.theme
                 onSelectRequested: source => root.services.audio.selectAudioSource(source)

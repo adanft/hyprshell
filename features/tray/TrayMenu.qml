@@ -192,7 +192,7 @@ Item {
 
                         AppText {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: root.icons.trayBack
+                            text: root.icons.ui.chevronLeft
                             color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
                             font.family: root.theme.typography.textFontFamily
                             font.pixelSize: root.theme.typography.textBase
@@ -281,7 +281,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     visible: menuEntryRoot.modelData && menuEntryRoot.modelData.checkState === 2
-                                    text: root.icons.trayCheck
+                                    text: root.icons.ui.check
                                     color: entryMouseArea.containsMouse ? Colors.on_hover : Colors.tertiary
                                     font.pixelSize: root.theme.typography.textSm
                                 }
@@ -312,7 +312,7 @@ Item {
                             AppText {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.hasChildren
-                                text: root.icons.traySubmenu
+                                text: root.icons.ui.chevronRight
                                 color: entryMouseArea.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                                 font.family: root.theme.typography.textFontFamily
                             }

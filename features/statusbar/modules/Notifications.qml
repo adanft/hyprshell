@@ -22,9 +22,9 @@ Item {
 
     function iconText() {
         if (services.notification.notificationDnd)
-            return icons.notificationsDnd
+            return icons.notification.doNotDisturb
 
-        return icons.notifications
+        return icons.notification.bell
     }
 
     implicitWidth: content.implicitWidth

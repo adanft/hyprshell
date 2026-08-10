@@ -161,7 +161,7 @@ Scope {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: root.icons.close
+                                text: root.icons.ui.close
                                 color: closeInput.containsMouse || closeInput.activeFocus ? Colors.on_hover :
                                                                                             Colors.on_surface_variant
                                 font.family: root.theme.typography.iconFontFamily
@@ -227,8 +227,8 @@ Scope {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: passwordInput.echoMode === TextInput.Password ? root.icons.passwordHidden :
-                                                                                      root.icons.passwordVisible
+                                text: passwordInput.echoMode === TextInput.Password ? root.icons.ui.passwordHidden :
+                                                                                      root.icons.ui.passwordVisible
                                 color: Colors.on_surface_variant
                                 font.family: root.theme.typography.iconFontFamily
                                 font.pixelSize: root.theme.typography.textMd

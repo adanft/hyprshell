@@ -17,27 +17,27 @@ Scope {
     property int confirmSelectedIndex: 0
     readonly property var actions: [
         {
-            "icon": icons.lockSession,
+            "icon": icons.session.lock,
             "command": ["loginctl", "lock-session"],
             "primary": Colors.secondary
         },
         {
-            "icon": icons.suspendSession,
+            "icon": icons.session.suspend,
             "command": ["systemctl", "suspend"],
             "primary": Colors.tertiary
         },
         {
-            "icon": icons.logoutSession,
+            "icon": icons.session.logout,
             "command": ["hyprctl", "dispatch", "hl.dsp.exit()"],
             "primary": Colors.primary
         },
         {
-            "icon": icons.rebootSession,
+            "icon": icons.session.reboot,
             "command": ["systemctl", "reboot"],
             "primary": Colors.hover
         },
         {
-            "icon": icons.powerOffSession,
+            "icon": icons.session.powerOff,
             "command": ["systemctl", "poweroff"],
             "primary": Colors.error
         }
@@ -180,7 +180,7 @@ Scope {
             spacing: powerMenu.theme.spacing.powerMenuActionSpacing
 
             ActionButton {
-                icon: powerMenu.icons.confirm
+                icon: powerMenu.icons.ui.confirm
                 primary: Colors.hover
                 selected: powerMenu.confirmSelectedIndex === 0
                 onHovered: powerMenu.confirmSelectedIndex = 0
@@ -188,7 +188,7 @@ Scope {
             }
 
             ActionButton {
-                icon: powerMenu.icons.cancel
+                icon: powerMenu.icons.ui.cancel
                 primary: Colors.error
                 selected: powerMenu.confirmSelectedIndex === 1
                 onHovered: powerMenu.confirmSelectedIndex = 1

@@ -974,11 +974,11 @@ assert.doesNotMatch(
 	/playbackStreamMuteLabel|text: root\.muted \? "Unmute" : "Mute"/,
 );
 for (const binding of [
-	"volumeUnavailableIcon: root.icons.volumeUnavailable",
-	"volumeMutedIcon: root.icons.volumeMuted",
-	"volumeLowIcon: root.icons.volumeLow",
-	"volumeMediumIcon: root.icons.volumeMedium",
-	"volumeHighIcon: root.icons.volumeHigh",
+	"volumeUnavailableIcon: root.icons.audio.volumeUnavailable",
+	"volumeMutedIcon: root.icons.audio.volumeMuted",
+	"volumeLowIcon: root.icons.audio.volumeLow",
+	"volumeMediumIcon: root.icons.audio.volumeMedium",
+	"volumeHighIcon: root.icons.audio.volumeHigh",
 ])
 	assert.ok(
 		mixerQml.includes(binding),

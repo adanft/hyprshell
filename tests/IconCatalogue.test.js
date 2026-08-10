@@ -68,14 +68,12 @@ for (const group of groups)
 		`Icons must group ${group}`,
 	);
 
-// Everything is a group or the one documented composite: no icon may sit loose
-// at the top level, which is how the flat list grew to sixty in the first place.
+// Everything is a group: no icon may sit loose at the top level, which is how
+// the flat list grew to sixty in the first place.
 const topLevel = [
 	...source.matchAll(/^ {4}readonly property (\w+) (\w+):/gm),
 ].map(([, type, name]) => ({ type, name }));
-const loose = topLevel.filter(
-	(entry) => entry.type !== "QtObject" && entry.name !== "themePreviewNavigation",
-);
+const loose = topLevel.filter((entry) => entry.type !== "QtObject");
 assert.deepEqual(
 	loose,
 	[],

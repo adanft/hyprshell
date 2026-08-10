@@ -27,16 +27,6 @@ QtObject {
     readonly property int themeSelectorMaxHeight: 226
     readonly property int themeSelectorCellWidth: 160
     readonly property int themeVariantFilterWidth: 42
-    readonly property int themePreviewReferenceWidth: 400
-    readonly property int themePreviewReferenceHeight: 208
-    readonly property int themePreviewHeaderMinHeight: size24
-    readonly property int themePreviewDotMinSize: 9
-    readonly property int themePreviewDotSize: 12
-    readonly property int themePreviewRailMinWidth: 30
-    readonly property int themePreviewNavigationItemMinSize: 22
-    readonly property int themePreviewContentMinWidth: 68
-    readonly property int themePreviewBarMinHeight: 5
-    readonly property int themePreviewBarHeight: 7
 
     readonly property int powerMenuActionSize: 136
 
@@ -68,6 +58,7 @@ QtObject {
     readonly property int notificationCenterClearButtonHeight: size26
     readonly property int notificationCenterClearButtonWidth: 72
     readonly property int notificationCardCollapsedBodyLines: 2
+    readonly property int notificationCardUrgencyBarWidth: 3
     readonly property int notificationCardIconSlotSize: 36
     readonly property int notificationCardIconSize: 36
     readonly property int notificationCardIconSaveSize: 72

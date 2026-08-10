@@ -79,7 +79,7 @@ Item {
         const actionSpace = hasActions ? spacing + actionButtonHeight : 0
         return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
     }
-    readonly property int urgencyBarWidth: theme.spacing.notificationCardUrgencyBarWidth
+    readonly property int urgencyBarWidth: theme.sizing.notificationCardUrgencyBarWidth
     readonly property color urgencyBarColor: {
         if (!notificationData)
             return Colors.tertiary

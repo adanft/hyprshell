@@ -14,7 +14,6 @@ QtObject {
     readonly property int borderMedium: 2
     readonly property int borderEmphasis: 6
     readonly property int focusBorderWidth: borderMedium
-    readonly property int themePreviewNavigationRadius: 6
 
     readonly property int appLauncherRadius: radius16
     readonly property int appLauncherBorderWidth: borderMedium

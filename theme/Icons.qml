@@ -125,8 +125,4 @@ QtObject {
         readonly property string timer: ""
         readonly property string cursor: ""
     }
-
-    // Decoration for the theme preview's mock navigation rail, not an icon in
-    // its own right. Kept whole because the preview draws it as a set.
-    readonly property var themePreviewNavigation: ["", ui.search, "", ""]
 }

@@ -23,19 +23,6 @@ QtObject {
     readonly property int appLauncherCardPadding: space8
     readonly property int appLauncherCardSpacing: space6
 
-    readonly property int themePreviewHeaderSpacingMin: space4
-    readonly property int themePreviewHeaderSpacing: space6
-    readonly property int themePreviewNavigationSpacingMin: 3
-    readonly property int themePreviewNavigationSpacing: 5
-    readonly property int themePreviewContentMarginMin: space8
-    readonly property int themePreviewContentMargin: 14
-    readonly property int themePreviewContentSpacingMin: 5
-    readonly property int themePreviewContentSpacing: space8
-    readonly property int themePreviewFooterMarginMin: 7
-    readonly property int themePreviewFooterMargin: 11
-    readonly property int themePreviewFooterSpacingMin: space6
-    readonly property int themePreviewFooterSpacing: 9
-
     readonly property int powerMenuActionSpacing: space16
 
     readonly property int wallpaperSelectorScreenMargin: space96
@@ -67,7 +54,6 @@ QtObject {
     readonly property int notificationCenterListSpacing: space12
     readonly property int notificationCardSpacing: space12
     readonly property int notificationCardPadding: space12
-    readonly property int notificationCardUrgencyBarWidth: 3
     readonly property int notificationCardExpandToggleGap: space6
     readonly property int notificationCardActionSpacing: space6
     readonly property int notificationCardActionButtonHorizontalPadding: space16

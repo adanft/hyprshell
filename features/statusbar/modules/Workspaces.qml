@@ -23,10 +23,10 @@ Row {
     required property var screen
     required property var services
 
-    // A workspace with nothing in it is the same chip turned down, not a chip in
-    // another colour: dimming the whole thing keeps the number's contrast against
-    // its own circle instead of fading the two apart.
-    readonly property real emptyOpacity: 0.25
+    // An empty workspace fades its circle and keeps its number. Only the fill
+    // drops, so the row still reads as the same set of numbers with some of
+    // their circles turned down.
+    readonly property real emptyFillOpacity: 0.1
 
     spacing: theme.spacing.space4
 
@@ -54,8 +54,7 @@ Row {
             width: active ? StatusBarSizing.workspaceSlotSize * 2 : StatusBarSizing.workspaceSlotSize
             height: StatusBarSizing.workspaceSlotSize
             radius: root.theme.shape.radiusFull
-            color: root.workspaceFill(urgent, active, root.monitorFocused, hovered)
-            opacity: empty && resting ? root.emptyOpacity : 1
+            color: root.workspaceFill(urgent, active, root.monitorFocused, hovered, empty && resting)
 
             Behavior on width {
                 NumberAnimation {
@@ -67,7 +66,8 @@ Row {
             AppText {
                 anchors.centerIn: parent
                 text: pill.modelData
-                color: root.workspaceNumberColor(pill.urgent, pill.active, root.monitorFocused, pill.hovered)
+                color: root.workspaceNumberColor(pill.urgent, pill.active, root.monitorFocused, pill.hovered,
+                                                 pill.empty && pill.resting)
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.textSm
                 font.styleName: root.theme.typography.styleSemibold
@@ -89,9 +89,9 @@ Row {
     }
 
     // Every workspace keeps its circle, and a resting one is the theme's blue.
-    // Emptiness is not a colour here — it is the same chip at a quarter, applied
-    // to the whole pill above.
-    function workspaceFill(urgent, active, monitorFocused, hovered) {
+    // An unused one keeps the same blue at a tenth, so the circle is barely
+    // there rather than a different colour.
+    function workspaceFill(urgent, active, monitorFocused, hovered, unused) {
         if (urgent)
             return Colors.error
         if (hovered)
@@ -99,13 +99,18 @@ Row {
         if (active)
             return monitorFocused ? Colors.primary : Colors.tertiary
 
-        return Colors.tertiary
+        return unused ? Qt.alpha(Colors.tertiary, root.emptyFillOpacity) : Colors.tertiary
     }
 
     // The number takes the foreground of whatever it is sitting on, the way the
     // launcher's cards do: a hovered pill carries the same dark tone a hovered
     // app card gives its label.
-    function workspaceNumberColor(urgent, active, monitorFocused, hovered) {
+    //
+    // An unused workspace is the exception, and it has to be. on_tertiary is
+    // very nearly black, which is right on a filled blue circle and invisible on
+    // one at a tenth, so the number there is the blue itself: undimmed, as
+    // legible as the others, and still recognisably the same chip.
+    function workspaceNumberColor(urgent, active, monitorFocused, hovered, unused) {
         if (urgent)
             return Colors.on_error
         if (hovered)
@@ -113,6 +118,6 @@ Row {
         if (active)
             return monitorFocused ? Colors.on_primary : Colors.on_tertiary
 
-        return Colors.on_tertiary
+        return unused ? Colors.tertiary : Colors.on_tertiary
     }
 }

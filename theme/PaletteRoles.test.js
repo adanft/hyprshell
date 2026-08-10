@@ -219,8 +219,8 @@ assert.doesNotMatch(
 );
 assert.match(
 	workspaces,
-	/opacity: empty && resting \? root\.emptyOpacity : 1/,
-	"emptiness dims the whole chip, so the number keeps its contrast against its own circle",
+	/return unused \? Qt\.alpha\(Colors\.tertiary, root\.emptyFillOpacity\) : Colors\.tertiary/,
+	"an unused workspace fades its circle, not its number",
 );
 
 const disabled = [];

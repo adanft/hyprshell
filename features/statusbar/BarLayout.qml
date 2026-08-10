@@ -97,7 +97,7 @@ Item {
                         text: root.icons.controlCenter
                         color: Colors.tertiary
                         font.family: root.theme.typography.iconFontFamily
-                        font.pixelSize: root.theme.typography.statusBarIconFontSize
+                        font.pixelSize: root.theme.typography.glyphMd
                     }
 
                     MouseArea {

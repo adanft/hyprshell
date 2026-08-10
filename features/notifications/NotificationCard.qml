@@ -40,10 +40,10 @@ Item {
     readonly property int actionButtonRadius: theme.shape.notificationCardActionButtonRadius
     readonly property int actionButtonMinWidth: theme.sizing.notificationCardActionButtonMinWidth
     readonly property int actionButtonHorizontalPadding: theme.spacing.notificationCardActionButtonHorizontalPadding
-    readonly property int labelFontSize: theme.typography.sizeSm
-    readonly property int titleFontSize: theme.typography.sizeLg
-    readonly property int bodyFontSize: theme.typography.sizeMd
-    readonly property int closeIconFontSize: theme.typography.sizeMd
+    readonly property int labelFontSize: theme.typography.textSm
+    readonly property int titleFontSize: theme.typography.textBase
+    readonly property int bodyFontSize: theme.typography.textMd
+    readonly property int closeIconFontSize: theme.typography.textMd
     readonly property int collapsedBodyLines: theme.sizing.notificationCardCollapsedBodyLines
     readonly property real bodyLineHeight: theme.typography.notificationBodyLineHeight
     readonly property int resizeAnimationMs: theme.motion.durationNormal
@@ -541,7 +541,7 @@ Item {
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
                                     color: actionMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                                     font.family: card.textFont
-                                    font.pixelSize: card.theme.typography.sizeSm
+                                    font.pixelSize: card.theme.typography.textSm
                                     font.styleName: card.theme.typography.styleMedium
                                     elide: Text.ElideRight
                                 }

@@ -40,9 +40,9 @@ TestCase {
                             statusBarNetworkQuickControlIconWidth: 22
                         },
                         typography: {
-                            sizeMd: 14,
-                            sizeSm: 11,
-                            sizeLg: 16,
+                            textMd: 14,
+                            textSm: 11,
+                            textBase: 16,
                             textFontFamily: "sans-serif",
                             iconFontFamily: "Symbols Nerd Font",
                             styleRegular: "Regular"

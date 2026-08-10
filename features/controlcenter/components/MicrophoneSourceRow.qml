@@ -36,7 +36,7 @@ Rectangle {
         color: root.active ? Colors.primary : Colors.on_surface
         horizontalAlignment: Text.AlignHCenter
         font.family: root.theme.typography.iconFontFamily
-        font.pixelSize: root.theme.typography.sizeLg
+        font.pixelSize: root.theme.typography.textBase
     }
 
     Column {
@@ -52,7 +52,7 @@ Rectangle {
             text: ControlCenterLogic.audioSourceLabel(root.source)
             color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
@@ -62,7 +62,7 @@ Rectangle {
             text: ControlCenterLogic.audioSourceStatus(root.source, root.active ? root.source : null)
             color: root.active ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
@@ -87,7 +87,7 @@ Rectangle {
             color: actionInput.containsMouse || actionInput.activeFocus ? Colors.on_hover : (root.active
                                                                                                     ? Colors.on_surface_variant : Colors.primary)
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleMedium
         }
 

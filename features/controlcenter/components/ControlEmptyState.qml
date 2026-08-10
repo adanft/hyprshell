@@ -25,7 +25,7 @@ Rectangle {
             text: root.title
             color: Colors.on_surface
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
@@ -35,7 +35,7 @@ Rectangle {
             text: root.description
             color: Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }

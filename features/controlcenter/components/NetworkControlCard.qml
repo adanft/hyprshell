@@ -76,7 +76,7 @@ Rectangle {
                 color: toggleArea.containsMouse ? Colors.on_hover : (card.active ? Colors.on_primary :
                                                                                   Colors.on_surface_variant)
                 font.family: card.theme.typography.iconFontFamily
-                font.pixelSize: card.theme.typography.sizeXl
+                font.pixelSize: card.theme.typography.textLg
                 font.styleName: card.theme.typography.styleRegular
             }
 
@@ -101,7 +101,7 @@ Rectangle {
                 text: card.title
                 color: bodyArea.containsMouse ? Colors.on_hover : Colors.on_surface
                 font.family: card.theme.typography.textFontFamily
-                font.pixelSize: card.theme.typography.sizeMd
+                font.pixelSize: card.theme.typography.textMd
                 font.styleName: card.theme.typography.styleSemibold
                 elide: Text.ElideRight
             }
@@ -113,7 +113,7 @@ Rectangle {
                                                                                        Colors.on_surface_variant)
                 font.family: card.theme.typography.textFontFamily
                 font.styleName: card.theme.typography.styleRegular
-                font.pixelSize: card.theme.typography.sizeSm
+                font.pixelSize: card.theme.typography.textSm
                 elide: Text.ElideRight
             }
         }

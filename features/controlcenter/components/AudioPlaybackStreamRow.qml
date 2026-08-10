@@ -76,7 +76,7 @@ Rectangle {
             color: Colors.on_surface
             horizontalAlignment: Text.AlignHCenter
             font.family: root.theme.typography.iconFontFamily
-            font.pixelSize: root.theme.typography.sizeLg
+            font.pixelSize: root.theme.typography.textBase
         }
 
         Column {
@@ -92,7 +92,7 @@ Rectangle {
                 text: ControlCenterLogic.playbackStreamLabel(root.stream)
                 color: Colors.on_surface
                 font.family: root.theme.typography.textFontFamily
-                font.pixelSize: root.theme.typography.sizeMd
+                font.pixelSize: root.theme.typography.textMd
                 font.styleName: root.theme.typography.styleSemibold
                 elide: Text.ElideRight
                 maximumLineCount: 1
@@ -103,7 +103,7 @@ Rectangle {
                 text: ControlCenterLogic.playbackStreamDescription(root.stream)
                 color: Colors.on_surface_variant
                 font.family: root.theme.typography.textFontFamily
-                font.pixelSize: root.theme.typography.sizeSm
+                font.pixelSize: root.theme.typography.textSm
                 font.styleName: root.theme.typography.styleRegular
                 elide: Text.ElideRight
                 maximumLineCount: 1
@@ -117,7 +117,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             text: root.percent + "%"
             color: Colors.on_surface_variant
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
         }
     }
@@ -152,7 +152,7 @@ Rectangle {
                     color: root.muted ? Colors.on_primary : (muteInput.containsMouse || muteInput.activeFocus
                                                                   ? Colors.on_hover : Colors.on_surface)
                     font.family: root.theme.typography.iconFontFamily
-                    font.pixelSize: root.theme.typography.sizeLg
+                    font.pixelSize: root.theme.typography.textBase
                 }
 
                 MouseArea {

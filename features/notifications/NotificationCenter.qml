@@ -125,7 +125,7 @@ PopupWindow {
                                                                               Colors.on_hover :
                                                                               Colors.on_surface_variant)
                         font.family: popup.theme.typography.iconFontFamily
-                        font.pixelSize: popup.theme.sizing.notificationCenterHeaderIconSize
+                        font.pixelSize: popup.theme.typography.glyphSm
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -162,7 +162,7 @@ PopupWindow {
                         text: popup.icons.notificationsClear
                         color: clearMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                         font.family: popup.theme.typography.iconFontFamily
-                        font.pixelSize: popup.theme.sizing.notificationCenterHeaderIconSize
+                        font.pixelSize: popup.theme.typography.glyphSm
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -194,7 +194,7 @@ PopupWindow {
                     text: "No notifications"
                     color: Colors.on_surface_variant
                     font.family: popup.theme.typography.textFontFamily
-                    font.pixelSize: popup.theme.typography.sizeMd
+                    font.pixelSize: popup.theme.typography.textMd
                 }
 
                 ListView {

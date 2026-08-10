@@ -22,8 +22,8 @@ Scope {
     readonly property var filteredThemes: computeFilteredThemes()
 
     function themeCardHeight() {
-        const nameLineHeight = theme.typography.sizeMd + theme.spacing.space4
-        return theme.spacing.appLauncherCardPadding * 2 + theme.typography.actionIconFontSize
+        const nameLineHeight = theme.typography.textMd + theme.spacing.space4
+        return theme.spacing.appLauncherCardPadding * 2 + theme.typography.glyphLg
                 + theme.spacing.appLauncherCardSpacing + nameLineHeight
     }
 
@@ -189,7 +189,7 @@ Scope {
                         text: selector.icons.search
                         color: Colors.on_surface_variant
                         font.family: selector.theme.typography.iconFontFamily
-                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.pixelSize: selector.theme.typography.textBase
                         font.styleName: selector.theme.typography.styleMedium
                         horizontalAlignment: Text.AlignLeft
                     }
@@ -202,7 +202,7 @@ Scope {
                         visible: searchInput.text.length === 0
                         text: "Search..."
                         color: Colors.on_surface_variant
-                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.pixelSize: selector.theme.typography.textBase
                         font.styleName: selector.theme.typography.styleMedium
                     }
 
@@ -218,7 +218,7 @@ Scope {
                         selectionColor: Colors.primary
                         selectedTextColor: Colors.on_primary
                         font.family: selector.theme.typography.textFontFamily
-                        font.pixelSize: selector.theme.typography.sizeLg
+                        font.pixelSize: selector.theme.typography.textBase
                         font.styleName: selector.theme.typography.styleMedium
                         verticalAlignment: TextInput.AlignVCenter
                         text: selector.searchText
@@ -270,7 +270,7 @@ Scope {
                     text: selector.searchText.length > 0 || selector.activeVariants.length > 0 ?
                               "No themes match your filters" : "No themes found"
                     color: Colors.on_surface_variant
-                    font.pixelSize: selector.theme.typography.sizeLg
+                    font.pixelSize: selector.theme.typography.textBase
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                 }

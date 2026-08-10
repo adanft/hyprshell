@@ -22,7 +22,7 @@ Item {
                                                                                                       Colors.tertiary
         text: root.profile === "performance" ? root.icons.powerPerformance : root.profile === "power-saver"
                                                ? root.icons.powerSaver : root.icons.powerBalanced
-        font.pixelSize: root.theme.sizing.statusBarIconSize
+        font.pixelSize: root.theme.typography.glyphMd
     }
 
     MouseArea {

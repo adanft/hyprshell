@@ -25,7 +25,7 @@ Row {
         text: root.activeToplevel ? root.icons.window : ""
         color: Colors.tertiary
         font.family: root.theme.typography.iconFontFamily
-        font.pixelSize: root.theme.typography.sizeXl
+        font.pixelSize: root.theme.typography.textLg
     }
 
     AppText {

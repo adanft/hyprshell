@@ -32,7 +32,7 @@ Rectangle {
             text: action.icon
             color: action.hovered ? Colors.on_hover : (action.selected ? Colors.on_primary : Colors.tertiary)
             font.family: action.theme.typography.iconFontFamily
-            font.pixelSize: action.theme.sizing.screenshotToolActionIconSize
+            font.pixelSize: action.theme.typography.glyphXl
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
@@ -41,7 +41,7 @@ Rectangle {
             width: parent.width
             text: action.title
             color: action.active ? Colors.on_primary : Colors.on_surface
-            font.pixelSize: action.theme.typography.sizeLg
+            font.pixelSize: action.theme.typography.textBase
             font.styleName: action.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

@@ -151,7 +151,7 @@ Scope {
                         text: ""
                         color: Colors.tertiary
                         font.family: tool.theme.typography.iconFontFamily
-                        font.pixelSize: tool.theme.sizing.size24
+                        font.pixelSize: tool.theme.typography.glyphMd
                     }
 
                     Shared.AppText {
@@ -160,7 +160,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Timer"
                         color: Colors.on_surface
-                        font.pixelSize: tool.theme.typography.sizeMd
+                        font.pixelSize: tool.theme.typography.textMd
                         font.styleName: tool.theme.typography.styleSemibold
                     }
                 }
@@ -202,7 +202,7 @@ Scope {
                         text: ""
                         color: Colors.tertiary
                         font.family: tool.theme.typography.iconFontFamily
-                        font.pixelSize: tool.theme.sizing.size24
+                        font.pixelSize: tool.theme.typography.glyphMd
                     }
 
                     Shared.AppText {
@@ -211,7 +211,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Cursor"
                         color: Colors.on_surface
-                        font.pixelSize: tool.theme.typography.sizeMd
+                        font.pixelSize: tool.theme.typography.textMd
                         font.styleName: tool.theme.typography.styleSemibold
                     }
                 }

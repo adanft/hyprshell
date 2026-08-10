@@ -23,7 +23,7 @@ Rectangle {
         text: chip.icon
         color: chip.hovered ? Theme.Colors.on_hover : (chip.selected ? Theme.Colors.on_primary : Theme.Colors.on_surface)
         font.family: chip.theme.typography.iconFontFamily
-        font.pixelSize: chip.theme.sizing.size24
+        font.pixelSize: chip.theme.typography.glyphMd
     }
 
     MouseArea {

@@ -8,7 +8,7 @@ Text {
     // surface this shell paints. Body text is on_surface unless overridden.
     color: Colors.on_surface
     font.family: theme.typography.textFontFamily
-    font.pixelSize: theme.typography.sizeLg
+    font.pixelSize: theme.typography.textBase
     font.styleName: theme.typography.styleSemibold
     verticalAlignment: Text.AlignVCenter
 }

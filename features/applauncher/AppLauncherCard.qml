@@ -45,7 +45,7 @@ Rectangle {
             width: parent.width
             text: card.app ? (card.app.name || "Unnamed") : "Unnamed"
             color: card.hovered ? Colors.on_hover : (card.selected ? Colors.on_primary : Colors.on_surface)
-            font.pixelSize: card.theme.typography.sizeLg
+            font.pixelSize: card.theme.typography.textBase
             font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

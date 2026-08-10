@@ -30,7 +30,7 @@ Rectangle {
         text: icon
         color: active ? primary : Colors.surface
         font.family: theme.typography.iconFontFamily
-        font.pixelSize: theme.typography.heroIconFontSize
+        font.pixelSize: theme.typography.glyphHero
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

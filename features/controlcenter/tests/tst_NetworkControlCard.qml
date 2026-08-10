@@ -28,9 +28,9 @@ TestCase {
                             space2: 2
                         },
                         typography: {
-                            sizeSm: 11,
-                            sizeMd: 14,
-                            sizeXl: 20,
+                            textSm: 11,
+                            textMd: 14,
+                            textLg: 20,
                             textFontFamily: "sans-serif",
                             iconFontFamily: "sans-serif",
                             styleRegular: "Regular",

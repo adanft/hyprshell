@@ -41,9 +41,9 @@ TestCase {
                                  statusBarSliderHandleSize: 14
                              },
                              typography: {
-                                 sizeLg: 16,
-                                 sizeMd: 14,
-                                 sizeSm: 11,
+                                 textBase: 16,
+                                 textMd: 14,
+                                 textSm: 11,
                                  textFontFamily: "sans",
                                  iconFontFamily: "sans"
                              }

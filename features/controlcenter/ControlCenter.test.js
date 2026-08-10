@@ -226,7 +226,7 @@ for (const file of sliceFiles) {
 			);
 }
 
-// Every row titles itself the same way: Semibold at sizeMd.
+// Every row titles itself the same way: Semibold at textMd.
 for (const file of [
 	"EthernetProfileRow",
 	"WifiNetworkRow",
@@ -238,8 +238,8 @@ for (const file of [
 	const source = readSliceFile(file);
 	assert.match(
 		source,
-		/font\.pixelSize: root\.theme\.typography\.sizeMd\s*\n\s*font\.styleName: root\.theme\.typography\.styleSemibold/,
-		`${file} must title itself Semibold at sizeMd`,
+		/font\.pixelSize: root\.theme\.typography\.textMd\s*\n\s*font\.styleName: root\.theme\.typography\.styleSemibold/,
+		`${file} must title itself Semibold at textMd`,
 	);
 }
 
@@ -472,7 +472,7 @@ assert.equal(
 assert.match(qml, /device\.blocked/);
 assert.match(
 	qml,
-	/text: root\.services\.bluetooth\.bluetoothError[\s\S]*font\.pixelSize: root\.theme\.typography\.sizeSm/,
+	/text: root\.services\.bluetooth\.bluetoothError[\s\S]*font\.pixelSize: root\.theme\.typography\.textSm/,
 );
 for (const id of [
 	"userCard",

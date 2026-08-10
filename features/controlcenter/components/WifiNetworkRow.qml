@@ -50,7 +50,7 @@ Rectangle {
             text: root.network?.name || ""
             color: root.network?.connected ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
@@ -61,7 +61,7 @@ Rectangle {
             text: ControlCenterLogic.wifiNetworkMeta(root.network, root.openSecurityValue)
             color: root.network?.connected ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
@@ -93,7 +93,7 @@ Rectangle {
                 color: primaryInput.containsMouse || primaryInput.activeFocus ? Colors.on_hover :
                                                                                  (root.network?.connected ? Colors.error : Colors.primary)
                 font.family: root.theme.typography.textFontFamily
-                font.pixelSize: root.theme.typography.sizeSm
+                font.pixelSize: root.theme.typography.textSm
                 font.styleName: root.theme.typography.styleRegular
             }
 
@@ -135,7 +135,7 @@ Rectangle {
                 text: "Forget"
                 color: forgetInput.containsMouse || forgetInput.activeFocus ? Colors.on_hover : Colors.error
                 font.family: root.theme.typography.textFontFamily
-                font.pixelSize: root.theme.typography.sizeSm
+                font.pixelSize: root.theme.typography.textSm
                 font.styleName: root.theme.typography.styleRegular
             }
 

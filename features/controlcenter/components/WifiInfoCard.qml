@@ -52,7 +52,7 @@ Rectangle {
         text: card.icons.wifiInterface
         color: card.tone
         font.family: card.theme.typography.iconFontFamily
-        font.pixelSize: card.theme.typography.actionIconFontSize
+        font.pixelSize: card.theme.typography.glyphLg
     }
 
     Row {
@@ -68,14 +68,14 @@ Rectangle {
             text: card.icons.workspaceDot
             color: card.tone
             font.family: card.theme.typography.iconFontFamily
-            font.pixelSize: card.theme.typography.sizeSm
+            font.pixelSize: card.theme.typography.textSm
         }
 
         AppText {
             anchors.verticalCenter: parent.verticalCenter
             text: card.stateText
             color: card.tone
-            font.pixelSize: card.theme.typography.sizeSm
+            font.pixelSize: card.theme.typography.textSm
             font.styleName: card.theme.typography.styleMedium
         }
     }
@@ -94,7 +94,7 @@ Rectangle {
             width: parent.width
             text: card.interfaceName || "No Wi-Fi adapter"
             color: Colors.on_surface
-            font.pixelSize: card.theme.typography.sizeMd
+            font.pixelSize: card.theme.typography.textMd
             font.styleName: card.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
@@ -104,7 +104,7 @@ Rectangle {
             visible: card.bareAddress.length > 0
             text: card.bareAddress
             color: Colors.on_surface_variant
-            font.pixelSize: card.theme.typography.sizeSm
+            font.pixelSize: card.theme.typography.textSm
             font.styleName: card.theme.typography.styleRegular
             elide: Text.ElideRight
         }

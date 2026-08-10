@@ -23,7 +23,7 @@ Rectangle {
         anchors.centerIn: parent
         text: String(option.value)
         color: option.hovered ? Colors.on_hover : (option.selected ? Colors.on_primary : Colors.on_surface)
-        font.pixelSize: option.theme.typography.sizeMd
+        font.pixelSize: option.theme.typography.textMd
         font.styleName: option.theme.typography.styleMedium
     }
 

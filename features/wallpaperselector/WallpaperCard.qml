@@ -74,7 +74,7 @@ Rectangle {
             width: parent.width
             text: card.label
             color: Theme.Colors.on_surface
-            font.pixelSize: card.theme.typography.sizeMd
+            font.pixelSize: card.theme.typography.textMd
             font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideMiddle

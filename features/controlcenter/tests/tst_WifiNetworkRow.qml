@@ -45,8 +45,8 @@ TestCase {
                             opacityDisabled: 0.45
                         },
                         typography: {
-                            sizeSm: 11,
-                            sizeMd: 14,
+                            textSm: 11,
+                            textMd: 14,
                             textFontFamily: "sans-serif",
                             iconFontFamily: "sans-serif",
                             styleRegular: "Regular"

@@ -195,7 +195,7 @@ Item {
                             text: root.icons.trayBack
                             color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
                             font.family: root.theme.typography.textFontFamily
-                            font.pixelSize: root.theme.typography.sizeLg
+                            font.pixelSize: root.theme.typography.textBase
                         }
 
                         AppText {
@@ -203,7 +203,7 @@ Item {
                             text: "Back"
                             color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
                             font.family: root.theme.typography.textFontFamily
-                            font.pixelSize: root.theme.typography.sizeLg
+                            font.pixelSize: root.theme.typography.textBase
                             font.styleName: root.theme.typography.styleRegular
                         }
                     }
@@ -283,7 +283,7 @@ Item {
                                     visible: menuEntryRoot.modelData && menuEntryRoot.modelData.checkState === 2
                                     text: root.icons.trayCheck
                                     color: entryMouseArea.containsMouse ? Colors.on_hover : Colors.tertiary
-                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.pixelSize: root.theme.typography.textSm
                                 }
                             }
 
@@ -304,7 +304,7 @@ Item {
                                 color: entryMouseArea.containsMouse ? Colors.on_hover : (menuEntryRoot.enabledEntry
                                                                                              ? Colors.on_surface : Colors.on_surface_variant)
                                 font.family: root.theme.typography.textFontFamily
-                                font.pixelSize: root.theme.typography.sizeLg
+                                font.pixelSize: root.theme.typography.textBase
                                 font.styleName: root.theme.typography.styleRegular
                                 elide: Text.ElideRight
                             }

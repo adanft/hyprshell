@@ -52,7 +52,6 @@ QtObject {
     readonly property int screenshotToolActionWidth: appLauncherCardWidth
     readonly property int screenshotToolActionHeight: appLauncherCardHeight
     readonly property int screenshotToolActionIconSlotSize: appLauncherIconSlotSize
-    readonly property int screenshotToolActionIconSize: 36
     readonly property int screenshotToolTimerOptionWidth: 40
     readonly property int screenshotToolTimerOptionHeight: 40
     readonly property int screenshotToolCursorSwitchWidth: 40
@@ -68,7 +67,6 @@ QtObject {
     readonly property int notificationCenterSpacerHeight: 1
     readonly property int notificationCenterClearButtonHeight: size26
     readonly property int notificationCenterClearButtonWidth: 72
-    readonly property int notificationCenterHeaderIconSize: size16
     readonly property int notificationCardCollapsedBodyLines: 2
     readonly property int notificationCardIconSlotSize: 36
     readonly property int notificationCardIconSize: 36

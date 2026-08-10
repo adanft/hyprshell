@@ -271,7 +271,7 @@ Item {
                                     visible: avatarImage.status !== Image.Ready
                                     color: Colors.shadow
                                     font.family: root.theme.typography.textFontFamily
-                                    font.pixelSize: root.theme.typography.actionIconFontSize
+                                    font.pixelSize: root.theme.typography.glyphLg
                                     font.styleName: root.theme.typography.styleSemibold
                                 }
 
@@ -312,7 +312,7 @@ Item {
                                     text: root.username
                                     color: Colors.on_surface
                                     font.family: root.theme.typography.textFontFamily
-                                    font.pixelSize: root.theme.typography.sizeLg
+                                    font.pixelSize: root.theme.typography.textBase
                                     font.styleName: root.theme.typography.styleSemibold
                                     elide: Text.ElideRight
                                 }
@@ -326,7 +326,7 @@ Item {
                                         return `up ${days} days, ${hours} hours, ${minutes} minutes`
                                     }
                                     color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.pixelSize: root.theme.typography.textSm
                                     font.styleName: root.theme.typography.styleRegular
                                 }
                             }
@@ -360,7 +360,7 @@ Item {
                                         text: root.outputIcon
                                         color: volumeSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                                         font.family: root.theme.typography.iconFontFamily
-                                        font.pixelSize: root.theme.typography.sizeXl
+                                        font.pixelSize: root.theme.typography.textLg
                                         font.styleName: root.theme.typography.styleRegular
                                     }
 
@@ -407,7 +407,7 @@ Item {
                                         text: root.icons.brightnessControl
                                         color: brightnessSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                                         font.family: root.theme.typography.iconFontFamily
-                                        font.pixelSize: root.theme.typography.sizeXl
+                                        font.pixelSize: root.theme.typography.textLg
                                         font.styleName: root.theme.typography.styleRegular
                                     }
 
@@ -665,7 +665,7 @@ Item {
                                 AppText {
                                     text: "Ethernet info"
                                     color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeMd
+                                    font.pixelSize: root.theme.typography.textMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
@@ -684,7 +684,7 @@ Item {
                                     width: parent.width
                                     text: root.services.network.ethernetProfileError || root.connectionError
                                     color: Colors.error
-                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.pixelSize: root.theme.typography.textSm
                                     font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.Wrap
                                 }
@@ -693,7 +693,7 @@ Item {
                                     visible: root.hasEthernetProfiles
                                     text: "Connection profiles"
                                     color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeMd
+                                    font.pixelSize: root.theme.typography.textMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
@@ -756,7 +756,7 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "Bluetooth info"
                                         color: Colors.on_surface_variant
-                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.pixelSize: root.theme.typography.textMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
 
@@ -781,7 +781,7 @@ Item {
                                                 text: root.icons.search
                                                 color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
                                                 font.family: root.theme.typography.iconFontFamily
-                                                font.pixelSize: root.theme.typography.sizeSm
+                                                font.pixelSize: root.theme.typography.textSm
                                             }
 
                                             AppText {
@@ -789,7 +789,7 @@ Item {
                                                 text: root.scanningBluetooth ? "Scanning…" :
                                                                                                      "Scan"
                                                 color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
-                                                font.pixelSize: root.theme.typography.sizeSm
+                                                font.pixelSize: root.theme.typography.textSm
                                                 font.styleName: root.theme.typography.styleMedium
                                             }
                                         }
@@ -828,7 +828,7 @@ Item {
                                     width: parent.width
                                     text: root.services.bluetooth.bluetoothError
                                     color: Colors.error
-                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.pixelSize: root.theme.typography.textSm
                                     font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.Wrap
                                 }
@@ -843,7 +843,7 @@ Item {
                                         width: parent.width
                                         text: "Connected devices"
                                         color: Colors.on_surface_variant
-                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.pixelSize: root.theme.typography.textMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
                                     Repeater {
@@ -878,7 +878,7 @@ Item {
                                         width: parent.width
                                         text: "Known devices"
                                         color: Colors.on_surface_variant
-                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.pixelSize: root.theme.typography.textMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
                                     Repeater {
@@ -914,7 +914,7 @@ Item {
                                         width: parent.width
                                         text: "Available devices"
                                         color: Colors.on_surface_variant
-                                        font.pixelSize: root.theme.typography.sizeMd
+                                        font.pixelSize: root.theme.typography.textMd
                                         font.styleName: root.theme.typography.styleRegular
                                     }
                                     Repeater {
@@ -965,7 +965,7 @@ Item {
                                 AppText {
                                     text: "Wi-Fi info"
                                     color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeMd
+                                    font.pixelSize: root.theme.typography.textMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 
@@ -987,7 +987,7 @@ Item {
                                     text: root.services.network.wifiInfoAvailability === "unavailable"
                                           ? "Network details unavailable" : "Loading network details…"
                                     color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.pixelSize: root.theme.typography.textSm
                                     font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.WordWrap
                                 }
@@ -997,7 +997,7 @@ Item {
                                     width: parent.width
                                     text: root.connectionError
                                     color: Colors.error
-                                    font.pixelSize: root.theme.typography.sizeSm
+                                    font.pixelSize: root.theme.typography.textSm
                                     font.styleName: root.theme.typography.styleRegular
                                     wrapMode: Text.Wrap
                                 }
@@ -1005,7 +1005,7 @@ Item {
                                 AppText {
                                     text: "Available networks"
                                     color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.sizeMd
+                                    font.pixelSize: root.theme.typography.textMd
                                     font.styleName: root.theme.typography.styleRegular
                                 }
 

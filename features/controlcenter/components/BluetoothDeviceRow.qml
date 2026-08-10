@@ -42,7 +42,7 @@ Rectangle {
         text: ControlCenterLogic.bluetoothDeviceIcon(root.device)
         color: root.device?.connected ? Colors.primary : Colors.on_surface
         font.family: theme.typography.iconFontFamily
-        font.pixelSize: theme.typography.sizeXl
+        font.pixelSize: theme.typography.textLg
         horizontalAlignment: Text.AlignHCenter
     }
     Column {
@@ -57,7 +57,7 @@ Rectangle {
             text: root.device?.name || root.device?.deviceName || "Unknown device"
             color: root.device?.connected ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
@@ -70,7 +70,7 @@ Rectangle {
                                                                                                    "")
             color: Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
             elide: Text.ElideRight
         }
@@ -123,7 +123,7 @@ Rectangle {
             color: input.containsMouse || input.activeFocus ? Colors.on_hover : (parent.danger
                                                                                         ? Colors.error : Colors.primary)
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
         }
         MouseArea {

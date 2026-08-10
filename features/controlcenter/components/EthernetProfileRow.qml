@@ -39,7 +39,7 @@ Rectangle {
             text: ControlCenterLogic.ethernetProfileLabel(root.profile)
             color: root.active ? Colors.primary : Colors.on_surface
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleSemibold
             elide: Text.ElideRight
         }
@@ -49,7 +49,7 @@ Rectangle {
             text: root.pending ? "Please wait…" : (root.active ? "Active" : "Available")
             color: root.active ? Colors.primary : Colors.on_surface_variant
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
         }
     }
@@ -72,7 +72,7 @@ Rectangle {
             color: actionInput.containsMouse || actionInput.activeFocus ? Colors.on_hover : (root.active
                                                                                                     ? Colors.error : Colors.primary)
             font.family: root.theme.typography.textFontFamily
-            font.pixelSize: root.theme.typography.sizeSm
+            font.pixelSize: root.theme.typography.textSm
             font.styleName: root.theme.typography.styleRegular
         }
 

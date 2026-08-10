@@ -133,7 +133,7 @@ Scope {
                                 text: "Connect to Wi-Fi"
                                 color: Colors.on_surface
                                 font.family: root.theme.typography.textFontFamily
-                                font.pixelSize: root.theme.typography.sizeLg
+                                font.pixelSize: root.theme.typography.textBase
                                 font.styleName: root.theme.typography.styleMedium
                                 elide: Text.ElideRight
                             }
@@ -143,7 +143,7 @@ Scope {
                                 text: root.network ? `Enter password for ${root.network.name}` : "Enter password"
                                 color: Colors.on_surface_variant
                                 font.family: root.theme.typography.textFontFamily
-                                font.pixelSize: root.theme.typography.sizeSm
+                                font.pixelSize: root.theme.typography.textSm
                                 font.styleName: root.theme.typography.styleRegular
                                 elide: Text.ElideRight
                             }
@@ -165,7 +165,7 @@ Scope {
                                 color: closeInput.containsMouse || closeInput.activeFocus ? Colors.on_hover :
                                                                                             Colors.on_surface_variant
                                 font.family: root.theme.typography.iconFontFamily
-                                font.pixelSize: root.theme.typography.sizeLg
+                                font.pixelSize: root.theme.typography.textBase
                                 font.styleName: root.theme.typography.styleRegular
                             }
 
@@ -211,7 +211,7 @@ Scope {
                             echoMode: TextInput.Password
                             verticalAlignment: TextInput.AlignVCenter
                             font.family: root.theme.typography.textFontFamily
-                            font.pixelSize: root.theme.typography.sizeMd
+                            font.pixelSize: root.theme.typography.textMd
                             font.styleName: root.theme.typography.styleRegular
                             enabled: !root.busy
                             Accessible.role: Accessible.EditableText
@@ -231,7 +231,7 @@ Scope {
                                                                                       root.icons.passwordVisible
                                 color: Colors.on_surface_variant
                                 font.family: root.theme.typography.iconFontFamily
-                                font.pixelSize: root.theme.typography.sizeMd
+                                font.pixelSize: root.theme.typography.textMd
                                 font.styleName: root.theme.typography.styleRegular
                             }
 
@@ -257,7 +257,7 @@ Scope {
                         text: root.errorText
                         color: Colors.error
                         font.family: root.theme.typography.textFontFamily
-                        font.pixelSize: root.theme.typography.sizeSm
+                        font.pixelSize: root.theme.typography.textSm
                         font.styleName: root.theme.typography.styleRegular
                         wrapMode: Text.WordWrap
                     }
@@ -280,7 +280,7 @@ Scope {
                                 color: cancelInput.containsMouse || cancelInput.activeFocus ? Colors.on_hover :
                                                                                               Colors.on_surface
                                 font.family: root.theme.typography.textFontFamily
-                                font.pixelSize: root.theme.typography.sizeMd
+                                font.pixelSize: root.theme.typography.textMd
                                 font.styleName: root.theme.typography.styleMedium
                             }
 
@@ -312,7 +312,7 @@ Scope {
                                 text: root.busy ? "Please wait…" : "Connect"
                                 color: Colors.on_primary
                                 font.family: root.theme.typography.textFontFamily
-                                font.pixelSize: root.theme.typography.sizeMd
+                                font.pixelSize: root.theme.typography.textMd
                                 font.styleName: root.theme.typography.styleMedium
                             }
 

@@ -22,7 +22,7 @@ Rectangle {
         themeData.tertiary, themeData.secondary] : [Colors.primary, Colors.hover, Colors.tertiary,
         Colors.secondary]
     readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
-    readonly property int nameLineHeight: theme.typography.sizeMd + theme.spacing.space4
+    readonly property int nameLineHeight: theme.typography.textMd + theme.spacing.space4
 
     implicitHeight: theme.spacing.appLauncherCardPadding * 2 + paletteDotSize + theme.spacing.appLauncherCardSpacing
                     + nameLineHeight
@@ -53,7 +53,7 @@ Rectangle {
                     text: card.icons.workspaceDot
                     color: card.previewColors[index]
                     font.family: card.theme.typography.iconFontFamily
-                    font.pixelSize: card.theme.typography.actionIconFontSize
+                    font.pixelSize: card.theme.typography.glyphLg
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
@@ -64,7 +64,7 @@ Rectangle {
             height: card.nameLineHeight
             text: card.themeData.displayName
             color: card.previewText
-            font.pixelSize: card.theme.typography.sizeMd
+            font.pixelSize: card.theme.typography.textMd
             font.styleName: card.theme.typography.styleMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

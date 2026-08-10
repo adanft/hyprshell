@@ -197,7 +197,7 @@ Scope {
                     text: launcher.icons.search
                     color: Colors.on_surface_variant
                     font.family: launcher.theme.typography.iconFontFamily
-                    font.pixelSize: launcher.theme.typography.sizeLg
+                    font.pixelSize: launcher.theme.typography.textBase
                     font.styleName: launcher.theme.typography.styleMedium
                     horizontalAlignment: Text.AlignLeft
                 }
@@ -210,7 +210,7 @@ Scope {
                     visible: searchInput.text.length === 0
                     text: "Search..."
                     color: Colors.on_surface_variant
-                    font.pixelSize: launcher.theme.typography.sizeLg
+                    font.pixelSize: launcher.theme.typography.textBase
                     font.styleName: launcher.theme.typography.styleMedium
                 }
 
@@ -226,7 +226,7 @@ Scope {
                     selectionColor: Colors.primary
                     selectedTextColor: Colors.on_primary
                     font.family: launcher.theme.typography.textFontFamily
-                    font.pixelSize: launcher.theme.typography.sizeLg
+                    font.pixelSize: launcher.theme.typography.textBase
                     font.styleName: launcher.theme.typography.styleMedium
                     verticalAlignment: TextInput.AlignVCenter
                     text: launcher.searchText
@@ -271,7 +271,7 @@ Scope {
                     width: parent.width - launcher.theme.spacing.appLauncherEmptyTextHorizontalMargin
                     text: launcher.searchText.length > 0 ? "No applications found" : "No applications available"
                     color: Colors.on_surface_variant
-                    font.pixelSize: launcher.theme.typography.sizeMd
+                    font.pixelSize: launcher.theme.typography.textMd
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                 }

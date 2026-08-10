@@ -31,7 +31,7 @@ Column {
         width: parent.width
         text: "Output volume"
         color: Colors.on_surface_variant
-        font.pixelSize: root.theme.typography.sizeMd
+        font.pixelSize: root.theme.typography.textMd
         font.styleName: root.theme.typography.styleRegular
     }
 
@@ -50,7 +50,7 @@ Column {
                 text: root.outputIcon
                 color: outputVolumeSlider.enabled ? Colors.on_surface : Colors.on_surface_variant
                 font.family: root.theme.typography.iconFontFamily
-                font.pixelSize: root.theme.typography.sizeXl
+                font.pixelSize: root.theme.typography.textLg
                 font.styleName: root.theme.typography.styleRegular
             }
 
@@ -83,7 +83,7 @@ Column {
             width: parent.width
             text: "Output devices"
             color: Colors.on_surface_variant
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleRegular
         }
 
@@ -132,7 +132,7 @@ Column {
             width: parent.width
             text: "Playback streams"
             color: Colors.on_surface_variant
-            font.pixelSize: root.theme.typography.sizeMd
+            font.pixelSize: root.theme.typography.textMd
             font.styleName: root.theme.typography.styleRegular
         }
 

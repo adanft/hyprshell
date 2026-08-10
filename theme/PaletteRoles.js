@@ -140,7 +140,7 @@ var FALLBACK_PALETTE = {
 	displayName: "Catppuccin",
 	primary: "#cba6f7",
 	on_primary: "#11111b",
-	secondary: "#f9e2af",
+	secondary: "#fab387",
 	on_secondary: "#11111b",
 	tertiary: "#89b4fa",
 	on_tertiary: "#11111b",

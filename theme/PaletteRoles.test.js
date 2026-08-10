@@ -41,7 +41,7 @@ for (const role of context.ROLE_NAMES)
 const mocha = palettes.catppuccin;
 assert.equal(mocha.primary, "#cba6f7");
 assert.equal(mocha.on_primary, "#11111b");
-assert.equal(mocha.secondary, "#f9e2af");
+assert.equal(mocha.secondary, "#fab387");
 assert.equal(mocha.tertiary, "#89b4fa");
 assert.equal(mocha.error, "#f38ba8");
 assert.equal(mocha.hover, "#94e2d5");
@@ -203,24 +203,51 @@ assert.deepEqual(
 
 // An empty workspace used to be painted colors.outline, the same tone an
 // unavailable module is dimmed to, so "there is nothing here" read identically
-// across the bar. It no longer does: a workspace is now a chip that carries its
-// own colour, and emptiness is that chip turned down rather than a different
-// tone. The modules keep outline between them, so the rule below still holds
-// for them; the workspaces are a deliberate exception, and this is where that is
-// written down.
+// across the bar. It no longer is: the workspaces wear an accent of their own
+// and say emptiness by fading it. outline is left to the modules alone, which
+// still share it between them, and the rule that holds them to it is further
+// down.
 const workspaces = fs.readFileSync(
 	path.join(repository, "features/statusbar/modules/Workspaces.qml"),
 	"utf8",
 );
-assert.doesNotMatch(
-	workspaces,
-	/Colors\.outline/,
-	"a workspace no longer borrows the disabled-module tone",
+// Both resting circles wear one colour, and emptiness is that colour faded.
+//
+// The shape is what is asserted, not the role or the amount, so both stay free
+// to be tuned. What it holds is that a workspace holding nothing is told apart
+// at all, that it is told apart by fading the same tone rather than by reaching
+// for a second one, and that the faded one is the empty one. An earlier version
+// pinned the exact ternary down to the name of the opacity property, which broke
+// on a rename while the shell went on behaving identically.
+const fill = /function workspaceFill\([^)]*\)\s*{([\s\S]*?)\n    }/.exec(workspaces);
+assert.ok(fill, "workspaceFill must be readable as a block");
+const restingBranch = /return unused \? Qt\.alpha\(Colors\.(\w+), root\.(\w+)\) : Colors\.(\w+)/.exec(
+	fill[1],
 );
-assert.match(
-	workspaces,
-	/return unused \? Qt\.alpha\(Colors\.tertiary, root\.emptyFillOpacity\) : Colors\.tertiary/,
-	"an unused workspace fades its circle, not its number",
+assert.ok(restingBranch, "a resting circle must be one role, faded when empty");
+assert.equal(
+	restingBranch[1],
+	restingBranch[3],
+	`both resting circles must wear one colour, not ${restingBranch[1]} and ${restingBranch[3]}`,
+);
+
+const veil = Number(
+	new RegExp(`readonly property real ${restingBranch[2]}: ([\\d.]+)`).exec(
+		workspaces,
+	)?.[1],
+);
+assert.ok(
+	Number.isFinite(veil) && veil > 0 && veil < 1,
+	"the fade must be a declared amount between nothing and the full colour",
+);
+
+// And the number is not what carries it: the fade belongs to the circle.
+const numberColor = /function workspaceNumberColor\([^)]*\)\s*{([\s\S]*?)\n    }/.exec(workspaces);
+assert.ok(numberColor, "workspaceNumberColor must be readable as a block");
+assert.doesNotMatch(
+	numberColor[1],
+	/Qt\.alpha|unused/,
+	"the number keeps one tone per surface; emptiness is the circle's to show",
 );
 
 const disabled = [];

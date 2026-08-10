@@ -23,10 +23,9 @@ Row {
     required property var screen
     required property var services
 
-    // An empty workspace fades its circle and keeps its number. Only the fill
-    // drops, so the row still reads as the same set of numbers with some of
-    // their circles turned down.
-    readonly property real emptyFillOpacity: 0.1
+    // How far a workspace holding nothing is faded back from one holding
+    // windows. The two wear the same colour; this is the whole difference.
+    readonly property real unusedVeil: 0.5
 
     spacing: theme.spacing.space4
 
@@ -44,17 +43,18 @@ Row {
 
             readonly property bool active: root.monitor?.activeWorkspace?.id === modelData
             readonly property bool urgent: root.services.workspace.statusUrgentWorkspaceIds[modelData] ?? false
-            readonly property bool empty: !(root.services.workspace.statusOccupiedWorkspaceIds[modelData] ?? false)
             readonly property bool hovered: mouseArea.containsMouse
-            // Emptiness only speaks when nothing else is: the workspace you are
-            // standing on is never dimmed for having no windows yet, and neither
-            // is one asking for attention or under the pointer.
-            readonly property bool resting: !active && !hovered && !urgent
+            readonly property bool unused: !(root.services.workspace.statusOccupiedWorkspaceIds[modelData] ?? false)
+            // The accent marks one workspace on the whole desk: the one being
+            // typed into. A monitor showing a workspace without holding the
+            // keyboard says so by the width of its pill, which no other
+            // workspace has, so it needs no colour of its own.
+            readonly property bool accented: active && root.monitorFocused
 
             width: active ? StatusBarSizing.workspaceSlotSize * 2 : StatusBarSizing.workspaceSlotSize
             height: StatusBarSizing.workspaceSlotSize
             radius: root.theme.shape.radiusFull
-            color: root.workspaceFill(urgent, active, root.monitorFocused, hovered, empty && resting)
+            color: root.workspaceFill(urgent, accented, hovered, unused)
 
             Behavior on width {
                 NumberAnimation {
@@ -63,14 +63,20 @@ Row {
                 }
             }
 
+            // Filling the pill rather than sitting centred inside it. A text
+            // box is as tall as the font's line — 14.31px here, not a whole
+            // number — so centring it within eighteen puts its top on a
+            // fractional pixel and the glyph rasterises onto whichever row that
+            // lands nearest. Given the pill itself to align in, the alignment
+            // happens against exact edges instead.
             AppText {
-                anchors.centerIn: parent
+                anchors.fill: parent
                 text: pill.modelData
-                color: root.workspaceNumberColor(pill.urgent, pill.active, root.monitorFocused, pill.hovered,
-                                                 pill.empty && pill.resting)
+                color: root.workspaceNumberColor(pill.urgent, pill.accented, pill.hovered)
                 font.family: root.theme.typography.textFontFamily
                 font.pixelSize: root.theme.typography.textSm
-                font.styleName: root.theme.typography.styleSemibold
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
             }
 
             MouseArea {
@@ -88,36 +94,38 @@ Row {
         root.services.workspace.focusWorkspace(workspaceId)
     }
 
-    // Every workspace keeps its circle, and a resting one is the theme's blue.
-    // An unused one keeps the same blue at a tenth, so the circle is barely
-    // there rather than a different colour.
-    function workspaceFill(urgent, active, monitorFocused, hovered, unused) {
+    // A workspace at rest wears secondary, and one holding nothing wears the
+    // same colour faded back. Emptiness is an amount of one tone rather than a
+    // second tone, so the row stays a single colour with some of it dimmed —
+    // and how dim is a dial rather than a search for a role that lands right.
+    //
+    // The surface roles are deliberately not used here. They would put these
+    // circles on the same ladder the bar and its menus climb, where a workspace
+    // is not a raised surface but a mark on one.
+    function workspaceFill(urgent, accented, hovered, unused) {
         if (urgent)
             return Colors.error
         if (hovered)
             return Colors.hover
-        if (active)
-            return monitorFocused ? Colors.primary : Colors.tertiary
+        if (accented)
+            return Colors.primary
 
-        return unused ? Qt.alpha(Colors.tertiary, root.emptyFillOpacity) : Colors.tertiary
+        return unused ? Qt.alpha(Colors.secondary, root.unusedVeil) : Colors.secondary
     }
 
     // The number takes the foreground of whatever it is sitting on, the way the
     // launcher's cards do: a hovered pill carries the same dark tone a hovered
-    // app card gives its label.
-    //
-    // An unused workspace is the exception, and it has to be. on_tertiary is
-    // very nearly black, which is right on a filled blue circle and invisible on
-    // one at a tenth, so the number there is the blue itself: undimmed, as
-    // legible as the others, and still recognisably the same chip.
-    function workspaceNumberColor(urgent, active, monitorFocused, hovered, unused) {
+    // app card gives its label. A faded circle keeps its own foreground, since
+    // the fade is the circle's to show and the number stays one tone per
+    // surface.
+    function workspaceNumberColor(urgent, accented, hovered) {
         if (urgent)
             return Colors.on_error
         if (hovered)
             return Colors.on_hover
-        if (active)
-            return monitorFocused ? Colors.on_primary : Colors.on_tertiary
+        if (accented)
+            return Colors.on_primary
 
-        return unused ? Colors.tertiary : Colors.on_tertiary
+        return Colors.on_secondary
     }
 }

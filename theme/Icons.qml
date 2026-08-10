@@ -10,7 +10,7 @@ import QtQuick
 // today is not.
 QtObject {
     readonly property QtObject network: QtObject {
-        readonly property string throughput: ""
+        readonly property string throughput: ""
         readonly property string ethernetPort: "󰈀"
         readonly property string ethernet: "󰈁"
         readonly property string ethernetDisconnected: "󰈂"
@@ -24,25 +24,25 @@ QtObject {
         readonly property string on: "󰂯"
         readonly property string off: "󰂲"
         readonly property string connected: "󰂱"
-        readonly property string adapter: ""
+        readonly property string adapter: ""
     }
 
     readonly property QtObject audio: QtObject {
-        readonly property string microphone: ""
-        readonly property string microphoneMuted: ""
+        readonly property string microphone: ""
+        readonly property string microphoneMuted: ""
         readonly property string output: "󰓃"
         readonly property string stream: "󰎆"
         readonly property string volumeUnavailable: "󰖁"
-        readonly property string volumeMuted: ""
-        readonly property string volumeLow: ""
-        readonly property string volumeMedium: ""
-        readonly property string volumeHigh: ""
+        readonly property string volumeMuted: ""
+        readonly property string volumeLow: ""
+        readonly property string volumeMedium: ""
+        readonly property string volumeHigh: ""
     }
 
     readonly property QtObject display: QtObject {
         readonly property string brightness: "󰌵"
         // Nine steps, dimmest first. Indexed by level, so the order is the API.
-        readonly property var backlightLevels: ["", "", "", "", "", "", "", "", ""]
+        readonly property var backlightLevels: ["", "", "", "", "", "", "", "", ""]
     }
 
     readonly property QtObject battery: QtObject {
@@ -62,18 +62,18 @@ QtObject {
     }
 
     readonly property QtObject session: QtObject {
-        readonly property string lock: ""
-        readonly property string suspend: ""
-        readonly property string logout: ""
-        readonly property string reboot: ""
-        readonly property string powerOff: ""
+        readonly property string lock: ""
+        readonly property string suspend: ""
+        readonly property string logout: ""
+        readonly property string reboot: ""
+        readonly property string powerOff: ""
     }
 
     readonly property QtObject notification: QtObject {
         readonly property string bell: "󰂚"
         readonly property string bellEmpty: "󰂜"
         readonly property string doNotDisturb: "󰂛"
-        readonly property string clear: " "
+        readonly property string clear: " "
     }
 
     readonly property QtObject system: QtObject {
@@ -82,8 +82,8 @@ QtObject {
         readonly property string clock: "󱑂"
         readonly property string calendar: "󰨳"
         readonly property string window: "󰰤"
-        readonly property string workspaceDot: ""
-        readonly property string controlCentre: ""
+        readonly property string workspaceDot: ""
+        readonly property string controlCentre: ""
     }
 
     readonly property QtObject capture: QtObject {
@@ -109,11 +109,11 @@ QtObject {
     // tray's back arrow and the wallpaper grid's tick used to be spelled twice,
     // and the two ticks were the same glyph under two names.
     readonly property QtObject ui: QtObject {
-        readonly property string search: ""
+        readonly property string search: ""
         readonly property string close: "󰅖"
-        readonly property string trash: ""
-        readonly property string confirm: ""
-        readonly property string cancel: ""
+        readonly property string trash: ""
+        readonly property string confirm: ""
+        readonly property string cancel: ""
         readonly property string check: "✓"
         readonly property string chevronUp: "󰅃"
         readonly property string chevronDown: "󰅀"
@@ -122,11 +122,11 @@ QtObject {
         readonly property string passwordHidden: "󰈈"
         readonly property string passwordVisible: "󰈉"
         readonly property string bullet: "•"
-        readonly property string timer: ""
-        readonly property string cursor: ""
+        readonly property string timer: ""
+        readonly property string cursor: ""
     }
 
     // Decoration for the theme preview's mock navigation rail, not an icon in
     // its own right. Kept whole because the preview draws it as a set.
-    readonly property var themePreviewNavigation: ["", ui.search, "", ""]
+    readonly property var themePreviewNavigation: ["", ui.search, "", ""]
 }

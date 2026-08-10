@@ -82,14 +82,61 @@ assert.deepEqual(
 	"an icon must live in a group, not loose at the top level",
 );
 
-// Every glyph earns one name. trayCheck and wallpaperSelectedCheck were the
-// same tick under two, which is how a set drifts apart.
-const literals = [...source.matchAll(/: "([^"]+)"/g)]
-	.map(([, value]) => value)
-	.filter((value) => glyph.test(value));
-const duplicates = literals.filter(
-	(value, index) => literals.indexOf(value) !== index,
+// An icon must actually carry a glyph.
+//
+// This is the check that was missing when the catalogue was first written by
+// hand: thirty-three glyphs did not survive being typed into the file, and the
+// rule above passed anyway, because "no glyph outside the catalogue" is trivially
+// true of an empty string. Nothing warned, nothing failed, and the icons simply
+// stopped being drawn. Never retype a glyph — copy it from the source it already
+// lives in.
+const blank = [];
+for (const [, name, value] of source.matchAll(
+	/readonly property string (\w+): "([^"]*)"/g,
+))
+	if (value.trim().length === 0) blank.push(name);
+
+for (const [, name, body] of source.matchAll(
+	/readonly property var (\w+): \[([^\]]*)\]/g,
+))
+	for (const [index, entry] of body.split(",").entries()) {
+		const trimmed = entry.trim();
+		// An entry may name another icon rather than spell a glyph.
+		if (trimmed.startsWith('"') && trimmed.replaceAll('"', "").trim() === "")
+			blank.push(`${name}[${index}]`);
+	}
+
+assert.deepEqual(blank, [], "an icon must carry a glyph, not an empty string");
+
+// Within a group, a glyph earns one name: trayCheck and wallpaperSelectedCheck
+// were the same tick twice, which is how a set drifts apart.
+//
+// Across groups it may repeat, and that is not an accident to clean up. The moon
+// is session.suspend and appearance.dark — one picture, two meanings that are
+// free to diverge. Collapsing them would make changing the dark-mode icon change
+// what suspend looks like.
+const groupBlocks = [
+	...source.matchAll(
+		/readonly property QtObject (\w+): QtObject \{([\s\S]*?)\n {4}\}/g,
+	),
+];
+assert.equal(
+	groupBlocks.length,
+	groups.length,
+	"every group must be readable as a block",
 );
-assert.deepEqual(duplicates, [], "the same glyph is named twice");
+
+const repeated = [];
+for (const [, groupName, body] of groupBlocks) {
+	const seen = new Map();
+	for (const [, name, value] of body.matchAll(
+		/readonly property string (\w+): "([^"]+)"/g,
+	)) {
+		if (seen.has(value))
+			repeated.push(`${groupName}: ${seen.get(value)} and ${name}`);
+		seen.set(value, name);
+	}
+}
+assert.deepEqual(repeated, [], "a group names the same glyph twice");
 
 console.log("IconCatalogue: every glyph named once, grouped by what it depicts");

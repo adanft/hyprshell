@@ -4,6 +4,7 @@ import "../../theme"
 
 // The notification centre, its cards and its popups.
 QtObject {
+    readonly property int centerMaxHeight: 720
     readonly property int popupWidth: 380
     readonly property int centerCardWidth: 380
     readonly property int centerFallbackScreenHeight: 560

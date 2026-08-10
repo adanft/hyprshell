@@ -53,7 +53,7 @@ PopupWindow {
     }
 
     implicitWidth: cardWidth + contentPadding * 2
-    implicitHeight: Math.min(Sizing.surfacePanelMaxHeight,
+    implicitHeight: Math.min(NotificationSizing.centerMaxHeight,
                              Math.round((barWindow.screen ? barWindow.screen.height :
                                                             NotificationSizing.centerFallbackScreenHeight) * heightRatio))
     visible: false

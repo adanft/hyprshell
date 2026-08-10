@@ -7,6 +7,7 @@ import "../../theme"
 // They carried a statusBar prefix from when this was a menu inside the bar,
 // which stopped being true a while ago and stopped being its name recently.
 QtObject {
+    readonly property int panelMaxHeight: 624
     readonly property int panelWidth: 420
     readonly property int userCardHeight: 88
     readonly property int avatarSize: 64

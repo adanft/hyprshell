@@ -121,10 +121,73 @@ for (const [target, loaderId] of [
 // to, which is the same rule the shell itself follows below.
 const overlayArbiter = read("OverlayArbiter.qml");
 assert.match(overlayArbiter, /function closeOthers\(keptLoader\)[\s\S]*loader !== keptLoader[\s\S]*loader\.close\(\);?/);
-assert.match(overlayArbiter, /function open\(loader\)\s*{\s*arbiter\.closeOthers\(loader\);?\s*loader\.open\(\);?\s*}/);
-assert.match(overlayArbiter, /function toggle\(loader\)\s*{\s*if \(!loader\.requestedVisible\)\s*arbiter\.closeOthers\(loader\);?\s*loader\.toggle\(\);?\s*}/);
+assert.match(overlayArbiter, /function open\(loader\)\s*{\s*arbiter\.closeOthers\(loader\);?\s*arbiter\.aimAtFocusedScreen\(loader\);?\s*loader\.open\(\);?\s*}/);
+assert.match(overlayArbiter, /function toggle\(loader\)\s*{\s*if \(!loader\.requestedVisible\)\s*{\s*arbiter\.closeOthers\(loader\);?\s*arbiter\.aimAtFocusedScreen\(loader\);?\s*}\s*loader\.toggle\(\);?\s*}/);
 assert.equal(overlayArbiter.includes("Qt.callLater"), false);
 assert.equal(overlayArbiter.includes("_lifecycleGeneration"), false);
+
+// Keeping the compositor out of the arbiter is what lets it be exercised on its
+// own: qmltestrunner cannot resolve the Quickshell imports. Matched against the
+// import lines, since the prose above them names Hyprland on purpose.
+const arbiterImports = overlayArbiter
+	.split("\n")
+	.filter((line) => line.startsWith("import "));
+assert.deepEqual(
+	arbiterImports,
+	["import QtQuick"],
+	"OverlayArbiter must import nothing but QtQuick to remain testable",
+);
+
+// Reading Hyprland.monitors is what makes focusedMonitor answer at all, so the
+// binding is load-bearing rather than decorative, and the resolver has to be
+// alive from startup because the overlays it serves are lazily loaded.
+const overlayScreenResolver = read("OverlayScreenResolver.qml");
+assert.match(overlayScreenResolver, /readonly property var hyprlandMonitors: Hyprland\.monitors/);
+assert.match(
+	overlayScreenResolver,
+	/function focusedScreen\(\)[\s\S]*Hyprland\.focusedMonitor[\s\S]*OverlayScreen\.focusedScreen\(Quickshell\.screens, focused \? focused\.name : ""\)/,
+);
+assert.match(shell, /OverlayScreenResolver\s*{\s*id: overlayScreenResolver\s*}/);
+assert.match(shell, /screenResolver: overlayScreenResolver/);
+
+// Each overlay must be aimable and identifiable: without targetScreen it always
+// maps on screens[0], and without a namespace the compositor cannot target it
+// with a layer rule.
+for (const [overlayPath, rootId, namespace] of [
+	["applauncher/AppLauncher.qml", "launcher", "qs-applauncher"],
+	["powermenu/PowerMenu.qml", "powerMenu", "qs-powermenu"],
+	["wallpaperselector/WallpaperSelector.qml", "selector", "qs-wallpaperselector"],
+	["themeselector/ThemeSelector.qml", "selector", "qs-themeselector"],
+	["screenshot/ScreenshotTool.qml", "tool", "qs-screenshot"],
+]) {
+	const overlay = read(overlayPath);
+	assert.match(
+		overlay,
+		/property var targetScreen: null/,
+		`${overlayPath} must declare targetScreen`,
+	);
+	assert.match(
+		overlay,
+		new RegExp(`screen: ${rootId}\\.targetScreen`),
+		`${overlayPath} must bind its PanelWindow to targetScreen`,
+	);
+	assert.match(
+		overlay,
+		new RegExp(`WlrLayershell\\.namespace: "${namespace}"`),
+		`${overlayPath} must declare the ${namespace} namespace`,
+	);
+}
+
+// The loader hands the screen over before the item is shown, because a
+// PanelWindow picks its output when it maps.
+assert.match(
+	overlayLifecycleLoader,
+	/property var targetScreen: null/,
+);
+assert.match(
+	overlayLifecycleLoader,
+	/root\.targetScreen && loadedItem\.targetScreen !== undefined[\s\S]*loadedItem\.targetScreen = root\.targetScreen;?[\s\S]*root\._openingPending = false;?/,
+);
 
 // Lifecycle behaviour stays inside OverlayLifecycleLoader; the shell must not
 // reimplement it, whether as named helpers or inline in a handler.

@@ -8,6 +8,10 @@ import Quickshell.Wayland
 Scope {
     id: selector
 
+    // Set by OverlayLifecycleLoader just before this maps, so the
+    // overlay opens on the monitor the user is actually working on.
+    property var targetScreen: null
+
     readonly property var theme: AppTheme
     readonly property var icons: Icons
     readonly property var themes: StockThemes.availableThemes
@@ -300,6 +304,7 @@ Scope {
         id: panel
 
         visible: false
+        screen: selector.targetScreen
         aboveWindows: true
         focusable: true
         exclusionMode: ExclusionMode.Ignore
@@ -310,6 +315,7 @@ Scope {
 
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+        WlrLayershell.namespace: "qs-themeselector"
 
         anchors {
             top: true

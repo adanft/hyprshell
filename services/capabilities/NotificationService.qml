@@ -153,7 +153,7 @@ Scope {
         persistenceSupported: true
         onNotification: notification => {
             const policy = root.evaluateNotificationPolicy(notification)
-            if (policy.block || root.notificationDnd) {
+            if (policy.block) {
                 notification.dismiss()
                 return
             }
@@ -161,6 +161,15 @@ Scope {
             notification.tracked = !notification.transient && !policy.hideFromCenter
             const historyEntry = notification.tracked ? root.addNotificationToHistory(notification, policy) : null
             if (policy.hide) {
+                notification.dismiss()
+                return
+            }
+
+            // Do not disturb suppresses the popup, never the notification
+            // itself: it is tracked above first, so the centre still lists
+            // everything that arrived. Critical passes through, because the
+            // point of it is the message you cannot afford to miss.
+            if (root.notificationSuppressedByDnd(policy, notification)) {
                 notification.dismiss()
                 return
             }
@@ -236,10 +245,32 @@ Scope {
         root.visibleNotifications = []
     }
 
+    // Critical is the one urgency do not disturb does not silence, matching
+    // the two places that already treat it as special: it never expires, and
+    // it is the last thing evicted when the popup queue overflows.
+    function notificationSuppressedByDnd(policy, notification) {
+        if (!root.notificationDnd)
+            return false
+
+        const urgency = policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency
+        return urgency !== NotificationUrgency.Critical
+    }
+
+    // clearNotificationPopups() stays absolute, because its other two callers
+    // are the user clearing everything and the centre taking over the display.
+    // Turning do not disturb on is neither: it must leave criticals standing.
+    function clearNonCriticalNotificationPopups() {
+        const isCritical = popup => popup && popup.urgency === NotificationUrgency.Critical
+        const dropped = root.notificationQueue.concat(root.visibleNotifications).filter(popup => popup && !isCritical(popup))
+        dropped.forEach(popup => NotificationPopupTimeoutState.removePopup(root.notificationPopupTimeoutState, popup.id))
+        root.notificationQueue = root.notificationQueue.filter(isCritical)
+        root.visibleNotifications = root.visibleNotifications.filter(isCritical)
+    }
+
     function toggleNotificationDnd() {
         root.notificationDnd = !root.notificationDnd
         if (root.notificationDnd)
-            root.clearNotificationPopups()
+            root.clearNonCriticalNotificationPopups()
     }
 
     function enqueueNotificationPopup(notification, policy, historyEntryId) {

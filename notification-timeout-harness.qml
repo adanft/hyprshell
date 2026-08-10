@@ -143,7 +143,22 @@ ShellRoot {
             if (!root.require(serviceState.notification.visibleNotifications.length === 1,
                               "critical timeout 0 auto-closed")) return
             if (!root.require(root.closeCount === 1, "critical popup emitted a close")) return
-            console.info("TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/single-close passed")
+
+            // A critical popup is on screen here, which is exactly what do not
+            // disturb must not take away.
+            const anyNotification = { urgency: 1 }
+            if (!root.require(!serviceState.notification.notificationSuppressedByDnd({ urgency: 1 }, anyNotification),
+                              "dnd suppressed a popup while it was off")) return
+
+            serviceState.notification.toggleNotificationDnd()
+            if (!root.require(serviceState.notification.visibleNotifications.length === 1,
+                              "turning dnd on cleared a critical popup")) return
+            if (!root.require(!serviceState.notification.notificationSuppressedByDnd({ urgency: 2 }, anyNotification),
+                              "dnd suppressed a critical notification")) return
+            if (!root.require(serviceState.notification.notificationSuppressedByDnd({ urgency: 1 }, anyNotification),
+                              "dnd did not suppress a normal notification")) return
+
+            console.info("TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/dnd/single-close passed")
             Qt.quit()
         }
     }

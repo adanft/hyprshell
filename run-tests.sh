@@ -20,7 +20,7 @@ readonly SUCCESS_LINE='SMOKETEST: all components instantiated'
 readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
 readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed'
 readonly ROLES_LINE='SMOKETEST: 16 colour roles resolved'
-readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/single-close passed'
+readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/dnd/single-close passed'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
 # which is the normal case while a shell is running. Matched literally rather

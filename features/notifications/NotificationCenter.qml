@@ -1,6 +1,7 @@
 import "../../shared/components"
 import "../../theme"
 import QtQuick
+import QtQuick.Controls as Controls
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
@@ -52,8 +53,9 @@ PopupWindow {
     }
 
     implicitWidth: cardWidth + contentPadding * 2
-    implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height :
-                                                   NotificationSizing.centerFallbackScreenHeight) * heightRatio)
+    implicitHeight: Math.min(Sizing.surfacePanelMaxHeight,
+                             Math.round((barWindow.screen ? barWindow.screen.height :
+                                                            NotificationSizing.centerFallbackScreenHeight) * heightRatio))
     visible: false
     grabFocus: true
     color: "transparent"
@@ -210,6 +212,16 @@ PopupWindow {
                     model: popup.visible && popup.services.notification.hasNotifications
                            ? popup.services.notification.notifications : []
                     onModelChanged: popup.pruneExpandedNotifications()
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    // The list always scrolled, but said nothing about it: a
+                    // clipped column with no indicator gives no reason to think
+                    // there is more below. Same rule as the control centre's
+                    // detail pane — shown only while the content overflows.
+                    Controls.ScrollBar.vertical: Controls.ScrollBar {
+                        policy: notificationList.height > 0 && notificationList.contentHeight
+                                > notificationList.height ? Controls.ScrollBar.AlwaysOn : Controls.ScrollBar.AlwaysOff
+                    }
 
                     delegate: NotificationCard {
                         required property int index

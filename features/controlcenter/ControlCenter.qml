@@ -219,7 +219,8 @@ Item {
                                                       root.theme.spacing.space24, fixedShell.implicitHeight,
                                                       root.theme.spacing.space8, root.activeDetail,
                                                       detailContent.implicitHeight,
-                                                      ControlCenterSizing.quickControlHeight)
+                                                      ControlCenterSizing.quickControlHeight,
+                                                      Sizing.surfacePanelMaxHeight)
             x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX
                                                             - width / 2))
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8,

@@ -37,10 +37,16 @@ function menuCenterHeight(
 	active,
 	detailHeight,
 	bootstrapHeight,
+	maximumHeight,
 ) {
 	var windowHeight = Math.max(0, Number(monitorHeight) || 0);
 	var margin = Math.max(0, Number(safetyMargin) || 0);
 	var safeAvailable = Math.max(0, windowHeight - margin);
+	// A ceiling applies before anything else is worked out, so the detail
+	// section is allocated from what the panel may actually occupy rather than
+	// from the whole monitor.
+	var ceiling = Math.max(0, Number(maximumHeight) || 0);
+	if (ceiling > 0) safeAvailable = Math.min(safeAvailable, ceiling);
 	var outerPadding = Math.max(0, Number(padding) || 0);
 	var fixedHeight = Math.max(0, Number(fixedShellHeight) || 0);
 	if (!active)

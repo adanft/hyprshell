@@ -18,6 +18,11 @@ QtObject {
     readonly property int actionTileHeight: 104
     readonly property int actionTileIconSlotSize: 56
 
+// The tallest a panel hanging off the bar may grow. Shared because the
+    // control centre and the notification centre are meant to match; letting each
+    // pick its own is how they stopped matching before.
+    readonly property int surfacePanelMaxHeight: 600
+
     readonly property int searchFieldHeight: 42
     readonly property int searchFieldIconSlotWidth: size24
     readonly property int notificationCardIconSaveSize: 72

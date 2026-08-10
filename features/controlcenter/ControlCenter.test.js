@@ -94,6 +94,17 @@ assert.equal(
 assert.equal(menu.menuCenterHeight(40, 16, 360, 24, 400, 8, true, 600, 64), 24);
 assert.equal(menu.menuCenterHeight(0, 16, 360, 24, 400, 8, true, 80, 64), 0);
 assert.equal(menu.menuCenterHeight(-10, 16, 360, 24, 400, 8, true, 80, 64), 0);
+
+// A ceiling caps the panel before the detail section is allocated, so the
+// detail is sized from the room the panel may occupy rather than from the whole
+// monitor. Omitting it leaves the old behaviour untouched.
+assert.equal(menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 600, 64, 600), 600);
+assert.equal(menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 600, 64), 700);
+// Below the ceiling nothing changes.
+assert.equal(menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, false, 0, 64, 600), 424);
+assert.equal(menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 80, 64, 600), 512);
+// A ceiling taller than the monitor cannot grow the panel past the monitor.
+assert.equal(menu.menuCenterHeight(300, 16, 360, 24, 400, 8, false, 0, 64, 9000), 284);
 assert.equal(menu.menuOuterHeight(500, 360, 200), 360);
 assert.equal(menu.menuOuterHeight(500, 360, 420), 420);
 assert.equal(menu.menuOuterHeight(400, 360, 520), 400);

@@ -30,7 +30,10 @@ for (const contract of [
 	/property bool _openingPending: false/,
 	/active: false/,
 	/function open\(\)[\s\S]*requestedVisible = true;?[\s\S]*_openingPending = true;?[\s\S]*active = true;?[\s\S]*const generation = \+\+_lifecycleGeneration;?[\s\S]*_scheduleOpen\(generation, item\);?/,
-	/function toggle\(\)[\s\S]*if \(!requestedVisible\)[\s\S]*open\(\);?[\s\S]*const loadedItem = item;?[\s\S]*!_openingPending && \(!loadedItem \|\| !loadedItem\.visible\)[\s\S]*open\(\);?[\s\S]*requestedVisible = false;?[\s\S]*_openingPending = false;?[\s\S]*_lifecycleGeneration\+\+;?/,
+	// toggle() owns the decision and close() owns the teardown, so that opening
+	// one overlay can dismiss another without going through a toggle.
+	/function toggle\(\)[\s\S]*if \(!requestedVisible\)[\s\S]*open\(\);?[\s\S]*const loadedItem = item;?[\s\S]*!_openingPending && \(!loadedItem \|\| !loadedItem\.visible\)[\s\S]*open\(\);?[\s\S]*close\(\);?\s*\}/,
+	/function close\(\)\s*{\s*if \(!requestedVisible\)\s*return;?[\s\S]*requestedVisible = false;?[\s\S]*_openingPending = false;?[\s\S]*_lifecycleGeneration\+\+;?[\s\S]*directVisibility[\s\S]*loadedItem\.visible = false;?[\s\S]*loadedItem\.close\(\);?/,
 	/function _scheduleOpen\(generation, loadedItem\)[\s\S]*if \(!loadedItem\)[\s\S]*_scheduledItem\s*===\s*loadedItem[\s\S]*_dispatchedItem\s*===\s*loadedItem[\s\S]*Qt\.callLater/,
 	/root\._scheduledGeneration !== generation \|\| root\._scheduledItem !== loadedItem[\s\S]*return;?/,
 	/generation !== root\._lifecycleGeneration[\s\S]*!root\.requestedVisible[\s\S]*root\.item !== loadedItem[\s\S]*return;?/,
@@ -58,9 +61,31 @@ for (const loaderId of [
 	);
 }
 
-// Each IPC target must call its own overlay directly. IpcHandler publishes
-// every property it carries, so the handlers cannot take a loader property and
-// stay plain declarations instead.
+// Two full-screen overlays up at once is the case the layer-shell protocol
+// leaves undefined, so every one of them has to be registered with the arbiter
+// and no IPC target may reach its loader behind the arbiter's back.
+const exclusiveOverlayLoaders = [
+	"appLauncherLoader",
+	"powerMenuLoader",
+	"wallpaperSelectorLoader",
+	"themeSelectorLoader",
+	"screenshotToolLoader",
+];
+const arbiterDeclaration = /OverlayArbiter\s*{\s*id: overlayArbiter\s*loaders: \[([^\]]*)\]/.exec(
+	shell,
+);
+assert.ok(arbiterDeclaration, "shell must declare the OverlayArbiter");
+const registeredLoaders = arbiterDeclaration[1]
+	.split(",")
+	.map((entry) => entry.trim());
+assert.deepEqual(
+	registeredLoaders,
+	exclusiveOverlayLoaders,
+	"every exclusive overlay must be registered with the arbiter",
+);
+
+// IpcHandler publishes every property it carries, so the handlers cannot take a
+// loader property and stay plain declarations instead.
 for (const [target, loaderId] of [
 	["applauncher", "appLauncherLoader"],
 	["powermenu", "powerMenuLoader"],
@@ -76,16 +101,30 @@ for (const [target, loaderId] of [
 		assert.match(
 			handler[1],
 			new RegExp(
-				`function ${method}\\(\\): void \\{\\s*${loaderId}\\.${method}\\(\\);?\\s*\\}`,
+				`function ${method}\\(\\): void \\{\\s*overlayArbiter\\.${method}\\(${loaderId}\\);?\\s*\\}`,
 			),
-			`${target}.${method}() must delegate to ${loaderId}.${method}()`,
+			`${target}.${method}() must go through overlayArbiter.${method}(${loaderId})`,
 		);
+	assert.doesNotMatch(
+		handler[1],
+		new RegExp(`${loaderId}\\.(open|toggle)\\(`),
+		`${target} handler must not reach ${loaderId} behind the arbiter`,
+	);
 	assert.doesNotMatch(
 		handler[1],
 		/property /,
 		`${target} handler must carry no property: IpcHandler publishes them`,
 	);
 }
+
+// The arbiter coordinates; it must not reimplement the lifecycle it delegates
+// to, which is the same rule the shell itself follows below.
+const overlayArbiter = read("OverlayArbiter.qml");
+assert.match(overlayArbiter, /function closeOthers\(keptLoader\)[\s\S]*loader !== keptLoader[\s\S]*loader\.close\(\);?/);
+assert.match(overlayArbiter, /function open\(loader\)\s*{\s*arbiter\.closeOthers\(loader\);?\s*loader\.open\(\);?\s*}/);
+assert.match(overlayArbiter, /function toggle\(loader\)\s*{\s*if \(!loader\.requestedVisible\)\s*arbiter\.closeOthers\(loader\);?\s*loader\.toggle\(\);?\s*}/);
+assert.equal(overlayArbiter.includes("Qt.callLater"), false);
+assert.equal(overlayArbiter.includes("_lifecycleGeneration"), false);
 
 // Lifecycle behaviour stays inside OverlayLifecycleLoader; the shell must not
 // reimplement it, whether as named helpers or inline in a handler.

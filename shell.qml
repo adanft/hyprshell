@@ -17,6 +17,12 @@ import "wallpaperselector" as Wallpaperselector
 ShellRoot {
     id: shell
 
+    OverlayArbiter {
+        id: overlayArbiter
+
+        loaders: [appLauncherLoader, powerMenuLoader, wallpaperSelectorLoader, themeSelectorLoader, screenshotToolLoader]
+    }
+
     Services.Services {
         id: serviceState
     }
@@ -54,55 +60,55 @@ ShellRoot {
         target: "applauncher"
 
         function open(): void {
-            appLauncherLoader.open()
+            overlayArbiter.open(appLauncherLoader)
         }
 
         function toggle(): void {
-            appLauncherLoader.toggle()
+            overlayArbiter.toggle(appLauncherLoader)
         }
     }
     IpcHandler {
         target: "powermenu"
 
         function open(): void {
-            powerMenuLoader.open()
+            overlayArbiter.open(powerMenuLoader)
         }
 
         function toggle(): void {
-            powerMenuLoader.toggle()
+            overlayArbiter.toggle(powerMenuLoader)
         }
     }
     IpcHandler {
         target: "wallpaperselector"
 
         function open(): void {
-            wallpaperSelectorLoader.open()
+            overlayArbiter.open(wallpaperSelectorLoader)
         }
 
         function toggle(): void {
-            wallpaperSelectorLoader.toggle()
+            overlayArbiter.toggle(wallpaperSelectorLoader)
         }
     }
     IpcHandler {
         target: "screenshot"
 
         function open(): void {
-            screenshotToolLoader.open()
+            overlayArbiter.open(screenshotToolLoader)
         }
 
         function toggle(): void {
-            screenshotToolLoader.toggle()
+            overlayArbiter.toggle(screenshotToolLoader)
         }
     }
     IpcHandler {
         target: "themeselector"
 
         function open(): void {
-            themeSelectorLoader.open()
+            overlayArbiter.open(themeSelectorLoader)
         }
 
         function toggle(): void {
-            themeSelectorLoader.toggle()
+            overlayArbiter.toggle(themeSelectorLoader)
         }
 
         function set(name: string): void {

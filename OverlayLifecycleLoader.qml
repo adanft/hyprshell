@@ -37,6 +37,17 @@ LazyLoader {
             return
         }
 
+        close()
+    }
+
+    // Closing has to be callable on its own, not only as the second half of a
+    // toggle, so that opening one overlay can dismiss whichever other one is
+    // still up. Closing an already closed loader is a no-op.
+    function close() {
+        if (!requestedVisible)
+            return
+
+        const loadedItem = item
         requestedVisible = false
         _openingPending = false
         _lifecycleGeneration++
@@ -48,7 +59,7 @@ LazyLoader {
         if (directVisibility)
             loadedItem.visible = false
         else
-            loadedItem.toggle()
+            loadedItem.close()
     }
 
     function _scheduleOpen(generation, loadedItem) {

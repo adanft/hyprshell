@@ -130,9 +130,16 @@ Scope {
             Keys.onReturnPressed: powerMenu.triggerSelection()
             Keys.onEnterPressed: powerMenu.triggerSelection()
 
+            // Dismissing on an outside click is what the launcher, the two
+            // selectors and the screenshot tool all do, and this backdrop used
+            // to swallow the click instead — teaching the rule everywhere and
+            // then breaking it on the one menu that can power the machine off.
+            // Mirrors Escape above: cancel the confirmation first, if there is
+            // one, so a stray click cannot be the thing that confirms a reboot.
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.AllButtons
+                onClicked: powerMenu.confirming ? powerMenu.cancelConfirm() : powerMenu.close()
             }
 
             Loader {

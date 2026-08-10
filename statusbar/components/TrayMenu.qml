@@ -118,8 +118,13 @@ Item {
         visible: root.menuOpen && root.currentTrayItem && root.currentTrayItem.hasMenu
         screen: root.barWindow.screen
         color: "transparent"
+        // Without keyboard focus the Escape shortcut below never receives an
+        // event. OnDemand rather than Exclusive: this is a menu, not a modal,
+        // so it must not lock the keyboard away from the focused application.
+        focusable: true
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
         WlrLayershell.namespace: "qs-statusbar-tray-menu"
 
         anchors {
@@ -127,6 +132,13 @@ Item {
             left: true
             right: true
             bottom: true
+        }
+
+        // Escape walks back one submenu level before dismissing the whole
+        // menu, the same way the power menu cancels its confirmation first.
+        Shortcut {
+            sequence: "Escape"
+            onActivated: submenuStack.count > 0 ? root.closeSubmenu() : root.close()
         }
 
         MouseArea {

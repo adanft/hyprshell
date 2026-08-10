@@ -178,8 +178,14 @@ Item {
         visible: root.menuOpen
         screen: root.barWindow.screen
         color: "transparent"
+        // Without keyboard focus the Escape shortcut below and the Keys
+        // handlers on the rows never receive an event. OnDemand rather than
+        // Exclusive: this is a menu, not a modal, so it must not lock the
+        // keyboard away from the focused application.
+        focusable: true
         exclusiveZone: -1
         WlrLayershell.layer: WlrLayer.Top
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
         WlrLayershell.namespace: "qs-statusbar-network-menu"
 
         anchors {

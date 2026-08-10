@@ -17,14 +17,18 @@ Rectangle {
     width: theme.sizing.powerMenuActionSize
     height: theme.sizing.powerMenuActionSize
     radius: theme.shape.powerMenuActionRadius
-    color: active ? Colors.shadow : Colors.surface
+    // The resting state had this the other way round: a surface-coloured body
+    // with a shadow-coloured border and glyph. Swapping them leaves the body the
+    // same deep shadow in both states, so the button no longer changes mass when
+    // it lights up — only the border and glyph move from muted to accent.
+    color: Colors.shadow
     border.width: theme.shape.powerMenuActionBorderWidth
-    border.color: active ? primary : Colors.shadow
+    border.color: active ? primary : Colors.surface
 
     Text {
         anchors.centerIn: parent
         text: icon
-        color: active ? primary : Colors.shadow
+        color: active ? primary : Colors.surface
         font.family: theme.typography.iconFontFamily
         font.pixelSize: theme.typography.heroIconFontSize
         horizontalAlignment: Text.AlignHCenter

@@ -32,7 +32,7 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    BarText {
+    AppText {
         id: content
 
         anchors.centerIn: parent

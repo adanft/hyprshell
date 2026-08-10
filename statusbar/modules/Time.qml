@@ -14,12 +14,12 @@ Row {
 
     spacing: theme.spacing.space6
 
-    BarText {
+    AppText {
         text: root.icons.time
         color: Colors.on_surface
     }
 
-    BarText {
+    AppText {
         text: root.services.time
         color: Colors.on_surface
     }

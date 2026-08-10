@@ -46,12 +46,12 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.iconText()
             color: root.textColor
         }
 
-        BarText {
+        AppText {
             visible: root.available
             text: `${root.volume}%`
             color: root.textColor

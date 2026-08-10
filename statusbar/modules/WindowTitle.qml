@@ -20,7 +20,7 @@ Row {
     height: theme.sizing.statusBarHeight
     spacing: theme.spacing.space6
 
-    BarText {
+    AppText {
         height: parent.height
         text: root.activeToplevel ? root.icons.window : ""
         color: Colors.tertiary
@@ -28,7 +28,7 @@ Row {
         font.pixelSize: root.theme.typography.sizeXl
     }
 
-    BarText {
+    AppText {
         width: parent.width - x
         height: parent.height
         text: root.activeToplevel?.title ?? ""

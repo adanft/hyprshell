@@ -28,12 +28,12 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.icons.backlightLevels[root.iconIndex]
             color: Colors.on_surface
         }
 
-        BarText {
+        AppText {
             text: `${root.level}%`
             color: Colors.on_surface
         }

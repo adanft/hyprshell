@@ -16,7 +16,7 @@ Item {
     width: theme.sizing.statusBarIconSize
     height: theme.sizing.statusBarIconSize
 
-    BarText {
+    AppText {
         anchors.centerIn: parent
         color: root.profile === "performance" ? Colors.error : root.profile === "power-saver" ? Colors.hover :
                                                                                                       Colors.tertiary

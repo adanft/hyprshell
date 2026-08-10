@@ -36,12 +36,12 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.icon()
             color: root.moduleColor
         }
 
-        BarText {
+        AppText {
             visible: root.connected
             text: `${root.services.network.wifiSignal}%`
             color: root.moduleColor

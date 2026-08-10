@@ -34,12 +34,12 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.icons.memory
             color: root.moduleColor
         }
 
-        BarText {
+        AppText {
             text: `${Math.round(root.services.systemStats.memoryUsage)}%`
             color: root.moduleColor
         }

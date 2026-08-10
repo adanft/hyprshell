@@ -52,12 +52,12 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.iconText
             color: root.textColor
         }
 
-        BarText {
+        AppText {
             text: services.batteryPower.batteryUnknown ? "%" : `${root.level}%`
             color: root.textColor
         }

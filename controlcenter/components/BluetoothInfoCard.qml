@@ -41,7 +41,7 @@ Rectangle {
     color: Colors.surface
     border.width: 0
 
-    BarText {
+    AppText {
         id: glyph
 
         anchors.left: parent.left
@@ -75,7 +75,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: card.theme.spacing.space6
 
-            BarText {
+            AppText {
                 anchors.verticalCenter: parent.verticalCenter
                 text: card.icons.workspaceDot
                 color: stateInput.containsMouse ? Colors.on_hover : card.tone
@@ -83,7 +83,7 @@ Rectangle {
                 font.pixelSize: card.theme.typography.sizeSm
             }
 
-            BarText {
+            AppText {
                 anchors.verticalCenter: parent.verticalCenter
                 text: card.stateText
                 color: stateInput.containsMouse ? Colors.on_hover : card.tone
@@ -119,7 +119,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         spacing: card.theme.spacing.space2
 
-        BarText {
+        AppText {
             width: parent.width
             text: card.adapterName || "No Bluetooth adapter"
             color: Colors.on_surface
@@ -128,7 +128,7 @@ Rectangle {
             elide: Text.ElideRight
         }
 
-        BarText {
+        AppText {
             width: parent.width
             visible: card.connectedText.length > 0
             text: card.connectedText

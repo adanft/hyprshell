@@ -27,7 +27,7 @@ Column {
         values: root.audio.playbackStreams ?? []
     }
 
-    BarText {
+    AppText {
         width: parent.width
         text: "Output volume"
         color: Colors.on_surface_variant
@@ -43,7 +43,7 @@ Column {
             anchors.fill: parent
             spacing: root.theme.spacing.space6
 
-            BarText {
+            AppText {
                 width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -79,7 +79,7 @@ Column {
         width: parent.width
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             width: parent.width
             text: "Output devices"
             color: Colors.on_surface_variant
@@ -128,7 +128,7 @@ Column {
         width: parent.width
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             width: parent.width
             text: "Playback streams"
             color: Colors.on_surface_variant

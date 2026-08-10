@@ -92,7 +92,7 @@ Item {
                     width: root.theme.sizing.statusBarIconSize
                     height: root.theme.sizing.statusBarIconSize
 
-                    BarText {
+                    AppText {
                         anchors.centerIn: parent
                         text: root.icons.controlCenter
                         color: Colors.tertiary

@@ -28,7 +28,7 @@ Item {
         Repeater {
             model: root.services.workspace.statusWorkspaceIdsForMonitor(root.monitor)
 
-            BarText {
+            AppText {
                 required property int modelData
 
                 readonly property bool active: root.monitor?.activeWorkspace?.id === modelData

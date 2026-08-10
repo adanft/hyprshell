@@ -190,7 +190,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: root.theme.spacing.space8
 
-                        BarText {
+                        AppText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.icons.trayBack
                             color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
@@ -198,7 +198,7 @@ Item {
                             font.pixelSize: root.theme.typography.sizeLg
                         }
 
-                        BarText {
+                        AppText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Back"
                             color: backArea.containsMouse ? Colors.on_hover : Colors.on_surface
@@ -296,7 +296,7 @@ Item {
                                 source: menuEntryRoot.modelData ? menuEntryRoot.modelData.icon : ""
                             }
 
-                            BarText {
+                            AppText {
                                 width: Math.max(root.theme.sizing.statusBarTrayMenuTextMinWidth, parent.width
                                                 - root.theme.sizing.statusBarTrayMenuTextRightReserve)
                                 anchors.verticalCenter: parent.verticalCenter
@@ -309,7 +309,7 @@ Item {
                                 elide: Text.ElideRight
                             }
 
-                            BarText {
+                            AppText {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.hasChildren
                                 text: root.icons.traySubmenu

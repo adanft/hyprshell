@@ -45,17 +45,17 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.icons.networkThroughput
             color: root.neutralColor
         }
 
-        BarText {
+        AppText {
             text: root.formatRate(root.services.network.activeNetworkTxRate)
             color: root.txColor
         }
 
-        BarText {
+        AppText {
             text: root.formatRate(root.services.network.activeNetworkRxRate)
             color: root.rxColor
         }

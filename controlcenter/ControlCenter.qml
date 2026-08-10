@@ -265,7 +265,7 @@ Item {
                                 radius: width / 2
                                 color: Colors.primary
 
-                                BarText {
+                                AppText {
                                     anchors.centerIn: parent
                                     text: root.userInitial
                                     visible: avatarImage.status !== Image.Ready
@@ -307,7 +307,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space2
 
-                                BarText {
+                                AppText {
                                     width: parent.width
                                     text: root.username
                                     color: Colors.on_surface
@@ -317,7 +317,7 @@ Item {
                                     elide: Text.ElideRight
                                 }
 
-                                BarText {
+                                AppText {
                                     text: {
                                         const totalMinutes = Math.floor(Math.max(0, root.uptimeSeconds) / 60)
                                         const days = Math.floor(totalMinutes / 1440)
@@ -353,7 +353,7 @@ Item {
                                     anchors.margins: root.theme.spacing.space12
                                     spacing: root.theme.spacing.space6
 
-                                    BarText {
+                                    AppText {
                                         width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
@@ -400,7 +400,7 @@ Item {
                                     anchors.margins: root.theme.spacing.space12
                                     spacing: root.theme.spacing.space6
 
-                                    BarText {
+                                    AppText {
                                         width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
@@ -662,7 +662,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space6
 
-                                BarText {
+                                AppText {
                                     text: "Ethernet info"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
@@ -678,7 +678,7 @@ Item {
                                     address: root.services.network.ethernetInfo.ipv4Address || ""
                                 }
 
-                                BarText {
+                                AppText {
                                     visible: root.connectionError.length > 0
                                              || root.services.network.ethernetProfileError.length > 0
                                     width: parent.width
@@ -689,7 +689,7 @@ Item {
                                     wrapMode: Text.Wrap
                                 }
 
-                                BarText {
+                                AppText {
                                     visible: root.hasEthernetProfiles
                                     text: "Connection profiles"
                                     color: Colors.on_surface_variant
@@ -750,7 +750,7 @@ Item {
                                     height: Math.max(bluetoothInfoTitle.implicitHeight,
                                                      scanButton.visible ? scanButton.height : 0)
 
-                                    BarText {
+                                    AppText {
                                         id: bluetoothInfoTitle
                                         anchors.left: parent.left
                                         anchors.verticalCenter: parent.verticalCenter
@@ -776,7 +776,7 @@ Item {
                                             anchors.centerIn: parent
                                             spacing: root.theme.spacing.space6
 
-                                            BarText {
+                                            AppText {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: root.icons.search
                                                 color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
@@ -784,7 +784,7 @@ Item {
                                                 font.pixelSize: root.theme.typography.sizeSm
                                             }
 
-                                            BarText {
+                                            AppText {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: root.scanningBluetooth ? "Scanning…" :
                                                                                                      "Scan"
@@ -823,7 +823,7 @@ Item {
                                     onVisibilityToggleRequested: root.services.bluetooth.toggleBluetoothDiscoverable()
                                 }
 
-                                BarText {
+                                AppText {
                                     visible: root.services.bluetooth.bluetoothError.length > 0
                                     width: parent.width
                                     text: root.services.bluetooth.bluetoothError
@@ -839,7 +839,7 @@ Item {
                                     width: parent.width
                                     spacing: root.theme.spacing.space6
 
-                                    BarText {
+                                    AppText {
                                         width: parent.width
                                         text: "Connected devices"
                                         color: Colors.on_surface_variant
@@ -874,7 +874,7 @@ Item {
                                     width: parent.width
                                     spacing: root.theme.spacing.space6
 
-                                    BarText {
+                                    AppText {
                                         width: parent.width
                                         text: "Known devices"
                                         color: Colors.on_surface_variant
@@ -910,7 +910,7 @@ Item {
                                     width: parent.width
                                     spacing: root.theme.spacing.space6
 
-                                    BarText {
+                                    AppText {
                                         width: parent.width
                                         text: "Available devices"
                                         color: Colors.on_surface_variant
@@ -962,7 +962,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space6
 
-                                BarText {
+                                AppText {
                                     text: "Wi-Fi info"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd
@@ -980,7 +980,7 @@ Item {
                                     online: root.services.network.wifiUp
                                 }
 
-                                BarText {
+                                AppText {
                                     visible: !root.wifiActivationPending && root.services.network.wifiUp
                                              && root.services.network.wifiInfoAvailability !== "available"
                                     width: parent.width
@@ -992,7 +992,7 @@ Item {
                                     wrapMode: Text.WordWrap
                                 }
 
-                                BarText {
+                                AppText {
                                     visible: root.connectionError.length > 0
                                     width: parent.width
                                     text: root.connectionError
@@ -1002,7 +1002,7 @@ Item {
                                     wrapMode: Text.Wrap
                                 }
 
-                                BarText {
+                                AppText {
                                     text: "Available networks"
                                     color: Colors.on_surface_variant
                                     font.pixelSize: root.theme.typography.sizeMd

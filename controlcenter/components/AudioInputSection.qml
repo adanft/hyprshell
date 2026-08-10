@@ -16,7 +16,7 @@ Column {
 
     spacing: root.theme.spacing.space6
 
-    BarText {
+    AppText {
         width: parent.width
         text: "Input volume"
         color: Colors.on_surface_variant
@@ -32,7 +32,7 @@ Column {
             anchors.fill: parent
             spacing: root.theme.spacing.space6
 
-            BarText {
+            AppText {
                 width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -63,7 +63,7 @@ Column {
         }
     }
 
-    BarText {
+    AppText {
         width: parent.width
         text: "Input devices"
         color: Colors.on_surface_variant

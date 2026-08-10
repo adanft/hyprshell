@@ -40,12 +40,12 @@ Item {
         anchors.centerIn: parent
         spacing: root.theme.spacing.space6
 
-        BarText {
+        AppText {
             text: root.icon()
             color: root.moduleColor
         }
 
-        BarText {
+        AppText {
             text: root.services.bluetooth.bluetoothConnectedCount
             color: root.moduleColor
         }

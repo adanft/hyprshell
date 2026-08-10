@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
-import "../NetworkState.js" as NetworkState
+import "NetworkState.js" as NetworkState
 import "../FileViewState.js" as FileViewState
 
 Scope {

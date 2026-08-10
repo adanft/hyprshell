@@ -183,7 +183,7 @@ Scope {
     property alias quickBrightnessMaximum: brightnessService.quickBrightnessMaximum
     property alias quickBrightnessRequestId: brightnessService.quickBrightnessRequestId
 
-    ActiveUserAvatar {
+    Capabilities.ActiveUserAvatar {
         id: activeUserAvatar
     }
     // The bar renders HH:mm and MM-dd, so minute precision is the resolution

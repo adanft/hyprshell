@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "../QuickControlState.js" as QuickControlState
+import "QuickControlState.js" as QuickControlState
 import "../FileViewState.js" as FileViewState
 
 Scope {

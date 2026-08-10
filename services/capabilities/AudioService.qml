@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
-import "../AudioNodeState.js" as AudioNodeState
-import "../QuickControlState.js" as QuickControlState
+import "AudioNodeState.js" as AudioNodeState
+import "QuickControlState.js" as QuickControlState
 
 Scope {
     id: root

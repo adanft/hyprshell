@@ -63,6 +63,38 @@ ShellRoot {
         theme: Theme.AppTheme
     }
 
+    // Grid delegates. Instantiating their panel is not enough: a delegate is
+    // only built when its view lays out, and these views never do here because
+    // nothing is shown, so a broken binding inside one raises no warning and the
+    // run stays green. That is exactly how a card left referencing an undefined
+    // `sizing` reached the user. The control centre's rows do not need this —
+    // each already has a qmltestrunner case of its own.
+    Applauncher.AppLauncherCard {
+        app: null
+        theme: Theme.AppTheme
+    }
+
+    Themeselector.ThemeCard {
+        // A whole entry rather than null: the card reads eight fields off it,
+        // and the model never hands it nothing, so a null here would assert a
+        // guard the shell does not need.
+        themeData: ({
+                "displayName": "smoke",
+                "surface": Theme.Colors.surface,
+                "on_surface": Theme.Colors.on_surface,
+                "outline": Theme.Colors.outline,
+                "primary": Theme.Colors.primary,
+                "secondary": Theme.Colors.secondary,
+                "tertiary": Theme.Colors.tertiary,
+                "hover": Theme.Colors.hover
+            })
+    }
+
+    Wallpaperselector.WallpaperCard {
+        path: ""
+        label: "smoke"
+    }
+
     Variants {
         model: Quickshell.screens
 

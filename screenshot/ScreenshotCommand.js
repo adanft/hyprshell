@@ -7,6 +7,18 @@ monitor=$3
 delay=$4
 dir=$HOME/Pictures/Screenshots
 mkdir -p -- "$dir"
+# The tool hides itself before this runs, but the compositor drops the layer
+# surface asynchronously, so waiting a fixed moment is a bet: under load the
+# overlay is still on screen when grim fires and lands in the shot. Wait for the
+# surface to actually be gone instead. Bounded, because a layer that never
+# disappears must not hang the capture, and the loop exits on the first check in
+# the ordinary case.
+waited=0
+while [ "$waited" -lt 50 ]; do
+  hyprctl layers -j | jq -e 'any(.[].levels[][]; .namespace == "qs-screenshot")' >/dev/null 2>&1 || break
+  sleep 0.02
+  waited=$((waited + 1))
+done
 sleep "$delay"
 file=$(mktemp -- "$dir/screenshot_$(date +%Y-%m-%d-%H-%M-%S-%3N)-XXXXXX.png")
 cleanup() { rm -f -- "$file"; }
@@ -41,7 +53,10 @@ trap - EXIT HUP INT TERM
 		String(mode || "all"),
 		includeCursor ? "1" : "0",
 		String(monitorName || ""),
-		String(Math.max(0, Number(delaySeconds) || 0) + 0.2),
+		// The 0.2 that used to be added here was padding for the overlay
+		// teardown; the script now waits for that surface directly, so this is
+		// only the timer the user asked for.
+		String(Math.max(0, Number(delaySeconds) || 0)),
 	];
 }
 

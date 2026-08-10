@@ -9,7 +9,7 @@ const read = (relativePath) =>
 const shell = read("shell.qml");
 const overlayLifecycleLoader = read("OverlayLifecycleLoader.qml");
 const barWindow = read("statusbar/BarWindow.qml");
-const tray = read("statusbar/modules/Tray.qml");
+const tray = read("tray/Tray.qml");
 const controlCenter = read("controlcenter/ControlCenter.qml");
 const controlCenterController = read(
 	"controlcenter/ControlCenterController.qml",

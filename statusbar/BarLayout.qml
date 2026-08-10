@@ -2,6 +2,7 @@ import QtQuick
 import "../theme"
 import "components"
 import "modules"
+import "../tray"
 import "../shared/components"
 
 Item {

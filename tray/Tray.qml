@@ -1,9 +1,8 @@
-import "../components"
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
-import "../../theme"
+import "../theme"
 
 Item {
     id: root

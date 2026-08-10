@@ -142,6 +142,9 @@ const consumerPaths = fs
 	.map((entry) => path.posix.join("statusbar/modules", entry.name));
 
 const explicitConsumerPaths = [
+	// Tray left statusbar/modules for its own slice, so the directory sweep
+	// above no longer reaches it. Named here rather than lost.
+	"tray/Tray.qml",
 	"statusbar/components/AudioControl.qml",
 	"controlcenter/ControlCenter.qml",
 	"notifications/NotificationPopupManager.qml",

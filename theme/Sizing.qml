@@ -64,7 +64,6 @@ QtObject {
     readonly property int notificationCenterCardWidth: 380
     readonly property int notificationCenterFallbackScreenHeight: 560
     readonly property real notificationCenterHeightRatio: 0.75
-    readonly property int notificationCenterTopOffset: 42
     readonly property int notificationCenterHeaderHeight: size30
     readonly property int notificationCenterSpacerHeight: 1
     readonly property int notificationCenterClearButtonHeight: size26
@@ -80,6 +79,14 @@ QtObject {
     readonly property int notificationPopupEstimatedHeight: 96
 
     readonly property int statusBarOuterHeight: 42
+    // Where a surface that hangs off the bar starts. The control centre and the
+    // notification centre both take their top edge from here rather than each
+    // deriving its own: they used to arrive at the same 42 by different routes,
+    // one reading this height and the other adding a spacing token to the
+    // bottom of whichever module was clicked, so they only agreed by accident.
+    // The 3 is deliberately off the even spacing scale — it is a hairline
+    // between two surfaces, not a unit of layout rhythm.
+    readonly property int statusBarSurfaceTopOffset: statusBarOuterHeight + 3
     readonly property int statusBarHeight: size30
     readonly property int statusBarIconSize: size24
     readonly property int statusBarWorkspaceSlotSize: size24

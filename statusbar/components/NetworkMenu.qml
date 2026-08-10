@@ -22,7 +22,7 @@ Item {
 
     property bool menuOpen: false
     property real menuAnchorX: 0
-    property real menuAnchorY: theme.sizing.statusBarOuterHeight
+    property real menuAnchorY: theme.sizing.statusBarSurfaceTopOffset
     readonly property var pendingNetwork: networkController.pendingNetwork
     readonly property bool wifiActivationPending: networkController.wifiActivationPending
     readonly property string connectionError: networkController.connectionError
@@ -102,11 +102,13 @@ Item {
     function open(anchorItem, section) {
         networkController.expandNetworkSection(section || "")
         if (anchorItem) {
-            const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, anchorItem.height)
+            // Only x follows the module that was clicked. The top edge comes
+            // from the bar, not from the module, so the panel no longer shifts
+            // vertically depending on which module opened it.
+            const globalPosition = anchorItem.mapToGlobal(anchorItem.width / 2, 0)
             const screenX = barWindow.screen ? (barWindow.screen.x || 0) : 0
-            const screenY = barWindow.screen ? (barWindow.screen.y || 0) : 0
             menuAnchorX = globalPosition.x - screenX
-            menuAnchorY = globalPosition.y - screenY + theme.spacing.space6
+            menuAnchorY = theme.sizing.statusBarSurfaceTopOffset
         }
         networkController.prepareOpen()
         menuOpen = true

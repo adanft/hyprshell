@@ -60,7 +60,7 @@ PopupWindow {
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.notificationCenterScreenMargin, barWindow.width - width
                             - theme.spacing.notificationCenterScreenMargin)
-    anchor.rect.y: theme.sizing.notificationCenterTopOffset
+    anchor.rect.y: theme.sizing.statusBarSurfaceTopOffset
     onVisibleChanged: popup.services.notification.setNotificationCenterOpen(visible)
 
     Shortcut {

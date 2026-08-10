@@ -2,6 +2,7 @@ import QtQuick
 import "../theme"
 import "components"
 import "modules"
+import "../shared/components"
 
 Item {
     id: root

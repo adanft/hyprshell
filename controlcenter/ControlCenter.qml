@@ -5,8 +5,10 @@ import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Wayland
 import Quickshell.Widgets
-import "../../theme"
+import "../theme"
+import "components"
 import "ControlCenter.js" as ControlCenterLogic
+import "../shared/components"
 
 Item {
     id: root

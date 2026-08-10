@@ -10,9 +10,9 @@ const shell = read("shell.qml");
 const overlayLifecycleLoader = read("OverlayLifecycleLoader.qml");
 const barWindow = read("statusbar/BarWindow.qml");
 const tray = read("statusbar/modules/Tray.qml");
-const controlCenter = read("statusbar/components/ControlCenter.qml");
+const controlCenter = read("controlcenter/ControlCenter.qml");
 const controlCenterController = read(
-	"statusbar/components/ControlCenterController.qml",
+	"controlcenter/ControlCenterController.qml",
 );
 const networkService = read("services/capabilities/NetworkService.qml");
 

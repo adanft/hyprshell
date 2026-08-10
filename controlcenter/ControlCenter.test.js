@@ -1,20 +1,33 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const path = require("node:path");
 const vm = require("node:vm");
+
+const componentDir = path.join(__dirname, "components");
+
+// A file of this slice, wherever it sits: the panel, its controller and the
+// password dialog live at the root, the pieces they compose live in components/.
+const readSliceFile = (name) => {
+	const atRoot = path.join(__dirname, `${name}.qml`);
+	return fs.readFileSync(
+		fs.existsSync(atRoot) ? atRoot : path.join(componentDir, `${name}.qml`),
+		"utf8",
+	);
+};
 
 const source = fs.readFileSync(`${__dirname}/ControlCenter.js`, "utf8");
 const qml = fs.readFileSync(`${__dirname}/ControlCenter.qml`, "utf8");
 const playbackRowQml = fs.readFileSync(
-	`${__dirname}/AudioPlaybackStreamRow.qml`,
+	`${componentDir}/AudioPlaybackStreamRow.qml`,
 	"utf8",
 );
-const mixerQml = fs.readFileSync(`${__dirname}/AudioMixerSection.qml`, "utf8");
+const mixerQml = fs.readFileSync(`${componentDir}/AudioMixerSection.qml`, "utf8");
 const bluetoothRowQml = fs.readFileSync(
-	`${__dirname}/BluetoothDeviceRow.qml`,
+	`${componentDir}/BluetoothDeviceRow.qml`,
 	"utf8",
 );
 const bluetoothServiceQml = fs.readFileSync(
-	`${__dirname}/../../services/capabilities/BluetoothService.qml`,
+	`${__dirname}/../services/capabilities/BluetoothService.qml`,
 	"utf8",
 );
 const menu = {};
@@ -127,7 +140,7 @@ assert.match(detailContentBlock, /id: scanButton[\s\S]*?anchors\.right: parent\.
 assert.match(detailContentBlock, /radius: height \/ 2/);
 assert.match(detailContentBlock, /onClicked: root\.toggleBluetoothScan\(\)/);
 
-const infoCard = fs.readFileSync(`${__dirname}/BluetoothInfoCard.qml`, "utf8");
+const infoCard = fs.readFileSync(`${componentDir}/BluetoothInfoCard.qml`, "utf8");
 assert.doesNotMatch(infoCard, /scan|Scan/);
 assert.match(infoCard, /onClicked: card\.visibilityToggleRequested\(\)/);
 assert.match(infoCard, /enabled: card\.powered/);
@@ -180,11 +193,20 @@ assert.doesNotMatch(
 
 // Action buttons are pills of one height, and no component borrows the tray
 // menu's row height to get there.
-const componentDir = __dirname;
-for (const file of fs
-	.readdirSync(componentDir)
-	.filter((name) => name.endsWith(".qml") && name !== "TrayMenu.qml" && name !== "AudioControl.qml")) {
-	const source = fs.readFileSync(`${componentDir}/${file}`, "utf8");
+//
+// The sweep used to skip TrayMenu and AudioControl by name, because it ran over
+// a directory that also held the tray menu and a bar-module helper. Both live
+// outside this slice now, so the sweep covers everything it finds — every file
+// here belongs to the control centre, which is the point of the slice.
+const sliceFiles = [
+	...fs.readdirSync(__dirname).filter((name) => name.endsWith(".qml")),
+	...fs
+		.readdirSync(componentDir)
+		.map((name) => path.join("components", name))
+		.filter((name) => name.endsWith(".qml")),
+];
+for (const file of sliceFiles) {
+	const source = fs.readFileSync(path.join(__dirname, file), "utf8");
 	assert.doesNotMatch(
 		source,
 		/statusBarTrayMenuItemHeight/,
@@ -213,7 +235,7 @@ for (const file of [
 	"MicrophoneSourceRow",
 	"AudioPlaybackStreamRow",
 ]) {
-	const source = fs.readFileSync(`${componentDir}/${file}.qml`, "utf8");
+	const source = readSliceFile(file);
 	assert.match(
 		source,
 		/font\.pixelSize: root\.theme\.typography\.sizeMd\s*\n\s*font\.styleName: root\.theme\.typography\.styleSemibold/,
@@ -228,7 +250,7 @@ for (const file of [
 	"AudioInputSection",
 	"AudioPlaybackStreamRow",
 ]) {
-	const source = fs.readFileSync(`${componentDir}/${file}.qml`, "utf8");
+	const source = readSliceFile(file);
 	for (const [, block] of source.matchAll(/QuickControlSlider \{([\s\S]*?)\n(\s*)\}/g)) {
 		assert.match(
 			block,
@@ -241,7 +263,7 @@ for (const file of [
 
 // The Wi-Fi password dialog is one of the shell's overlays, so it takes their
 // body: opaque shadow, no border, and the shared padding and field tokens.
-const modal = fs.readFileSync(`${componentDir}/WifiPasswordModal.qml`, "utf8");
+const modal = fs.readFileSync(`${__dirname}/WifiPasswordModal.qml`, "utf8");
 assert.match(modal, /radius: root\.theme\.shape\.appLauncherRadius/);
 assert.match(modal, /color: Colors\.shadow/);
 assert.doesNotMatch(modal, /Qt\.alpha\(Colors\.surface/);

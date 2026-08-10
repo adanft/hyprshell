@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../../theme"
+import "../theme"
 
 Scope {
     id: root

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../theme"
 import "components"
+import "../controlcenter"
 
 PanelWindow {
     id: window

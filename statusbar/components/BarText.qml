@@ -1,3 +1,0 @@
-import "../../shared/components"
-
-AppText {}

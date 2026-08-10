@@ -1,5 +1,6 @@
 import QtQuick
 import "../../theme"
+import "../../shared/components"
 
 // The wired adapter as one list entry: its port glyph, its name with the
 // address underneath, and its state trailing. Everything else nmcli knows -

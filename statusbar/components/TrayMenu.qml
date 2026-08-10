@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import "../../theme"
+import "../../shared/components"
 
 Item {
     id: root

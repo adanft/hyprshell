@@ -1,5 +1,5 @@
 import QtQuick
-import "ControlCenter.js" as ControlCenterLogic
+import "../ControlCenter.js" as ControlCenterLogic
 import "../../theme"
 
 Rectangle {

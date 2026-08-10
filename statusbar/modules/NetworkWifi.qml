@@ -2,6 +2,7 @@ import "../components"
 import QtQuick
 import Quickshell.Networking
 import "../../theme"
+import "../../shared/components"
 
 Item {
     id: root

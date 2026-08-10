@@ -1,5 +1,6 @@
 import QtQuick
 import "../../theme"
+import "../../shared/components"
 
 // The adapter as one list entry, structured like its network siblings. What it
 // answers is different, though: Bluetooth exposes no address, and the adapter

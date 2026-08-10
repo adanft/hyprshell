@@ -1,5 +1,6 @@
 import QtQuick
 import "../../theme"
+import "../../shared/components"
 
 // The microphone panel, shaped like AudioMixerSection: a labelled slider over a
 // labelled device list. Both audio sections are components so neither one grows

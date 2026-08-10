@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell.Hyprland
 import "../components"
 import "../../theme"
+import "../../shared/components"
 
 Row {
     id: root

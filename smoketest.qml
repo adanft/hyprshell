@@ -28,6 +28,7 @@ import "powermenu" as Powermenu
 import "screenshot" as Screenshot
 import "services" as Services
 import "statusbar" as Statusbar
+import "controlcenter" as Controlcenter
 import "statusbar/components" as BarComponents
 import "theme" as Theme
 import "theme/runtime" as ThemeRuntime
@@ -57,7 +58,7 @@ ShellRoot {
 
     // Reached through ControlCenter at runtime, instantiated here so that a
     // standalone compile error cannot hide behind a closed menu.
-    BarComponents.WifiPasswordModal {
+    Controlcenter.WifiPasswordModal {
         screen: Quickshell.screens[0]
         theme: Theme.AppTheme
     }

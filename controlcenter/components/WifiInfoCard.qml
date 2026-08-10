@@ -1,5 +1,6 @@
 import QtQuick
 import "../../theme"
+import "../../shared/components"
 
 // The wireless adapter as one list entry, mirroring EthernetInfoCard: the
 // interface glyph, its name with the address beneath, and the state trailing.

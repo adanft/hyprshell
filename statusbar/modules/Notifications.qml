@@ -1,6 +1,7 @@
 import "../../theme"
 import "../components"
 import QtQuick
+import "../../shared/components"
 
 Item {
     id: root

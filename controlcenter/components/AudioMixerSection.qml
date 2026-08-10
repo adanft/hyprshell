@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import "../../theme"
+import "../../shared/components"
 
 Column {
     id: root

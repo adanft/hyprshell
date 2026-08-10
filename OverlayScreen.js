@@ -20,4 +20,19 @@ function focusedScreen(screens, focusedMonitorName) {
 	return screens[0];
 }
 
-if (typeof module !== "undefined") module.exports = { focusedScreen };
+// Pulls the monitor name out of a focusedmon event payload, which Hyprland
+// sends as "MONITOR,WORKSPACE".
+//
+// HyprlandIpcEvent carries only name and data here — it has no parseArgs — so
+// the split happens in QML and therefore belongs somewhere it can be tested. A
+// monitor name cannot contain a comma, so the first one always ends it, while a
+// workspace name can and must not be allowed to matter.
+function monitorNameFromFocusedMon(data) {
+	if (typeof data !== "string") return "";
+
+	const separator = data.indexOf(",");
+	return (separator < 0 ? data : data.slice(0, separator)).trim();
+}
+
+if (typeof module !== "undefined")
+	module.exports = { focusedScreen, monitorNameFromFocusedMon };

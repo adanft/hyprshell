@@ -138,15 +138,25 @@ assert.deepEqual(
 	"OverlayArbiter must import nothing but QtQuick to remain testable",
 );
 
-// Reading Hyprland.monitors is what makes focusedMonitor answer at all, so the
-// binding is load-bearing rather than decorative, and the resolver has to be
-// alive from startup because the overlays it serves are lazily loaded.
+// Hyprland.focusedMonitor is a cached view that goes stale, so the focused
+// monitor has to come from the focusedmon event. Reading the cache alone is the
+// bug that made overlays open on the previous monitor, and it must not come
+// back: the event-sourced name has to win whenever there is one.
 const overlayScreenResolver = read("OverlayScreenResolver.qml");
-assert.match(overlayScreenResolver, /readonly property var hyprlandMonitors: Hyprland\.monitors/);
 assert.match(
 	overlayScreenResolver,
-	/function focusedScreen\(\)[\s\S]*Hyprland\.focusedMonitor[\s\S]*OverlayScreen\.focusedScreen\(Quickshell\.screens, focused \? focused\.name : ""\)/,
+	/function onRawEvent\(event\)\s*{\s*if \(event\.name !== "focusedmon"\)\s*return;?\s*const name = OverlayScreen\.monitorNameFromFocusedMon\(event\.data\);?\s*if \(name\.length > 0\)\s*resolver\.focusedMonitorName = name;?/,
+	"the resolver must track the focusedmon event",
 );
+assert.match(
+	overlayScreenResolver,
+	/const name = resolver\.focusedMonitorName \|\| \(cached \? cached\.name : ""\)/,
+	"the event-sourced name must take precedence over the cached monitor",
+);
+// The startup read is what makes focusedMonitor answer at all, and the refresh
+// gives the seed a current value; both are load-bearing, not decorative.
+assert.match(overlayScreenResolver, /Hyprland\.monitors/);
+assert.match(overlayScreenResolver, /Hyprland\.refreshMonitors\(\)/);
 assert.match(shell, /OverlayScreenResolver\s*{\s*id: overlayScreenResolver\s*}/);
 assert.match(shell, /screenResolver: overlayScreenResolver/);
 

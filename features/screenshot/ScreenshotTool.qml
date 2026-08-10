@@ -221,14 +221,14 @@ Scope {
 
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: tool.theme.sizing.screenshotToolCursorSwitchWidth
-                    height: tool.theme.sizing.screenshotToolCursorSwitchHeight
+                    width: ScreenshotSizing.cursorSwitchWidth
+                    height: ScreenshotSizing.cursorSwitchHeight
                     radius: height / 2
                     color: tool.includeCursor ? Colors.primary : Colors.surface_variant
 
                     Rectangle {
-                        width: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
-                        height: tool.theme.sizing.screenshotToolCursorSwitchKnobSize
+                        width: ScreenshotSizing.cursorSwitchKnobSize
+                        height: ScreenshotSizing.cursorSwitchKnobSize
                         radius: width / 2
                         anchors.verticalCenter: parent.verticalCenter
                         x: tool.includeCursor ? parent.width - width

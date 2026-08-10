@@ -1,6 +1,7 @@
 import QtQuick
 import "../ControlCenter.js" as ControlCenterLogic
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: root
@@ -18,7 +19,7 @@ Rectangle {
             root.selectRequested(root.device)
     }
 
-    height: root.theme.sizing.statusBarNetworkDeviceRowHeight
+    height: ControlCenterSizing.deviceRowHeight
     radius: root.theme.shape.radius12
     color: Colors.surface
     opacity: root.available ? 1 : root.theme.motion.opacityDisabled
@@ -30,7 +31,7 @@ Rectangle {
     Text {
         id: deviceIcon
 
-        width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+        width: ControlCenterSizing.quickControlIconWidth
         anchors.left: parent.left
         anchors.leftMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
@@ -74,7 +75,7 @@ Rectangle {
         id: actionButton
 
         width: actionLabel.implicitWidth + root.theme.spacing.space16
-        height: root.theme.sizing.statusBarControlActionHeight
+        height: ControlCenterSizing.actionHeight
         anchors.right: parent.right
         anchors.rightMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter

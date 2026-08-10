@@ -1,0 +1,4 @@
+singleton StatusBarSizing 1.0 StatusBarSizing.qml
+BarContent 1.0 BarContent.qml
+BarLayout 1.0 BarLayout.qml
+BarWindow 1.0 BarWindow.qml

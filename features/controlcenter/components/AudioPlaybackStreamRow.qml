@@ -1,6 +1,7 @@
 import QtQuick
 import "../ControlCenter.js" as ControlCenterLogic
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: root
@@ -69,7 +70,7 @@ Rectangle {
 
         Text {
             id: streamIcon
-            width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+            width: ControlCenterSizing.quickControlIconWidth
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: root.icon
@@ -132,14 +133,14 @@ Rectangle {
         anchors.leftMargin: root.theme.spacing.space12
         anchors.rightMargin: root.theme.spacing.space12
         anchors.bottomMargin: root.theme.spacing.space12
-        height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+        height: ControlCenterSizing.quickControlSliderHeight
 
         Row {
             anchors.fill: parent
             spacing: root.theme.spacing.space6
 
             Rectangle {
-                width: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                width: ControlCenterSizing.quickControlSliderHeight
                 height: parent.height
                 radius: height / 2
                 color: root.muted ? Colors.primary : (muteInput.containsMouse || muteInput.activeFocus
@@ -178,10 +179,10 @@ Rectangle {
             QuickControlSlider {
                 id: volumeSlider
                 theme: root.theme
-                width: parent.width - root.theme.sizing.statusBarNetworkQuickControlSliderHeight - parent.spacing
-                height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                width: parent.width - ControlCenterSizing.quickControlSliderHeight - parent.spacing
+                height: ControlCenterSizing.quickControlSliderHeight
                 anchors.verticalCenter: parent.verticalCenter
-                trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
+                trackHeight: ControlCenterSizing.quickControlTrackHeight
                 value: root.percent
                 available: root.available
                 trackColor: Colors.surface_variant

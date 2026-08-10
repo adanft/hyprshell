@@ -254,7 +254,7 @@ for (const file of [
 	for (const [, block] of source.matchAll(/QuickControlSlider \{([\s\S]*?)\n(\s*)\}/g)) {
 		assert.match(
 			block,
-			/height: root\.theme\.sizing\.statusBarNetworkQuickControlSliderHeight/,
+			/height: ControlCenterSizing\.quickControlSliderHeight/,
 			`${file} sizes a slider differently`,
 		);
 		assert.match(block, /trackColor: Colors\.surface_variant/, `${file} tints a slider track differently`);
@@ -517,12 +517,12 @@ assert.match(
 );
 assert.match(
 	qml,
-	/menuCenterHeight\([\s\S]*statusBarNetworkQuickControlHeight/,
+	/menuCenterHeight\([\s\S]*quickControlHeight/,
 );
 assert.doesNotMatch(qml, /\b0\.7\b/);
 assert.match(
 	detailFlickableBlock,
-	/detailViewportHeight\([\s\S]*statusBarNetworkQuickControlHeight/,
+	/detailViewportHeight\([\s\S]*quickControlHeight/,
 );
 assert.match(
 	detailFlickableBlock,

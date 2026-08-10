@@ -1,6 +1,7 @@
 import QtQuick
 import "../../../theme"
 import "../../../shared/components"
+import ".."
 
 // The microphone panel, shaped like AudioMixerSection: a labelled slider over a
 // labelled device list. Both audio sections are components so neither one grows
@@ -26,14 +27,14 @@ Column {
 
     Item {
         width: parent.width
-        height: root.theme.sizing.statusBarNetworkQuickControlHeight
+        height: ControlCenterSizing.quickControlHeight
 
         Row {
             anchors.fill: parent
             spacing: root.theme.spacing.space6
 
             AppText {
-                width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+                width: ControlCenterSizing.quickControlIconWidth
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
                 text: root.services.audio.sourceMuted ? root.icons.audio.microphoneMuted : root.icons.audio.microphone
@@ -47,10 +48,10 @@ Column {
                 id: microphoneSlider
 
                 theme: root.theme
-                width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth - parent.spacing
-                height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                width: parent.width - ControlCenterSizing.quickControlIconWidth - parent.spacing
+                height: ControlCenterSizing.quickControlSliderHeight
                 anchors.verticalCenter: parent.verticalCenter
-                trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
+                trackHeight: ControlCenterSizing.quickControlTrackHeight
                 value: Math.max(0, root.services.audio.sourceVolume)
                 available: root.services.audio.microphoneAvailable
                 trackColor: Colors.surface_variant

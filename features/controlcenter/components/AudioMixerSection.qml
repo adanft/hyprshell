@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import "../../../theme"
 import "../../../shared/components"
+import ".."
 
 Column {
     id: root
@@ -37,14 +38,14 @@ Column {
 
     Item {
         width: parent.width
-        height: root.theme.sizing.statusBarNetworkQuickControlHeight
+        height: ControlCenterSizing.quickControlHeight
 
         Row {
             anchors.fill: parent
             spacing: root.theme.spacing.space6
 
             AppText {
-                width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+                width: ControlCenterSizing.quickControlIconWidth
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
                 text: root.outputIcon
@@ -57,10 +58,10 @@ Column {
             QuickControlSlider {
                 id: outputVolumeSlider
                 theme: root.theme
-                width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth - parent.spacing
-                height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                width: parent.width - ControlCenterSizing.quickControlIconWidth - parent.spacing
+                height: ControlCenterSizing.quickControlSliderHeight
                 anchors.verticalCenter: parent.verticalCenter
-                trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
+                trackHeight: ControlCenterSizing.quickControlTrackHeight
                 value: root.outputQuickVolume?.authoritativePercent ?? 0
                 available: root.outputAvailable
                 trackColor: Colors.surface_variant

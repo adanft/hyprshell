@@ -1,0 +1,4 @@
+singleton ScreenshotSizing 1.0 ScreenshotSizing.qml
+ScreenshotAction 1.0 ScreenshotAction.qml
+ScreenshotTimerOption 1.0 ScreenshotTimerOption.qml
+ScreenshotTool 1.0 ScreenshotTool.qml

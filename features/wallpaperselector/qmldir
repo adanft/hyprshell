@@ -1,0 +1,5 @@
+singleton WallpaperSizing 1.0 WallpaperSizing.qml
+WallpaperCard 1.0 WallpaperCard.qml
+WallpaperExtensionFilter 1.0 WallpaperExtensionFilter.qml
+WallpaperSelector 1.0 WallpaperSelector.qml
+WallpaperThumbnailCache 1.0 WallpaperThumbnailCache.qml

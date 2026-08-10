@@ -1,5 +1,6 @@
 import QtQuick
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: card
@@ -13,7 +14,7 @@ Rectangle {
     property bool busy: false
     property bool detailAvailable: true
     property bool expanded: false
-    readonly property int iconSize: theme.sizing.statusBarNetworkControlIconSize
+    readonly property int iconSize: ControlCenterSizing.controlIconSize
     property string actionAccessibleName: "Toggle " + title
     property string detailAccessibleName: (expanded ? "Hide " : "Show ") + title + " details"
     property string stateDescription: subtitle

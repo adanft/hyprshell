@@ -14,8 +14,8 @@ Rectangle {
     signal activated
     signal hovered
 
-    width: theme.sizing.powerMenuActionSize
-    height: theme.sizing.powerMenuActionSize
+    width: PowerMenuSizing.actionSize
+    height: PowerMenuSizing.actionSize
     radius: theme.shape.powerMenuActionRadius
     // The resting state had this the other way round: a surface-coloured body
     // with a shadow-coloured border and glyph. Swapping them leaves the body the

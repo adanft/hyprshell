@@ -1,0 +1,5 @@
+singleton NotificationSizing 1.0 NotificationSizing.qml
+NotificationCard 1.0 NotificationCard.qml
+NotificationCenter 1.0 NotificationCenter.qml
+NotificationPopup 1.0 NotificationPopup.qml
+NotificationPopupManager 1.0 NotificationPopupManager.qml

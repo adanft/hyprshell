@@ -1,6 +1,7 @@
 import QtQuick
 import "../../../theme"
 import "../../../shared/components"
+import ".."
 
 // The adapter as one list entry, structured like its network siblings. What it
 // answers is different, though: Bluetooth exposes no address, and the adapter
@@ -36,7 +37,7 @@ Rectangle {
     }
 
     // Fixed so the panel does not jump as devices connect and disconnect.
-    height: theme.sizing.statusBarNetworkInfoCardHeight
+    height: ControlCenterSizing.infoCardHeight
     radius: theme.shape.radius12
     color: Colors.surface
     border.width: 0

@@ -28,7 +28,7 @@ Rectangle {
             id: imageFrame
 
             width: parent.width
-            height: card.theme.sizing.wallpaperCardHeight
+            height: WallpaperSizing.cardHeight
             radius: card.theme.shape.wallpaperThumbnailRadius
             color: "transparent"
             border.width: (card.hovered || card.selected || card.isActive) ? card.theme.shape.wallpaperCardBorderWidth : 0
@@ -45,8 +45,8 @@ Rectangle {
                 retainWhileLoading: true
                 fillMode: Image.PreserveAspectCrop
                 smooth: true
-                sourceSize: Qt.size(width * card.theme.sizing.wallpaperCardPreviewScale,
-                                    height * card.theme.sizing.wallpaperCardPreviewScale)
+                sourceSize: Qt.size(width * WallpaperSizing.cardPreviewScale,
+                                    height * WallpaperSizing.cardPreviewScale)
                 layer.enabled: true
 
                 layer.effect: MultiEffect {

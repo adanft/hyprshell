@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import "../../../theme"
+import ".."
 
 Item {
     id: control
@@ -14,7 +15,7 @@ Item {
     property real value: 0
     property bool available: true
     property int liveUpdateInterval: 75
-    property real trackHeight: theme.sizing.statusBarSliderTrackHeight
+    property real trackHeight: ControlCenterSizing.sliderTrackHeight
     property color trackColor: "transparent"
     property color fillColor: Colors.on_surface
     property color handleColor: Colors.on_surface
@@ -100,8 +101,8 @@ Item {
         id: sliderHandle
         x: control.visualPosition * (control.width - width)
         anchors.verticalCenter: parent.verticalCenter
-        width: control.theme.sizing.statusBarSliderHandleSize
-        height: control.theme.sizing.statusBarSliderHandleSize
+        width: ControlCenterSizing.sliderHandleSize
+        height: ControlCenterSizing.sliderHandleSize
         radius: width / 2
         color: control.handleColor
         border.color: control.handleBorderColor

@@ -3,6 +3,7 @@ import Quickshell.Hyprland
 import "../components"
 import "../../../theme"
 import "../../../shared/components"
+import ".."
 
 Row {
     id: root
@@ -16,7 +17,7 @@ Row {
                 > 0) ? toplevel : null
     }
 
-    width: theme.sizing.statusBarWindowTitleWidth
+    width: StatusBarSizing.windowTitleWidth
     height: theme.sizing.statusBarHeight
     spacing: theme.spacing.space6
 

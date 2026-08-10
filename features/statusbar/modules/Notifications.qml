@@ -2,6 +2,7 @@ import "../../../theme"
 import "../components"
 import QtQuick
 import "../../../shared/components"
+import ".."
 
 Item {
     id: root
@@ -41,8 +42,8 @@ Item {
     }
 
     Rectangle {
-        width: root.theme.sizing.notificationBadgeSize
-        height: root.theme.sizing.notificationBadgeSize
+        width: StatusBarSizing.notificationBadgeSize
+        height: StatusBarSizing.notificationBadgeSize
         radius: root.theme.shape.notificationBadgeRadius
         color: Colors.error
         visible: root.services.notification.hasNotifications

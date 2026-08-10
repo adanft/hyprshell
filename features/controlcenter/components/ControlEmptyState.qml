@@ -1,5 +1,6 @@
 import QtQuick
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: root
@@ -8,7 +9,7 @@ Rectangle {
     property string title: ""
     property string description: ""
 
-    height: theme.sizing.statusBarControlEmptyStateHeight
+    height: ControlCenterSizing.emptyStateHeight
     radius: theme.shape.radius12
     color: Colors.surface
     border.width: 0

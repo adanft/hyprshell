@@ -1,6 +1,7 @@
 import QtQuick
 import "../ControlCenter.js" as ControlCenterLogic
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: root
@@ -27,7 +28,7 @@ Rectangle {
         forgetRequested()
     }
 
-    height: theme.sizing.statusBarNetworkDeviceRowHeight
+    height: ControlCenterSizing.deviceRowHeight
     radius: theme.shape.radius12
     color: Colors.surface
     border.width: 0
@@ -78,7 +79,7 @@ Rectangle {
             id: primaryButton
             objectName: "primaryActionButton"
             width: primaryLabel.implicitWidth + root.theme.spacing.space16
-            height: root.theme.sizing.statusBarControlActionHeight
+            height: ControlCenterSizing.actionHeight
             radius: height / 2
             color: primaryInput.containsMouse || primaryInput.activeFocus ? Colors.hover :
                                                                             "transparent"
@@ -124,7 +125,7 @@ Rectangle {
             // collapsed to zero whenever an ancestor was hidden, even though
             // the button was meant to be shown.
             width: root.forgetAvailable ? forgetLabel.implicitWidth + root.theme.spacing.space16 : 0
-            height: root.theme.sizing.statusBarControlActionHeight
+            height: ControlCenterSizing.actionHeight
             radius: height / 2
             color: forgetInput.containsMouse || forgetInput.activeFocus ? Colors.hover :
                                                                           "transparent"

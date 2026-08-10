@@ -15,8 +15,8 @@ PopupWindow {
     required property var services
     required property var barWindow
     readonly property int contentPadding: theme.spacing.space16
-    readonly property int cardWidth: theme.sizing.notificationCenterCardWidth
-    readonly property real heightRatio: theme.sizing.notificationCenterHeightRatio
+    readonly property int cardWidth: NotificationSizing.centerCardWidth
+    readonly property real heightRatio: NotificationSizing.centerHeightRatio
     property var expandedNotificationIds: ({})
 
     function notificationExpansionKey(notification) {
@@ -53,7 +53,7 @@ PopupWindow {
 
     implicitWidth: cardWidth + contentPadding * 2
     implicitHeight: Math.round((barWindow.screen ? barWindow.screen.height :
-                                                   theme.sizing.notificationCenterFallbackScreenHeight) * heightRatio)
+                                                   NotificationSizing.centerFallbackScreenHeight) * heightRatio)
     visible: false
     grabFocus: true
     color: "transparent"
@@ -87,7 +87,7 @@ PopupWindow {
                 id: headerRow
 
                 width: parent.width
-                height: popup.theme.sizing.notificationCenterHeaderHeight
+                height: NotificationSizing.centerHeaderHeight
                 spacing: popup.theme.spacing.space8
 
                 AppText {
@@ -102,15 +102,15 @@ PopupWindow {
                 Item {
                     width: Math.max(0, parent.width - headerTitle.implicitWidth - dndButton.width
                                     - clearButton.width - parent.spacing * 3)
-                    height: popup.theme.sizing.notificationCenterSpacerHeight
+                    height: NotificationSizing.centerSpacerHeight
                 }
 
                 Rectangle {
                     id: dndButton
 
                     anchors.verticalCenter: parent.verticalCenter
-                    width: popup.theme.sizing.notificationCenterClearButtonHeight
-                    height: popup.theme.sizing.notificationCenterClearButtonHeight
+                    width: NotificationSizing.centerClearButtonHeight
+                    height: NotificationSizing.centerClearButtonHeight
                     radius: width / 2
                     color: popup.services.notification.notificationDnd ? Colors.primary :
                                                                          (dndMouse.containsMouse || dndMouse.activeFocus ?
@@ -151,8 +151,8 @@ PopupWindow {
                     id: clearButton
 
                     anchors.verticalCenter: parent.verticalCenter
-                    width: popup.theme.sizing.notificationCenterClearButtonWidth
-                    height: popup.theme.sizing.notificationCenterClearButtonHeight
+                    width: NotificationSizing.centerClearButtonWidth
+                    height: NotificationSizing.centerClearButtonHeight
                     radius: height / 2
                     visible: popup.services.notification.hasNotifications
                     color: clearMouse.containsMouse || clearMouse.activeFocus ? Colors.hover : "transparent"

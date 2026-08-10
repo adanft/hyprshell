@@ -141,8 +141,8 @@ Scope {
 
             property alias themeGridView: themeGrid
             property alias searchField: searchInput
-            readonly property int contentWidth: selector.theme.sizing.themeSelectorCellWidth
-                                                * selector.theme.sizing.themeSelectorGridColumns
+            readonly property int contentWidth: ThemeSelectorSizing.cellWidth
+                                                * ThemeSelectorSizing.gridColumns
 
             anchors.fill: parent
             anchors.margins: selector.theme.spacing.space12
@@ -236,8 +236,8 @@ Scope {
                             else
                                 event.accepted = false
                         }
-                        Keys.onUpPressed: selector.moveSelection(-selector.theme.sizing.themeSelectorGridColumns)
-                        Keys.onDownPressed: selector.moveSelection(selector.theme.sizing.themeSelectorGridColumns)
+                        Keys.onUpPressed: selector.moveSelection(-ThemeSelectorSizing.gridColumns)
+                        Keys.onDownPressed: selector.moveSelection(ThemeSelectorSizing.gridColumns)
                         Keys.onReturnPressed: selector.applySelection()
                         Keys.onEnterPressed: selector.applySelection()
                         Keys.onPressed: event => selector.handleNavigationKey(event)
@@ -248,7 +248,7 @@ Scope {
             GridView {
                 id: themeGrid
 
-                readonly property int columns: selector.theme.sizing.themeSelectorGridColumns
+                readonly property int columns: ThemeSelectorSizing.gridColumns
                 readonly property int cardHeight: selector.themeCardHeight()
 
                 width: parent.width
@@ -327,8 +327,8 @@ Scope {
             Keys.onEscapePressed: selector.close()
             Keys.onLeftPressed: selector.moveSelection(-1)
             Keys.onRightPressed: selector.moveSelection(1)
-            Keys.onUpPressed: selector.moveSelection(-selector.theme.sizing.themeSelectorGridColumns)
-            Keys.onDownPressed: selector.moveSelection(selector.theme.sizing.themeSelectorGridColumns)
+            Keys.onUpPressed: selector.moveSelection(-ThemeSelectorSizing.gridColumns)
+            Keys.onDownPressed: selector.moveSelection(ThemeSelectorSizing.gridColumns)
             Keys.onReturnPressed: selector.applySelection()
             Keys.onEnterPressed: selector.applySelection()
             Keys.onPressed: event => selector.handleNavigationKey(event)
@@ -342,9 +342,9 @@ Scope {
             Rectangle {
                 anchors.centerIn: parent
                 width: Math.min(parent.width - selector.theme.spacing.space96,
-                                selector.theme.sizing.themeSelectorMaxWidth)
+                                ThemeSelectorSizing.maxWidth)
                 height: Math.min(parent.height - selector.theme.spacing.space96,
-                                 selector.theme.sizing.themeSelectorMaxHeight)
+                                 ThemeSelectorSizing.maxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
                 color: Colors.shadow
 

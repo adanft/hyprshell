@@ -21,7 +21,7 @@ Rectangle {
     readonly property var previewColors: themeData && themeData.primary ? [themeData.primary, themeData.hover,
         themeData.tertiary, themeData.secondary] : [Colors.primary, Colors.hover, Colors.tertiary,
         Colors.secondary]
-    readonly property int paletteDotSize: theme.sizing.themeSelectorPaletteDotSize
+    readonly property int paletteDotSize: ThemeSelectorSizing.paletteDotSize
     readonly property int nameLineHeight: theme.typography.textMd + theme.spacing.space4
 
     implicitHeight: theme.spacing.space8 * 2 + paletteDotSize + theme.spacing.space6

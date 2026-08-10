@@ -1,6 +1,7 @@
 import QtQuick
 import "../../../theme"
 import "../../../shared/components"
+import ".."
 
 // The wired adapter as one list entry: its port glyph, its name with the
 // address underneath, and its state trailing. Everything else nmcli knows -
@@ -24,7 +25,7 @@ Rectangle {
                                                                                                     "No cable"))
 
     // Fixed so the panel does not jump when the address appears or goes away.
-    height: theme.sizing.statusBarNetworkInfoCardHeight
+    height: ControlCenterSizing.infoCardHeight
     radius: theme.shape.radius12
     color: Colors.surface
     border.width: 0

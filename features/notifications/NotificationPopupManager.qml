@@ -9,7 +9,7 @@ PopupWindow {
 
     required property var services
     required property var barWindow
-    readonly property int popupWidth: theme.sizing.notificationPopupWidth
+    readonly property int popupWidth: NotificationSizing.popupWidth
     readonly property int topMargin: theme.spacing.space52
     readonly property int rightMargin: theme.spacing.space12
     readonly property int bottomMargin: theme.spacing.space12

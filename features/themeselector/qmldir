@@ -1,0 +1,4 @@
+singleton ThemeSelectorSizing 1.0 ThemeSelectorSizing.qml
+ThemeCard 1.0 ThemeCard.qml
+ThemeSelector 1.0 ThemeSelector.qml
+ThemeVariantFilter 1.0 ThemeVariantFilter.qml

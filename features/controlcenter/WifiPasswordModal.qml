@@ -93,7 +93,7 @@ Scope {
             Rectangle {
                 id: dialog
 
-                width: Math.min(root.theme.sizing.statusBarWifiPasswordModalMaxWidth,
+                width: Math.min(ControlCenterSizing.wifiPasswordModalMaxWidth,
                                 parent.width - root.theme.spacing.space18 * 2)
                 height: dialogContent.implicitHeight + root.theme.spacing.space18 * 2
                 anchors.centerIn: parent
@@ -151,8 +151,8 @@ Scope {
 
                         Rectangle {
                             id: closeButton
-                            width: root.theme.sizing.statusBarWifiPasswordCloseButtonSize
-                            height: root.theme.sizing.statusBarWifiPasswordCloseButtonSize
+                            width: ControlCenterSizing.wifiPasswordCloseButtonSize
+                            height: ControlCenterSizing.wifiPasswordCloseButtonSize
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             radius: height / 2
@@ -221,7 +221,7 @@ Scope {
 
                         Item {
                             id: visibilityButton
-                            width: root.theme.sizing.statusBarWifiPasswordVisibilityButtonWidth
+                            width: ControlCenterSizing.wifiPasswordVisibilityButtonWidth
                             height: parent.height
                             anchors.right: parent.right
 
@@ -268,7 +268,7 @@ Scope {
 
                         Rectangle {
                             width: cancelLabel.implicitWidth + root.theme.spacing.space24
-                            height: root.theme.sizing.statusBarWifiPasswordActionHeight
+                            height: ControlCenterSizing.wifiPasswordActionHeight
                             radius: height / 2
                             color: cancelInput.containsMouse || cancelInput.activeFocus ? Colors.hover :
                                                                                           Colors.surface
@@ -301,7 +301,7 @@ Scope {
 
                         Rectangle {
                             width: connectLabel.implicitWidth + root.theme.spacing.space24
-                            height: root.theme.sizing.statusBarWifiPasswordActionHeight
+                            height: ControlCenterSizing.wifiPasswordActionHeight
                             radius: height / 2
                             color: Colors.primary
                             opacity: passwordInput.text.length > 0 && !root.busy ? 1 : root.theme.motion.opacityDisabled

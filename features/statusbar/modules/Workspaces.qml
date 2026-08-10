@@ -3,6 +3,7 @@ import Quickshell.Hyprland
 import "../components"
 import "../../../theme"
 import "../../../shared/components"
+import ".."
 
 Item {
     id: root
@@ -37,7 +38,7 @@ Item {
 
                 readonly property bool hovered: mouseArea.containsMouse
 
-                width: root.theme.sizing.statusBarWorkspaceSlotSize
+                width: StatusBarSizing.workspaceSlotSize
                 text: root.icons.system.workspaceDot
                 color: root.workspaceColor(urgent, active, root.monitorFocused, hovered, empty)
                 font.family: root.theme.typography.iconFontFamily

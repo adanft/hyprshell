@@ -1,0 +1,4 @@
+singleton ControlCenterSizing 1.0 ControlCenterSizing.qml
+ControlCenter 1.0 ControlCenter.qml
+ControlCenterController 1.0 ControlCenterController.qml
+WifiPasswordModal 1.0 WifiPasswordModal.qml

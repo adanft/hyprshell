@@ -33,18 +33,18 @@ Item {
     readonly property int actionSpacing: theme.spacing.space6
     readonly property int cardPadding: theme.spacing.space12
     readonly property int borderWidth: theme.shape.notificationCardBorderWidth
-    readonly property int iconSlotSize: theme.sizing.notificationCardIconSlotSize
-    readonly property int iconSize: theme.sizing.notificationCardIconSize
-    readonly property int closeButtonSize: theme.sizing.notificationCardCloseButtonSize
-    readonly property int actionButtonHeight: theme.sizing.notificationCardActionButtonHeight
+    readonly property int iconSlotSize: NotificationSizing.cardIconSlotSize
+    readonly property int iconSize: NotificationSizing.cardIconSize
+    readonly property int closeButtonSize: NotificationSizing.cardCloseButtonSize
+    readonly property int actionButtonHeight: NotificationSizing.cardActionButtonHeight
     readonly property int actionButtonRadius: theme.shape.notificationCardActionButtonRadius
-    readonly property int actionButtonMinWidth: theme.sizing.notificationCardActionButtonMinWidth
+    readonly property int actionButtonMinWidth: NotificationSizing.cardActionButtonMinWidth
     readonly property int actionButtonHorizontalPadding: theme.spacing.space16
     readonly property int labelFontSize: theme.typography.textSm
     readonly property int titleFontSize: theme.typography.textBase
     readonly property int bodyFontSize: theme.typography.textMd
     readonly property int closeIconFontSize: theme.typography.textMd
-    readonly property int collapsedBodyLines: theme.sizing.notificationCardCollapsedBodyLines
+    readonly property int collapsedBodyLines: NotificationSizing.cardCollapsedBodyLines
     readonly property real bodyLineHeight: theme.typography.notificationBodyLineHeight
     readonly property int resizeAnimationMs: theme.motion.durationNormal
     readonly property int allocationFinalizeDelayMs: theme.motion.layoutFinalizeDelay
@@ -79,7 +79,7 @@ Item {
         const actionSpace = hasActions ? spacing + actionButtonHeight : 0
         return Math.max(0, viewportHeight - headerHeight - spacing - titleHeight - spacing - actionSpace)
     }
-    readonly property int urgencyBarWidth: theme.sizing.notificationCardUrgencyBarWidth
+    readonly property int urgencyBarWidth: NotificationSizing.cardUrgencyBarWidth
     readonly property color urgencyBarColor: {
         if (!notificationData)
             return Colors.tertiary

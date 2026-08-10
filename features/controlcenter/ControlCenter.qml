@@ -213,13 +213,13 @@ Item {
         Rectangle {
             id: menuContainer
 
-            width: Math.max(0, Math.min(root.theme.sizing.statusBarControlCenterWidth, menuWindow.width
+            width: Math.max(0, Math.min(ControlCenterSizing.panelWidth, menuWindow.width
                                         - root.theme.spacing.space16))
             height: ControlCenterLogic.menuCenterHeight(menuWindow.height, root.theme.spacing.space16, 360,
                                                       root.theme.spacing.space24, fixedShell.implicitHeight,
                                                       root.theme.spacing.space8, root.activeDetail,
                                                       detailContent.implicitHeight,
-                                                      root.theme.sizing.statusBarNetworkQuickControlHeight)
+                                                      ControlCenterSizing.quickControlHeight)
             x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8, root.menuAnchorX
                                                             - width / 2))
             y: Math.max(root.theme.spacing.space8, Math.min(menuWindow.height - height - root.theme.spacing.space8,
@@ -248,7 +248,7 @@ Item {
                     Rectangle {
                         id: userCard
                         width: parent.width
-                        height: root.theme.sizing.statusBarNetworkUserCardHeight
+                        height: ControlCenterSizing.userCardHeight
                         radius: root.theme.shape.radius12
                         color: Colors.surface
                         border.width: 0
@@ -259,8 +259,8 @@ Item {
                             spacing: root.theme.spacing.space12
 
                             Rectangle {
-                                width: root.theme.sizing.statusBarNetworkAvatarSize
-                                height: root.theme.sizing.statusBarNetworkAvatarSize
+                                width: ControlCenterSizing.avatarSize
+                                height: ControlCenterSizing.avatarSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 radius: width / 2
                                 color: Colors.primary
@@ -288,8 +288,8 @@ Item {
                                         asynchronous: true
                                         cache: false
                                         fillMode: Image.PreserveAspectCrop
-                                        sourceSize.width: root.theme.sizing.statusBarNetworkAvatarSize * 2
-                                        sourceSize.height: root.theme.sizing.statusBarNetworkAvatarSize * 2
+                                        sourceSize.width: ControlCenterSizing.avatarSize * 2
+                                        sourceSize.height: ControlCenterSizing.avatarSize * 2
                                     }
                                 }
 
@@ -303,7 +303,7 @@ Item {
                             }
 
                             Column {
-                                width: parent.width - root.theme.sizing.statusBarNetworkUserTextReserve
+                                width: parent.width - ControlCenterSizing.userTextReserve
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space2
 
@@ -336,7 +336,7 @@ Item {
                     Item {
                         id: quickControlsRow
                         width: parent.width
-                        height: root.theme.sizing.statusBarNetworkQuickControlHeight
+                        height: ControlCenterSizing.quickControlHeight
 
                         Row {
                             anchors.fill: parent
@@ -354,7 +354,7 @@ Item {
                                     spacing: root.theme.spacing.space6
 
                                     AppText {
-                                        width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+                                        width: ControlCenterSizing.quickControlIconWidth
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
                                         text: root.outputIcon
@@ -367,11 +367,11 @@ Item {
                                     QuickControlSlider {
                                         id: volumeSlider
                                         theme: root.theme
-                                        width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth
+                                        width: parent.width - ControlCenterSizing.quickControlIconWidth
                                                - parent.spacing
-                                        height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                                        height: ControlCenterSizing.quickControlSliderHeight
                                         anchors.verticalCenter: parent.verticalCenter
-                                        trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
+                                        trackHeight: ControlCenterSizing.quickControlTrackHeight
                                         value: root.outputQuickVolume?.authoritativePercent ?? 0
                                         available: root.outputAvailable
                                         trackColor: Colors.surface_variant
@@ -401,7 +401,7 @@ Item {
                                     spacing: root.theme.spacing.space6
 
                                     AppText {
-                                        width: root.theme.sizing.statusBarNetworkQuickControlIconWidth
+                                        width: ControlCenterSizing.quickControlIconWidth
                                         anchors.verticalCenter: parent.verticalCenter
                                         horizontalAlignment: Text.AlignHCenter
                                         text: root.icons.display.brightness
@@ -414,11 +414,11 @@ Item {
                                     QuickControlSlider {
                                         id: brightnessSlider
                                         theme: root.theme
-                                        width: parent.width - root.theme.sizing.statusBarNetworkQuickControlIconWidth
+                                        width: parent.width - ControlCenterSizing.quickControlIconWidth
                                                - parent.spacing
-                                        height: root.theme.sizing.statusBarNetworkQuickControlSliderHeight
+                                        height: ControlCenterSizing.quickControlSliderHeight
                                         anchors.verticalCenter: parent.verticalCenter
-                                        trackHeight: root.theme.sizing.statusBarQuickControlTrackHeight
+                                        trackHeight: ControlCenterSizing.quickControlTrackHeight
                                         value: root.services.brightness.brightnessLevel
                                         available: root.services.brightness.brightnessAvailable
                                         trackColor: Colors.surface_variant
@@ -436,7 +436,7 @@ Item {
                     Item {
                         id: networkControlsRow
                         width: parent.width
-                        height: root.theme.sizing.statusBarNetworkQuickControlHeight
+                        height: ControlCenterSizing.quickControlHeight
 
                         Row {
                             anchors.fill: parent
@@ -487,7 +487,7 @@ Item {
                     Item {
                         id: audioControlsRow
                         width: parent.width
-                        height: root.theme.sizing.statusBarNetworkQuickControlHeight
+                        height: ControlCenterSizing.quickControlHeight
 
                         Row {
                             anchors.fill: parent
@@ -540,7 +540,7 @@ Item {
                     NetworkControlCard {
                         id: bluetoothCard
                         width: (parent.width - root.theme.spacing.space8) / 2
-                        height: root.theme.sizing.statusBarNetworkQuickControlHeight
+                        height: ControlCenterSizing.quickControlHeight
                         theme: root.theme
                         icon: !root.services.bluetooth.bluetoothAvailable ? root.icons.bluetooth.off : (
                                                                                 root.services.bluetooth.bluetoothConnectedCount
@@ -576,7 +576,7 @@ Item {
                                                                   menuContainer.height - root.theme.spacing.space24
                                                                   - fixedShell.implicitHeight - (root.activeDetail
                                                                                                  ? root.theme.spacing.space8 :
-                                                                                                   0), root.theme.sizing.statusBarNetworkQuickControlHeight)
+                                                                                                   0), ControlCenterSizing.quickControlHeight)
                     visible: root.activeDetail && height > 0
                     contentWidth: width
                     contentHeight: detailContent.implicitHeight

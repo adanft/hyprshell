@@ -1,0 +1,3 @@
+singleton PowerMenuSizing 1.0 PowerMenuSizing.qml
+ActionButton 1.0 ActionButton.qml
+PowerMenu 1.0 PowerMenu.qml

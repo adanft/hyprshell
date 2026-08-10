@@ -14,8 +14,8 @@ Rectangle {
 
     signal activated
 
-    width: theme.sizing.screenshotToolTimerOptionWidth
-    height: theme.sizing.screenshotToolTimerOptionHeight
+    width: ScreenshotSizing.timerOptionWidth
+    height: ScreenshotSizing.timerOptionHeight
     radius: theme.shape.screenshotToolTimerOptionRadius
     color: hovered ? Colors.hover : (selected ? Colors.primary : "transparent")
 

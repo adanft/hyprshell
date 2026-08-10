@@ -1,6 +1,7 @@
 import QtQuick
 import "../ControlCenter.js" as ControlCenterLogic
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: root
@@ -18,7 +19,7 @@ Rectangle {
             toggleRequested(profile)
     }
 
-    height: theme.sizing.statusBarNetworkDeviceRowHeight
+    height: ControlCenterSizing.deviceRowHeight
     radius: theme.shape.radius12
     color: Colors.surface
     border.width: 0
@@ -57,7 +58,7 @@ Rectangle {
     Rectangle {
         id: actionButton
         width: actionLabel.implicitWidth + root.theme.spacing.space16
-        height: root.theme.sizing.statusBarControlActionHeight
+        height: ControlCenterSizing.actionHeight
         anchors.right: parent.right
         anchors.rightMargin: root.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter

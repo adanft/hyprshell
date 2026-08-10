@@ -1,6 +1,7 @@
 import QtQuick
 import "../ControlCenter.js" as ControlCenterLogic
 import "../../../theme"
+import ".."
 
 Rectangle {
     id: root
@@ -16,7 +17,7 @@ Rectangle {
     readonly property bool busy: pending || action === "busy"
     readonly property bool forgetAvailable: Boolean(powered && device && (device.connected || device.paired
                                                                           || device.trusted))
-    height: theme.sizing.statusBarNetworkDeviceRowHeight
+    height: ControlCenterSizing.deviceRowHeight
     radius: theme.shape.radius12
     color: Colors.surface
     Accessible.role: Accessible.ListItem
@@ -38,7 +39,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        width: theme.sizing.statusBarNetworkQuickControlIconWidth
+        width: ControlCenterSizing.quickControlIconWidth
         text: ControlCenterLogic.bluetoothDeviceIcon(root.device)
         color: root.device?.connected ? Colors.primary : Colors.on_surface
         font.family: theme.typography.iconFontFamily
@@ -112,7 +113,7 @@ Rectangle {
         property bool danger: false
         signal triggered
         width: labelText.implicitWidth + root.theme.spacing.space16
-        height: root.theme.sizing.statusBarControlActionHeight
+        height: ControlCenterSizing.actionHeight
         radius: height / 2
         color: input.containsMouse || input.activeFocus ? Colors.hover : "transparent"
         opacity: enabled ? 1 : root.theme.motion.opacityDisabled

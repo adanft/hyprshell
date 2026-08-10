@@ -151,10 +151,10 @@ Item {
         Rectangle {
             id: menuContainer
 
-            readonly property real desiredHeight: Math.max(root.theme.sizing.statusBarTrayMenuMinHeight,
+            readonly property real desiredHeight: Math.max(TraySizing.menuMinHeight,
                                                            menuColumn.implicitHeight + root.theme.spacing.space8 * 2)
 
-            width: root.theme.sizing.statusBarTrayMenuWidth
+            width: TraySizing.menuWidth
             height: desiredHeight
             x: Math.max(root.theme.spacing.space8, Math.min(menuWindow.width - width - root.theme.spacing.space8,
                                                             root.menuAnchorX))
@@ -180,7 +180,7 @@ Item {
                 Rectangle {
                     visible: submenuStack.count > 0
                     width: parent.width
-                    height: root.theme.sizing.statusBarTrayMenuItemHeight
+                    height: TraySizing.menuItemHeight
                     radius: root.theme.shape.radius8
                     color: backArea.containsMouse ? Colors.hover : "transparent"
 
@@ -229,7 +229,7 @@ Item {
                         readonly property bool enabledEntry: modelData && modelData.enabled !== false
 
                         width: menuColumn.width
-                        height: separator ? root.theme.shape.borderThin : root.theme.sizing.statusBarTrayMenuItemHeight
+                        height: separator ? root.theme.shape.borderThin : TraySizing.menuItemHeight
                         radius: separator ? 0 : root.theme.shape.radius8
                         color: separator ? Colors.outline : entryMouseArea.containsMouse ? Colors.hover :
                                                                                                "transparent"
@@ -267,8 +267,8 @@ Item {
                             visible: !menuEntryRoot.separator
 
                             Rectangle {
-                                width: root.theme.sizing.statusBarTrayMenuCheckSize
-                                height: root.theme.sizing.statusBarTrayMenuCheckSize
+                                width: TraySizing.menuCheckSize
+                                height: TraySizing.menuCheckSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.buttonType !== undefined
                                          && menuEntryRoot.modelData.buttonType !== 0
@@ -288,17 +288,17 @@ Item {
                             }
 
                             IconImage {
-                                width: root.theme.sizing.statusBarTrayMenuIconSize
-                                height: root.theme.sizing.statusBarTrayMenuIconSize
-                                implicitSize: root.theme.sizing.statusBarTrayMenuIconSize
+                                width: TraySizing.menuIconSize
+                                height: TraySizing.menuIconSize
+                                implicitSize: TraySizing.menuIconSize
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: menuEntryRoot.modelData && menuEntryRoot.modelData.icon !== ""
                                 source: menuEntryRoot.modelData ? menuEntryRoot.modelData.icon : ""
                             }
 
                             AppText {
-                                width: Math.max(root.theme.sizing.statusBarTrayMenuTextMinWidth, parent.width
-                                                - root.theme.sizing.statusBarTrayMenuTextRightReserve)
+                                width: Math.max(TraySizing.menuTextMinWidth, parent.width
+                                                - TraySizing.menuTextRightReserve)
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: menuEntryRoot.modelData ? (menuEntryRoot.modelData.text || "") : ""
                                 color: entryMouseArea.containsMouse ? Colors.on_hover : (menuEntryRoot.enabledEntry

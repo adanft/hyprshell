@@ -70,12 +70,12 @@ Scope {
 
             property alias searchField: searchInput
             property alias appGrid: grid
-            readonly property int columns: selector.theme.sizing.wallpaperGridColumns
-            readonly property int cellWidth: selector.theme.sizing.wallpaperCardWidth
+            readonly property int columns: WallpaperSizing.gridColumns
+            readonly property int cellWidth: WallpaperSizing.cardWidth
                                              + selector.theme.spacing.space6
-            readonly property int cellHeight: selector.theme.sizing.wallpaperCardHeight
+            readonly property int cellHeight: WallpaperSizing.cardHeight
                                               + selector.theme.spacing.space6
-                                              + selector.theme.sizing.wallpaperCardLabelHeight
+                                              + WallpaperSizing.cardLabelHeight
                                               + selector.theme.spacing.space6
             readonly property int gridWidth: columns * cellWidth
 
@@ -224,10 +224,10 @@ Scope {
                             wallpaperFolderModel.get(cell.modelData, "fileName") || "")
 
                         anchors.centerIn: parent
-                        width: selector.theme.sizing.wallpaperCardWidth
-                        height: selector.theme.sizing.wallpaperCardHeight
+                        width: WallpaperSizing.cardWidth
+                        height: WallpaperSizing.cardHeight
                                + selector.theme.spacing.space6
-                               + selector.theme.sizing.wallpaperCardLabelHeight
+                               + WallpaperSizing.cardLabelHeight
                         path: wallpaperPath
                         label: wallpaperLabel
                         thumbnailPath: thumbnailCache.sourceFor(wallpaperPath)
@@ -283,8 +283,8 @@ Scope {
             Keys.onEscapePressed: selector.close()
             Keys.onLeftPressed: selector.moveSelection(-1)
             Keys.onRightPressed: selector.moveSelection(1)
-            Keys.onUpPressed: selector.moveSelection(-selector.theme.sizing.wallpaperGridColumns)
-            Keys.onDownPressed: selector.moveSelection(selector.theme.sizing.wallpaperGridColumns)
+            Keys.onUpPressed: selector.moveSelection(-WallpaperSizing.gridColumns)
+            Keys.onDownPressed: selector.moveSelection(WallpaperSizing.gridColumns)
             Keys.onReturnPressed: selector.applySelection()
             Keys.onEnterPressed: selector.applySelection()
 
@@ -297,9 +297,9 @@ Scope {
             Rectangle {
                 anchors.centerIn: parent
                 width: Math.min(parent.width - selector.theme.spacing.space96,
-                                selector.theme.sizing.wallpaperSelectorMaxWidth)
+                                WallpaperSizing.maxWidth)
                 height: Math.min(parent.height - selector.theme.spacing.space96,
-                                 selector.theme.sizing.wallpaperSelectorMaxHeight)
+                                 WallpaperSizing.maxHeight)
                 radius: selector.theme.shape.wallpaperSelectorRadius
                 color: Colors.shadow
 

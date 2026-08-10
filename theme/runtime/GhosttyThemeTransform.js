@@ -1,13 +1,29 @@
 var managedMarker = "# qsrice managed theme";
 var legacyManagedMarker = "# qscomponents managed theme";
 
+// Ghostty ships its own theme catalogue, so the terminal is told a name rather
+// than a palette. Every id in themes.json needs an entry: nativeThemeForId
+// throws otherwise, and the sync would die on a theme the shell can otherwise
+// paint. Most of these are the same scheme under the same name; the two that
+// are not are noted where they sit.
 var nativeThemes = {
 	catppuccin: "Catppuccin Mocha",
 	"rose-pine": "Rose Pine",
 	"ayu-dark": "Ayu",
 	aura: "Aura",
+	// Ghostty carries no Hack The Box scheme. Everblush is the nearest in the
+	// catalogue: the same near-black blue-grey ground under a green accent.
 	"hack-the-box": "Everblush",
 	"aurora-x": "TokyoNight Night",
+	// Ghostty's Palenight is the high-contrast cut, which is the same palette
+	// with a lifted background — the only Palenight it ships.
+	palenight: "Pale Night Hc",
+	"one-dark": "Atom One Dark",
+	"kanagawa-wave": "Kanagawa Wave",
+	"kanagawa-dragon": "Kanagawa Dragon",
+	"catppuccin-latte": "Catppuccin Latte",
+	"atom-one-light": "Atom One Light",
+	"kanagawa-lotus": "Kanagawa Lotus",
 };
 
 function nativeThemeForId(themeId) {

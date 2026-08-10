@@ -8,15 +8,9 @@ vm.createContext(transform);
 vm.runInContext(source, transform);
 
 const themes = JSON.parse(fs.readFileSync(`${__dirname}/themes.json`, "utf8"));
-assert.deepEqual(Object.keys(themes).sort(), [
-	"aura",
-	"aurora-x",
-	"ayu-dark",
-	"catppuccin",
-	"hack-the-box",
-	"rose-pine",
-]);
-
+// Every theme the shell can paint must also have a name Ghostty knows, or
+// selecting it kills the terminal sync on a throw. Listing them here is what
+// makes adding a palette without its native counterpart fail loudly.
 assert.deepEqual(
 	Object.fromEntries(
 		Object.keys(themes).map((id) => [id, transform.nativeThemeForId(id)]),
@@ -28,6 +22,13 @@ assert.deepEqual(
 		aura: "Aura",
 		"hack-the-box": "Everblush",
 		"aurora-x": "TokyoNight Night",
+		palenight: "Pale Night Hc",
+		"one-dark": "Atom One Dark",
+		"kanagawa-wave": "Kanagawa Wave",
+		"kanagawa-dragon": "Kanagawa Dragon",
+		"catppuccin-latte": "Catppuccin Latte",
+		"atom-one-light": "Atom One Light",
+		"kanagawa-lotus": "Kanagawa Lotus",
 	},
 );
 assert.throws(
@@ -113,5 +114,5 @@ assert.equal(
 );
 
 console.log(
-	"GhosttyThemeTransform: native mapping and managed assignment for 6 themes passed",
+	`GhosttyThemeTransform: native mapping and managed assignment for ${Object.keys(themes).length} themes passed`,
 );

@@ -10,6 +10,11 @@ Scope {
     readonly property var theme: AppTheme
     readonly property string activeUserAvatarSource: activeUserAvatar.source
     readonly property string activeUserAvatarState: activeUserAvatar.state
+    // Whether this process is the one that owns the pairing agent socket. Off
+    // by default so a harness or a smoke test that builds these services does
+    // not take it from the shell that is actually running.
+    property bool pairingAgentEnabled: false
+
     readonly property string time: Qt.formatDateTime(systemClock.date, "HH:mm")
     readonly property string date: Qt.formatDateTime(systemClock.date, "MM-dd")
 
@@ -32,6 +37,14 @@ Scope {
     Capabilities.BluetoothService {
         id: bluetoothService
     }
+    Capabilities.PairingAgentService {
+        id: pairingAgentService
+
+        // The one place the two capabilities meet: the agent only has work to
+        // do while the adapter is on, and only this root can see both.
+        bluetoothPowered: bluetoothService.bluetoothPowered
+        pairingAgentEnabled: root.pairingAgentEnabled
+    }
     Capabilities.SystemStatsService {
         id: systemStatsService
     }
@@ -47,6 +60,11 @@ Scope {
     readonly property alias notificationCapability: notificationService
     readonly property alias batteryPower: batteryPowerService
     readonly property alias bluetooth: bluetoothService
+    // Kept apart from `bluetooth` because it is a different authority: one is
+    // the adapter, the other is the agent process that answers BlueZ. Folding
+    // them together would make a shell without the agent look like a shell
+    // without Bluetooth.
+    readonly property alias pairingAgent: pairingAgentService
     readonly property alias systemStats: systemStatsService
     readonly property alias workspace: workspaceService
 

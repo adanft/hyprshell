@@ -336,7 +336,7 @@ assert.match(
 );
 assert.match(
 	bluetoothServiceQml,
-	/function pairBluetoothDevice\(device\)[\s\S]*const address = device\?\.address \|\| ""[\s\S]*bluetoothPendingAddress = address[\s\S]*bluetoothPairProcess\.exec\(\[[\s\S]*"sh",[\s\S]*"-c",[\s\S]*"timeout 30 bluetoothctl pair \\"\$1\\" && bluetoothctl trust \\"\$1\\" && timeout 30 bluetoothctl connect \\"\$1\\"",[\s\S]*"bluetooth-pair",[\s\S]*address/,
+	/function pairBluetoothDevice\(device\)[\s\S]*const address = device\?\.address \|\| ""[\s\S]*bluetoothPendingAddress = address[\s\S]*bluetoothPairProcess\.exec\(\[[\s\S]*"sh",[\s\S]*"-c",[\s\S]*"timeout 150 bluetoothctl pair \\"\$1\\" && bluetoothctl trust \\"\$1\\" && timeout 150 bluetoothctl connect \\"\$1\\"",[\s\S]*"bluetooth-pair",[\s\S]*address/,
 );
 assert.match(
 	bluetoothServiceQml,

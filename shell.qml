@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "features/applauncher" as Applauncher
+import "features/bluetoothpairing" as Bluetoothpairing
 import "features/notifications" as Notifications
 import "features/powermenu" as Powermenu
 import "features/screenshot" as Screenshot
@@ -25,6 +26,10 @@ ShellRoot {
 
     Services.Services {
         id: serviceState
+
+        // This is the shell a person is looking at, so this is the one that
+        // owns the pairing socket.
+        pairingAgentEnabled: true
     }
 
     OverlayLifecycleLoader {
@@ -51,6 +56,27 @@ ShellRoot {
         id: screenshotToolLoader
 
         Screenshot.ScreenshotTool {}
+    }
+
+    // Not a loader, and deliberately absent from the arbiter's list.
+    //
+    // The other five are opened by the person using them, so the arbiter may
+    // close any of them to make room. This one is opened by a device asking a
+    // question BlueZ is waiting on, and closing it means refusing that pairing
+    // — not something another overlay should be able to do by opening. So it
+    // displaces the others and nothing displaces it.
+    //
+    // It stays instantiated rather than lazily loaded because it has no toggle
+    // to hang the loading off: the request arrives on its own schedule, and a
+    // dialog that had to be built first would miss the moment.
+    Bluetoothpairing.BluetoothPairing {
+        id: bluetoothPairing
+
+        services: serviceState
+        onActiveChanged: {
+            if (active)
+                overlayArbiter.closeOthers(null)
+        }
     }
 
     // IpcHandler publishes every property it carries, and a loader property is

@@ -4,3 +4,4 @@
 .qmlls.ini
 .codegraph
 __pycache__/
+target/

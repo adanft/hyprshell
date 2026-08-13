@@ -64,7 +64,8 @@ table reads as a menu. Only install what you want to use.
 | `awww` | Applying a wallpaper. The selector still browses and still remembers your choice. |
 | `imagemagick` | Wallpaper thumbnails, so the grid falls back to full images. |
 | `brightnessctl` | The brightness control, which reports itself unavailable and disappears. |
-| `bluez-utils` | Pairing a new device. Devices already paired keep working. |
+| `bluez-utils` | Starting a pairing. Devices already paired keep working. |
+| `bagent` | Finishing a pairing that asks a question — a phone confirming six digits, a keyboard wanting a PIN typed. Quickshell cannot serve a D-Bus object, so `org.bluez.Agent1` lives in this separate process; without it BlueZ has nobody to ask and refuses. Devices that pair with no interaction still work. Build and install it with `./install.sh`. |
 | `networkmanager` | Connection details — address, profile — while the connection itself is unaffected. |
 | `ghostty` and `glib2` | The terminal following the theme. `gapplication` is what tells Ghostty to reload. |
 | `hyprlock` | Locking from the power menu. |

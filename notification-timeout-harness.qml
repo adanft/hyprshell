@@ -16,6 +16,11 @@ ShellRoot {
     property int closeCount: 0
     property int pausedRemaining: 0
     property int stage: 0
+    // An owner of this script's own, registered like any manager but attached
+    // to no card. A claim set through a manager's hoverOwnerId is not the
+    // script's to keep: that same id belongs to a live HoverHandler, which
+    // clears it the moment the pointer says so. This one nothing else touches.
+    property string scriptOwnerId: ""
 
     function fail(message) {
         console.error(`TIMEOUT-HARNESS: ${message}`)
@@ -51,9 +56,25 @@ ShellRoot {
         stageTimer.restart()
     }
 
+    // Every live manager, not only the one this script hovered. A popup is
+    // frozen while *any* owner claims it, and each manager renders a real card
+    // with a real HoverHandler, so a claim can appear without the script asking
+    // for one. The stage after a release needs every claim gone, or it measures
+    // the leftover instead of the release.
+    function releaseHoverClaims() {
+        const owners = [root.scriptOwnerId, firstManager ? firstManager.hoverOwnerId : "",
+                        secondManager ? secondManager.hoverOwnerId : ""]
+        for (const owner of owners) {
+            if (owner)
+                serviceState.notification.setNotificationPopupHovered(owner, root.popup.id, false)
+        }
+    }
+
     function start() {
         root.require(firstManager !== null && secondManager !== null, "manager creation failed")
-        root.publish(1800, 1)
+        root.scriptOwnerId = serviceState.notification.registerNotificationPopupManager()
+        root.require(root.scriptOwnerId !== "", "script owner registration failed")
+        root.publish(2400, 1)
         root.advance(350)
     }
 
@@ -121,23 +142,51 @@ ShellRoot {
                               "non-hovered copy closed the popup")) return
             if (!root.require(Math.abs(remaining - root.pausedRemaining) <= 75,
                               "aggregate hover did not freeze countdown")) return
+            // A second claim this script owns outright, so the next stage
+            // asserts rather than observes. It goes through scriptOwnerId, not
+            // through the second manager: a claim on a manager's id is that
+            // manager's card to clear. Claimed before the first is released, so
+            // the popup is never briefly free.
+            serviceState.notification.setNotificationPopupHovered(root.scriptOwnerId, root.popup.id, true)
             serviceState.notification.setNotificationPopupHovered(firstManager.hoverOwnerId, root.popup.id, false)
             root.stage = 2
-            root.advance(350)
+            root.advance(400)
         } else if (root.stage === 2) {
             const remaining = serviceState.notification.notificationPopupRemainingMs(root.popup.id)
-            if (!root.require(remaining < root.pausedRemaining - 200 && remaining > 0,
+            // One owner letting go must not speak for another. Without this the
+            // blanket release below would hide a per-owner release that had
+            // started clearing everybody's claims.
+            if (!root.require(Math.abs(remaining - root.pausedRemaining) <= 75,
+                              "releasing one owner released another owner's claim")) return
+            root.releaseHoverClaims()
+            root.stage = 3
+            // Wide enough that the countdown has to have moved well past the
+            // 200ms the next stage asserts. At 350ms the whole check lived
+            // inside 150ms of slack, and any scheduling hiccup spent it.
+            root.advance(700)
+        } else if (root.stage === 3) {
+            const remaining = serviceState.notification.notificationPopupRemainingMs(root.popup.id)
+            // Two different failures used to share one message, which said the
+            // countdown restarted even when the popup had simply run out.
+            if (!root.require(remaining > 0, "popup expired before the resume could be observed")) return
+            if (!root.require(remaining < root.pausedRemaining - 200,
                               "countdown restarted instead of resuming remaining time")) return
             serviceState.notification.setNotificationPopupHovered(firstManager.hoverOwnerId, root.popup.id, true)
             firstManagerLoader.active = false
-            root.stage = 3
+            // Everything except the destroyed manager must hold nothing here,
+            // or the wait below would pass on someone else's claim rather than
+            // on the destroyed manager's being released.
+            if (secondManager && secondManager.hoverOwnerId)
+                serviceState.notification.setNotificationPopupHovered(secondManager.hoverOwnerId, root.popup.id, false)
+            serviceState.notification.setNotificationPopupHovered(root.scriptOwnerId, root.popup.id, false)
+            root.stage = 4
             root.advance(remaining + 250)
-        } else if (root.stage === 3) {
+        } else if (root.stage === 4) {
             if (!root.require(serviceState.notification.visibleNotifications.length === 0,
                               "destroyed hovered manager left a permanent claim")) return
             if (!root.require(root.closeCount === 1, "expiry did not produce exactly one close")) return
             root.publish(0, 2)
-            root.stage = 4
+            root.stage = 5
             root.advance(1200)
         } else {
             if (!root.require(serviceState.notification.visibleNotifications.length === 1,

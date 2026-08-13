@@ -11,13 +11,13 @@ Item {
     readonly property var theme: AppTheme
 
     required property var services
-
-    signal openRequested
     readonly property bool networkAvailable: services.network.activeNetworkInterface.length > 0
     readonly property bool moduleDisabled: !networkAvailable
     readonly property color neutralColor: moduleDisabled ? Colors.outline : Colors.on_surface
     readonly property color txColor: moduleDisabled ? Colors.outline : Colors.error
     readonly property color rxColor: moduleDisabled ? Colors.outline : Colors.tertiary
+    readonly property string txText: formatRate(services.network.activeNetworkTxRate)
+    readonly property string rxText: formatRate(services.network.activeNetworkRxRate)
 
     function formatRate(bytes) {
         if (bytes === undefined || bytes === null || isNaN(bytes))
@@ -51,27 +51,19 @@ Item {
         }
 
         AppText {
-            text: root.formatRate(root.services.network.activeNetworkTxRate)
+            text: root.txText
             color: root.txColor
         }
 
         AppText {
-            text: root.formatRate(root.services.network.activeNetworkRxRate)
+            text: root.rxText
             color: root.rxColor
         }
     }
 
-    // A readout, not a switch: there is no throughput to turn off, so this only
-    // opens the panel.
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        activeFocusOnTab: true
-        Accessible.role: Accessible.Button
-        Accessible.name: "Open network controls"
-        onClicked: root.openRequested()
-        Keys.onSpacePressed: root.openRequested()
-        Keys.onReturnPressed: root.openRequested()
-        Keys.onEnterPressed: root.openRequested()
-    }
+    // A readout, nothing more: no click, no focus stop, no pointer cursor. It
+    // reports the rates and stays out of the way.
+    Accessible.role: Accessible.StaticText
+    Accessible.name: "Network throughput"
+    Accessible.description: `Sent ${root.txText}, received ${root.rxText}`
 }

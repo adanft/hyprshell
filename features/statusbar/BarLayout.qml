@@ -164,11 +164,7 @@ Item {
                 spacing: root.theme.spacing.space6 * 2
 
                 NetworkThroughput {
-                    id: throughputModule
                     services: root.services
-                    // No section of its own: it reports whichever interface is
-                    // live, which may be either of them.
-                    onOpenRequested: root.openControlCenterRequested(throughputModule, "")
                 }
 
                 NetworkWifi {

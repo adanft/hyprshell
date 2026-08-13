@@ -342,6 +342,31 @@ assert.match(
 	bluetoothServiceQml,
 	/function bluetoothDevicePending\(device\)[\s\S]*device\.address === bluetoothPendingAddress/,
 );
+// A paired device is trusted so BlueZ stops asking the agent to authorise
+// every service it wants, which is one dialog per profile and a phone offers
+// seventeen of them.
+assert.match(
+	bluetoothServiceQml,
+	/readonly property var pairedDevices:[\s\S]*onPairedDevicesChanged: \{[\s\S]*if \(device\.trusted\)[\s\S]*continue[\s\S]*device\.trusted = true/,
+);
+// And the filter must not read what the handler writes. Filtering on
+// `trusted` made setting it reevaluate the binding that had just fired —
+// "Binding loop detected", straight out of QML. Pairing is the trigger, trust
+// is the consequence, and the consequence is checked in the handler, where a
+// read records no dependency.
+//
+// The whole expression is taken, not its first line, so wrapping the filter
+// over two lines cannot smuggle the dependency back in. Comments inside it are
+// dropped, so writing the word in one documents the rule instead of failing it.
+const pairedDevicesBinding = bluetoothServiceQml
+	.match(/readonly property var pairedDevices:[^\n]*(?:\n(?!\s*on[A-Z])[^\n]*)*/)?.[0]
+	.replace(/\/\/[^\n]*/g, "");
+assert.ok(pairedDevicesBinding, "the pairedDevices binding must exist");
+assert.doesNotMatch(
+	pairedDevicesBinding,
+	/trusted/,
+	"pairedDevices must not depend on `trusted`: its own handler writes it",
+);
 assert.match(
 	bluetoothServiceQml,
 	/function connectBluetoothDevice\(device\)[\s\S]*try \{[\s\S]*device\.connect\(\)[\s\S]*catch \(error\)[\s\S]*Could not connect Bluetooth device/,

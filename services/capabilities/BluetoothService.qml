@@ -154,14 +154,22 @@ Scope {
     // had nothing doing the same for it, so this closes the asymmetry: however
     // the pairing started, it ends the same way.
     //
-    // Reading `paired` and `trusted` inside the filter is what makes this
-    // react: the binding records a dependency on both for every device, so a
-    // pairing completing anywhere re-evaluates it.
-    readonly property var untrustedPairedDevices: bluetoothDevices.filter(device => device && device.paired
-                                                                          && !device.trusted)
+    // Only `paired` is read here, and that is the whole point. The binding
+    // records a dependency on every property its filter touches, so filtering
+    // on `trusted` as well — which is what this did first — made the handler's
+    // own write reevaluate the binding that called it. QML said so plainly:
+    // "Binding loop detected for property untrustedPairedDevices".
+    //
+    // Pairing is the trigger, trust is the consequence, and a binding must not
+    // depend on what its handler writes. The check for `trusted` moves into the
+    // handler, where reading a property records nothing.
+    readonly property var pairedDevices: bluetoothDevices.filter(device => device && device.paired)
 
-    onUntrustedPairedDevicesChanged: {
-        for (const device of untrustedPairedDevices) {
+    onPairedDevicesChanged: {
+        for (const device of pairedDevices) {
+            if (device.trusted)
+                continue
+
             try {
                 device.trusted = true
             } catch (error) {

@@ -66,9 +66,13 @@ assert.match(persistence, /\["cp", "-n", "--", legacyFile, configFile\]/);
 assert.match(persistence, /property string currentTheme: ""/);
 assert.match(persistence, /property string currentWallpaper: ""/);
 assert.match(persistence, /settingsFileView\.writeAdapter\(\)/);
+// The parameter is declared rather than injected. Qt 6 deprecates injection,
+// and the warning only ever fires when the load actually fails -- which is to
+// say on a first launch, long after the settings file exists on any machine the
+// shell has run on once.
 assert.match(
 	persistence,
-	/onLoadFailed: persistence\.deliverLoadFailed\(error\)/,
+	/onLoadFailed: error => persistence\.deliverLoadFailed\(error\)/,
 );
 assert.match(persistence, /signal startupSettled/);
 assert.match(persistence, /startupSettled\(\)/);

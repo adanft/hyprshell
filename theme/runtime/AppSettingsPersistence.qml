@@ -29,7 +29,7 @@ Item {
         watchChanges: true
         atomicWrites: true
         onLoaded: persistence.deliverLoaded()
-        onLoadFailed: persistence.deliverLoadFailed(error)
+        onLoadFailed: error => persistence.deliverLoadFailed(error)
         onFileChanged: persistence.scheduleReload()
 
         JsonAdapter {

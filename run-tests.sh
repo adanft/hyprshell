@@ -3,11 +3,17 @@
 # Runs the whole suite: Node contract tests, Python benchmark tests, QML
 # component tests, then the QML smoke test.
 #
-#     ./run-tests.sh              all four stages
+#     ./run-tests.sh              all four stages, on the compositor you are using
+#     ./run-tests.sh --isolated   the same four, compositor stages nested away
 #     ./run-tests.sh --js         Node + Python tests; QML/compositor skipped
 #
 # --js omits the compositor-dependent QML stages but still runs the Python
 # benchmark tests.
+#
+# --isolated runs those stages inside a throwaway nested Hyprland instead, so
+# the exclusive zone the status bar reserves and the `hyprctl reload` the theme
+# runs land there rather than on your desktop. Prefer it while you are working
+# in the session; see scripts/isolated-session.sh.
 #
 # Exits non-zero if any stage fails or is inconclusive.
 
@@ -29,30 +35,75 @@ readonly OVERLAY_LIFECYCLE_LINE='OVERLAY-LIFECYCLE-HARNESS: close/reopen/self-cl
 readonly ENVIRONMENTAL='Could not register notification server at org.freedesktop.Notifications|Registration will be attempted again if the active service is unregistered'
 
 js_only=false
-[[ "${1:-}" == "--js" ]] && js_only=true
+isolated=false
+compositor_only=false
+
+case "${1:-}" in
+	"") ;;
+	--js) js_only=true ;;
+	--isolated) isolated=true ;;
+	# Internal, set by scripts/isolated-session.sh once the throwaway session is
+	# up. Typed by hand it still runs against whatever compositor is in reach,
+	# which is the thing --isolated exists to avoid.
+	--compositor-stages) compositor_only=true ;;
+	*)
+		echo "usage: $0 [--js|--isolated]" >&2
+		exit 2
+		;;
+esac
+
+# On the private bus an isolated run gets, nothing else owns
+# org.freedesktop.Notifications, so the shell takes it and the message above
+# never appears. Keeping the filter on would mean the one run that can prove the
+# notification server registers is also the one that would not notice if it
+# stopped. A pattern that matches no line at all is how that is said to grep.
+if [[ "$compositor_only" == true ]]; then
+	readonly WARNING_FILTER='$^'
+else
+	readonly WARNING_FILTER="$ENVIRONMENTAL"
+fi
 
 failed=0
 
-echo "== Node contract tests =="
-if node --test; then
-	echo "-- Node tests passed"
-else
-	echo "-- Node tests FAILED"
-	failed=1
+if [[ "$compositor_only" == false ]]; then
+	echo "== Node contract tests =="
+	if node --test; then
+		echo "-- Node tests passed"
+	else
+		echo "-- Node tests FAILED"
+		failed=1
+	fi
+
+	echo
+	echo "== Python benchmark tests =="
+	if python3 scripts/qsrice-bench.test.py; then
+		echo "-- Python benchmark tests passed"
+	else
+		echo "-- Python benchmark tests FAILED"
+		failed=1
+	fi
+
+	if [[ "$js_only" == true ]]; then
+		echo "== QML component tests SKIPPED (--js) =="
+		echo "== QML smoke test SKIPPED (--js) =="
+		exit "$failed"
+	fi
 fi
 
-echo
-echo "== Python benchmark tests =="
-if python3 scripts/qsrice-bench.test.py; then
-	echo "-- Python benchmark tests passed"
-else
-	echo "-- Python benchmark tests FAILED"
-	failed=1
-fi
+# Everything below reserves a layer-shell exclusive zone and can make the shell
+# reload Hyprland. Handing that a compositor of its own is the difference
+# between testing the shell and rearranging the desktop you are sitting at.
+if [[ "$isolated" == true ]]; then
+	echo
+	echo "== Compositor stages, isolated session =="
+	scripts/isolated-session.sh "$PWD/run-tests.sh" --compositor-stages || failed=1
 
-if [[ "$js_only" == true ]]; then
-	echo "== QML component tests SKIPPED (--js) =="
-	echo "== QML smoke test SKIPPED (--js) =="
+	echo
+	if [[ "$failed" -eq 0 ]]; then
+		echo "All checks passed."
+	else
+		echo "Checks FAILED."
+	fi
 	exit "$failed"
 fi
 
@@ -167,7 +218,7 @@ fi
 
 # QML warnings do not affect the exit code, so they are checked separately.
 # This is the whole reason the smoke test needs a wrapper at all.
-problems=$(grep -E '(WARN|ERROR)' <<<"$smoke_output" | grep -Ev "$ENVIRONMENTAL")
+problems=$(grep -E '(WARN|ERROR)' <<<"$smoke_output" | grep -Ev "$WARNING_FILTER")
 if [[ -n "$problems" ]]; then
 	echo "-- FAILED: smoke test reported warnings or errors:"
 	printf '%s\n' "$problems" | sed 's/^/   /'
@@ -179,9 +230,13 @@ if [[ "$failed" -eq 0 ]]; then
 fi
 
 echo
-if [[ "$failed" -eq 0 ]]; then
-	echo "All checks passed."
-else
-	echo "Checks FAILED."
+# Under --compositor-stages this is one half of a run whose other half already
+# reported; the verdict belongs to the parent, which owns the exit code.
+if [[ "$compositor_only" == false ]]; then
+	if [[ "$failed" -eq 0 ]]; then
+		echo "All checks passed."
+	else
+		echo "Checks FAILED."
+	fi
 fi
 exit "$failed"

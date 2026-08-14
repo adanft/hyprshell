@@ -194,14 +194,63 @@ else in that file is left alone.
 ## Working on it
 
 ```sh
-./run-tests.sh          # everything
-./run-tests.sh --js     # Node and Python only, no compositor needed
+./run-tests.sh             # everything, on the compositor you are using
+./run-tests.sh --isolated  # everything, compositor stages nested away
+./run-tests.sh --js        # Node and Python only, no compositor needed
 ```
 
 Four stages: Node contract tests, the Python benchmark tests, QML component
 tests, then a smoke test that launches the shell and checks every window
 instantiated with no warnings. The QML stages need a running compositor and say
 so rather than passing quietly when there is none.
+
+### Why `--isolated` exists
+
+The QML stages launch the shell for real, which means they do what the shell
+does: `features/statusbar/BarWindow.qml` reserves a layer-shell exclusive zone,
+and `theme/runtime/HyprTheme.qml` runs `hyprctl reload`. Aimed at the compositor
+you are working on, the first relayouts every window and the second makes
+Hyprland re-apply its monitors, binds and window rules — three times per run,
+once for each `qs` process the script starts.
+
+`--isolated` hands those stages a session of their own: a nested Hyprland with a
+private D-Bus bus and private `XDG_*` directories, built by
+`scripts/isolated-session.sh` and configured by `scripts/isolated-hyprland.conf`.
+The exclusive zone is reserved there, the reload lands there, and `theme.conf`
+is written there rather than in `~/.config/hypr`. The nested compositor is one
+ordinary window, sent to a special workspace so it does not retile the workspace
+you are on.
+
+The nested compositor is one ordinary window of class `aquamarine`, so on a
+tiling setup it retiles the workspace you are on while the suite runs. The
+harness does not touch your compositor to fix that — a rule in your own config
+applies before the window ever maps, which no amount of reaching in afterwards
+can match. In the Lua config format:
+
+```lua
+hl.window_rule({
+	name = "qsrice-isolated-session",
+	match = { class = "aquamarine" },
+	workspace = "special:qsrice-isolated silent",
+})
+```
+
+Isolation is scoped to what the shell writes and what would disturb you: its
+config directory, its cache, its runtime sockets, its bus, its compositor. What
+it only reads — icon themes, GTK settings, desktop entries, PipeWire — stays
+yours, linked back to the real thing. A session that cannot see those makes the
+suite report the sandbox instead of the code.
+
+One consequence worth knowing: an isolated run holds the smoke test to a
+stricter standard than a normal one. On your own bus another shell already owns
+`org.freedesktop.Notifications`, so `run-tests.sh` filters that warning out; on a
+private bus the shell registers for real, and the filter is dropped so a
+registration that stops working is caught rather than excused.
+
+What it does not cover yet is the monitor count. The nested session has a single
+output, so the `Variants` over `Quickshell.screens` only ever builds one bar —
+`hyprctl output create headless` inside the session would let it cover
+multi-monitor layouts without needing the hardware.
 
 Node and Python come from your system; `qmltestrunner` ships with
 `qt6-declarative` and is located by `scripts/find-qmltestrunner.sh`, which also

@@ -298,6 +298,35 @@ for socket in .socket.sock .socket2.sock; do
 	fi
 done
 
+# Whether the window this compositor draws into will keep being drawn.
+#
+# Everything below depends on it and none of it is in this repository: the fix
+# is a window rule in the developer's own Hyprland config. Without it a run does
+# not fail cleanly, it fails as a timeout that looks exactly like a regression in
+# whatever stage happened to be running — which is how this cost an afternoon
+# before it was understood. So it is checked, and said plainly.
+#
+# A warning rather than a refusal: the rule is Hyprland's, the host may be
+# another compositor, and someone who knows the trade may want to run anyway.
+if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v jq >/dev/null 2>&1; then
+	# Not `// empty`, which is the obvious way to write this and is wrong: jq's
+	# alternative operator fires on false as well as on null, so a window that
+	# is genuinely unpinned reads the same as no window at all and the warning
+	# never prints. A check that cannot fail is worse than no check, because it
+	# looks like one.
+	pinned=$(timeout 5 hyprctl clients -j 2>/dev/null |
+		jq -r --arg pid "$hypr_pid" '[.[] | select(.pid == ($pid | tonumber)) | .pinned]
+			| if length == 0 then "" else (.[0] | tostring) end')
+	if [[ "$pinned" == "false" ]]; then
+		echo "-- WARNING: this session's window is not pinned." >&2
+		echo "   Your compositor stops sending frame callbacks to a window that is not on" >&2
+		echo "   screen, and everything inside this session runs on those frames. Switch" >&2
+		echo "   workspace during a run and its timers stop; the stage that was waiting" >&2
+		echo "   then reports a timeout that reads like a regression. See the README," >&2
+		echo "   \"Why --isolated exists\", for the three-line rule that fixes it." >&2
+	fi
+fi
+
 # Not a headless output, and it is worth writing down why, because it is the
 # obvious idea and it does not work here.
 #

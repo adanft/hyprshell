@@ -195,55 +195,57 @@ else
 	echo "-- Overlay lifecycle harness passed"
 fi
 
+# Both interaction harnesses are read the same way, so they are read by the same
+# function: a success line to match literally, a warning scan on top of it, and a
+# count to report. Written twice, a later fix to one drifts from the other.
+#
+# The warnings matter as much as the verdict here, which is what separates these
+# two stages from the harnesses above. A panel that opens with a broken binding
+# says so in a warning and still returns a perfectly good success line.
+#
+#   $1 label, $2 qml file, $3 success line, $4 what is counted, $5 timeout
+run_interaction_harness() {
+	local label="$1" file="$2" marker="$3" noun="$4" seconds="$5"
+	local output status problems count
+
+	output=$(timeout "$seconds" qs -p "$file" 2>&1)
+	status=$?
+	output=$(printf '%s\n' "$output" | sed -E 's/\x1b\[[0-9;]*m//g')
+	problems=$(grep -E '(WARN|ERROR)' <<<"$output" | grep -Fv "$PLATFORM_NOISE")
+
+	if [[ "$status" -ne 0 ]] || ! grep -qF "$marker" <<<"$output"; then
+		echo "-- FAILED: $label harness"
+		printf '%s\n' "$output" | sed 's/^/   /'
+		return 1
+	fi
+
+	if [[ -n "$problems" ]]; then
+		echo "-- FAILED: the $label harness reported warnings or errors:"
+		printf '%s\n' "$problems" | sed 's/^/   /'
+		return 1
+	fi
+
+	count=$(grep -o "$noun exercised: [0-9]*" <<<"$output" | grep -o '[0-9]*$')
+	echo "-- Passed: $label, ${count:-?} $noun"
+}
+
 # The lifecycle harness above drives the real loader against a stub, and
 # smoketest.qml builds the real overlays without ever opening one. Neither of
 # them opens a real overlay the way shell.qml does, which is what this stage is
 # for: through the arbiter, through the lazy loader, into the panel's own open().
-#
-# Its warnings are read as well as its verdict. An overlay that opens with a
-# broken binding says so in a warning and returns a perfectly good success line,
-# and the arbiter's own invariant is a count, not something visible on screen.
 echo
 echo "== QML panel interaction harness =="
-panel_output=$(timeout 30 qs -p panel-interaction-harness.qml 2>&1)
-panel_status=$?
-panel_output=$(printf '%s\n' "$panel_output" | sed -E 's/\x1b\[[0-9;]*m//g')
-panel_problems=$(grep -E '(WARN|ERROR)' <<<"$panel_output" | grep -Fv "$PLATFORM_NOISE")
-if [[ "$panel_status" -ne 0 ]] || ! grep -qF "$PANEL_INTERACTION_LINE" <<<"$panel_output"; then
-	echo "-- FAILED: panel interaction harness"
-	printf '%s\n' "$panel_output" | sed 's/^/   /'
-	failed=1
-elif [[ -n "$panel_problems" ]]; then
-	echo "-- FAILED: opening the overlays reported warnings or errors:"
-	printf '%s\n' "$panel_problems" | sed 's/^/   /'
-	failed=1
-else
-	panel_count=$(grep -o 'overlays exercised: [0-9]*' <<<"$panel_output" | grep -o '[0-9]*$')
-	echo "-- Panel interaction harness passed (${panel_count:-?} overlays)"
-fi
+run_interaction_harness "panel interaction" panel-interaction-harness.qml \
+	"$PANEL_INTERACTION_LINE" overlays 30 || failed=1
 
 # The other two panels, which do not open like those five. The control centre
-# rises through a signal into a handler inside BarWindow and a loader that file
-# keeps to itself; the notification centre is the one loader in the shell with
-# directVisibility set, a branch nothing else here has ever taken.
+# rises through a signal into a handler inside BarWindow and a loader that
+# BarWindow keeps to itself; the notification centre is the one loader in the
+# shell with directVisibility set, a branch nothing else here has ever taken.
 echo
 echo "== QML centre interaction harness =="
-centre_output=$(timeout 40 qs -p centre-interaction-harness.qml 2>&1)
-centre_status=$?
-centre_output=$(printf '%s\n' "$centre_output" | sed -E 's/\x1b\[[0-9;]*m//g')
-centre_problems=$(grep -E '(WARN|ERROR)' <<<"$centre_output" | grep -Fv "$PLATFORM_NOISE")
-if [[ "$centre_status" -ne 0 ]] || ! grep -qF "$CENTRE_INTERACTION_LINE" <<<"$centre_output"; then
-	echo "-- FAILED: centre interaction harness"
-	printf '%s\n' "$centre_output" | sed 's/^/   /'
-	failed=1
-elif [[ -n "$centre_problems" ]]; then
-	echo "-- FAILED: opening the centres reported warnings or errors:"
-	printf '%s\n' "$centre_problems" | sed 's/^/   /'
-	failed=1
-else
-	centre_count=$(grep -o 'sections exercised: [0-9]*' <<<"$centre_output" | grep -o '[0-9]*$')
-	echo "-- Centre interaction harness passed (${centre_count:-?} sections)"
-fi
+run_interaction_harness "centre interaction" centre-interaction-harness.qml \
+	"$CENTRE_INTERACTION_LINE" sections 40 || failed=1
 
 # smoketest.qml calls Qt.quit() on its own; the timeout only catches a hang.
 smoke_output=$(timeout "$SMOKE_TIMEOUT" qs -p smoketest.qml 2>&1)

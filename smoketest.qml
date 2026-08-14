@@ -300,6 +300,7 @@ ShellRoot {
                 lifecycleSettleTimer.waitedMs += lifecycleSettleTimer.interval
                 if (lifecycleSettleTimer.waitedMs < smoketest.settleTimeoutMs)
                     return
+                lifecycleSettleTimer.running = false
                 console.error("SMOKETEST: notification lifecycle left pending jobs or retries")
                 Qt.quit()
                 return

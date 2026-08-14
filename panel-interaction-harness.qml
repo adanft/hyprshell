@@ -105,6 +105,12 @@ ShellRoot {
     }
 
     function fail(message) {
+        // Stopped before reporting rather than left to Qt.quit(), which unwinds
+        // the event loop on its own schedule while this timer keeps firing every
+        // 25 ms. Measured here, quit wins that race and the error prints once
+        // either way — so this is not fixing an observed run of duplicate lines,
+        // it is removing the race that decides whether there is one.
+        pollTimer.running = false;
         console.error(`PANEL-INTERACTION-HARNESS: ${message}`);
         Qt.quit();
     }

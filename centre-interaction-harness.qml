@@ -101,6 +101,12 @@ ShellRoot {
     }
 
     function fail(message) {
+        // Stopped before reporting rather than left to Qt.quit(), which unwinds
+        // the event loop on its own schedule while this timer keeps firing every
+        // 25 ms. Measured here, quit wins that race and the error prints once
+        // either way — so this is not fixing an observed run of duplicate lines,
+        // it is removing the race that decides whether there is one.
+        pollTimer.running = false;
         console.error(`CENTRE-INTERACTION-HARNESS: ${message}`);
         Qt.quit();
     }
@@ -175,10 +181,25 @@ ShellRoot {
             return;
         }
 
-        // Through the real chain. There is nothing to assert on afterwards —
-        // the loader is private — so what this proves is that the handler, the
-        // lazy activation and ControlCenter.open() run for every section
-        // without a warning, and the wrapper reads those warnings.
+        // Through the real chain, and this is the weakest part of the file, so
+        // it is worth being exact about what it does and does not prove.
+        //
+        // It proves the handler, the lazy activation and ControlCenter.open()
+        // run for every section without a warning, which the wrapper reads. It
+        // does not prove what they did. The panel the loader builds cannot be
+        // reached from here: measured, walking both `children` and `data` from
+        // barWindow and from its contentItem finds nothing exposing menuOpen,
+        // because BarWindow's loader is a QObject and parents the panel to
+        // itself rather than into the visual tree. ControlCenter.open() leaves
+        // no mark on `services` either — it dispatches into a controller the
+        // panel owns and refreshes its own uptime.
+        //
+        // So the assertions live below, against a ControlCenter this file holds.
+        // Splitting it that way is the honest arrangement, not a shortcut: the
+        // emits say the path runs, the direct calls say the panel behaves, and
+        // no test here says the two are the same object. Closing that gap needs
+        // BarWindow to expose its loader, which is a change to the shell rather
+        // than to its tests.
         if (root.phase === 1) {
             root.barContent.openControlCenterRequested(root.barContent, root.sections[root.sectionIndex]);
             root.phase = 2;

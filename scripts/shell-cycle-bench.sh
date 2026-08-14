@@ -97,7 +97,22 @@ cleanup() {
 	wait 2>/dev/null
 	[[ "$work_dir" == "${TMPDIR:-/tmp}"/qsrice-cycle.* ]] && rm -rf "$work_dir"
 }
-trap cleanup EXIT INT TERM
+# A bash signal handler that returns hands control back to where the script was
+# interrupted, so a single trap on EXIT INT TERM does not stop anything: the body
+# runs on with its work directory already deleted, and cleanup runs a second time
+# from EXIT on the way out. Interrupting has to end the script, which means
+# saying so — clearing the EXIT trap first so the removal is not attempted twice,
+# and exiting on the conventional 128 plus the signal number.
+on_signal() {
+	local signal="$1"
+	cleanup
+	trap - EXIT
+	exit $((128 + signal))
+}
+
+trap cleanup EXIT
+trap 'on_signal 2' INT
+trap 'on_signal 15' TERM
 
 qs -p shell.qml >"$shell_log" 2>&1 &
 shell_pid=$!
@@ -140,11 +155,17 @@ if [[ "${#missing[@]}" -gt 0 ]]; then
 	exit 1
 fi
 
+# The opening verb is a parameter because each handler in shell.qml declares
+# two, open() and toggle(), and a pass that only ever toggles leaves open()
+# uncalled — a function no test reaches is a panel that can stop opening from
+# its keybind without anything noticing. Closing is always toggle: it is the
+# only verb that closes, and its closing half took a different branch from
+# close() for long enough to be worth exercising every cycle.
 cycle_once() {
-	local label="$1" target
+	local label="$1" open_verb="$2" target
 	for target in "${TARGETS[@]}"; do
-		if ! timeout "$IPC_TIMEOUT" qs ipc --pid "$shell_pid" call "$target" toggle >/dev/null 2>&1; then
-			echo "-- FAILED: opening $target over IPC failed on $label" >&2
+		if ! timeout "$IPC_TIMEOUT" qs ipc --pid "$shell_pid" call "$target" "$open_verb" >/dev/null 2>&1; then
+			echo "-- FAILED: $open_verb on $target over IPC failed on $label" >&2
 			exit 1
 		fi
 		sleep "$SETTLE"
@@ -167,7 +188,10 @@ cycle_once() {
 # A leak grows on every cycle. Lazy initialisation grows on the first. Warming
 # up puts both ends of the comparison on the warm side of that line, so what is
 # left to see is only the part that repeats.
-cycle_once "the warm-up cycle"
+# Opens with open() so that verb is covered too. The warm-up pass is thrown
+# away as a measurement, which makes it the right place to spend a check
+# that has nothing to do with resources.
+cycle_once "the warm-up cycle" open
 
 # Two toggles per target per measured cycle, plus the warmup and a tail, with
 # enough margin that the bench outlives the cycles rather than the other way
@@ -189,7 +213,7 @@ bench_pid=$!
 sleep "$WARMUP"
 
 for ((cycle = 1; cycle <= CYCLES; cycle++)); do
-	cycle_once "cycle $cycle"
+	cycle_once "cycle $cycle" toggle
 done
 
 if ! kill -0 "$shell_pid" 2>/dev/null; then
@@ -281,13 +305,16 @@ if fd_early is None:
 #
 # A shell that opens nothing at all drifts too: an idle run over the same window
 # moved 68 -> 69 descriptors, so roughly one is background and belongs to
-# neither the overlays nor a bug. Warmed-up cycling runs measured 83.0 -> 85.0,
-# 84.0 -> 85.0, 83.5 -> 85.0 and 83.5 -> 83.0 — at most two, background included.
+# neither the overlays nor a bug. Warmed-up runs measured +2.0, +1.0, +1.5 and
+# -0.5 over three cycles, and +2.0, -1.0 and -1.5 over five.
 #
-# Two is therefore the noise floor and the tolerance. It does not hide a leak,
-# because a leak scales with the cycles and this does not: one descriptor per
-# cycle already clears it at three cycles, and raising CYCLE_BENCH_CYCLES raises
-# the sensitivity without moving the floor.
+# That second row is the one that matters, and it is why this number stays put.
+# The floor is two at three cycles and still two at five: drift does not
+# accumulate with the cycling, it just wobbles. A leak does accumulate — one
+# descriptor per cycle is a delta of five at five cycles. So the way to buy
+# margin is to raise the cycles and leave this alone. Raising this instead would
+# close the only gap the check has: at a tolerance of three, a one-per-cycle
+# leak at three cycles becomes invisible.
 FD_TOLERANCE = 2
 
 growth = fd_late - fd_early

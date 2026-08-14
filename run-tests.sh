@@ -29,12 +29,19 @@ readonly ROLES_LINE='SMOKETEST: 16 colour roles resolved'
 readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/dnd/single-close passed'
 readonly OVERLAY_LIFECYCLE_LINE='OVERLAY-LIFECYCLE-HARNESS: close/reopen/self-close all destroy the item'
 readonly PANEL_INTERACTION_LINE='PANEL-INTERACTION-HARNESS: open/displace/close/reopen passed'
+readonly CENTRE_INTERACTION_LINE='CENTRE-INTERACTION-HARNESS: control centre and notification centre passed'
 
-# Measured cycles for the resource stage, after the unmeasured warm-up one.
-# Three is enough for a per-cycle leak to separate the two halves of the trend
-# and short enough that the stage stays under a minute; raise it when hunting
-# something small.
-readonly CYCLE_BENCH_CYCLES="${CYCLE_BENCH_CYCLES:-3}"
+# Measured cycles for the resource stage, after the unmeasured warm-up one, and
+# the number is what buys the margin rather than the threshold is.
+#
+# The descriptor noise floor was measured at 2 and it does not move with the
+# cycle count: three cycles read +2.0, +1.0, +1.5, -0.5 and five cycles read
+# +2.0, -1.0, -1.5. A leak does move with it — one descriptor per cycle is a
+# delta of five here. So five leaves three between the smallest leak worth
+# catching and the largest drift ever seen, where three left one. Raise it to
+# widen that gap further; the threshold itself must not be raised, because
+# doing so is what would hide the leak.
+readonly CYCLE_BENCH_CYCLES="${CYCLE_BENCH_CYCLES:-5}"
 
 # Qt asks the desktop portal to register an application ID and the connection
 # already carries one. Measured: an empty ShellRoot prints it too, before any of
@@ -213,6 +220,29 @@ elif [[ -n "$panel_problems" ]]; then
 else
 	panel_count=$(grep -o 'overlays exercised: [0-9]*' <<<"$panel_output" | grep -o '[0-9]*$')
 	echo "-- Panel interaction harness passed (${panel_count:-?} overlays)"
+fi
+
+# The other two panels, which do not open like those five. The control centre
+# rises through a signal into a handler inside BarWindow and a loader that file
+# keeps to itself; the notification centre is the one loader in the shell with
+# directVisibility set, a branch nothing else here has ever taken.
+echo
+echo "== QML centre interaction harness =="
+centre_output=$(timeout 40 qs -p centre-interaction-harness.qml 2>&1)
+centre_status=$?
+centre_output=$(printf '%s\n' "$centre_output" | sed -E 's/\x1b\[[0-9;]*m//g')
+centre_problems=$(grep -E '(WARN|ERROR)' <<<"$centre_output" | grep -Fv "$PLATFORM_NOISE")
+if [[ "$centre_status" -ne 0 ]] || ! grep -qF "$CENTRE_INTERACTION_LINE" <<<"$centre_output"; then
+	echo "-- FAILED: centre interaction harness"
+	printf '%s\n' "$centre_output" | sed 's/^/   /'
+	failed=1
+elif [[ -n "$centre_problems" ]]; then
+	echo "-- FAILED: opening the centres reported warnings or errors:"
+	printf '%s\n' "$centre_problems" | sed 's/^/   /'
+	failed=1
+else
+	centre_count=$(grep -o 'sections exercised: [0-9]*' <<<"$centre_output" | grep -o '[0-9]*$')
+	echo "-- Centre interaction harness passed (${centre_count:-?} sections)"
 fi
 
 # smoketest.qml calls Qt.quit() on its own; the timeout only catches a hang.

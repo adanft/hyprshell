@@ -33,14 +33,34 @@ import "features/wallpaperselector" as Wallpaperselector
 ShellRoot {
     id: root
 
-    // Long enough for the loader's Qt.callLater dispatch, the panel's own
-    // open(), and the compositor to map the surface. The nested compositor the
-    // isolated suite runs against is slower than a real one, and a settle too
-    // short reads as "the panel never opened".
-    readonly property int settleMs: 200
+    // Polled rather than scheduled, and the ceiling is a failure report rather
+    // than a plan. A fixed settle is a guess about how long a compositor takes
+    // to map a surface, and this suite has already paid for that guess once:
+    // smoketest.qml checked its results at a fixed three seconds, which held
+    // while it ran alone and failed a healthy shell about one run in three once
+    // other stages ran ahead of it. A panel that opens in twenty milliseconds is
+    // checked in twenty.
+    readonly property int pollMs: 25
+    readonly property int phaseTimeoutMs: 8000
+
+    // A pause before the next action, which is a different thing from a deadline
+    // for an assertion — the pattern this file just stopped using. Every check
+    // still polls and still fails only on its own ceiling; this only limits how
+    // fast one overlay is allowed to displace the next.
+    //
+    // It exists because displacing faster than this destroys AppLauncher's
+    // content Loader mid-incubation and Qt says so, at AppLauncher.qml:354:
+    // "Cannot create delegate" and "Object or context destroyed during
+    // incubation". That is reachable by hand — two keybinds in quick succession
+    // do it — so it is a real behaviour of the shell, recorded here rather than
+    // filtered out of the run. Lower this to see it again.
+    readonly property int actionGraceMs: 250
 
     property int phase: 0
     property int index: -1
+    property int waitedMs: 0
+    property int graceMs: 0
+    property string waitingFor: "the first overlay to open"
     property var firstLauncherItem: null
 
     readonly property var panels: [
@@ -95,67 +115,84 @@ ShellRoot {
         return condition;
     }
 
-    function advance(delay) {
-        stageTimer.interval = delay;
-        stageTimer.restart();
-    }
-
     function loadedNames() {
         return root.panels.filter(entry => entry.loader.item !== null).map(entry => entry.name);
     }
 
-    Timer {
-        id: stageTimer
-
-        repeat: false
-        onTriggered: root.runStage()
+    // The arbiter's whole contract in one expression: this loader is up, and it
+    // is the only one. The displacement belongs in the wait rather than in a
+    // separate assertion after it, because a panel becoming visible and the one
+    // before it being destroyed are two events, and asserting between them is a
+    // race — which is exactly what a fixed settle hides instead of removing.
+    function isSoleVisible(loader) {
+        return loader.item !== null && loader.item.visible && root.loadedNames().length === 1;
     }
 
-    Component.onCompleted: root.advance(root.settleMs)
+    function ready() {
+        if (root.phase === 0)
+            return root.index < 0 || root.isSoleVisible(root.panels[root.index].loader);
+        if (root.phase === 2)
+            return root.isSoleVisible(appLauncherLoader);
+        return root.loadedNames().length === 0;
+    }
 
-    function runStage() {
-        if (root.phase === 0) {
-            // Verify the overlay opened by the previous pass, then open the
-            // next. Checking one pass late is what makes the displacement
-            // assertion free: by the time a panel is verified, opening it has
-            // already had to destroy the one before it.
-            if (root.index >= 0) {
-                const current = root.panels[root.index];
-                if (!root.require(current.loader.item !== null, `${current.name} loaded nothing when opened`))
-                    return;
-                if (!root.require(current.loader.item.visible, `${current.name} loaded but never became visible`))
-                    return;
+    Timer {
+        id: pollTimer
 
-                const loaded = root.loadedNames();
-                if (!root.require(loaded.length === 1,
-                                  `opening ${current.name} left ${loaded.length} overlays alive: ${loaded.join(", ")}`))
+        interval: root.pollMs
+        running: true
+        repeat: true
+        onTriggered: {
+            if (root.ready()) {
+                root.graceMs += root.pollMs;
+                if (root.graceMs < root.actionGraceMs)
                     return;
-
-                if (root.index === 0)
-                    root.firstLauncherItem = current.loader.item;
+                root.graceMs = 0;
+                root.waitedMs = 0;
+                root.step();
+                return;
             }
+
+            root.graceMs = 0;
+            root.waitedMs += root.pollMs;
+            if (root.waitedMs >= root.phaseTimeoutMs) {
+                // Reports the state that never arrived rather than the line that
+                // gave up, so a timeout still says whether the panel failed to
+                // open or the one before it failed to die.
+                const alive = root.loadedNames();
+                root.fail(`waited ${root.phaseTimeoutMs}ms for ${root.waitingFor};`
+                          + ` alive: [${alive.join(", ")}]`);
+            }
+        }
+    }
+
+    function step() {
+        if (root.phase === 0) {
+            if (root.index === 0)
+                root.firstLauncherItem = root.panels[0].loader.item;
 
             root.index++;
             if (root.index < root.panels.length) {
-                arbiter.open(root.panels[root.index].loader);
-                root.advance(root.settleMs);
+                const next = root.panels[root.index];
+                root.waitingFor = `${next.name} to be open and alone`;
+                arbiter.open(next.loader);
                 return;
             }
 
+            root.waitingFor = "every overlay to close";
             arbiter.closeOthers(null);
             root.phase = 1;
-            root.advance(root.settleMs);
-        } else if (root.phase === 1) {
-            const loaded = root.loadedNames();
-            if (!root.require(loaded.length === 0, `closing every overlay left ${loaded.join(", ")} alive`))
-                return;
+            return;
+        }
 
+        if (root.phase === 1) {
+            root.waitingFor = "the launcher to reopen alone";
             arbiter.open(appLauncherLoader);
             root.phase = 2;
-            root.advance(root.settleMs);
-        } else if (root.phase === 2) {
-            if (!root.require(appLauncherLoader.item !== null, "reopening the launcher loaded nothing"))
-                return;
+            return;
+        }
+
+        if (root.phase === 2) {
             // A different object than the first run handed back. Same-instance
             // reuse would mean the first close hid the panel instead of
             // destroying it, which is the leak this whole file is watching for.
@@ -166,20 +203,19 @@ ShellRoot {
             // Through toggle rather than close: it is the entry point every
             // IpcHandler in shell.qml actually calls, and its closing half took
             // a different branch than close() until it did not.
+            root.waitingFor = "the toggled launcher to close";
             arbiter.toggle(appLauncherLoader);
             root.phase = 3;
-            root.advance(root.settleMs);
-        } else {
-            const loaded = root.loadedNames();
-            if (!root.require(loaded.length === 0, `a toggled-closed overlay stayed alive: ${loaded.join(", ")}`))
-                return;
-
-            // The count goes in a separate line: the wrapper greps this one
-            // literally, and a message that carries the number would have to be
-            // edited in two files every time an overlay is added.
-            console.info(`PANEL-INTERACTION-HARNESS: overlays exercised: ${root.panels.length}`);
-            console.info("PANEL-INTERACTION-HARNESS: open/displace/close/reopen passed");
-            Qt.quit();
+            return;
         }
+
+        pollTimer.running = false;
+
+        // The count goes in a separate line: the wrapper greps this one
+        // literally, and a message that carries the number would have to be
+        // edited in two files every time an overlay is added.
+        console.info(`PANEL-INTERACTION-HARNESS: overlays exercised: ${root.panels.length}`);
+        console.info("PANEL-INTERACTION-HARNESS: open/displace/close/reopen passed");
+        Qt.quit();
     }
 }

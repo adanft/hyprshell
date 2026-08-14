@@ -298,6 +298,18 @@ for socket in .socket.sock .socket2.sock; do
 	fi
 done
 
+# Not a headless output, and it is worth writing down why, because it is the
+# obvious idea and it does not work here.
+#
+# The window this compositor draws into is an ordinary client of your session,
+# so your session stops sending it frame callbacks whenever it is not shown.
+# Everything inside then freezes, which surfaces much later as a test waiting on
+# something that has to render. An output not backed by that window would fix
+# it. `hyprctl output create headless` does add one on Hyprland 0.56.2, and it
+# comes up 0x0: it reports 1920x1080@60 as its one available mode and takes
+# neither that mode nor `preferred` from a monitor rule. A zero-sized screen is
+# worse than none, because the shell builds a bar on it.
+#
 # DISPLAY is unset rather than overridden: left in place it is your session's X
 # server, and a Qt client that falls back to xcb would draw into the very
 # session this script is keeping the test away from.

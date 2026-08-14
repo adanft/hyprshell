@@ -199,11 +199,12 @@ else in that file is left alone.
 ./run-tests.sh --js        # Node and Python only, no compositor needed
 ```
 
-Node contract tests, the Python benchmark tests, QML component tests, then four
+Node contract tests, the Python benchmark tests, QML component tests, then five
 stages that need a real compositor: two notification and overlay harnesses, a
-smoke test that instantiates every window and checks it built without warnings,
-a panel interaction harness, and an overlay cycle benchmark. The compositor
-stages say so rather than passing quietly when there is no compositor.
+panel interaction harness, a centre interaction harness, a smoke test that
+instantiates every window and checks it built without warnings, and an overlay
+cycle benchmark. The compositor stages say so rather than passing quietly when
+there is no compositor.
 
 ### What only a running shell can answer
 
@@ -218,6 +219,19 @@ lazy activation, the arbiter displacing whatever was up, the panel's own
 arbiter exists for: exactly one overlay alive at a time, and a displaced one
 *destroyed*. Destroyed rather than hidden is the whole point, and it is a count
 rather than anything you could see on screen.
+
+`centre-interaction-harness.qml` covers the two panels that do not open like
+those five. The control centre is opened by a signal that rises `BarLayout` →
+`BarContent` → `BarWindow` and lands on a handler that flips a loader `BarWindow`
+keeps to itself, so the harness emits that signal on the real `BarContent` and
+lets the whole chain run; because the loader is private, it also holds a
+`ControlCenter` of its own to assert that `open()` lands on the section it was
+given. The notification centre is the one loader in the shell with
+`directVisibility` set — a branch of `OverlayLifecycleLoader` that nothing else
+takes. It stops at the edge of the shell: sections are exercised by name and
+nothing is asked of BlueZ or NetworkManager, which live on the system bus that
+the isolated session does not isolate, so a test that toggled them would be
+flipping a real radio on a real machine.
 
 `scripts/shell-cycle-bench.sh` is the only stage that runs `shell.qml` itself.
 It opens and closes every overlay over `qs ipc`, the way a person does, while
@@ -262,16 +276,36 @@ hl.window_rule({
 	match = { class = "aquamarine" },
 	float = true,
 	no_focus = true,
+	pin = true,
 })
 ```
 
-Float it, do not hide it. Sending this window to a hidden workspace looks like
-the tidier answer and breaks the run instead: hiding unmaps the surface, an
-unmapped Wayland client stops receiving frame callbacks, and the nested
-compositor drives its own timers off those frames. Measured here, moving it to
-a hidden special workspace took the suite from eleven seconds to every stage
-reaching its timeout. A floating window is ignored by the tiling layout, which
-was the whole point, and it stays mapped.
+All three matter, and the reason is the same one each time: **this window has to
+keep being drawn, or everything inside it stops.** It is an ordinary client of
+your session, so your session stops sending it frame callbacks the moment it is
+not on screen — and the nested compositor runs its own timers, animations and
+`grabToImage` off those frames. Starve it and the suite does not slow down, it
+waits for things that will never happen.
+
+`float` because a tiling layout ignores a floating window, so nothing is
+retiled, which was the original complaint. Not hidden: sending it to a hidden
+special workspace looks tidier and took the suite from eleven seconds to every
+stage reaching its timeout.
+
+`pin` because floating is not enough on its own. A floating window still lives
+on one workspace, and switching that monitor to another workspace unmaps it just
+as thoroughly as hiding it. Measured during one 45-second run: the window sat on
+workspace 6, the monitor spent 32 of those seconds showing workspace 4, and the
+smoke test failed reporting that its image capture never completed — which was
+exactly true. A pinned window follows the active workspace, so it stays drawn
+while you work.
+
+The cost is that it is visible on that monitor while the suite runs. That is the
+trade, and it is not avoidable here: `hyprctl output create headless` would give
+the nested session an output that renders regardless, but on Hyprland 0.56.2
+that output comes up 0x0 and takes neither its one advertised mode nor
+`preferred` from a monitor rule, and a zero-sized screen is worse than none
+because the shell builds a bar on it.
 
 Isolation is scoped to what the shell writes and what would disturb you: its
 config directory, its cache, its runtime sockets, its bus, its compositor. What

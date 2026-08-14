@@ -278,20 +278,36 @@ ShellRoot {
         }
     }
 
+    // The second fixed deadline in this file, and it outlived the first by a
+    // few minutes: waiting one second for the capture jobs to drain held while
+    // the smoke test was the only thing running and stopped holding once other
+    // stages ran ahead of it, reporting "left pending jobs" about work that was
+    // simply still going. Polled for the same reason and with the same shape as
+    // the settle below — a drain that finishes in fifty milliseconds is checked
+    // in fifty.
     Timer {
         id: lifecycleSettleTimer
 
-        interval: 1000
-        repeat: false
+        property int waitedMs: 0
+
+        interval: 50
+        repeat: true
         onTriggered: {
             const service = serviceState.notification
-            const published = service.notificationImageEntry(smoketest.lifecyclePublishedEntryId)
-            if (Object.keys(service.notificationImageCaptureJobs).length !== 0
-                    || Object.keys(service.notificationImagePersistence.pending).length !== 0) {
+            const drained = Object.keys(service.notificationImageCaptureJobs).length === 0
+                && Object.keys(service.notificationImagePersistence.pending).length === 0
+            if (!drained) {
+                lifecycleSettleTimer.waitedMs += lifecycleSettleTimer.interval
+                if (lifecycleSettleTimer.waitedMs < smoketest.settleTimeoutMs)
+                    return
                 console.error("SMOKETEST: notification lifecycle left pending jobs or retries")
                 Qt.quit()
                 return
             }
+
+            lifecycleSettleTimer.running = false
+
+            const published = service.notificationImageEntry(smoketest.lifecyclePublishedEntryId)
             if (!published || published.ownedImage !== true || !String(published.image).startsWith("file://")) {
                 console.error("SMOKETEST: notification transaction published no verified owned image")
                 Qt.quit()

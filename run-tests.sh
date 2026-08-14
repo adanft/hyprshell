@@ -28,6 +28,20 @@ readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/d
 readonly ROLES_LINE='SMOKETEST: 16 colour roles resolved'
 readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/dnd/single-close passed'
 readonly OVERLAY_LIFECYCLE_LINE='OVERLAY-LIFECYCLE-HARNESS: close/reopen/self-close all destroy the item'
+readonly PANEL_INTERACTION_LINE='PANEL-INTERACTION-HARNESS: open/displace/close/reopen passed'
+
+# Measured cycles for the resource stage, after the unmeasured warm-up one.
+# Three is enough for a per-cycle leak to separate the two halves of the trend
+# and short enough that the stage stays under a minute; raise it when hunting
+# something small.
+readonly CYCLE_BENCH_CYCLES="${CYCLE_BENCH_CYCLES:-3}"
+
+# Qt asks the desktop portal to register an application ID and the connection
+# already carries one. Measured: an empty ShellRoot prints it too, before any of
+# this shell's code runs, so it reports the session rather than the shell. It is
+# dropped only for the panel harness, which is the one stage that reads warnings
+# from a run that opens real overlays.
+readonly PLATFORM_NOISE='Failed to register with host portal'
 
 # Emitted whenever another notification daemon already owns the D-Bus name,
 # which is the normal case while a shell is running. Matched literally rather
@@ -174,6 +188,33 @@ else
 	echo "-- Overlay lifecycle harness passed"
 fi
 
+# The lifecycle harness above drives the real loader against a stub, and
+# smoketest.qml builds the real overlays without ever opening one. Neither of
+# them opens a real overlay the way shell.qml does, which is what this stage is
+# for: through the arbiter, through the lazy loader, into the panel's own open().
+#
+# Its warnings are read as well as its verdict. An overlay that opens with a
+# broken binding says so in a warning and returns a perfectly good success line,
+# and the arbiter's own invariant is a count, not something visible on screen.
+echo
+echo "== QML panel interaction harness =="
+panel_output=$(timeout 30 qs -p panel-interaction-harness.qml 2>&1)
+panel_status=$?
+panel_output=$(printf '%s\n' "$panel_output" | sed -E 's/\x1b\[[0-9;]*m//g')
+panel_problems=$(grep -E '(WARN|ERROR)' <<<"$panel_output" | grep -Fv "$PLATFORM_NOISE")
+if [[ "$panel_status" -ne 0 ]] || ! grep -qF "$PANEL_INTERACTION_LINE" <<<"$panel_output"; then
+	echo "-- FAILED: panel interaction harness"
+	printf '%s\n' "$panel_output" | sed 's/^/   /'
+	failed=1
+elif [[ -n "$panel_problems" ]]; then
+	echo "-- FAILED: opening the overlays reported warnings or errors:"
+	printf '%s\n' "$panel_problems" | sed 's/^/   /'
+	failed=1
+else
+	panel_count=$(grep -o 'overlays exercised: [0-9]*' <<<"$panel_output" | grep -o '[0-9]*$')
+	echo "-- Panel interaction harness passed (${panel_count:-?} overlays)"
+fi
+
 # smoketest.qml calls Qt.quit() on its own; the timeout only catches a hang.
 smoke_output=$(timeout "$SMOKE_TIMEOUT" qs -p smoketest.qml 2>&1)
 smoke_status=$?
@@ -227,6 +268,36 @@ fi
 
 if [[ "$failed" -eq 0 ]]; then
 	echo "-- Smoke test passed: every window instantiated, no warnings"
+fi
+
+# Last because it is the slowest, and because everything above has to hold
+# before its numbers mean anything: this is the only stage that runs shell.qml
+# itself, opening every overlay over IPC the way a person does while the process
+# tree is sampled. See scripts/shell-cycle-bench.sh for why descriptors fail the
+# run and memory only reports.
+echo
+echo "== Shell overlay cycles and resources =="
+#
+# Bounded from out here as well as from inside. The stage guards each of its own
+# IPC calls, but it is the only one that runs a shell for the length of a
+# benchmark, and every other qs invocation in this file is wrapped, so leaving
+# this one unwrapped would make it the single step able to hang the whole run.
+# The number is a backstop, not a schedule: the stage takes about forty seconds
+# at three cycles, so raising CYCLE_BENCH_CYCLES far past that needs this raised
+# with it.
+# -k because the stage traps TERM to clean up its children: a trap that ever
+# wedged would swallow the bound this line exists to be.
+timeout -k 10 300 scripts/shell-cycle-bench.sh "$CYCLE_BENCH_CYCLES"
+cycle_status=$?
+if [[ "$cycle_status" -eq 0 ]]; then
+	echo "-- Overlay cycles passed: no descriptor growth"
+else
+	if [[ "$cycle_status" -eq 124 ]]; then
+		echo "-- FAILED: overlay cycle benchmark did not finish within 300s"
+	else
+		echo "-- FAILED: overlay cycle benchmark"
+	fi
+	failed=1
 fi
 
 echo

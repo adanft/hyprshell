@@ -38,7 +38,8 @@ import "features/wallpaperselector" as Wallpaperselector
 ShellRoot {
     id: smoketest
 
-    readonly property int settleMs: 3000
+    // A ceiling, not a schedule. Nothing waits for it in the ordinary case.
+    readonly property int settleTimeoutMs: 15000
     property bool captureCompleted: false
     property bool captureStarted: false
     property bool notificationLifecycleCompleted: false
@@ -329,26 +330,51 @@ ShellRoot {
 
     // Touch one value from each theme singleton so that a broken qmldir entry
     // surfaces as a failed lookup instead of passing unnoticed.
+    //
+    // This waits for the work to finish rather than for a deadline it was
+    // assumed to fit inside. It used to check once at three seconds, which held
+    // while the smoke test ran alone and stopped holding once other compositor
+    // stages ran before it: every assertion below then reported on work that had
+    // simply not finished, so a healthy shell failed on a stopwatch. Polling
+    // also makes the ordinary run shorter, because it stops the moment there is
+    // something to check.
     Timer {
-        interval: smoketest.settleMs
+        id: settleTimer
+
+        property int waitedMs: 0
+
+        interval: 100
         running: true
-        repeat: false
+        repeat: true
         onTriggered: {
-            if (!smoketest.captureCompleted) {
-                console.error("SMOKETEST: notification image capture did not complete")
+            settleTimer.waitedMs += settleTimer.interval
+
+            // The palette arrives over a FileView, so "loaded" is a third thing
+            // to wait for. Waiting for the data to exist is not the same as
+            // waiting for the comparison to succeed: a role whose binding is
+            // dead still fails below, which is the whole point of checking it.
+            const palette = ThemeRuntime.StockThemes.themeData
+            const paletteLoaded = palette && Object.keys(palette).length > 1
+
+            if (!smoketest.captureCompleted || !smoketest.notificationLifecycleCompleted || !paletteLoaded) {
+                if (settleTimer.waitedMs < smoketest.settleTimeoutMs)
+                    return
+                if (!smoketest.captureCompleted)
+                    console.error("SMOKETEST: notification image capture did not complete")
+                else if (!smoketest.notificationLifecycleCompleted)
+                    console.error("SMOKETEST: notification lifecycle did not complete")
+                else
+                    console.error("SMOKETEST: the theme palette never loaded")
                 Qt.quit()
                 return
             }
-            if (!smoketest.notificationLifecycleCompleted) {
-                console.error("SMOKETEST: notification lifecycle did not complete")
-                Qt.quit()
-                return
-            }
+
+            settleTimer.running = false
+
             // A QML colour property whose binding never took reads as opaque
             // black, and nothing else in the suite can see that: the theme data
             // is correct, only the property is dead. Compare every role against
             // the palette it came from.
-            const palette = ThemeRuntime.StockThemes.themeData
             const unresolved = Object.keys(palette).filter(role => role !== "displayName").filter(role => {
                 return String(Theme.Colors[role]).toLowerCase() !== String(palette[role]).toLowerCase()
             })

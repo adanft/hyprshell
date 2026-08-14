@@ -199,10 +199,41 @@ else in that file is left alone.
 ./run-tests.sh --js        # Node and Python only, no compositor needed
 ```
 
-Four stages: Node contract tests, the Python benchmark tests, QML component
-tests, then a smoke test that launches the shell and checks every window
-instantiated with no warnings. The QML stages need a running compositor and say
-so rather than passing quietly when there is none.
+Node contract tests, the Python benchmark tests, QML component tests, then four
+stages that need a real compositor: two notification and overlay harnesses, a
+smoke test that instantiates every window and checks it built without warnings,
+a panel interaction harness, and an overlay cycle benchmark. The compositor
+stages say so rather than passing quietly when there is no compositor.
+
+### What only a running shell can answer
+
+Three of those stages exist because the question they answer disappears the
+moment you take the shell apart.
+
+`panel-interaction-harness.qml` opens the overlays. Instantiating one, which is
+what the smoke test does, only proves it compiles; `shell.qml` reaches every
+overlay through `OverlayArbiter` and `OverlayLifecycleLoader`, and that path —
+lazy activation, the arbiter displacing whatever was up, the panel's own
+`open()` — is not the one an instantiation runs. It holds the invariant the
+arbiter exists for: exactly one overlay alive at a time, and a displaced one
+*destroyed*. Destroyed rather than hidden is the whole point, and it is a count
+rather than anything you could see on screen.
+
+`scripts/shell-cycle-bench.sh` is the only stage that runs `shell.qml` itself.
+It opens and closes every overlay over `qs ipc`, the way a person does, while
+`scripts/qsrice-bench.py` samples the process tree. Its verdict is deliberately
+lopsided: **file descriptors fail the run, memory only reports.** A descriptor a
+closed overlay never released is an integer that does not drift, while RSS moves
+with the allocator underneath it, so a memory threshold tight enough to catch a
+leak also fails on nothing at all.
+
+Two things in there were measured rather than assumed, and both are written down
+where they are used. The benchmark throws away a full warm-up cycle first,
+because the first open of an overlay compiles its QML and spins up thread pools
+— from cold that reads as +13 descriptors and +53 MB, none of it a leak. And the
+descriptor tolerance is two, because an idle shell that opens nothing drifts by
+one on its own. Raise `CYCLE_BENCH_CYCLES` to raise the sensitivity: a real leak
+scales with the cycles and the noise floor does not.
 
 ### Why `--isolated` exists
 

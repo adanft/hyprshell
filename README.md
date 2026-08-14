@@ -1,15 +1,133 @@
+<div align="center">
+
 # qsrice
 
-A Wayland desktop shell for Hyprland, written in QML on top of
-[Quickshell](https://quickshell.org): status bar, app launcher, control centre,
-notification centre, screenshot tool, wallpaper and theme selectors, and a power
-menu — plus a theme that follows through to Hyprland, hyprlock and Ghostty.
+**A Wayland desktop shell for Hyprland.**
 
-Everything below was read out of this repository rather than remembered. Package
-names are Arch's, because that is where it was built and tested; the binaries are
-the same everywhere.
+One process draws your bar, launcher, control centre, notifications, screenshots,
+wallpapers and themes — and paints Hyprland, hyprlock and Ghostty to match.
 
-## What it needs
+<img alt="Last commit" src="https://img.shields.io/github/last-commit/adanft/qsrice?style=for-the-badge&labelColor=1e1e2e&color=cba6f7">
+<img alt="Stars" src="https://img.shields.io/github/stars/adanft/qsrice?style=for-the-badge&labelColor=1e1e2e&color=cba6f7">
+<img alt="Repo size" src="https://img.shields.io/github/repo-size/adanft/qsrice?style=for-the-badge&labelColor=1e1e2e&color=cba6f7">
+<img alt="Built with QML" src="https://img.shields.io/badge/built%20with-QML-cba6f7?style=for-the-badge&labelColor=1e1e2e">
+
+</div>
+
+<!-- SCREENSHOTS — drop the PNGs into docs/screenshots/ and delete this comment
+     wrapper. Suggested set: bar.png, launcher.png, control-centre.png,
+     notifications.png, theme-selector.png
+
+<div align="center">
+  <img src="docs/screenshots/bar.png" width="90%">
+</div>
+
+<details>
+<summary><b>More screenshots</b></summary>
+<div align="center">
+  <img src="docs/screenshots/launcher.png" width="90%">
+  <img src="docs/screenshots/control-centre.png" width="90%">
+  <img src="docs/screenshots/notifications.png" width="90%">
+  <img src="docs/screenshots/theme-selector.png" width="90%">
+</div>
+</details>
+-->
+
+## What this is, and what it isn't
+
+- **It is a shell.** Bar and panels, drawn by Quickshell, in one process.
+- **It is not a dotfiles setup.** It does not configure Hyprland for you, install
+  drivers, set up your terminal, or take your keybinds. One hook to start it and
+  one bind per panel, written by you, is the whole integration.
+- **It does not fail when something is missing.** No `brightnessctl`? The
+  brightness control reports itself unavailable and disappears. No `awww`? The
+  wallpaper selector still browses and still remembers. Every optional piece
+  costs exactly one feature, and the table below says which.
+
+## Features
+
+**Status bar.** Workspaces, CPU and RAM, system tray, clock, network throughput,
+Wi-Fi, Bluetooth, sound, backlight, battery, microphone, notifications, date.
+Four of those modules are shortcuts: clicking Wi-Fi opens the control centre
+*already expanded* on Wi-Fi.
+
+**App launcher.** Type to filter desktop entries. The search field never loses
+focus, so the arrows move through the grid and the text cursor without you
+reaching for anything.
+
+**Control centre.** Wi-Fi, Ethernet, Bluetooth, audio output and microphone, one
+section expanded at a time. Connect, forget, switch device, mute a single
+application's stream. Wi-Fi scanning is claimed while you are looking and
+released when you are not, rather than running forever.
+
+**Notification centre.** History that survives a restart, images included. Do not
+disturb, clear all, and per-notification expand.
+
+**Screenshot tool.** All screens, one monitor, the focused window, or a region.
+Delay up to fifteen seconds, cursor optional. Lands on disk *and* on the
+clipboard, and waits for its own overlay to leave the screen first so it never
+appears in the shot.
+
+**Wallpaper selector.** Browses your wallpaper directory with search, format
+filters and cached thumbnails.
+
+**Theme selector.** Thirteen palettes, applied live — and not just to the shell.
+The same colours reach Hyprland's borders, hyprlock's fields and Ghostty's
+terminal through one generated file.
+
+**Power menu.** Lock, suspend, log out, reboot, power off, each behind a
+confirmation that a stray click cancels rather than confirms.
+
+**Bluetooth pairing.** A device asking for a PIN or a six-digit confirmation gets
+a real dialog, served by a small companion agent — because Quickshell cannot own
+a D-Bus object and BlueZ refuses a pairing nobody can answer.
+
+---
+
+## Quick start
+
+```sh
+# 1. the two it cannot start without
+pacman -S hyprland
+paru -S quickshell-git
+
+# 2. the icons — without this the bar is empty boxes, not unstyled
+pacman -S ttf-nerd-fonts-symbols
+
+# 3. clone — anywhere you like, this is just the Quickshell convention
+git clone https://github.com/adanft/qsrice.git ~/.config/quickshell/qsrice
+```
+
+> Clone it somewhere other than `~/.config/qsrice`. That directory is where the
+> shell keeps its own `settings.json`, and putting the checkout there leaves
+> state sitting inside your working tree.
+
+Then two things in your `hyprland.lua` — start it, and bind it:
+
+```lua
+local qsrice = os.getenv("HOME") .. "/.config/quickshell/qsrice"
+
+hl.on("hyprland.start", function()
+    hl.exec_cmd("qs -p " .. qsrice)
+end)
+
+hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call applauncher toggle"))
+hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call themeselector toggle"))
+hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call wallpaperselector toggle"))
+hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call powermenu toggle"))
+hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call screenshot toggle"))
+```
+
+That is the whole integration. The control centre and the notification centre
+need no binds — they open from the bar, because both anchor themselves to the
+module you clicked.
+
+---
+
+## Requirements
+
+Package names are Arch's, because that is where it was built and tested. On
+another distribution the binaries are the same; only the package names move.
 
 ### The two it cannot start without
 
@@ -17,12 +135,6 @@ the same everywhere.
 |---|---|---|
 | **Hyprland** | 0.56.2 | The shell talks to it over its IPC, and the launch hook lives in `hyprland.lua`. The Lua config format arrived in 0.55 — an older Hyprland needs `hyprland.conf` instead. |
 | **Quickshell** (`qs`) | 0.3.0 (`quickshell-git`) | The runtime. Pulls Qt 6 with it (built here against 6.11.1). |
-
-```sh
-pacman -S hyprland
-# quickshell-git is in the AUR
-paru -S quickshell-git
-```
 
 ### Fonts
 
@@ -39,10 +151,11 @@ in the repositories — install it yourself, or change that one line to a face y
 have. Qt will substitute silently if it is missing, so nothing breaks; it just
 stops looking the way it was drawn.
 
-### Desktop services
+<details>
+<summary><b>Desktop services — the daemons behind the control centre</b></summary>
 
-These back the control centre. Each is reached through a Quickshell module over
-D-Bus, so they are daemons to have running, not commands to install.
+Each is reached through a Quickshell module over D-Bus, so these are daemons to
+have running, not commands to install.
 
 | Service | Package | Feeds |
 |---|---|---|
@@ -53,10 +166,13 @@ D-Bus, so they are daemons to have running, not commands to install.
 | logind | `systemd` | session actions from the power menu |
 | AccountsService | `accountsservice` | the user's avatar, read over `busctl`. Without it the avatar is simply empty. |
 
-### Command-line tools, by what stops working
+</details>
 
-The shell degrades one feature at a time rather than failing to start, so this
-table reads as a menu. Only install what you want to use.
+<details>
+<summary><b>Optional tools — read this as a menu, not a checklist</b></summary>
+
+The shell degrades one feature at a time rather than failing to start. Install
+only what you want to use.
 
 | Missing | What you lose |
 |---|---|
@@ -75,44 +191,196 @@ pacman -S grim slurp wl-clipboard jq imagemagick brightnessctl
 paru -S awww
 ```
 
-## Setting it up
+</details>
 
-### 1. Launch it
+---
 
-The shell is started by the compositor. In `hyprland.lua`:
+## Using it
 
-```lua
-hl.on("hyprland.start", function()
-    hl.exec_cmd("qs -p /path/to/qsrice")
-end)
+### The bar
+
+| Cluster | Holds | What responds |
+|---|---|---|
+| **Left** | Workspaces · CPU, RAM · system tray | A workspace pill focuses that workspace. Tray items open their own menus. The tray disappears when nothing is in it. |
+| **Centre** | Control centre button · clock · power profile | The button opens the control centre with nothing expanded. |
+| **Right** | Network throughput · Wi-Fi · Bluetooth · sound · backlight · battery · microphone · notifications · date | Four are shortcuts — below. |
+
+| Click | Opens |
+|---|---|
+| Wi-Fi | Control centre, Wi-Fi expanded |
+| Bluetooth | Control centre, Bluetooth expanded |
+| Sound | Control centre, audio output expanded |
+| Microphone | Control centre, microphone expanded |
+| Notifications | Notification centre |
+
+The throughput readout is a readout, not a button.
+
+### One panel at a time, and how to close it
+
+The five panels you open yourself — launcher, power menu, wallpaper selector,
+theme selector, screenshot tool — are mutually exclusive. Opening one closes
+whatever was up, and closes it by *destroying* it rather than hiding it, so a
+panel you are not looking at costs nothing while it is away.
+
+The Bluetooth pairing dialog is the exception in both directions: it displaces
+those five, and nothing displaces it. Closing it means refusing a pairing BlueZ
+is waiting on, which is not a decision another panel should be able to make by
+opening.
+
+The control centre and the notification centre sit outside that arrangement —
+they belong to the bar, and either can be up alongside anything else.
+
+| Panel | Escape | Click outside |
+|---|---|---|
+| App launcher, power menu, wallpaper selector, theme selector, screenshot tool | closes | closes |
+| Bluetooth pairing | rejects | — |
+| Control centre | — | closes |
+| Notification centre | — | — |
+
+The notification centre closes the way it opened: by clicking the bar's
+notification module again.
+
+### Keys
+
+<details open>
+<summary><b>App launcher</b></summary>
+
+| Key | Does |
+|---|---|
+| Any character | Filters |
+| ← → | Moves one app — unless the text cursor has somewhere to go, in which case it moves the cursor |
+| ↑ ↓ | Moves one row |
+| Enter | Launches and closes |
+| Escape | Closes |
+
+</details>
+
+<details>
+<summary><b>Screenshot tool</b></summary>
+
+Four modes: **All** (every screen), **Monitor**, **Window** (the focused one,
+resolved through `hyprctl`), **Area** (dragged with `slurp`).
+
+| Key | Does |
+|---|---|
+| ← → | Picks the mode |
+| ↑ ↓ | Includes or excludes the cursor |
+| Tab / Shift+Tab | Cycles the delay: 0, 3, 5, 10, 15 seconds |
+| Enter | Captures |
+| Escape | Closes |
+
+Captures land in `~/Pictures/Screenshots` **and** on the clipboard.
+
+</details>
+
+<details>
+<summary><b>Wallpaper selector</b></summary>
+
+Browses `~/Wallpapers` — override with `AWWW_WALLPAPERS_DIR`.
+
+| Key | Does |
+|---|---|
+| Any character | Filters by name |
+| ← → ↑ ↓ | Moves through the grid |
+| Enter | Applies and closes |
+| Escape | Closes |
+
+Three format filters — **png**, **jpg**, **gif** — toggle independently, so
+several can be on at once. Thumbnails are cached under
+`$XDG_CACHE_HOME/qsrice/wallpapers`.
+
+</details>
+
+<details>
+<summary><b>Theme selector</b></summary>
+
+Thirteen palettes ship with it:
+
+`atom-one-light` · `aura` · `aurora-x` · `ayu-dark` · `catppuccin` ·
+`catppuccin-latte` · `hack-the-box` · `kanagawa-dragon` · `kanagawa-lotus` ·
+`kanagawa-wave` · `one-dark` · `palenight` · `rose-pine`
+
+| Key | Does |
+|---|---|
+| Any character | Filters by name |
+| ← → ↑ ↓ | Moves through the grid |
+| Enter or Space | Applies |
+| Home / End | Jumps to the first or last |
+| Escape | Closes |
+
+Two filters, **dark** and **light**. A theme lands in one or the other by the
+brightness of its own `surface` colour, not by what its name claims.
+
+A theme can also be set from a script, which is what the IPC `set` is for:
+
+```sh
+qs ipc -p ~/.config/quickshell/qsrice call themeselector set kanagawa-dragon
 ```
 
-### 2. Bind the overlays
+</details>
 
-Nothing opens on its own — each surface is reached over Quickshell's IPC:
+<details>
+<summary><b>Control centre</b></summary>
 
-```lua
-local qsrice = "/path/to/qsrice"
-hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call applauncher toggle"))
-hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call themeselector toggle"))
-hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call wallpaperselector toggle"))
-hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call powermenu toggle"))
-hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call screenshot toggle"))
+Five sections, one expanded at a time: **Ethernet**, **Wi-Fi**, **audio output**,
+**microphone**, **Bluetooth**. Clicking a section's body expands it; clicking the
+expanded one collapses it again. Each card also carries its own toggle, so a
+radio can go off without opening anything.
+
+Inside a section, rows respond to a click or to Enter / Space when focused:
+
+- **Wi-Fi** — connect, disconnect, or forget a remembered network.
+- **Ethernet** — bring a profile up or down.
+- **Audio output** and **microphone** — pick a device, and mute individual
+  playback streams per application.
+- **Bluetooth** — scan, connect, disconnect. A pairing that needs a human answer
+  raises its own dialog with an accept and a reject: **Enter** or **Space**
+  triggers whichever is focused, and **Escape** rejects.
+
+</details>
+
+<details>
+<summary><b>Power menu</b></summary>
+
+Lock · suspend · log out · reboot · power off.
+
+Nothing fires on the first press. Choosing an action replaces the row with a
+confirm and a cancel, so ← → then Enter is always two deliberate steps. Escape
+backs out of the confirmation before it closes the menu, and a stray click on the
+backdrop cancels rather than confirms.
+
+</details>
+
+### The IPC
+
+Five targets, each taking `open` and `toggle`; the theme selector also takes
+`set <name>`:
+
+```sh
+qs ipc -p ~/.config/quickshell/qsrice call applauncher       toggle
+qs ipc -p ~/.config/quickshell/qsrice call themeselector     toggle
+qs ipc -p ~/.config/quickshell/qsrice call wallpaperselector toggle
+qs ipc -p ~/.config/quickshell/qsrice call powermenu         toggle
+qs ipc -p ~/.config/quickshell/qsrice call screenshot        toggle
 ```
 
-Every target takes `toggle` and `open`; the theme selector also takes
-`set <name>`, which is how a theme can be changed from a script.
+---
 
-### 3. Let Hyprland and hyprlock follow the theme
+## Theming the rest of the desktop
 
 The shell writes `~/.config/hypr/theme.conf` whenever the theme or the wallpaper
 changes. It is the shell's file — it is rewritten whole, so do not edit it — and
 it holds colours under role names (`$primary`, `$on_surface`, `$surface`) plus
 `$wallpaper` and `$font`.
 
-Both programs read that one file, in the two different ways they each can.
+The names are roles, not pigments. `theme.conf` used to spell Catppuccin's
+vocabulary — mauve, peach, crust — and under any other palette those become lies:
+there is no mauve in Kanagawa. `$primary` is true whichever palette is loaded.
 
-**hyprlock** sources it:
+Two programs read that one file, in the two different ways they each can.
+
+<details>
+<summary><b>hyprlock — sources it directly</b></summary>
 
 ```conf
 source = $HOME/.config/hypr/theme.conf
@@ -132,7 +400,10 @@ input-field {
 }
 ```
 
-**Hyprland** cannot source hyprlang from Lua, so `hyprland.lua` reads it back:
+</details>
+
+<details>
+<summary><b>Hyprland — cannot source hyprlang from Lua, so it reads it back</b></summary>
 
 ```lua
 local function read_theme()
@@ -164,6 +435,8 @@ hl.config({
 })
 ```
 
+</details>
+
 The shell runs `hyprctl reload` after writing, but only when a colour actually
 changed — Hyprland never reads `$wallpaper` or `$font`, so choosing a background
 does not make it re-apply monitors, binds and animations.
@@ -173,11 +446,11 @@ The variables available are `$primary` `$primaryAlpha` `$secondary` `$error`
 `$wallpaper` `$font`. The `…Alpha` pair is the bare hex, for pango markup inside
 hyprlock's `placeholder_text`, which is a string and cannot take a colour value.
 
-### 4. Ghostty (optional)
+**Ghostty** needs nothing from you. If it is installed, the shell keeps a marked
+block at the end of `~/.config/ghostty/config.ghostty` naming a built-in Ghostty
+theme. Everything else in that file is left alone.
 
-If Ghostty is installed, the shell keeps a marked block at the end of
-`~/.config/ghostty/config.ghostty` naming a built-in Ghostty theme. Everything
-else in that file is left alone.
+---
 
 ## Where it keeps things
 
@@ -191,7 +464,78 @@ else in that file is left alone.
 | `$XDG_CACHE_HOME/qsrice/wallpapers` | Thumbnails. |
 | `$XDG_CACHE_HOME/qsrice/notification-images` | Notification images, so history survives a restart. |
 
-## Working on it
+---
+
+## FAQ
+
+<details>
+<summary><b>The bar is full of empty boxes.</b></summary>
+
+The Nerd Font is missing. `pacman -S ttf-nerd-fonts-symbols`. Every icon in the
+shell is a font codepoint, not an image, so there is nothing to fall back to.
+
+</details>
+
+<details>
+<summary><b>Nothing opens when I press my keys.</b></summary>
+
+The panels are not bound by the shell — you bind them yourself over the IPC. See
+[Quick start](#quick-start). Check the path in `-p` matches where you cloned it.
+
+</details>
+
+<details>
+<summary><b>My first theme change did not stick.</b></summary>
+
+Known. The first change after the shell starts is written as the default instead,
+and the second one works. It affects every theme.
+
+</details>
+
+<details>
+<summary><b>Hyprland's borders do not follow the theme.</b></summary>
+
+Hyprland cannot `source` a hyprlang file from a Lua config, so it has to read
+`theme.conf` back by hand. Copy the `read_theme()` block from
+[Theming](#theming-the-rest-of-the-desktop) into your own config.
+
+</details>
+
+<details>
+<summary><b>The lock screen's text is invisible on a light theme.</b></summary>
+
+Known. hyprlock's labels sit on the wallpaper, and `on_surface` is a dark colour
+in the three light themes, so it disappears over a dark photo. There is no role
+for text over a picture because the shell never paints any — the bar sits on
+opaque `shadow`.
+
+</details>
+
+<details>
+<summary><b>The wallpaper selector seems to keep memory after closing.</b></summary>
+
+It does — about 46 MB. It is not a leak; repeated opens stop adding. Measured, it
+is 31 MB of heap and 14 MB of GPU driver, and it is not the images:
+`features/wallpaperselector/WallpaperCard.qml` records everything that was ruled
+out and how.
+
+</details>
+
+<details>
+<summary><b>Can I use it without Hyprland?</b></summary>
+
+Not as it stands. The bar and panels are Wayland layer-shell surfaces and would
+port, but workspaces, the window screenshot, the theme reload and the launch hook
+all go through Hyprland's IPC.
+
+</details>
+
+---
+
+## Development
+
+Tests, the harnesses, and why the suite runs inside a nested compositor:
+**[`docs/development.md`](docs/development.md)**.
 
 ```sh
 ./run-tests.sh             # everything, on the compositor you are using
@@ -199,146 +543,16 @@ else in that file is left alone.
 ./run-tests.sh --js        # Node and Python only, no compositor needed
 ```
 
-Node contract tests, the Python benchmark tests, QML component tests, then five
-stages that need a real compositor: two notification and overlay harnesses, a
-panel interaction harness, a centre interaction harness, a smoke test that
-instantiates every window and checks it built without warnings, and an overlay
-cycle benchmark. The compositor stages say so rather than passing quietly when
-there is no compositor.
-
-### What only a running shell can answer
-
-Three of those stages exist because the question they answer disappears the
-moment you take the shell apart.
-
-`panel-interaction-harness.qml` opens the overlays. Instantiating one, which is
-what the smoke test does, only proves it compiles; `shell.qml` reaches every
-overlay through `OverlayArbiter` and `OverlayLifecycleLoader`, and that path —
-lazy activation, the arbiter displacing whatever was up, the panel's own
-`open()` — is not the one an instantiation runs. It holds the invariant the
-arbiter exists for: exactly one overlay alive at a time, and a displaced one
-*destroyed*. Destroyed rather than hidden is the whole point, and it is a count
-rather than anything you could see on screen.
-
-`centre-interaction-harness.qml` covers the two panels that do not open like
-those five. The control centre is opened by a signal that rises `BarLayout` →
-`BarContent` → `BarWindow` and lands on a handler that flips a loader `BarWindow`
-keeps to itself, so the harness emits that signal on the real `BarContent` and
-lets the whole chain run; because the loader is private, it also holds a
-`ControlCenter` of its own to assert that `open()` lands on the section it was
-given. The notification centre is the one loader in the shell with
-`directVisibility` set — a branch of `OverlayLifecycleLoader` that nothing else
-takes. It stops at the edge of the shell: sections are exercised by name and
-nothing is asked of BlueZ or NetworkManager, which live on the system bus that
-the isolated session does not isolate, so a test that toggled them would be
-flipping a real radio on a real machine.
-
-`scripts/shell-cycle-bench.sh` is the only stage that runs `shell.qml` itself.
-It opens and closes every overlay over `qs ipc`, the way a person does, while
-`scripts/qsrice-bench.py` samples the process tree. Its verdict is deliberately
-lopsided: **file descriptors fail the run, memory only reports.** A descriptor a
-closed overlay never released is an integer that does not drift, while RSS moves
-with the allocator underneath it, so a memory threshold tight enough to catch a
-leak also fails on nothing at all.
-
-Two things in there were measured rather than assumed, and both are written down
-where they are used. The benchmark throws away a full warm-up cycle first,
-because the first open of an overlay compiles its QML and spins up thread pools
-— from cold that reads as +13 descriptors and +53 MB, none of it a leak. And the
-descriptor tolerance is two, because an idle shell that opens nothing drifts by
-one on its own. Raise `CYCLE_BENCH_CYCLES` to raise the sensitivity: a real leak
-scales with the cycles and the noise floor does not.
-
-### Why `--isolated` exists
-
-The QML stages launch the shell for real, which means they do what the shell
-does: `features/statusbar/BarWindow.qml` reserves a layer-shell exclusive zone,
-and `theme/runtime/HyprTheme.qml` runs `hyprctl reload`. Aimed at the compositor
-you are working on, the first relayouts every window and the second makes
-Hyprland re-apply its monitors, binds and window rules — three times per run,
-once for each `qs` process the script starts.
-
-`--isolated` hands those stages a session of their own: a nested Hyprland with a
-private D-Bus bus and private `XDG_*` directories, built by
-`scripts/isolated-session.sh` and configured by `scripts/isolated-hyprland.conf`.
-The exclusive zone is reserved there, the reload lands there, and `theme.conf`
-is written there rather than in `~/.config/hypr`.
-
-The nested compositor is one ordinary window of class `aquamarine`, so on a
-tiling setup it retiles the workspace you are on while the suite runs. The
-harness does not touch your compositor to fix that — a rule in your own config
-applies before the window ever maps, which no amount of reaching in afterwards
-can match. In the Lua config format:
-
-```lua
-hl.window_rule({
-	name = "qsrice-isolated-session",
-	match = { class = "aquamarine" },
-	float = true,
-	no_focus = true,
-	pin = true,
-})
-```
-
-All three matter, and the reason is the same one each time: **this window has to
-keep being drawn, or everything inside it stops.** It is an ordinary client of
-your session, so your session stops sending it frame callbacks the moment it is
-not on screen — and the nested compositor runs its own timers, animations and
-`grabToImage` off those frames. Starve it and the suite does not slow down, it
-waits for things that will never happen.
-
-`float` because a tiling layout ignores a floating window, so nothing is
-retiled, which was the original complaint. Not hidden: sending it to a hidden
-special workspace looks tidier and took the suite from eleven seconds to every
-stage reaching its timeout.
-
-`pin` because floating is not enough on its own. A floating window still lives
-on one workspace, and switching that monitor to another workspace unmaps it just
-as thoroughly as hiding it. Measured during one 45-second run: the window sat on
-workspace 6, the monitor spent 32 of those seconds showing workspace 4, and the
-smoke test failed reporting that its image capture never completed — which was
-exactly true. A pinned window follows the active workspace, so it stays drawn
-while you work.
-
-The cost is that it is visible on that monitor while the suite runs. That is the
-trade, and it is not avoidable here: `hyprctl output create headless` would give
-the nested session an output that renders regardless, but on Hyprland 0.56.2
-that output comes up 0x0 and takes neither its one advertised mode nor
-`preferred` from a monitor rule, and a zero-sized screen is worse than none
-because the shell builds a bar on it.
-
-Isolation is scoped to what the shell writes and what would disturb you: its
-config directory, its cache, its runtime sockets, its bus, its compositor. What
-it only reads — icon themes, GTK settings, desktop entries, PipeWire — stays
-yours, linked back to the real thing. A session that cannot see those makes the
-suite report the sandbox instead of the code.
-
-One consequence worth knowing: an isolated run holds the smoke test to a
-stricter standard than a normal one. On your own bus another shell already owns
-`org.freedesktop.Notifications`, so `run-tests.sh` filters that warning out; on a
-private bus the shell registers for real, and the filter is dropped so a
-registration that stops working is caught rather than excused.
-
-What it does not cover yet is the monitor count. The nested session has a single
-output, so the `Variants` over `Quickshell.screens` only ever builds one bar —
-`hyprctl output create headless` inside the session would let it cover
-multi-monitor layouts without needing the hardware.
-
-Node and Python come from your system; `qmltestrunner` ships with
-`qt6-declarative` and is located by `scripts/find-qmltestrunner.sh`, which also
-honours `QMLTESTRUNNER` if you want to point it somewhere else.
-
 Layout is vertical: each feature owns its components, sizing and tests under
 `features/`, shared pieces live in `shared/`, system access in `services/`, and
 the design tokens — colours, typography, spacing, icons, shape, motion — in
 `theme/`.
 
-## Known rough edges
+## Credits
 
-- **The first theme change after the shell starts does not persist.** It is
-  written as the default instead, and the second change works. Affects every
-  theme, including the ones that predate the recent additions.
-- **Light themes and the lock screen.** Its labels sit on the wallpaper, and
-  `on_surface` is a dark colour in the three light themes, so it disappears over
-  a dark photo. There is no role for text over a picture because the shell never
-  paints any — the bar sits on opaque `shadow`.
+- [**Quickshell**](https://quickshell.org) by outfoxxed — the runtime this is
+  built on.
+- [**Hyprland**](https://hypr.land) — the compositor, and hyprlock alongside it.
+- The palettes are the work of their own authors: Catppuccin, Kanagawa,
+  Rosé Pine, Ayu, One Dark, Atom One, Palenight, Aura, Aurora X and
+  Hack The Box.

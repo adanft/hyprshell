@@ -76,9 +76,31 @@ Item {
             retainedWifiNetworks = liveWifiNetworks
     }
 
-    // Turning the radio off is the one case where the memory has to go too.
-    // Networks held from a previous session are not "available" by any reading
-    // of the word, and the section says the radio is off two lines above.
+    // Whether the radio is on at all. One expression, because two copies of it
+    // is how the memory below came to outlive the networks it remembered.
+    readonly property bool wifiRadioOn: Networking.wifiHardwareEnabled && Networking.wifiEnabled
+
+    // Dropped the instant the radio goes off, and this one is load-bearing:
+    // without it the shell crashed.
+    //
+    // A network survives its *scanner* stopping — measured, nine of nine still
+    // answered — but not its *radio* being switched off. NetworkManager
+    // destroys the access points then, and this held what was left of them.
+    // Switching Wi-Fi back on handed that to the Repeater, which regenerated
+    // its delegates over freed objects and took Quickshell down with it:
+    //
+    //     NetworkManager::setWifiEnabled → wifiEnabledChanged
+    //       → QQuickRepeater::setModel → regenerate → incubate → SIGSEGV
+    //
+    // Watching `wifiUsable` did not catch it. That is hardware and device, and
+    // neither changes when the radio is merely powered down, so the handler sat
+    // there looking like protection while never once firing on the case that
+    // mattered.
+    onWifiRadioOnChanged: if (!wifiRadioOn)
+        retainedWifiNetworks = []
+
+    // Losing the adapter itself clears it too. Networks held from a previous
+    // session are not "available" by any reading of the word.
     onWifiUsableChanged: if (!wifiUsable)
         retainedWifiNetworks = []
 
@@ -89,8 +111,12 @@ Item {
     // stops it starts shedding what it found. The retained copy is the same
     // list while the sweep runs and the only honest one afterwards, so there
     // is nothing to choose.
-    readonly property var availableWifiNetworks: (Networking.wifiHardwareEnabled
-                                                  && Networking.wifiEnabled) ? retainedWifiNetworks : []
+    //
+    // Nulls are filtered on the way out as a second line. Clearing on power-off
+    // is what keeps dead rows from ever reaching the Repeater; this is what
+    // stands between a crash and a missing row if some other path ever frees a
+    // network while it is still remembered here.
+    readonly property var availableWifiNetworks: wifiRadioOn ? retainedWifiNetworks.filter(network => network) : []
     property int quickControlRequestSequence: 0
     readonly property var outputQuickVolume: root.services.audio.quickVolume
     readonly property bool outputAvailable: ControlCenterLogic.outputAvailable(root.services.audio.sink,

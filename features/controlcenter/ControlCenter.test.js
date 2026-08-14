@@ -267,7 +267,10 @@ assert.doesNotMatch(
 	/networks\?\.values|liveWifiNetworks/,
 	"the drawn list must be the retained copy, never the device's own",
 );
-assert.match(availableWifiNetworks, /retainedWifiNetworks : \[\]/);
+assert.match(
+	availableWifiNetworks,
+	/wifiRadioOn \? retainedWifiNetworks\.filter\(network => network\) : \[\]/,
+);
 // Held rows, not copied text: only the real object can connect or forget.
 assert.doesNotMatch(qml, /retainedWifiNetworks = .*\.map\(/);
 // A radio switched off keeps no memory. Networks from a previous session are
@@ -276,9 +279,23 @@ assert.match(
 	qml,
 	/onWifiUsableChanged: if \(!wifiUsable\)\s*\n\s*retainedWifiNetworks = \[\]/,
 );
+// And the memory is dropped the instant the radio goes off. Without this the
+// shell crashed: a network survives its scanner stopping — measured, nine of
+// nine still answered — but not its radio being switched off, when
+// NetworkManager frees the access points. Switching Wi-Fi back on handed the
+// freed objects to the Repeater, which regenerated its delegates over them:
+// setWifiEnabled -> wifiEnabledChanged -> Repeater::setModel -> incubate -> SIGSEGV.
+//
+// It watches the radio, not `wifiUsable`. That is hardware and device, and
+// neither changes when the radio is merely powered down, so the handler that
+// looked like protection never fired on the case that mattered.
 assert.match(
-	availableWifiNetworks,
-	/Networking\.wifiHardwareEnabled\s*\n?\s*&& Networking\.wifiEnabled/,
+	qml,
+	/readonly property bool wifiRadioOn: Networking\.wifiHardwareEnabled && Networking\.wifiEnabled/,
+);
+assert.match(
+	qml,
+	/onWifiRadioOnChanged: if \(!wifiRadioOn\)\s*\n\s*retainedWifiNetworks = \[\]/,
 );
 
 // Under "Available networks" there is the heading, its rescan, and networks.

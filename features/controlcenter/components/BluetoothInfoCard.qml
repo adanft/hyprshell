@@ -48,8 +48,8 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: card.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        // One glyph in every state: the tone, the dot and the label already say
-        // three times over whether the adapter is up.
+        // One glyph in every state: the tone and the label already say twice
+        // over whether the adapter is up.
         text: card.icons.bluetooth.adapter
         color: card.tone
         font.family: card.theme.typography.iconFontFamily
@@ -70,27 +70,19 @@ Rectangle {
         radius: height / 2
         color: stateInput.containsMouse || stateInput.activeFocus ? Colors.hover : "transparent"
 
-        Row {
+        // The label alone. A dot sat beside it saying the same thing in a
+        // second alphabet: it carried no state the tone and the word did not
+        // already carry, so it was decoration standing where a reader looks
+        // for meaning. With one child left the Row it lived in went with it,
+        // and the pill still takes its size from whatever is inside.
+        AppText {
             id: stateContent
 
             anchors.centerIn: parent
-            spacing: card.theme.spacing.space6
-
-            AppText {
-                anchors.verticalCenter: parent.verticalCenter
-                text: card.icons.ui.dot
-                color: stateInput.containsMouse ? Colors.on_hover : card.tone
-                font.family: card.theme.typography.iconFontFamily
-                font.pixelSize: card.theme.typography.textSm
-            }
-
-            AppText {
-                anchors.verticalCenter: parent.verticalCenter
-                text: card.stateText
-                color: stateInput.containsMouse ? Colors.on_hover : card.tone
-                font.pixelSize: card.theme.typography.textSm
-                font.styleName: card.theme.typography.styleMedium
-            }
+            text: card.stateText
+            color: stateInput.containsMouse ? Colors.on_hover : card.tone
+            font.pixelSize: card.theme.typography.textSm
+            font.styleName: card.theme.typography.styleMedium
         }
 
         MouseArea {

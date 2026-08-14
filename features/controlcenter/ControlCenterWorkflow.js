@@ -4,6 +4,10 @@ function initialState() {
 		suppressedPasswordNetwork: null,
 		scannerDevice: null,
 		scannerOwnedDevice: null,
+		// Whether this look at the wifi section has already had its scan. The
+		// scanner runs once and stops; this is what keeps the next sync from
+		// starting it straight back up.
+		scannerBurstSpent: false,
 		wifiActivationPending: false,
 		wifiActivationRequested: false,
 		wifiActivationGeneration: 0,
@@ -37,6 +41,24 @@ function releaseScanner(state, effects) {
 	state.scannerOwnedDevice = null;
 }
 
+// Claiming the scanner and starting the clock that will let it go are one
+// action, never two: an enable without a burst behind it is a radio left on
+// for as long as someone is reading, and it would be silent about it.
+//
+// Quickshell empties `WifiDevice.networks` when the scanner stops, so the
+// view keeps its own copy of the last full list. That is what makes stopping
+// survivable, and it is the only reason a bounded scan is possible here.
+function startScanner(state, device, effects) {
+	effect(effects, "setScannerEnabled", {
+		device: device,
+		enabled: true,
+		claimOwnership: true,
+	});
+	state.scannerOwnedDevice = device;
+	state.scannerBurstSpent = false;
+	effect(effects, "startScannerBurst", { device: device });
+}
+
 function eligible(event) {
 	return Boolean(
 		event.menuOpen &&
@@ -55,6 +77,10 @@ function syncScanner(state, event, effects) {
 	state.scannerDevice = device;
 	if (!eligible(event)) {
 		releaseScanner(state, effects);
+		effect(effects, "stopScannerBurst");
+		// Looking away forgets that the scan was spent, so coming back looks
+		// again rather than resting on a list nobody has refreshed since.
+		state.scannerBurstSpent = false;
 		if (!state.wifiActivationRequested) {
 			state.wifiActivationPending = false;
 			effect(effects, "stopActivationSettle");
@@ -63,17 +89,17 @@ function syncScanner(state, event, effects) {
 	}
 	if (event.forceRestart) {
 		releaseScanner(state, effects);
+		state.scannerBurstSpent = false;
 		effect(effects, "startScannerDelay", {
 			device: device,
 			generation: state.wifiActivationGeneration,
 		});
-	} else if (state.scannerOwnedDevice !== device && !device.scannerEnabled) {
-		effect(effects, "setScannerEnabled", {
-			device: device,
-			enabled: true,
-			claimOwnership: true,
-		});
-		state.scannerOwnedDevice = device;
+	} else if (
+		!state.scannerBurstSpent &&
+		state.scannerOwnedDevice !== device &&
+		!device.scannerEnabled
+	) {
+		startScanner(state, device, effects);
 	}
 }
 
@@ -91,6 +117,8 @@ function transition(currentState, event) {
 		"toggleWifi",
 		"syncScanner",
 		"scannerDelayElapsed",
+		"scannerBurstElapsed",
+		"rescanRequested",
 		"activationSettleElapsed",
 		"menuOpenChanged",
 		"wifiEnabledChanged",
@@ -154,8 +182,10 @@ function transition(currentState, event) {
 				state.wifiActivationRequested =
 					state.wifiActivationPending = false;
 				effect(effects, "stopScannerDelay");
+				effect(effects, "stopScannerBurst");
 				effect(effects, "stopActivationSettle");
 				releaseScanner(state, effects);
+				state.scannerBurstSpent = false;
 				effect(effects, "setWifiEnabled", { enabled: false });
 			}
 			break;
@@ -163,16 +193,31 @@ function transition(currentState, event) {
 			syncScanner(state, event, effects);
 			break;
 		case "scannerDelayElapsed":
-			effect(effects, "setScannerEnabled", {
-				device: event.wifiDevice,
-				enabled: true,
-				claimOwnership: true,
-			});
-			state.scannerOwnedDevice = event.wifiDevice;
+			startScanner(state, event.wifiDevice, effects);
 			if (state.wifiActivationPending)
 				effect(effects, "startActivationSettle", {
 					generation: state.wifiActivationGeneration,
 				});
+			break;
+		case "scannerBurstElapsed":
+			// A timer that outlived what it was timing decides nothing. If the
+			// scanner has been released or handed to another device since, the
+			// scan it belonged to is already over.
+			if (
+				!state.scannerOwnedDevice ||
+				state.scannerOwnedDevice !== event.scheduledDevice
+			)
+				break;
+			releaseScanner(state, effects);
+			state.scannerBurstSpent = true;
+			break;
+		case "rescanRequested":
+			// Asking again is the one way back once a scan is spent.
+			syncScanner(
+				state,
+				Object.assign({}, event, { forceRestart: true }),
+				effects,
+			);
 			break;
 		case "activationSettleElapsed":
 			state.wifiActivationRequested = state.wifiActivationPending = false;
@@ -338,8 +383,10 @@ function transition(currentState, event) {
 			state.wifiActivationGeneration += 1;
 			state.wifiActivationRequested = state.wifiActivationPending = false;
 			effect(effects, "stopScannerDelay");
+			effect(effects, "stopScannerBurst");
 			effect(effects, "stopActivationSettle");
 			releaseScanner(state, effects);
+			state.scannerBurstSpent = false;
 			if (state.detailsSubscribed)
 				effect(effects, "disableNetworkDetails");
 			state.scannerDevice = null;

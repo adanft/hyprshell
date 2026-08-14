@@ -6,6 +6,9 @@ QtObject {
     readonly property int durationNormal: 220
     readonly property int durationEntrance: 260
     readonly property int layoutFinalizeDelay: 32
+    // One turn of the rescan wheel. Slow enough to read as deliberate work
+    // rather than a stutter, quick enough that it is plainly moving.
+    readonly property int spinnerRotationMs: 1100
 
     readonly property real opacityDisabled: 0.45
     readonly property real opacityInactive: 0.6

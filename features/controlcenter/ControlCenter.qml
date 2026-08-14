@@ -34,21 +34,63 @@ Item {
     readonly property real uptimeSeconds: controlCenterController.uptimeSeconds
     readonly property bool hasEthernetProfiles: (services.network.lanDevice?.network?.nmSettings?.length ?? 0) > 0
     readonly property bool scanningBluetooth: services.bluetooth.bluetoothDiscovering
+    // True while the radio really is sweeping, read from the device itself.
+    readonly property bool wifiScanning: controlCenterController.wifiScanning
     readonly property bool wifiUsable: Networking.wifiHardwareEnabled && Boolean(services.network.wifiDevice)
-    readonly property string wifiEmptyTitle: !wifiUsable ? "Wi-Fi unavailable"
-                                                         : (wifiActivationPending ? "Enabling Wi-Fi…"
-                                                                                  : (!Networking.wifiEnabled
-                                                                                     ? "Wi-Fi is disabled"
-                                                                                     : "No networks found"))
-    readonly property string wifiEmptyDescription: !wifiUsable ? "No wireless adapter is available"
-                                                              : (wifiActivationPending ? "Preparing wireless scan"
-                                                                                       : (!Networking.wifiEnabled
-                                                                                          ? "Enable Wi-Fi to scan for networks"
-                                                                                          : "Scanning continues automatically"))
-    readonly property var availableWifiNetworks: Networking.wifiHardwareEnabled && Networking.wifiEnabled &&
-                                                 !wifiActivationPending && services.network.wifiDevice
-                                                 ? ControlCenterLogic.sortedWifiNetworks(
-                                                       services.network.wifiDevice.networks?.values ?? []) : []
+    // The wifi section carries no empty state, so the copy that fed one is
+    // gone with it rather than left here waiting for a reader to prove it
+    // dead. Wi-Fi unavailable, Enabling Wi-Fi, No networks found: all of it
+    // said, in the moment it appeared, less than the heading and the wheel
+    // beside it were already saying.
+    // What the device is reporting this instant.
+    readonly property var liveWifiNetworks: Networking.wifiHardwareEnabled && Networking.wifiEnabled &&
+                                            !wifiActivationPending && services.network.wifiDevice
+                                            ? ControlCenterLogic.sortedWifiNetworks(
+                                                  services.network.wifiDevice.networks?.values ?? []) : []
+
+    // And what is drawn, which is not the same thing.
+    //
+    // Quickshell empties `WifiDevice.networks` the moment the scanner stops,
+    // so a scan that ends would take its own results off the screen with it —
+    // the list would vanish at the twenty-fifth second and leave nothing to
+    // connect to. Holding the last non-empty answer is what lets the radio
+    // stop without the panel going blank, and it is the whole reason a scan
+    // here can be a burst rather than a vigil.
+    //
+    // Kept as the rows themselves rather than as copied text: a row has to
+    // stay clickable to be worth drawing, and only the real object can
+    // connect, forget or report that it is already connected.
+    property var retainedWifiNetworks: []
+
+    // Only while the sweep is running, and that condition is the whole fix.
+    //
+    // Measured, not assumed: with the scanner on the device reported nine
+    // networks; with it off, one — the connected one. It does not empty, it
+    // collapses. So "keep the last non-empty answer" kept the collapse, and
+    // the panel fell to a single row a moment after the wheel stopped.
+    //
+    // Tracking only while scanning freezes the list at whatever the sweep last
+    // saw, and every reading after the radio stops is ignored.
+    onLiveWifiNetworksChanged: {
+        if (wifiScanning && liveWifiNetworks.length > 0)
+            retainedWifiNetworks = liveWifiNetworks
+    }
+
+    // Turning the radio off is the one case where the memory has to go too.
+    // Networks held from a previous session are not "available" by any reading
+    // of the word, and the section says the radio is off two lines above.
+    onWifiUsableChanged: if (!wifiUsable)
+        retainedWifiNetworks = []
+
+    // Always the retained copy, never the device's own list.
+    //
+    // Choosing between them per reading was the mistake: the device's list is
+    // only trustworthy while it is being filled, and the moment the radio
+    // stops it starts shedding what it found. The retained copy is the same
+    // list while the sweep runs and the only honest one afterwards, so there
+    // is nothing to choose.
+    readonly property var availableWifiNetworks: (Networking.wifiHardwareEnabled
+                                                  && Networking.wifiEnabled) ? retainedWifiNetworks : []
     property int quickControlRequestSequence: 0
     readonly property var outputQuickVolume: root.services.audio.quickVolume
     readonly property bool outputAvailable: ControlCenterLogic.outputAvailable(root.services.audio.sink,
@@ -130,13 +172,6 @@ Item {
     function stopBluetoothScan() {
         bluetoothScanTimer.stop()
         root.services.bluetooth.setBluetoothScanning(false)
-    }
-
-    function toggleBluetoothScan() {
-        if (root.scanningBluetooth)
-            stopBluetoothScan()
-        else
-            startBluetoothScan()
     }
 
     Timer {
@@ -731,83 +766,55 @@ Item {
                                                                                             => ControlCenterLogic.bluetoothDeviceCategory(
                                                                                                    device)
                                                                                                === "known-disconnected")
+                                // No `&& root.scanningBluetooth` here, and that
+                                // removal is the whole fix: it emptied the
+                                // list the instant the sweep ended, twenty-five
+                                // seconds after it filled.
+                                //
+                                // Nothing is held in its place, unlike Wi-Fi,
+                                // because nothing needs to be. BlueZ keeps a
+                                // device it discovered for a while after
+                                // discovery stops, so simply asking the
+                                // adapter what it knows already outlives the
+                                // scan, and each device drops out on its own
+                                // when BlueZ finally forgets it.
+                                //
+                                // A retained copy was tried and is worse than
+                                // useless here. Wi-Fi can hold its rows —
+                                // measured, nine of nine still answered after
+                                // the scanner stopped — but a Bluetooth device
+                                // BlueZ deletes leaves a null behind, which
+                                // drew as "Unknown device / Working…". Worse,
+                                // a copy taken during the sweep would keep
+                                // showing a device under "Available" after you
+                                // paired it, when the adapter had already
+                                // moved it to the known list.
                                 readonly property var availableDevices: bluetoothDevices.filter(device
                                                                                                 => ControlCenterLogic.bluetoothDeviceCategory(
                                                                                                        device)
-                                                                                                   === "available" &&
-                                                                                                   !device.blocked
-                                                                                                   && root.scanningBluetooth)
+                                                                                                   === "available"
+                                                                                                   && !device.blocked)
+
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: root.theme.spacing.space6
 
-                                Item {
-                                    id: bluetoothInfoHeader
+                                // The label alone now. Scanning used to share
+                                // this line as a pill reading "Scan" or
+                                // "Scanning…", which put the control over the
+                                // adapter's details rather than over the list
+                                // it refreshes. It moved down to the heading
+                                // of "Available devices", where the thing it
+                                // affects actually is.
+                                AppText {
+                                    id: bluetoothInfoTitle
+
                                     width: parent.width
-                                    height: Math.max(bluetoothInfoTitle.implicitHeight,
-                                                     scanButton.visible ? scanButton.height : 0)
-
-                                    AppText {
-                                        id: bluetoothInfoTitle
-                                        anchors.left: parent.left
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "Bluetooth info"
-                                        color: Colors.on_surface_variant
-                                        font.pixelSize: root.theme.typography.textMd
-                                        font.styleName: root.theme.typography.styleRegular
-                                    }
-
-                                    Rectangle {
-                                        id: scanButton
-                                        visible: root.services.bluetooth.bluetoothPowered
-                                        width: scanContent.implicitWidth + root.theme.spacing.space12
-                                        height: scanContent.implicitHeight + root.theme.spacing.space4
-                                        anchors.right: parent.right
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        radius: height / 2
-                                        color: scanInput.containsMouse || scanInput.activeFocus ? Colors.hover :
-                                                                                                   "transparent"
-
-                                        Row {
-                                            id: scanContent
-                                            anchors.centerIn: parent
-                                            spacing: root.theme.spacing.space6
-
-                                            AppText {
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: root.icons.ui.search
-                                                color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
-                                                font.family: root.theme.typography.iconFontFamily
-                                                font.pixelSize: root.theme.typography.textSm
-                                            }
-
-                                            AppText {
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: root.scanningBluetooth ? "Scanning…" :
-                                                                                                     "Scan"
-                                                color: scanInput.containsMouse ? Colors.on_hover : Colors.primary
-                                                font.pixelSize: root.theme.typography.textSm
-                                                font.styleName: root.theme.typography.styleMedium
-                                            }
-                                        }
-
-                                        MouseArea {
-                                            id: scanInput
-                                            anchors.fill: parent
-                                            enabled: root.services.bluetooth.bluetoothPowered
-                                            hoverEnabled: true
-                                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                            activeFocusOnTab: enabled
-                                            Accessible.role: Accessible.Button
-                                            Accessible.name: root.scanningBluetooth
-                                                             ? "Scanning Bluetooth" : "Scan Bluetooth"
-                                            onClicked: root.toggleBluetoothScan()
-                                            Keys.onSpacePressed: root.toggleBluetoothScan()
-                                            Keys.onReturnPressed: root.toggleBluetoothScan()
-                                            Keys.onEnterPressed: root.toggleBluetoothScan()
-                                        }
-                                    }
+                                    text: "Bluetooth info"
+                                    color: Colors.on_surface_variant
+                                    font.pixelSize: root.theme.typography.textMd
+                                    font.styleName: root.theme.typography.styleRegular
                                 }
 
                                 BluetoothInfoCard {
@@ -903,18 +910,94 @@ Item {
 
                                 Column {
                                     id: bluetoothAvailableSection
-                                    visible: root.scanningBluetooth
-                                             && bluetoothDetailsColumn.availableDevices.length > 0
+
+                                    // Shown whenever the adapter is on, not
+                                    // only while it is sweeping. The list it
+                                    // heads outlives the sweep now, so hiding
+                                    // the heading with the scan would take the
+                                    // rescan away with it and leave no way to
+                                    // ask again.
+                                    visible: root.services.bluetooth.bluetoothPowered
                                     width: parent.width
                                     spacing: root.theme.spacing.space6
 
-                                    AppText {
+                                    // The heading and its rescan share one
+                                    // line, the same as Wi-Fi: a wheel while
+                                    // the adapter is discovering, an arrow you
+                                    // can press once it has stopped.
+                                    Item {
+                                        id: availableDevicesHeader
+
                                         width: parent.width
-                                        text: "Available devices"
-                                        color: Colors.on_surface_variant
-                                        font.pixelSize: root.theme.typography.textMd
-                                        font.styleName: root.theme.typography.styleRegular
+                                        height: availableDevicesLabel.implicitHeight
+
+                                        AppText {
+                                            id: availableDevicesLabel
+
+                                            anchors.left: parent.left
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: "Available devices"
+                                            color: Colors.on_surface_variant
+                                            font.pixelSize: root.theme.typography.textMd
+                                            font.styleName: root.theme.typography.styleRegular
+                                        }
+
+                                        Rectangle {
+                                            id: bluetoothRescanButton
+
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            width: bluetoothRescanGlyph.implicitWidth + root.theme.spacing.space8
+                                            height: width
+                                            radius: height / 2
+                                            color: bluetoothRescanInput.containsMouse
+                                                   || bluetoothRescanInput.activeFocus ? Colors.hover : "transparent"
+
+                                            AppText {
+                                                id: bluetoothRescanGlyph
+
+                                                anchors.centerIn: parent
+                                                text: root.scanningBluetooth ? root.icons.ui.spinner : root.icons.ui.refresh
+                                                color: bluetoothRescanInput.containsMouse ? Colors.on_hover : Colors.primary
+                                                font.family: root.theme.typography.iconFontFamily
+                                                font.pixelSize: root.theme.typography.textSm
+
+                                                RotationAnimator on rotation {
+                                                    running: root.scanningBluetooth
+                                                    loops: Animation.Infinite
+                                                    from: 0
+                                                    to: 360
+                                                    duration: root.theme.motion.spinnerRotationMs
+
+                                                    // Upright again the moment
+                                                    // it stops: an arrow left
+                                                    // at whatever angle the
+                                                    // wheel died on reads as
+                                                    // broken.
+                                                    onRunningChanged: if (!running)
+                                                        bluetoothRescanGlyph.rotation = 0
+                                                }
+                                            }
+
+                                            MouseArea {
+                                                id: bluetoothRescanInput
+
+                                                anchors.fill: parent
+                                                enabled: !root.scanningBluetooth
+                                                hoverEnabled: true
+                                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                                activeFocusOnTab: enabled
+                                                Accessible.role: Accessible.Button
+                                                Accessible.name: root.scanningBluetooth
+                                                                 ? "Scanning for devices" : "Scan for devices"
+                                                onClicked: root.startBluetoothScan()
+                                                Keys.onSpacePressed: root.startBluetoothScan()
+                                                Keys.onReturnPressed: root.startBluetoothScan()
+                                                Keys.onEnterPressed: root.startBluetoothScan()
+                                            }
+                                        }
                                     }
+
                                     Repeater {
                                         model: bluetoothDetailsColumn.availableDevices
 
@@ -936,14 +1019,13 @@ Item {
                                     }
                                 }
 
-                                ControlEmptyState {
-                                    visible: root.scanningBluetooth
-                                             && bluetoothDetailsColumn.availableDevices.length === 0
-                                    width: parent.width
-                                    theme: root.theme
-                                    title: "Scanning…"
-                                    description: "Looking for Bluetooth devices nearby"
-                                }
+                                // No empty state here either. Under "Available
+                                // devices" there is the heading, its rescan
+                                // and devices — a box that appears only when
+                                // the list is empty shows up exactly when
+                                // there is least to look at, and it said
+                                // "Scanning…" about something the wheel beside
+                                // the heading already says.
                             }
                         }
 
@@ -1000,11 +1082,98 @@ Item {
                                     wrapMode: Text.Wrap
                                 }
 
-                                AppText {
-                                    text: "Available networks"
-                                    color: Colors.on_surface_variant
-                                    font.pixelSize: root.theme.typography.textMd
-                                    font.styleName: root.theme.typography.styleRegular
+                                // The heading and its rescan share one line.
+                                //
+                                // Hidden with the radio off, because a list of
+                                // networks headed "Available" while the wifi
+                                // is off promises something that cannot be
+                                // true. The rest of the section already says
+                                // the radio is off; this would argue with it.
+                                Item {
+                                    id: availableNetworksHeader
+
+                                    visible: Networking.wifiHardwareEnabled && Networking.wifiEnabled
+                                    width: parent.width
+                                    height: availableNetworksLabel.implicitHeight
+
+                                    AppText {
+                                        id: availableNetworksLabel
+
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Available networks"
+                                        color: Colors.on_surface_variant
+                                        font.pixelSize: root.theme.typography.textMd
+                                        font.styleName: root.theme.typography.styleRegular
+                                    }
+
+                                    // The scan runs in bursts, so this is both
+                                    // the report and the way to ask for
+                                    // another: a wheel while the radio is
+                                    // listening, an arrow you can press once
+                                    // it has stopped.
+                                    Rectangle {
+                                        id: rescanButton
+
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: rescanGlyph.implicitWidth + root.theme.spacing.space8
+                                        height: width
+                                        radius: height / 2
+                                        color: rescanInput.containsMouse
+                                               || rescanInput.activeFocus ? Colors.hover : "transparent"
+
+                                        AppText {
+                                            id: rescanGlyph
+
+                                            anchors.centerIn: parent
+                                            text: root.wifiScanning ? root.icons.ui.spinner : root.icons.ui.refresh
+                                            color: rescanInput.containsMouse ? Colors.on_hover : Colors.primary
+                                            font.family: root.theme.typography.iconFontFamily
+                                            font.pixelSize: root.theme.typography.textSm
+
+                                            // Only the wheel turns, and only
+                                            // while the radio is listening. An
+                                            // animation left running on the
+                                            // arrow would say the scan never
+                                            // ends, which is the one thing
+                                            // this change was made to stop.
+                                            RotationAnimator on rotation {
+                                                running: root.wifiScanning
+                                                loops: Animation.Infinite
+                                                from: 0
+                                                to: 360
+                                                duration: root.theme.motion.spinnerRotationMs
+
+                                                // Put back upright the moment
+                                                // it stops. An arrow left at
+                                                // whatever angle the wheel
+                                                // died on reads as broken, and
+                                                // the animation stopping is
+                                                // the only honest signal for
+                                                // when that matters.
+                                                onRunningChanged: if (!running)
+                                                    rescanGlyph.rotation = 0
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: rescanInput
+
+                                            anchors.fill: parent
+                                            enabled: !root.wifiScanning
+                                            hoverEnabled: true
+                                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                            activeFocusOnTab: enabled
+                                            Accessible.role: Accessible.Button
+                                            Accessible.name: root.wifiScanning
+                                                             ? "Scanning for networks" : "Scan for networks"
+                                            onClicked: controlCenterController.rescanWifi()
+                                            Keys.onSpacePressed: controlCenterController.rescanWifi()
+                                            Keys.onReturnPressed: controlCenterController.rescanWifi()
+                                            Keys.onEnterPressed: controlCenterController.rescanWifi()
+                                        }
+                                    }
                                 }
 
                                 Repeater {
@@ -1035,13 +1204,19 @@ Item {
                                     }
                                 }
 
-                                ControlEmptyState {
-                                    visible: root.availableWifiNetworks.length === 0
-                                    width: parent.width
-                                    theme: root.theme
-                                    title: root.wifiEmptyTitle
-                                    description: root.wifiEmptyDescription
-                                }
+                                // No empty state here, deliberately.
+                                //
+                                // Under "Available networks" there is the
+                                // heading, its rescan, and networks. A box
+                                // that appears only when the list is empty is
+                                // a fourth thing that shows up exactly when
+                                // there is least to look at — and it was worst
+                                // at the one moment it was most visible, the
+                                // first seconds after switching the radio on,
+                                // where it announced "no networks" about a
+                                // scan that had not finished. The wheel beside
+                                // the heading already says a scan is running,
+                                // and an empty list under it is not ambiguous.
                             }
                         }
                     }

@@ -24,7 +24,7 @@ QtObject {
         readonly property string on: "󰂯"
         readonly property string off: "󰂲"
         readonly property string connected: "󰂱"
-        readonly property string adapter: ""
+        readonly property string adapter: "󰂳"
     }
 
     readonly property QtObject audio: QtObject {
@@ -110,6 +110,13 @@ QtObject {
     readonly property QtObject ui: QtObject {
         readonly property string search: ""
         readonly property string close: "󰅖"
+        // Two glyphs for one control, because it has two states to tell
+        // apart: idle is an arrow you can press, busy is a wheel that
+        // turns. Drawing the same shape for both would leave the spin as
+        // the only difference, and a stopped animation is not a thing a
+        // person notices.
+        readonly property string refresh: "󰑓"
+        readonly property string spinner: ""
         readonly property string trash: ""
         readonly property string confirm: ""
         readonly property string cancel: ""

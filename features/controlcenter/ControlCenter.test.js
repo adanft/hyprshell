@@ -17,6 +17,13 @@ const readSliceFile = (name) => {
 
 const source = fs.readFileSync(`${__dirname}/ControlCenter.js`, "utf8");
 const qml = fs.readFileSync(`${__dirname}/ControlCenter.qml`, "utf8");
+// The same source with line comments dropped.
+//
+// Assertions that a string is *gone* have to read this rather than `qml`, and
+// that is not fussiness: a comment in the QML explaining why a string was
+// removed has broken such an assertion four separate times in this file. A
+// note about absent code must not count as the code being present.
+const qmlCode = qml.replace(/\/\/[^\n]*/g, "");
 const playbackRowQml = fs.readFileSync(
 	`${componentDir}/AudioPlaybackStreamRow.qml`,
 	"utf8",
@@ -142,14 +149,170 @@ assert.match(detailContentBlock, /BluetoothDeviceRow/);
 // labels the info card, and the card itself carries no controls.
 assert.doesNotMatch(detailContentBlock, /id: bluetoothDetailHeader|id: bluetoothDetailTitle/);
 assert.match(detailContentBlock, /BluetoothInfoCard\s*\{/);
-assert.match(detailContentBlock, /id: bluetoothInfoHeader/);
 assert.match(
 	detailContentBlock,
 	/id: bluetoothInfoTitle[\s\S]*?text: "Bluetooth info"/,
 );
-assert.match(detailContentBlock, /id: scanButton[\s\S]*?anchors\.right: parent\.right/);
-assert.match(detailContentBlock, /radius: height \/ 2/);
-assert.match(detailContentBlock, /onClicked: root\.toggleBluetoothScan\(\)/);
+// Scanning used to sit on the "Bluetooth info" line as a pill reading "Scan"
+// or "Scanning…", which put the control over the adapter's details instead of
+// over the list it refreshes. It lives on the "Available devices" heading now,
+// as the same wheel-or-arrow the Wi-Fi section uses.
+assert.doesNotMatch(qmlCode, /id: scanButton|toggleBluetoothScan|"Scanning…"/);
+const availableDevicesHeader = qml.match(
+	/Item \{\s*\n\s*id: availableDevicesHeader[\s\S]*?\n {36}\}/,
+)?.[0];
+assert.ok(availableDevicesHeader, "the available devices header must exist");
+assert.match(availableDevicesHeader, /text: "Available devices"/);
+assert.match(
+	availableDevicesHeader,
+	/id: bluetoothRescanButton[\s\S]*?anchors\.right: parent\.right/,
+);
+assert.match(
+	availableDevicesHeader,
+	/text: root\.scanningBluetooth \? root\.icons\.ui\.spinner : root\.icons\.ui\.refresh/,
+);
+assert.match(
+	availableDevicesHeader,
+	/RotationAnimator on rotation \{[\s\S]*?running: root\.scanningBluetooth[\s\S]*?onRunningChanged: if \(!running\)/,
+);
+assert.match(availableDevicesHeader, /enabled: !root\.scanningBluetooth/);
+assert.match(availableDevicesHeader, /onClicked: root\.startBluetoothScan\(\)/);
+
+// And what it heads outlives the sweep. BlueZ forgets what it discovered once
+// discovery stops, but not instantly — so simply asking the adapter what it
+// knows already survives the scan, and the old `&& root.scanningBluetooth` in
+// this filter is what emptied the panel twenty-five seconds after it filled.
+//
+// Nothing is retained in its place, and that is deliberate. Wi-Fi holds its
+// rows because they stay usable; a Bluetooth device BlueZ deleted leaves a
+// null that draws as "Unknown device / Working…", and a copy taken during the
+// sweep would keep showing a device under "Available" after it was paired.
+const availableDevices = qml.match(
+	/readonly property var availableDevices:[\s\S]*?\n\n/,
+)?.[0];
+assert.ok(availableDevices, "availableDevices must exist");
+assert.doesNotMatch(
+	availableDevices,
+	/scanningBluetooth|retained/,
+	"the available list must be neither gated on scanning nor a retained copy",
+);
+assert.match(availableDevices, /bluetoothDeviceCategory\([\s\S]*?=== "available"/);
+assert.doesNotMatch(qmlCode, /retainedAvailableDevices|liveAvailableDevices/);
+
+// The heading stays up while the adapter is on, not only while it sweeps —
+// hiding it with the scan would take the rescan away and leave no way to ask.
+assert.match(
+	qml,
+	/id: bluetoothAvailableSection[\s\S]*?visible: root\.services\.bluetooth\.bluetoothPowered/,
+);
+
+// The Wi-Fi heading only stands over a list that can exist. With the radio off
+// there are no available networks to head, and the section already says so.
+const availableNetworksHeader = qml.match(
+	/Item \{\s*\n\s*id: availableNetworksHeader[\s\S]*?\n {32}\}/,
+)?.[0];
+assert.ok(availableNetworksHeader, "the available networks header must exist");
+assert.match(
+	availableNetworksHeader,
+	/visible: Networking\.wifiHardwareEnabled && Networking\.wifiEnabled/,
+);
+assert.match(availableNetworksHeader, /text: "Available networks"/);
+// Its rescan shares the line, and the two glyphs are not interchangeable: the
+// wheel says the radio is listening, the arrow says you may ask it to.
+assert.match(
+	availableNetworksHeader,
+	/id: rescanButton[\s\S]*?anchors\.right: parent\.right/,
+);
+assert.match(
+	availableNetworksHeader,
+	/text: root\.wifiScanning \? root\.icons\.ui\.spinner : root\.icons\.ui\.refresh/,
+);
+// Only the wheel turns, and it comes back upright rather than freezing at an
+// angle — an arrow stuck at 137 degrees reads as broken.
+assert.match(
+	availableNetworksHeader,
+	/RotationAnimator on rotation \{[\s\S]*?running: root\.wifiScanning[\s\S]*?onRunningChanged: if \(!running\)/,
+);
+// Pressing it while it already spins would ask for what is already happening.
+assert.match(availableNetworksHeader, /enabled: !root\.wifiScanning/);
+assert.match(
+	availableNetworksHeader,
+	/onClicked: controlCenterController\.rescanWifi\(\)/,
+);
+
+// The scan is bounded, so what it found has to outlive it. Quickshell empties
+// the device's own list the moment the scanner stops, and drawing that list
+// directly is what made the networks vanish at the twenty-fifth second.
+assert.match(
+	qml,
+	/readonly property var liveWifiNetworks:[\s\S]*?wifiDevice\.networks\?\.values/,
+);
+// And it tracks the device only while the sweep is running. Measured, not
+// assumed: with the scanner on the device reported nine networks, with it off
+// one — it collapses rather than empties. Retaining "the last non-empty
+// answer" therefore retained the collapse, and the panel fell to a single row
+// a moment after the wheel stopped.
+assert.match(
+	qml,
+	/onLiveWifiNetworksChanged: \{\s*\n\s*if \(wifiScanning && liveWifiNetworks\.length > 0\)\s*\n\s*retainedWifiNetworks = liveWifiNetworks/,
+);
+// What the rows are drawn from is the retained copy, always. Choosing between
+// it and the device per reading is what let the collapse through.
+const availableWifiNetworks = qml.match(
+	/readonly property var availableWifiNetworks:[^\n]*(?:\n[^\n]*)?/,
+)?.[0];
+assert.ok(availableWifiNetworks, "availableWifiNetworks must exist");
+assert.doesNotMatch(
+	availableWifiNetworks,
+	/networks\?\.values|liveWifiNetworks/,
+	"the drawn list must be the retained copy, never the device's own",
+);
+assert.match(availableWifiNetworks, /retainedWifiNetworks : \[\]/);
+// Held rows, not copied text: only the real object can connect or forget.
+assert.doesNotMatch(qml, /retainedWifiNetworks = .*\.map\(/);
+// A radio switched off keeps no memory. Networks from a previous session are
+// not available by any reading of the word.
+assert.match(
+	qml,
+	/onWifiUsableChanged: if \(!wifiUsable\)\s*\n\s*retainedWifiNetworks = \[\]/,
+);
+assert.match(
+	availableWifiNetworks,
+	/Networking\.wifiHardwareEnabled\s*\n?\s*&& Networking\.wifiEnabled/,
+);
+
+// Under "Available networks" there is the heading, its rescan, and networks.
+// Nothing else. An empty state is a fourth thing that appears exactly when
+// there is least to look at, and it was at its worst in the first seconds
+// after the radio came on, announcing "no networks" about a scan still
+// running. Bluetooth keeps its own; Wi-Fi has none.
+// Neither section has one now: Bluetooth's said "Scanning…" about something
+// its own wheel already says, and Wi-Fi's announced "no networks" about a
+// sweep that had not finished.
+assert.equal(
+	(qmlCode.match(/ControlEmptyState \{/g) || []).length,
+	0,
+	"neither network section may carry an empty state",
+);
+
+// And the copy that fed it goes too. Text nothing reaches is worse than no
+// text: the next reader has to prove it dead.
+//
+for (const dead of [
+	"Wi-Fi is disabled",
+	"Enable Wi-Fi to scan for networks",
+	"No networks found",
+	"Enabling Wi-Fi",
+	"Wi-Fi unavailable",
+	"Scanning for networks nearby",
+	"Scan again to look once more",
+]) {
+	assert.doesNotMatch(
+		qmlCode,
+		new RegExp(`"${dead.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+		`${dead} belonged to the removed Wi-Fi empty state`,
+	);
+}
 
 const infoCard = fs.readFileSync(`${componentDir}/BluetoothInfoCard.qml`, "utf8");
 assert.doesNotMatch(infoCard, /scan|Scan/);
@@ -487,14 +650,19 @@ assert.equal(
 	3,
 	"each Bluetooth repeater must bind its own modelData instead of the outer screen model",
 );
-assert.match(qml, /bluetoothDetailsColumn\.availableDevices\.length === 0/);
+// There is no "no devices found" branch left to assert: the empty state that
+// read it is gone, and an empty list under a heading with a still wheel says
+// the same thing without a box.
+assert.doesNotMatch(qmlCode, /availableDevices\.length === 0/);
 assert.doesNotMatch(
 	qml,
 	/(?:visible:|model:) (?:connectedDevices|knownDevices|availableDevices)\b/,
 );
+// The rescan replaced the old scan pill, and it keeps the pill's manners: a
+// pointing cursor only while it can be pressed, an arrow when it cannot.
 assert.match(
 	detailContentBlock,
-	/id: scanInput[\s\S]*enabled: root\.services\.bluetooth\.bluetoothPowered[\s\S]*cursorShape: enabled \? Qt\.PointingHandCursor : Qt\.ArrowCursor/,
+	/id: bluetoothRescanInput[\s\S]*?enabled: !root\.scanningBluetooth[\s\S]*?cursorShape: enabled \? Qt\.PointingHandCursor : Qt\.ArrowCursor/,
 );
 assert.equal(
 	(

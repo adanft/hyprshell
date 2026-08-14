@@ -36,37 +36,28 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: card.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        // One glyph in every state: the tone, the dot and the label already
-        // say three times over whether the link is up.
+        // One glyph in every state: the tone and the label already say twice
+        // over whether the link is up.
         text: card.icons.network.ethernetPort
         color: card.tone
         font.family: card.theme.typography.iconFontFamily
         font.pixelSize: card.theme.typography.glyphLg
     }
 
-    Row {
+    // The label alone. A dot sat beside it saying the same thing in a second
+    // alphabet: it carried no state the tone and the word did not already
+    // carry, so it was decoration standing where a reader looks for meaning.
+    // With one child left the Row it lived in went with it.
+    AppText {
         id: state
 
         anchors.right: parent.right
         anchors.rightMargin: card.theme.spacing.space12
         anchors.verticalCenter: parent.verticalCenter
-        spacing: card.theme.spacing.space6
-
-        AppText {
-            anchors.verticalCenter: parent.verticalCenter
-            text: card.icons.ui.dot
-            color: card.tone
-            font.family: card.theme.typography.iconFontFamily
-            font.pixelSize: card.theme.typography.textSm
-        }
-
-        AppText {
-            anchors.verticalCenter: parent.verticalCenter
-            text: card.stateText
-            color: card.tone
-            font.pixelSize: card.theme.typography.textSm
-            font.styleName: card.theme.typography.styleMedium
-        }
+        text: card.stateText
+        color: card.tone
+        font.pixelSize: card.theme.typography.textSm
+        font.styleName: card.theme.typography.styleMedium
     }
 
     Column {

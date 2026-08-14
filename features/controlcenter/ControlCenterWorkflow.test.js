@@ -19,6 +19,7 @@ assert.deepEqual(clean(workflow.initialState()), {
 	suppressedPasswordNetwork: null,
 	scannerDevice: null,
 	scannerOwnedDevice: null,
+	scannerBurstSpent: false,
 	wifiActivationPending: false,
 	wifiActivationRequested: false,
 	wifiActivationGeneration: 0,
@@ -51,6 +52,7 @@ for (const test of [
 		true,
 		[
 			"stopScannerDelay",
+			"stopScannerBurst",
 			"stopActivationSettle",
 			"setScannerEnabled",
 			"setWifiEnabled",
@@ -118,6 +120,7 @@ for (const key of Object.keys(eligible)) {
 	context[key] = key === "expandedNetworkSection" ? "ethernet" : false;
 	assert.deepEqual(effectTypes(run(state(), context)), [
 		"stopScannerDelay",
+		"stopScannerBurst",
 		"stopActivationSettle",
 	]);
 }
@@ -136,6 +139,7 @@ for (const key of Object.keys(eligible)) {
 			enabled: true,
 			claimOwnership: true,
 		},
+		{ type: "startScannerBurst", device },
 	]);
 	const forced = run(
 		result.state,
@@ -164,6 +168,7 @@ for (const key of Object.keys(eligible)) {
 		"stopScannerDelay",
 		"setScannerEnabled",
 		"setScannerEnabled",
+		"startScannerBurst",
 	]);
 	assert.equal(result.effects[0 + 1].device, oldDevice);
 	assert.equal(result.state.scannerOwnedDevice, replacement);
@@ -215,8 +220,85 @@ for (const key of Object.keys(eligible)) {
 	);
 	assert.deepEqual(effectTypes(accepted), [
 		"setScannerEnabled",
+		"startScannerBurst",
 		"startActivationSettle",
 	]);
+}
+
+// The scan is bounded, which is the whole point: the radio runs once and
+// stops, and stopping has to survive the next sync or nothing was gained.
+{
+	const device = { scannerEnabled: false };
+	const context = Object.assign(
+		{ type: "syncScanner", wifiDevice: device },
+		eligible,
+	);
+	const scanning = run(state(), context);
+	assert.equal(scanning.state.scannerOwnedDevice, device);
+	assert.equal(scanning.state.scannerBurstSpent, false);
+
+	// A timer belonging to a scanner nobody owns any more decides nothing.
+	const stale = run(scanning.state, {
+		type: "scannerBurstElapsed",
+		scheduledDevice: {},
+	});
+	assert.deepEqual(effectTypes(stale), []);
+	assert.equal(stale.state.scannerOwnedDevice, device);
+
+	const elapsed = run(scanning.state, {
+		type: "scannerBurstElapsed",
+		scheduledDevice: device,
+	});
+	assert.deepEqual(clean(elapsed.effects), [
+		{
+			type: "setScannerEnabled",
+			device,
+			enabled: false,
+			claimOwnership: false,
+		},
+	]);
+	assert.equal(elapsed.state.scannerOwnedDevice, null);
+	assert.equal(elapsed.state.scannerBurstSpent, true);
+
+	// Still looking at the section, still eligible, and it must stay off. This
+	// is the assertion that would have caught the old never-ending scan.
+	const afterwards = run(elapsed.state, context);
+	assert.equal(
+		effectTypes(afterwards).includes("setScannerEnabled"),
+		false,
+		"a spent scan must not restart itself while the section stays open",
+	);
+
+	// Asking again is the way back, and it goes the long way round: release,
+	// settle, then a fresh scan once the delay elapses.
+	const rescan = run(
+		afterwards.state,
+		Object.assign({ type: "rescanRequested", wifiDevice: device }, eligible),
+	);
+	assert.deepEqual(effectTypes(rescan), [
+		"stopScannerDelay",
+		"startScannerDelay",
+	]);
+	assert.equal(rescan.state.scannerBurstSpent, false);
+
+	// Nothing to ask of a section nobody is looking at.
+	const away = run(
+		afterwards.state,
+		Object.assign({}, eligible, {
+			type: "rescanRequested",
+			wifiDevice: device,
+			expandedNetworkSection: "ethernet",
+		}),
+	);
+	assert.equal(effectTypes(away).includes("startScannerDelay"), false);
+
+	// And looking away then back scans afresh rather than resting on a list
+	// nobody has refreshed since.
+	assert.equal(away.state.scannerBurstSpent, false);
+	assert.equal(
+		effectTypes(run(away.state, context)).includes("setScannerEnabled"),
+		true,
+	);
 }
 
 {
@@ -227,6 +309,7 @@ for (const key of Object.keys(eligible)) {
 	);
 	assert.deepEqual(effectTypes(result), [
 		"stopScannerDelay",
+		"stopScannerBurst",
 		"stopActivationSettle",
 		"enableNetworkDetails",
 	]);
@@ -240,17 +323,20 @@ for (const key of Object.keys(eligible)) {
 	);
 	assert.deepEqual(effectTypes(result), [
 		"stopScannerDelay",
+		"stopScannerBurst",
 		"stopActivationSettle",
 	]);
 	result = run(result.state, { type: "menuOpenChanged", menuOpen: false });
 	assert.deepEqual(effectTypes(result), [
 		"stopScannerDelay",
+		"stopScannerBurst",
 		"stopActivationSettle",
 		"disableNetworkDetails",
 	]);
 	const destroyed = run(result.state, { type: "destroy" });
 	assert.deepEqual(effectTypes(destroyed), [
 		"stopScannerDelay",
+		"stopScannerBurst",
 		"stopActivationSettle",
 	]);
 	assert.deepEqual(

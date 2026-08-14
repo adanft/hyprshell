@@ -25,6 +25,14 @@ QtObject {
     readonly property string connectionError: reducerState.connectionError
 
     readonly property int scannerStartDelayMs: 300
+    // The same twenty-five seconds Bluetooth gives its own scan. Long enough
+    // for the far side of the flat to answer, short enough that a panel left
+    // open does not hold the radio all afternoon.
+    readonly property int scannerBurstMs: 25000
+    // Read from the device, not kept alongside it. While this is true the
+    // radio really is sweeping, so the wheel the interface turns is a report
+    // rather than an animation played to look busy.
+    readonly property bool wifiScanning: Boolean(root.networkService?.wifiDevice?.scannerEnabled)
     readonly property int activationSettleDelayMs: 900
     readonly property int uptimeRefreshIntervalMs: 60000
     property real uptimeSeconds: 0
@@ -38,6 +46,16 @@ QtObject {
         interval: root.scannerStartDelayMs
         repeat: false
         onTriggered: root.handleScannerDelayElapsed(root.scannerDelayDevice, root.scannerDelayGeneration)
+    }
+
+    // Carries the device the scan was started for, so a timer that fires after
+    // the scanner changed hands can be recognised as stale and ignored.
+    property var scannerBurstDevice: null
+
+    property Timer wifiScannerBurstTimer: Timer {
+        interval: root.scannerBurstMs
+        repeat: false
+        onTriggered: root.handleScannerBurstElapsed(root.scannerBurstDevice)
     }
 
     property Timer wifiActivationSettleTimer: Timer {
@@ -101,6 +119,13 @@ QtObject {
             break
         case "stopScannerDelay":
             root.wifiScannerStartTimer.stop()
+            break
+        case "startScannerBurst":
+            root.scannerBurstDevice = nextEffect.device
+            root.wifiScannerBurstTimer.restart()
+            break
+        case "stopScannerBurst":
+            root.wifiScannerBurstTimer.stop()
             break
         case "startActivationSettle":
             root.activationSettleGeneration = nextEffect.generation
@@ -223,6 +248,22 @@ QtObject {
                                        scheduledDevice: device,
                                        scheduledGeneration: generation
                                    }))
+    }
+
+    // The scan is over: let the scanner go. What it found stays on screen
+    // because the view kept its own copy — Quickshell empties the device's
+    // list here, and that copy is the only reason stopping is survivable.
+    function handleScannerBurstElapsed(device) {
+        root.dispatch(root.context("scannerBurstElapsed", {
+                                       scheduledDevice: device
+                                   }))
+    }
+
+    // Look again. The only way back once a scan is spent.
+    function rescanWifi() {
+        if (root.wifiScanning)
+            return
+        root.dispatch(root.context("rescanRequested"))
     }
 
     function handleActivationSettleElapsed(generation) {

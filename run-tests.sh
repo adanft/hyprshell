@@ -304,9 +304,14 @@ fi
 
 # Last because it is the slowest, and because everything above has to hold
 # before its numbers mean anything: this is the only stage that runs shell.qml
-# itself, opening every overlay over IPC the way a person does while the process
-# tree is sampled. See scripts/shell-cycle-bench.sh for why descriptors fail the
-# run and memory only reports.
+# itself. It measures the shell twice — sitting idle, which is where a desktop
+# shell spends nearly all its life and which nothing else here looks at, and
+# then while every overlay is opened over IPC the way a person does.
+#
+# See scripts/shell-cycle-bench.sh for which numbers fail the run: descriptors
+# in both phases and processor use while idle. Memory is reported and never
+# fails, because a threshold tight enough to catch a leak in RSS also fails on
+# an allocator having a quiet day.
 echo
 echo "== Shell overlay cycles and resources =="
 #
@@ -322,7 +327,7 @@ echo "== Shell overlay cycles and resources =="
 timeout -k 10 300 scripts/shell-cycle-bench.sh "$CYCLE_BENCH_CYCLES"
 cycle_status=$?
 if [[ "$cycle_status" -eq 0 ]]; then
-	echo "-- Overlay cycles passed: no descriptor growth"
+	echo "-- Overlay cycles passed: idle is quiet, no descriptor growth"
 else
 	if [[ "$cycle_status" -eq 124 ]]; then
 		echo "-- FAILED: overlay cycle benchmark did not finish within 300s"

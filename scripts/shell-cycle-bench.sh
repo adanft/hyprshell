@@ -47,6 +47,29 @@ readonly IPC_TIMEOUT=5
 readonly WARMUP=2
 readonly INTERVAL=1
 
+# The idle phase, which measures the shell doing nothing at all.
+#
+# Every other stage in this suite measures the shell while something is being
+# asked of it. None of them can see a service that polls when nobody is looking,
+# and that is the cost a person actually pays: a desktop shell spends almost all
+# of its life idle.
+#
+# The CPU bound is a median rather than a peak, because the sampler quantises to
+# whole ticks and a single tick in a fifteen-second window says nothing. Measured
+# twice over 32 samples each: median 0.00%, peak 2.00%, identically both times.
+# Two therefore fails on anything sustained while tolerating half the window
+# showing one tick. Descriptors reuse the cycle tolerance, and their idle drift
+# measured 64 -> 64 and 63 -> 64.
+#
+# Fifteen seconds is what this can say, and it is worth knowing what it cannot:
+# a service that wakes on a thirty- or sixty-second timer spends most of that
+# window asleep, so "idle is quiet" here means quiet for fifteen seconds, not
+# quiet forever. Raise IDLE_SECONDS to widen the window; the whole stage costs
+# about that much wall clock on top.
+readonly IDLE_SECONDS=15
+readonly IDLE_WARMUP=3
+readonly IDLE_CPU_TOLERANCE=2.0
+
 # Qt asks the desktop portal for an application ID the connection already
 # carries. An empty ShellRoot prints it too, so it reports the session rather
 # than this shell.
@@ -65,6 +88,7 @@ fi
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/qsrice-cycle.XXXXXX") || exit 1
 shell_log="$work_dir/shell.log"
 samples="$work_dir/samples.jsonl"
+idle_samples="$work_dir/idle.jsonl"
 
 shell_pid=""
 bench_pid=""
@@ -177,6 +201,34 @@ cycle_once() {
 	done
 }
 
+# Idle first, and first for a reason: it is the only phase whose meaning depends
+# on nothing having happened yet. Once an overlay has been opened the shell is
+# warm, its thread pools are up and its caches are full, and "idle" would mean
+# something different. This is the shell as it sits between the moments a person
+# uses it.
+python3 scripts/qsrice-bench.py \
+	--pid "$shell_pid" \
+	--scenario idle \
+	--duration "$IDLE_SECONDS" \
+	--warmup "$IDLE_WARMUP" \
+	--interval "$INTERVAL" \
+	--memory-every 1 \
+	--jsonl "$idle_samples" \
+	--quiet >/dev/null 2>"$work_dir/idle.err"
+idle_status=$?
+
+if [[ "$idle_status" -ne 0 ]]; then
+	echo "-- FAILED: the idle benchmark exited $idle_status" >&2
+	sed 's/^/   /' "$work_dir/idle.err" >&2
+	exit 1
+fi
+
+if [[ ! -s "$idle_samples" ]]; then
+	echo "-- FAILED: the idle benchmark produced no samples" >&2
+	sed 's/^/   /' "$work_dir/idle.err" >&2
+	exit 1
+fi
+
 # One full pass before anything is measured, and it is the difference between a
 # measurement and a number.
 #
@@ -188,9 +240,10 @@ cycle_once() {
 # A leak grows on every cycle. Lazy initialisation grows on the first. Warming
 # up puts both ends of the comparison on the warm side of that line, so what is
 # left to see is only the part that repeats.
-# Opens with open() so that verb is covered too. The warm-up pass is thrown
-# away as a measurement, which makes it the right place to spend a check
-# that has nothing to do with resources.
+#
+# It opens with open() so that verb is covered too. A pass thrown away as a
+# measurement is the right place to spend a check that has nothing to do with
+# resources.
 cycle_once "the warm-up cycle" open
 
 # Two toggles per target per measured cycle, plus the warmup and a tail, with
@@ -251,26 +304,39 @@ if [[ -n "$problems" ]]; then
 	exit 1
 fi
 
-python3 - "$samples" "$CYCLES" <<'PY'
+python3 - "$samples" "$CYCLES" "$idle_samples" "$IDLE_CPU_TOLERANCE" <<'PY'
 import json
 import statistics
 import sys
 
-samples_path, cycles = sys.argv[1], sys.argv[2]
-samples = []
-with open(samples_path) as handle:
-    for line in handle:
-        line = line.strip()
-        if line:
-            samples.append(json.loads(line))
+samples_path, cycles, idle_path, idle_cpu_tolerance = sys.argv[1:5]
+idle_cpu_tolerance = float(idle_cpu_tolerance)
+
+
+def load(path):
+    rows = []
+    with open(path) as handle:
+        for line in handle:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+samples = load(samples_path)
+idle = load(idle_path)
 
 if len(samples) < 6:
     print(f"-- FAILED: {len(samples)} samples is too few to read a trend", file=sys.stderr)
     raise SystemExit(1)
 
+if len(idle) < 6:
+    print(f"-- FAILED: {len(idle)} idle samples is too few to read a trend", file=sys.stderr)
+    raise SystemExit(1)
 
-def series(field):
-    return [s[field] for s in samples if isinstance(s.get(field), (int, float))]
+
+def series(rows, field):
+    return [row[field] for row in rows if isinstance(row.get(field), (int, float))]
 
 
 def thirds(values):
@@ -278,8 +344,8 @@ def thirds(values):
     return values[:size], values[-size:]
 
 
-def report(label, field, unit):
-    values = series(field)
+def report(rows, label, field, unit):
+    values = series(rows, field)
     if not values:
         return None, None
     first, last = thirds(values)
@@ -288,17 +354,6 @@ def report(label, field, unit):
           f"(min {min(values):.1f}, max {max(values):.1f})")
     return early, late
 
-
-print(f"   samples: {len(samples)} over {cycles} open/close cycles of every overlay")
-fd_early, fd_late = report("descriptors (shell)", "main_fds", "")
-report("descriptors (tree)", "tree_fds", "")
-report("RSS (shell)", "main_rss_kib", "KiB")
-report("RSS (tree)", "tree_rss_kib", "KiB")
-report("threads (shell)", "main_threads", "")
-
-if fd_early is None:
-    print("-- FAILED: the benchmark could not read file descriptor counts", file=sys.stderr)
-    raise SystemExit(1)
 
 # The median of the last third against the median of the first third, with a
 # tolerance that was measured rather than picked.
@@ -316,6 +371,61 @@ if fd_early is None:
 # close the only gap the check has: at a tolerance of three, a one-per-cycle
 # leak at three cycles becomes invisible.
 FD_TOLERANCE = 2
+
+# Idle first, and read differently from the cycles: nothing is being asked of
+# the shell, so the question is not whether a number grew but whether it should
+# be there at all. A shell nobody is touching should be spending no processor.
+print(f"   idle: {len(idle)} samples with nothing asked of the shell")
+idle_cpu = series(idle, "main_cpu_percent")
+idle_fd_early, idle_fd_late = report(idle, "descriptors (idle)", "main_fds", "")
+report(idle, "RSS (idle)", "main_rss_kib", "KiB")
+report(idle, "threads (idle)", "main_threads", "")
+
+if not idle_cpu:
+    print("-- FAILED: the idle benchmark could not read processor use", file=sys.stderr)
+    raise SystemExit(1)
+
+idle_cpu_median = statistics.median(idle_cpu)
+print(f"   {'CPU (idle)':<22} {idle_cpu_median:>10.2f} %  "
+      f"(max {max(idle_cpu):.2f}, tolerance {idle_cpu_tolerance:.2f})")
+
+if idle_cpu_median > idle_cpu_tolerance:
+    print(f"-- FAILED: the idle shell spends {idle_cpu_median:.2f}% of a processor, "
+          f"over the {idle_cpu_tolerance:.2f}% it is allowed. Something is working "
+          f"while nobody is asking.", file=sys.stderr)
+    raise SystemExit(1)
+
+# Unreadable is a failure, not a pass. Guarding the comparison on the value
+# being present reads like defensiveness and is the opposite: it turns a phase
+# whose telemetry never arrived into a phase that reported nothing wrong, under
+# a line that says idle is quiet. The cycling side below has always treated the
+# same condition as fatal, and the CPU check above does too.
+if idle_fd_early is None:
+    print("-- FAILED: the idle benchmark could not read file descriptor counts",
+          file=sys.stderr)
+    raise SystemExit(1)
+
+if idle_fd_late - idle_fd_early > FD_TOLERANCE:
+    print(f"-- FAILED: file descriptors grew while the shell sat idle: "
+          f"{idle_fd_early:.0f} -> {idle_fd_late:.0f}. Nothing was opening "
+          f"anything, so nothing should be accumulating.", file=sys.stderr)
+    raise SystemExit(1)
+
+print()
+print(f"   samples: {len(samples)} over {cycles} open/close cycles of every overlay")
+fd_early, fd_late = report(samples, "descriptors (shell)", "main_fds", "")
+report(samples, "descriptors (tree)", "tree_fds", "")
+report(samples, "RSS (shell)", "main_rss_kib", "KiB")
+report(samples, "RSS (tree)", "tree_rss_kib", "KiB")
+report(samples, "threads (shell)", "main_threads", "")
+cycle_cpu = series(samples, "main_cpu_percent")
+if cycle_cpu:
+    print(f"   {'CPU (cycling)':<22} {statistics.median(cycle_cpu):>10.2f} %  "
+          f"(max {max(cycle_cpu):.2f}, reported only)")
+
+if fd_early is None:
+    print("-- FAILED: the benchmark could not read file descriptor counts", file=sys.stderr)
+    raise SystemExit(1)
 
 growth = fd_late - fd_early
 if growth > FD_TOLERANCE:

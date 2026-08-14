@@ -308,22 +308,45 @@ done
 #
 # A warning rather than a refusal: the rule is Hyprland's, the host may be
 # another compositor, and someone who knows the trade may want to run anyway.
+# Every outcome is named, including the ones where the check itself did not
+# work, because this warning has now been written wrong twice in the same way.
+#
+# First it used jq's `// empty`, whose alternative operator fires on false as
+# well as on null, so a genuinely unpinned window read the same as no window and
+# the warning could never print. Then, with that fixed, a hyprctl that failed or
+# timed out still left the value empty and still said nothing — a silence that
+# is indistinguishable from a window that is fine.
+#
+# So the query and its interpretation are separated: whether the compositor
+# answered at all is one question, and what it answered is another. A check that
+# cannot fail is worse than no check, because it looks like one.
+pin_warning() {
+	echo "-- WARNING: $1" >&2
+	echo "   Your compositor stops sending frame callbacks to a window that is not on" >&2
+	echo "   screen, and everything inside this session runs on those frames. Switch" >&2
+	echo "   workspace during a run and its timers stop; the stage that was waiting" >&2
+	echo "   then reports a timeout that reads like a regression. See the README," >&2
+	echo "   \"Why --isolated exists\", for the three-line rule that fixes it." >&2
+}
+
 if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v jq >/dev/null 2>&1; then
-	# Not `// empty`, which is the obvious way to write this and is wrong: jq's
-	# alternative operator fires on false as well as on null, so a window that
-	# is genuinely unpinned reads the same as no window at all and the warning
-	# never prints. A check that cannot fail is worse than no check, because it
-	# looks like one.
-	pinned=$(timeout 5 hyprctl clients -j 2>/dev/null |
-		jq -r --arg pid "$hypr_pid" '[.[] | select(.pid == ($pid | tonumber)) | .pinned]
-			| if length == 0 then "" else (.[0] | tostring) end')
-	if [[ "$pinned" == "false" ]]; then
-		echo "-- WARNING: this session's window is not pinned." >&2
-		echo "   Your compositor stops sending frame callbacks to a window that is not on" >&2
-		echo "   screen, and everything inside this session runs on those frames. Switch" >&2
-		echo "   workspace during a run and its timers stop; the stage that was waiting" >&2
-		echo "   then reports a timeout that reads like a regression. See the README," >&2
-		echo "   \"Why --isolated exists\", for the three-line rule that fixes it." >&2
+	host_clients=$(timeout 5 hyprctl clients -j 2>"$work_dir/hyprctl.err")
+	host_clients_status=$?
+
+	if [[ "$host_clients_status" -ne 0 || -z "$host_clients" ]]; then
+		pin_warning "your compositor did not answer when asked about this session's window (hyprctl exited ${host_clients_status}), so whether it is pinned is unknown."
+	else
+		pinned=$(jq -r --arg pid "$hypr_pid" '[.[] | select(.pid == ($pid | tonumber)) | .pinned]
+			| if length == 0 then "absent" else (.[0] | tostring) end' <<<"$host_clients")
+		case "$pinned" in
+		true) ;;
+		false)
+			pin_warning "this session's window is not pinned."
+			;;
+		*)
+			pin_warning "this session's window was not among your compositor's clients, so whether it is pinned is unknown."
+			;;
+		esac
 	fi
 fi
 

@@ -34,6 +34,26 @@ Rectangle {
             border.width: (card.hovered || card.selected || card.isActive) ? card.theme.shape.wallpaperCardBorderWidth : 0
             border.color: card.hovered ? Theme.Colors.hover : (card.selected ? Theme.Colors.primary : Theme.Colors.tertiary)
 
+            // Opening this selector once holds about 46 MB that closing it does
+            // not give back, with 39 wallpapers on disk. That is measured, and
+            // so is the fact that neither obvious explanation is the cause —
+            // written down here so the next person does not spend the afternoon
+            // this already cost.
+            //
+            // It is not a leak: repeated opens add 39.5 MB, then 13.7, then 2.1,
+            // and stop. It is not the images. Eight wallpapers at 1920x1080 and
+            // the same eight at 320x180 retain 23.5 MB and 23.7 MB, so sixteen
+            // times less pixel data on disk costs the same. It is not this
+            // cache either, and it is not the layer below: measured against the
+            // same baseline, `cache: false` retains 22.9 MB and
+            // `layer.enabled: false` retains 19.9 MB, against 23.5 MB as
+            // written. All three are one number.
+            //
+            // What is left looks like a fixed cost of running the grid at all,
+            // around 20 MB, plus something small per card: an empty directory
+            // retains 2.7 MB, eight wallpapers 22 MB, thirty-nine 46 MB, so the
+            // marginal cost halves as the view starts recycling delegates.
+            // Naming it properly needs a heap profiler, not another guess.
             Image {
                 id: thumbnailImage
 

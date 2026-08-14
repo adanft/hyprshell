@@ -217,9 +217,7 @@ once for each `qs` process the script starts.
 private D-Bus bus and private `XDG_*` directories, built by
 `scripts/isolated-session.sh` and configured by `scripts/isolated-hyprland.conf`.
 The exclusive zone is reserved there, the reload lands there, and `theme.conf`
-is written there rather than in `~/.config/hypr`. The nested compositor is one
-ordinary window, sent to a special workspace so it does not retile the workspace
-you are on.
+is written there rather than in `~/.config/hypr`.
 
 The nested compositor is one ordinary window of class `aquamarine`, so on a
 tiling setup it retiles the workspace you are on while the suite runs. The
@@ -231,9 +229,18 @@ can match. In the Lua config format:
 hl.window_rule({
 	name = "qsrice-isolated-session",
 	match = { class = "aquamarine" },
-	workspace = "special:qsrice-isolated silent",
+	float = true,
+	no_focus = true,
 })
 ```
+
+Float it, do not hide it. Sending this window to a hidden workspace looks like
+the tidier answer and breaks the run instead: hiding unmaps the surface, an
+unmapped Wayland client stops receiving frame callbacks, and the nested
+compositor drives its own timers off those frames. Measured here, moving it to
+a hidden special workspace took the suite from eleven seconds to every stage
+reaching its timeout. A floating window is ignored by the tiling layout, which
+was the whole point, and it stays mapped.
 
 Isolation is scoped to what the shell writes and what would disturb you: its
 config directory, its cache, its runtime sockets, its bus, its compositor. What

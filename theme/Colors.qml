@@ -2,19 +2,19 @@ pragma Singleton
 import QtQuick
 import "PaletteRoles.js" as PaletteRoles
 
-// The shell's palette: sixteen roles, and nothing else. Every colour painted
+// The shell's palette: sixteen roles, and nothing else. Every color painted
 // anywhere in the shell is one of these, read straight off this singleton.
 // Roles mirror Noctalia's ColorRole enum.
 //
 // The foreground roles are spelled on_primary, not onPrimary. Declaring both
 // `primary` and `onPrimary` on one QML object silently leaves the second at the
-// default colour — black — because onPrimary reads as a handler for primary.
+// default color — black — because onPrimary reads as a handler for primary.
 // Snake case sidesteps that, and it is also how Noctalia spells these roles in
 // kColorRoleTokens.
 QtObject {
     // The active palette, pushed in by StockThemes. Holding it here rather than
     // reaching into StockThemes keeps this singleton free of any Quickshell
-    // dependency, so a component that reads a colour still loads under a plain
+    // dependency, so a component that reads a color still loads under a plain
     // QML test runner.
     property var palette: PaletteRoles.FALLBACK_PALETTE
 

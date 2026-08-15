@@ -49,7 +49,7 @@ QtObject {
     }
 
     // Carries the device the scan was started for, so a timer that fires after
-    // the scanner changed hands can be recognised as stale and ignored.
+    // the scanner changed hands can be recognized as stale and ignored.
     property var scannerBurstDevice: null
 
     property Timer wifiScannerBurstTimer: Timer {

@@ -80,7 +80,7 @@ ShellRoot {
     }
 
     // IpcHandler publishes every property it carries, and a loader property is
-    // not serialisable, so these stay as plain declarations calling their own
+    // not serializable, so these stay as plain declarations calling their own
     // loader rather than being collapsed into a shared handler type.
     IpcHandler {
         target: "applauncher"

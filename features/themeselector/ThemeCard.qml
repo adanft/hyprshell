@@ -17,7 +17,7 @@ Rectangle {
     readonly property color previewText: themeData && themeData.on_surface ? themeData.on_surface :
                                                                            Colors.on_surface
     readonly property color previewBorder: themeData && themeData.outline ? themeData.outline : Colors.outline
-    // The four accents a theme is recognised by, straight off its roles.
+    // The four accents a theme is recognized by, straight off its roles.
     readonly property var previewColors: themeData && themeData.primary ? [themeData.primary, themeData.hover,
         themeData.tertiary, themeData.secondary] : [Colors.primary, Colors.hover, Colors.tertiary,
         Colors.secondary]

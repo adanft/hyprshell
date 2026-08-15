@@ -8,14 +8,14 @@
 
 Node contract tests, the Python benchmark tests, QML component tests, then five
 stages that need a real compositor: two notification and overlay harnesses, a
-panel interaction harness, a centre interaction harness, a smoke test that
+panel interaction harness, a center interaction harness, a smoke test that
 instantiates every window and checks it built without warnings, and an overlay
 cycle benchmark. The compositor stages say so rather than passing quietly when
 there is no compositor.
 
 Layout is vertical: each feature owns its components, sizing and tests under
 `features/`, shared pieces live in `shared/`, system access in `services/`, and
-the design tokens — colours, typography, spacing, icons, shape, motion — in
+the design tokens — colors, typography, spacing, icons, shape, motion — in
 `theme/`.
 
 Node and Python come from your system; `qmltestrunner` ships with
@@ -36,13 +36,13 @@ arbiter exists for: exactly one overlay alive at a time, and a displaced one
 *destroyed*. Destroyed rather than hidden is the whole point, and it is a count
 rather than anything you could see on screen.
 
-`centre-interaction-harness.qml` covers the two panels that do not open like
-those five. The control centre is opened by a signal that rises `BarLayout` →
+`center-interaction-harness.qml` covers the two panels that do not open like
+those five. The control center is opened by a signal that rises `BarLayout` →
 `BarContent` → `BarWindow` and lands on a handler that flips a loader `BarWindow`
 keeps to itself, so the harness emits that signal on the real `BarContent` and
 lets the whole chain run; because the loader is private, it also holds a
 `ControlCenter` of its own to assert that `open()` lands on the section it was
-given. The notification centre is the one loader in the shell with
+given. The notification center is the one loader in the shell with
 `directVisibility` set — a branch of `OverlayLifecycleLoader` that nothing else
 takes. It stops at the edge of the shell: sections are exercised by name and
 nothing is asked of BlueZ or NetworkManager, which live on the system bus that

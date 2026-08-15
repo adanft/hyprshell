@@ -643,7 +643,7 @@ Item {
                     contentHeight: detailContent.implicitHeight
                     clip: true
                     // No scrollbar: wheel and drag only, matching the notification
-                    // centre. interactive already gates on overflow, so the pane stops
+                    // center. interactive already gates on overflow, so the pane stops
                     // taking flicks when everything fits.
                     boundsBehavior: Flickable.StopAtBounds
                     flickableDirection: Flickable.VerticalFlick

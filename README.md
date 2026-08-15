@@ -4,18 +4,13 @@
 
 **A Wayland desktop shell for Hyprland.**
 
-One process draws your bar, launcher, control centre, notifications, screenshots,
+One process draws your bar, launcher, control center, notifications, screenshots,
 wallpapers and themes — and paints Hyprland, hyprlock and Ghostty to match.
-
-<img alt="Last commit" src="https://img.shields.io/github/last-commit/adanft/qsrice?style=for-the-badge&labelColor=1e1e2e&color=cba6f7">
-<img alt="Stars" src="https://img.shields.io/github/stars/adanft/qsrice?style=for-the-badge&labelColor=1e1e2e&color=cba6f7">
-<img alt="Repo size" src="https://img.shields.io/github/repo-size/adanft/qsrice?style=for-the-badge&labelColor=1e1e2e&color=cba6f7">
-<img alt="Built with QML" src="https://img.shields.io/badge/built%20with-QML-cba6f7?style=for-the-badge&labelColor=1e1e2e">
 
 </div>
 
 <!-- SCREENSHOTS — drop the PNGs into docs/screenshots/ and delete this comment
-     wrapper. Suggested set: bar.png, launcher.png, control-centre.png,
+     wrapper. Suggested set: bar.png, launcher.png, control-center.png,
      notifications.png, theme-selector.png
 
 <div align="center">
@@ -26,7 +21,7 @@ wallpapers and themes — and paints Hyprland, hyprlock and Ghostty to match.
 <summary><b>More screenshots</b></summary>
 <div align="center">
   <img src="docs/screenshots/launcher.png" width="90%">
-  <img src="docs/screenshots/control-centre.png" width="90%">
+  <img src="docs/screenshots/control-center.png" width="90%">
   <img src="docs/screenshots/notifications.png" width="90%">
   <img src="docs/screenshots/theme-selector.png" width="90%">
 </div>
@@ -48,19 +43,19 @@ wallpapers and themes — and paints Hyprland, hyprlock and Ghostty to match.
 
 **Status bar.** Workspaces, CPU and RAM, system tray, clock, network throughput,
 Wi-Fi, Bluetooth, sound, backlight, battery, microphone, notifications, date.
-Four of those modules are shortcuts: clicking Wi-Fi opens the control centre
+Four of those modules are shortcuts: clicking Wi-Fi opens the control center
 *already expanded* on Wi-Fi.
 
 **App launcher.** Type to filter desktop entries. The search field never loses
 focus, so the arrows move through the grid and the text cursor without you
 reaching for anything.
 
-**Control centre.** Wi-Fi, Ethernet, Bluetooth, audio output and microphone, one
+**Control center.** Wi-Fi, Ethernet, Bluetooth, audio output and microphone, one
 section expanded at a time. Connect, forget, switch device, mute a single
 application's stream. Wi-Fi scanning is claimed while you are looking and
 released when you are not, rather than running forever.
 
-**Notification centre.** History that survives a restart, images included. Do not
+**Notification center.** History that survives a restart, images included. Do not
 disturb, clear all, and per-notification expand.
 
 **Screenshot tool.** All screens, one monitor, the focused window, or a region.
@@ -72,7 +67,7 @@ appears in the shot.
 filters and cached thumbnails.
 
 **Theme selector.** Thirteen palettes, applied live — and not just to the shell.
-The same colours reach Hyprland's borders, hyprlock's fields and Ghostty's
+The same colors reach Hyprland's borders, hyprlock's fields and Ghostty's
 terminal through one generated file.
 
 **Power menu.** Lock, suspend, log out, reboot, power off, each behind a
@@ -118,7 +113,7 @@ hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call powermenu 
 hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call screenshot toggle"))
 ```
 
-That is the whole integration. The control centre and the notification centre
+That is the whole integration. The control center and the notification center
 need no binds — they open from the bar, because both anchor themselves to the
 module you clicked.
 
@@ -152,7 +147,7 @@ have. Qt will substitute silently if it is missing, so nothing breaks; it just
 stops looking the way it was drawn.
 
 <details>
-<summary><b>Desktop services — the daemons behind the control centre</b></summary>
+<summary><b>Desktop services — the daemons behind the control center</b></summary>
 
 Each is reached through a Quickshell module over D-Bus, so these are daemons to
 have running, not commands to install.
@@ -202,16 +197,16 @@ paru -S awww
 | Cluster | Holds | What responds |
 |---|---|---|
 | **Left** | Workspaces · CPU, RAM · system tray | A workspace pill focuses that workspace. Tray items open their own menus. The tray disappears when nothing is in it. |
-| **Centre** | Control centre button · clock · power profile | The button opens the control centre with nothing expanded. |
+| **Center** | Control center button · clock · power profile | The button opens the control center with nothing expanded. |
 | **Right** | Network throughput · Wi-Fi · Bluetooth · sound · backlight · battery · microphone · notifications · date | Four are shortcuts — below. |
 
 | Click | Opens |
 |---|---|
-| Wi-Fi | Control centre, Wi-Fi expanded |
-| Bluetooth | Control centre, Bluetooth expanded |
-| Sound | Control centre, audio output expanded |
-| Microphone | Control centre, microphone expanded |
-| Notifications | Notification centre |
+| Wi-Fi | Control center, Wi-Fi expanded |
+| Bluetooth | Control center, Bluetooth expanded |
+| Sound | Control center, audio output expanded |
+| Microphone | Control center, microphone expanded |
+| Notifications | Notification center |
 
 The throughput readout is a readout, not a button.
 
@@ -227,17 +222,17 @@ those five, and nothing displaces it. Closing it means refusing a pairing BlueZ
 is waiting on, which is not a decision another panel should be able to make by
 opening.
 
-The control centre and the notification centre sit outside that arrangement —
+The control center and the notification center sit outside that arrangement —
 they belong to the bar, and either can be up alongside anything else.
 
 | Panel | Escape | Click outside |
 |---|---|---|
 | App launcher, power menu, wallpaper selector, theme selector, screenshot tool | closes | closes |
 | Bluetooth pairing | rejects | — |
-| Control centre | — | closes |
-| Notification centre | — | — |
+| Control center | — | closes |
+| Notification center | — | — |
 
-The notification centre closes the way it opened: by clicking the bar's
+The notification center closes the way it opened: by clicking the bar's
 notification module again.
 
 ### Keys
@@ -309,7 +304,7 @@ Thirteen palettes ship with it:
 | Escape | Closes |
 
 Two filters, **dark** and **light**. A theme lands in one or the other by the
-brightness of its own `surface` colour, not by what its name claims.
+brightness of its own `surface` color, not by what its name claims.
 
 A theme can also be set from a script, which is what the IPC `set` is for:
 
@@ -320,7 +315,7 @@ qs ipc -p ~/.config/quickshell/qsrice call themeselector set kanagawa-dragon
 </details>
 
 <details>
-<summary><b>Control centre</b></summary>
+<summary><b>Control center</b></summary>
 
 Five sections, one expanded at a time: **Ethernet**, **Wi-Fi**, **audio output**,
 **microphone**, **Bluetooth**. Clicking a section's body expands it; clicking the
@@ -370,7 +365,7 @@ qs ipc -p ~/.config/quickshell/qsrice call screenshot        toggle
 
 The shell writes `~/.config/hypr/theme.conf` whenever the theme or the wallpaper
 changes. It is the shell's file — it is rewritten whole, so do not edit it — and
-it holds colours under role names (`$primary`, `$on_surface`, `$surface`) plus
+it holds colors under role names (`$primary`, `$on_surface`, `$surface`) plus
 `$wallpaper` and `$font`.
 
 The names are roles, not pigments. `theme.conf` used to spell Catppuccin's
@@ -437,14 +432,14 @@ hl.config({
 
 </details>
 
-The shell runs `hyprctl reload` after writing, but only when a colour actually
+The shell runs `hyprctl reload` after writing, but only when a color actually
 changed — Hyprland never reads `$wallpaper` or `$font`, so choosing a background
 does not make it re-apply monitors, binds and animations.
 
 The variables available are `$primary` `$primaryAlpha` `$secondary` `$error`
 `$outline` `$surface` `$surfaceVeil` `$shadow` `$on_surface` `$on_surfaceAlpha`
 `$wallpaper` `$font`. The `…Alpha` pair is the bare hex, for pango markup inside
-hyprlock's `placeholder_text`, which is a string and cannot take a colour value.
+hyprlock's `placeholder_text`, which is a string and cannot take a color value.
 
 **Ghostty** needs nothing from you. If it is installed, the shell keeps a marked
 block at the end of `~/.config/ghostty/config.ghostty` naming a built-in Ghostty
@@ -504,7 +499,7 @@ Hyprland cannot `source` a hyprlang file from a Lua config, so it has to read
 <details>
 <summary><b>The lock screen's text is invisible on a light theme.</b></summary>
 
-Known. hyprlock's labels sit on the wallpaper, and `on_surface` is a dark colour
+Known. hyprlock's labels sit on the wallpaper, and `on_surface` is a dark color
 in the three light themes, so it disappears over a dark photo. There is no role
 for text over a picture because the shell never paints any — the bar sits on
 opaque `shadow`.
@@ -545,7 +540,7 @@ Tests, the harnesses, and why the suite runs inside a nested compositor:
 
 Layout is vertical: each feature owns its components, sizing and tests under
 `features/`, shared pieces live in `shared/`, system access in `services/`, and
-the design tokens — colours, typography, spacing, icons, shape, motion — in
+the design tokens — colors, typography, spacing, icons, shape, motion — in
 `theme/`.
 
 ## Credits

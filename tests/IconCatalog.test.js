@@ -3,12 +3,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
-const catalogue = path.join(root, "theme/Icons.qml");
-const source = fs.readFileSync(catalogue, "utf8");
+const catalog = path.join(root, "theme/Icons.qml");
+const source = fs.readFileSync(catalog, "utf8");
 
 // A Nerd Font glyph is unreadable in source: it renders as a box, or as a
 // different picture, in every editor that lacks the font. Written inline it
-// cannot be searched for, cannot be recognised, and gets copied rather than
+// cannot be searched for, cannot be recognized, and gets copied rather than
 // reused. Icons.qml is where they are named, and the only place they are typed.
 const glyph = /[\u{E000}-\u{F8FF}\u{F0000}-\u{FFFFD}]/u;
 
@@ -25,7 +25,7 @@ function qmlFiles(directory) {
 const offenders = [];
 for (const directory of ["features", "shared", "services", "theme"]) {
 	for (const file of qmlFiles(directory)) {
-		if (file === catalogue) continue;
+		if (file === catalog) continue;
 		for (const [index, line] of fs
 			.readFileSync(file, "utf8")
 			.split("\n")
@@ -82,9 +82,9 @@ assert.deepEqual(
 
 // An icon must actually carry a glyph.
 //
-// This is the check that was missing when the catalogue was first written by
+// This is the check that was missing when the catalog was first written by
 // hand: thirty-three glyphs did not survive being typed into the file, and the
-// rule above passed anyway, because "no glyph outside the catalogue" is trivially
+// rule above passed anyway, because "no glyph outside the catalog" is trivially
 // true of an empty string. Nothing warned, nothing failed, and the icons simply
 // stopped being drawn. Never retype a glyph — copy it from the source it already
 // lives in.
@@ -137,4 +137,4 @@ for (const [, groupName, body] of groupBlocks) {
 }
 assert.deepEqual(repeated, [], "a group names the same glyph twice");
 
-console.log("IconCatalogue: every glyph named once, grouped by what it depicts");
+console.log("IconCatalog: every glyph named once, grouped by what it depicts");

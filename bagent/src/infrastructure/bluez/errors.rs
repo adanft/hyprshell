@@ -1,7 +1,7 @@
 //! How a refusal reaches `BlueZ`.
 //!
 //! `BlueZ` treats these two differently, so collapsing them into one would change
-//! behaviour: `Rejected` is a decision and ends the attempt, `Canceled` says the
+//! behavior: `Rejected` is a decision and ends the attempt, `Canceled` says the
 //! exchange fell apart and the device may try again. Mapping a timeout to
 //! `Rejected` would tell a phone it was turned down when nobody ever looked.
 

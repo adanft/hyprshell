@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 import "../../theme"
 
-// The notification centre, its cards and its popups.
+// The notification center, its cards and its popups.
 QtObject {
     readonly property int centerMaxHeight: 720
     readonly property int popupWidth: 380

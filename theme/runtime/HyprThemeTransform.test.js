@@ -42,7 +42,7 @@ for (const invalid of [
 
 // A missing wallpaper is not an error. It is what a shell looks like before one
 // has been picked, and refusing the whole file over it would leave hyprlock and
-// the compositor with no colours at all. A newline is still an error.
+// the compositor with no colors at all. A newline is still an error.
 assert.equal(command.normalizedText("", "wallpaper", true), "");
 assert.equal(command.normalizedText(undefined, "wallpaper", true), "");
 assert.throws(
@@ -109,7 +109,7 @@ assert.deepEqual(
 	],
 );
 
-// Every colour goes through the same validator, so a malformed palette cannot
+// Every color goes through the same validator, so a malformed palette cannot
 // reach either program.
 assert.throws(
 	() => command.renderThemeConf({ primary: "#cba6f7" }, appearance),
@@ -132,7 +132,7 @@ assert.match(unpapered, /^\$primary = rgb\(cba6f7\)$/m);
 assert.match(conf, /^\$on_surface = /m);
 assert.match(conf, /^\$on_surfaceAlpha = /m);
 
-// One live path. A second command that set colours directly would make the file
+// One live path. A second command that set colors directly would make the file
 // and the command each a source of truth, and only one of them would be right.
 assert.deepEqual(JSON.parse(JSON.stringify(command.reloadArguments())), [
 	"hyprctl",
@@ -140,7 +140,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(command.reloadArguments())), [
 ]);
 
 // A reload re-applies monitors, binds and animations, so it is worth spending
-// only on something Hyprland actually reads. It reads the colours; the wallpaper
+// only on something Hyprland actually reads. It reads the colors; the wallpaper
 // and the font belong to the lock screen, which re-reads on its own next launch.
 const other = command.renderThemeConf(theme, {
 	wallpaper: "/home/someone/Wallpapers/two.png",
@@ -154,7 +154,7 @@ const repainted = command.renderThemeConf(
 	appearance,
 );
 assert.equal(command.needsReload(conf, repainted), true);
-// Including the translucent fill, which is a colour spelled differently.
+// Including the translucent fill, which is a color spelled differently.
 const veiled = command.renderThemeConf({ ...theme, surface: "#000000" }, appearance);
 assert.equal(command.needsReload(conf, veiled), true);
 // And an empty file, which is what a first run reads.
@@ -167,7 +167,7 @@ assert.equal(stockThemes.includes("apply_hyprland_theme.sh"), false);
 assert.equal(
 	/hyprctl["'\s,]+eval/.test(stockThemes),
 	false,
-	"colours reach Hyprland through theme.conf, not through a direct eval",
+	"colors reach Hyprland through theme.conf, not through a direct eval",
 );
 assert.match(stockThemes, /HyprTheme\.sync/);
 

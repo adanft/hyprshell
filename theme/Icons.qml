@@ -82,7 +82,7 @@ QtObject {
         readonly property string clock: "󱑂"
         readonly property string calendar: "󰨳"
         readonly property string window: "󰰤"
-        readonly property string controlCentre: ""
+        readonly property string controlCenter: ""
     }
 
     readonly property QtObject capture: QtObject {

@@ -97,7 +97,7 @@ assert.throws(
 	/palette source is not an object/,
 );
 
-// Nothing outside theme/ may name a colour that is not one of the 16 roles:
+// Nothing outside theme/ may name a color that is not one of the 16 roles:
 // that is the whole point of collapsing the palette.
 const ALLOWED = new Set(context.ROLE_NAMES.concat(["clear", "alpha"]));
 const repository = path.resolve(__dirname, "..");
@@ -119,7 +119,7 @@ for (const file of sources) {
 		if (!ALLOWED.has(match[1]))
 			strays.push(`${path.relative(repository, file)}: colors.${match[1]}`);
 }
-assert.deepEqual(strays, [], `colours outside the 16 roles: ${strays.join(", ")}`);
+assert.deepEqual(strays, [], `colors outside the 16 roles: ${strays.join(", ")}`);
 
 // Pointer feedback is one role everywhere. A binding whose condition is only
 // about the pointer — no selection, no device state — must resolve to `hover`
@@ -164,7 +164,7 @@ assert.deepEqual(
 	`pointer feedback must be hover/on_hover: ${offConvention.join(", ")}`,
 );
 
-// A colour that swaps on containsMouse is dead unless its MouseArea opts into
+// A color that swaps on containsMouse is dead unless its MouseArea opts into
 // hover tracking, and hoverEnabled defaults to false. The wrong role is at
 // least visible; this one just never fires.
 const deadHover = [];
@@ -198,7 +198,7 @@ for (const file of qml) {
 assert.deepEqual(
 	deadHover,
 	[],
-	`a hover colour needs hoverEnabled: ${deadHover.join(", ")}`,
+	`a hover color needs hoverEnabled: ${deadHover.join(", ")}`,
 );
 
 // An empty workspace used to be painted colors.outline, the same tone an
@@ -211,7 +211,7 @@ const workspaces = fs.readFileSync(
 	path.join(repository, "features/statusbar/modules/Workspaces.qml"),
 	"utf8",
 );
-// Both resting circles wear one colour, and emptiness is that colour faded.
+// Both resting circles wear one color, and emptiness is that color faded.
 //
 // The shape is what is asserted, not the role or the amount, so both stay free
 // to be tuned. What it holds is that a workspace holding nothing is told apart
@@ -228,7 +228,7 @@ assert.ok(restingBranch, "a resting circle must be one role, faded when empty");
 assert.equal(
 	restingBranch[1],
 	restingBranch[3],
-	`both resting circles must wear one colour, not ${restingBranch[1]} and ${restingBranch[3]}`,
+	`both resting circles must wear one color, not ${restingBranch[1]} and ${restingBranch[3]}`,
 );
 
 const veil = Number(
@@ -238,7 +238,7 @@ const veil = Number(
 );
 assert.ok(
 	Number.isFinite(veil) && veil > 0 && veil < 1,
-	"the fade must be a declared amount between nothing and the full colour",
+	"the fade must be a declared amount between nothing and the full color",
 );
 
 // And the number is not what carries it: the fade belongs to the circle.
@@ -275,27 +275,27 @@ const dimmed = sources.filter((file) =>
 ).length;
 
 // Everything above proves the roles are used. This proves nothing *else* is:
-// a colour can enter the shell as a literal, as a Qt constructor, from the
+// a color can enter the shell as a literal, as a Qt constructor, from the
 // system palette, or by leaving a Qt default in place.
 
-// "transparent" is the absence of a colour, and an OpacityMask stencil reads
+// "transparent" is the absence of a color, and an OpacityMask stencil reads
 // only alpha, so its rgb is not a palette decision. Nothing else may be named.
-const LITERAL_COLOUR =
+const LITERAL_COLOR =
 	/#[0-9a-fA-F]{3,8}\b|"(?:black|white|red|green|blue|yellow|cyan|magenta|gray|grey|orange|purple|pink|brown)"/;
-const CONSTRUCTED_COLOUR = /Qt\.(?:rgba|hsla|hsva|lighter|darker|tint)\s*\(|SystemPalette/;
+const CONSTRUCTED_COLOR = /Qt\.(?:rgba|hsla|hsva|lighter|darker|tint)\s*\(|SystemPalette/;
 
 const smuggled = [];
 for (const file of qml) {
 	const lines = fs.readFileSync(file, "utf8").split("\n");
 	lines.forEach((line, index) => {
 		const where = `${path.relative(repository, file)}:${index + 1}`;
-		if (CONSTRUCTED_COLOUR.test(line)) smuggled.push(`${where} constructs a colour`);
-		if (!LITERAL_COLOUR.test(line)) return;
-		// A mask stencil is the one place a bare colour is honest; it is marked
+		if (CONSTRUCTED_COLOR.test(line)) smuggled.push(`${where} constructs a color`);
+		if (!LITERAL_COLOR.test(line)) return;
+		// A mask stencil is the one place a bare color is honest; it is marked
 		// as such in the two lines above it.
 		const context = lines.slice(Math.max(0, index - 3), index).join(" ");
 		if (/OpacityMask stencil/.test(context)) return;
-		smuggled.push(`${where} names a colour literal`);
+		smuggled.push(`${where} names a color literal`);
 	});
 }
 assert.deepEqual(
@@ -304,7 +304,7 @@ assert.deepEqual(
 	`only the 16 roles may paint: ${smuggled.join(", ")}`,
 );
 
-// A Rectangle that draws a border without naming its colour draws it black.
+// A Rectangle that draws a border without naming its color draws it black.
 const bareBorders = [];
 for (const file of qml) {
 	const lines = fs.readFileSync(file, "utf8").split("\n");
@@ -324,7 +324,7 @@ for (const file of qml) {
 		if (!width || width[1].trim() === "0") return;
 		if (!/^\s*border\.color:/m.test(declared))
 			bareBorders.push(
-				`${path.relative(repository, file)}:${index + 1} draws a border with no colour`,
+				`${path.relative(repository, file)}:${index + 1} draws a border with no color`,
 			);
 	});
 }
@@ -335,7 +335,7 @@ assert.deepEqual(
 );
 
 // The mirror of the check above, and the one that actually bites: border.width
-// defaults to 1, so naming a border colour and nothing else silently draws a
+// defaults to 1, so naming a border color and nothing else silently draws a
 // hairline. Every border has to state both halves.
 const implicitBorders = [];
 for (const file of qml) {
@@ -354,7 +354,7 @@ for (const file of qml) {
 		const declared = own.join("\n");
 		if (/^\s*border\.color:/m.test(declared) && !/^\s*border\.width:/m.test(declared))
 			implicitBorders.push(
-				`${path.relative(repository, file)}:${index + 1} names a border colour without a width`,
+				`${path.relative(repository, file)}:${index + 1} names a border color without a width`,
 			);
 	});
 }

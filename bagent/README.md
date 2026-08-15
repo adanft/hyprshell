@@ -81,7 +81,7 @@ back, or nobody answered in time. Close it.
 An unknown command or an unexpected field is a parse failure, not a shrug, so a
 typo in the shell is loud instead of leaving a dialog waiting forever.
 
-## Behaviour worth knowing before you run it
+## Behavior worth knowing before you run it
 
 **With no shell attached, every pairing that needs a human is refused.** That is
 deliberate — an agent that stays silent leaves BlueZ waiting and the pairing

@@ -16,7 +16,7 @@ import "ThemeSyncState.js" as ThemeSyncState
 // Hyprlock needs no signal; it reads its config when it launches, so the next
 // lock already has the current theme. Hyprland holds its config in memory and
 // has to be told, which is what the reload is for. It is the only live path on
-// purpose: a second command setting colours directly would leave the file and
+// purpose: a second command setting colors directly would leave the file and
 // the command each claiming to be the truth.
 QtObject {
     id: hyprTheme
@@ -129,7 +129,7 @@ QtObject {
             processNext()
     }
 
-    // The state machine exists to serialise reloads and retry a failed one once.
+    // The state machine exists to serialize reloads and retry a failed one once.
     // Its signature argument is what tells one request from another, and here
     // every request is the same request — reload — so the file path stands in for
     // it and `force` keeps it from ever being skipped as a repeat.

@@ -104,7 +104,7 @@ assert.equal(menu.menuCenterHeight(-10, 16, 360, 24, 400, 8, true, 80, 64), 0);
 
 // A ceiling caps the panel before the detail section is allocated, so the
 // detail is sized from the room the panel may occupy rather than from the whole
-// monitor. Omitting it leaves the old behaviour untouched.
+// monitor. Omitting it leaves the old behavior untouched.
 assert.equal(menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 600, 64, 600), 600);
 assert.equal(menu.menuCenterHeight(1000, 16, 360, 24, 400, 8, true, 600, 64), 700);
 // Below the ceiling nothing changes.
@@ -388,7 +388,7 @@ assert.doesNotMatch(
 // The sweep used to skip TrayMenu and AudioControl by name, because it ran over
 // a directory that also held the tray menu and a bar-module helper. Both live
 // outside this slice now, so the sweep covers everything it finds — every file
-// here belongs to the control centre, which is the point of the slice.
+// here belongs to the control center, which is the point of the slice.
 const sliceFiles = [
 	...fs.readdirSync(__dirname).filter((name) => name.endsWith(".qml")),
 	...fs

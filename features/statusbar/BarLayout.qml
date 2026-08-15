@@ -94,7 +94,7 @@ Item {
 
                     AppText {
                         anchors.centerIn: parent
-                        text: root.icons.system.controlCentre
+                        text: root.icons.system.controlCenter
                         color: Colors.tertiary
                         font.family: root.theme.typography.iconFontFamily
                         font.pixelSize: root.theme.typography.glyphMd

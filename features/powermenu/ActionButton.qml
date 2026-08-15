@@ -17,8 +17,8 @@ Rectangle {
     width: PowerMenuSizing.actionSize
     height: PowerMenuSizing.actionSize
     radius: theme.shape.powerMenuActionRadius
-    // The resting state had this the other way round: a surface-coloured body
-    // with a shadow-coloured border and glyph. Swapping them leaves the body the
+    // The resting state had this the other way round: a surface-colored body
+    // with a shadow-colored border and glyph. Swapping them leaves the body the
     // same deep shadow in both states, so the button no longer changes mass when
     // it lights up — only the border and glyph move from muted to accent.
     color: Colors.shadow

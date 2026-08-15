@@ -48,7 +48,7 @@ Rectangle {
             height: card.iconSize
             anchors.verticalCenter: parent.verticalCenter
             radius: card.theme.shape.radius12
-            // No border: border.width defaults to 1, so naming a border colour
+            // No border: border.width defaults to 1, so naming a border color
             // here would draw one. Inactive sits on the menu body's own tone.
             // The icon owns its own hover: bodyArea deliberately starts past it.
             color: toggleArea.containsMouse ? Colors.hover : (card.active ? Colors.primary : Colors.shadow)

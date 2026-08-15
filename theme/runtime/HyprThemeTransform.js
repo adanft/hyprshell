@@ -25,7 +25,7 @@ function normalizedHex(color) {
 // `optional` is for the wallpaper, which is genuinely allowed to be nothing: a
 // shell with none chosen yet still has a palette, and refusing to write the file
 // over a missing picture would cost the lock screen and the compositor all their
-// colours. hyprlang takes an empty value and substitutes it as nothing, which is
+// colors. hyprlang takes an empty value and substitutes it as nothing, which is
 // what an unset background already means to hyprlock.
 function normalizedText(value, label, optional) {
 	var text = typeof value === "string" ? value : "";
@@ -41,9 +41,9 @@ var managedMarker = "# qsrice managed theme";
 // roles; the other eight would be unread names in a file, and every one of them
 // a thing to wonder about later.
 //
-// Two forms per colour where a colour is needed twice: `rgb(hhhhhh)` for colour
+// Two forms per color where a color is needed twice: `rgb(hhhhhh)` for color
 // properties, and the bare hex for the pango markup inside hyprlock's
-// placeholder_text, which is a string and cannot take a colour value. Hyprlang
+// placeholder_text, which is a string and cannot take a color value. Hyprlang
 // does not concatenate, so a translucent fill arrives already composed.
 var VARIABLES = [
 	{ name: "primary", role: "primary", form: "rgb" },
@@ -94,13 +94,13 @@ function renderThemeConf(theme, appearance) {
 
 // Hyprland holds its config in memory, so the file it just read means nothing
 // until it is told to read again. This is the whole live path: no second command
-// setting colours directly, because then the file and the command would each be
+// setting colors directly, because then the file and the command would each be
 // a source of truth and only one of them would be right.
 function reloadArguments() {
 	return ["hyprctl", "reload"];
 }
 
-// Of everything in the file, Hyprland reads only the colours. The wallpaper and
+// Of everything in the file, Hyprland reads only the colors. The wallpaper and
 // the font are the lock screen's, and hyprlock re-reads on its own next launch —
 // so picking a wallpaper should not make the compositor re-apply its monitors,
 // binds and animations for a line it will never look at.

@@ -68,7 +68,7 @@ ShellRoot {
     // only built when its view lays out, and these views never do here because
     // nothing is shown, so a broken binding inside one raises no warning and the
     // run stays green. That is exactly how a card left referencing an undefined
-    // `sizing` reached the user. The control centre's rows do not need this —
+    // `sizing` reached the user. The control center's rows do not need this —
     // each already has a qmltestrunner case of its own.
     Applauncher.AppLauncherCard {
         app: null
@@ -388,7 +388,7 @@ ShellRoot {
 
             settleTimer.running = false
 
-            // A QML colour property whose binding never took reads as opaque
+            // A QML color property whose binding never took reads as opaque
             // black, and nothing else in the suite can see that: the theme data
             // is correct, only the property is dead. Compare every role against
             // the palette it came from.
@@ -396,11 +396,11 @@ ShellRoot {
                 return String(Theme.Colors[role]).toLowerCase() !== String(palette[role]).toLowerCase()
             })
             if (unresolved.length > 0) {
-                console.error(`SMOKETEST: colour roles did not resolve: ${unresolved.join(", ")}`)
+                console.error(`SMOKETEST: color roles did not resolve: ${unresolved.join(", ")}`)
                 Qt.quit()
                 return
             }
-            console.log(`SMOKETEST: ${Object.keys(palette).length - 1} colour roles resolved`)
+            console.log(`SMOKETEST: ${Object.keys(palette).length - 1} color roles resolved`)
             console.log("SMOKETEST: all components instantiated"
                         + ` | colors=${Theme.Colors.on_surface}`
                         + ` | typography=${Theme.AppTheme.typography.textFontFamily}`

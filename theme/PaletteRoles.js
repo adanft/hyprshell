@@ -31,7 +31,7 @@ var ROLE_NAMES = [
 var SURFACE_LADDER = ["shadow", "surface", "surface_variant"];
 
 // Accents that routinely appear side by side in one control. Two of them
-// sharing a value collapses the control into a single flat colour.
+// sharing a value collapses the control into a single flat color.
 var DISTINCT_ACCENTS = ["primary", "secondary", "tertiary", "error", "hover"];
 
 function parseColor(value, label) {

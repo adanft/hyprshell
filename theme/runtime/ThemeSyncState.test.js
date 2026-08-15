@@ -128,7 +128,7 @@ assert.equal(context.finishGhostty(ghostty, false).action, "idle");
 assert.equal(context.requestGhostty(ghostty, true).action, "start");
 assert.equal(context.finishGhostty(ghostty, false).action, "start");
 assert.equal(context.finishGhostty(ghostty, false).action, "idle");
-// The hyprland state machine now drives one reload rather than a colour command,
+// The hyprland state machine now drives one reload rather than a color command,
 // and it moved with it: StockThemes no longer talks to the compositor at all,
 // it writes theme.conf and HyprTheme tells Hyprland to read it.
 const hyprSource = fs.readFileSync(`${__dirname}/HyprTheme.qml`, "utf8");

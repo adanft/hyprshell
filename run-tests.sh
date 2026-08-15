@@ -25,11 +25,11 @@ readonly SMOKE_TIMEOUT=30
 readonly SUCCESS_LINE='SMOKETEST: all components instantiated'
 readonly CAPTURE_LINE='SMOKETEST: capture top-level delta=0 | type=PanelWindow'
 readonly LIFECYCLE_LINE='SMOKETEST: notification lifecycle capture/card/center/dnd/host/error passed'
-readonly ROLES_LINE='SMOKETEST: 16 colour roles resolved'
+readonly ROLES_LINE='SMOKETEST: 16 color roles resolved'
 readonly TIMEOUT_HARNESS_LINE='TIMEOUT-HARNESS: two-copy hover/remaining/destruction/critical/dnd/single-close passed'
 readonly OVERLAY_LIFECYCLE_LINE='OVERLAY-LIFECYCLE-HARNESS: close/reopen/self-close all destroy the item'
 readonly PANEL_INTERACTION_LINE='PANEL-INTERACTION-HARNESS: open/displace/close/reopen passed'
-readonly CENTRE_INTERACTION_LINE='CENTRE-INTERACTION-HARNESS: control centre and notification centre passed'
+readonly CENTER_INTERACTION_LINE='CENTER-INTERACTION-HARNESS: control center and notification center passed'
 
 # Measured cycles for the resource stage, after the unmeasured warm-up one, and
 # the number is what buys the margin rather than the threshold is.
@@ -238,20 +238,20 @@ echo "== QML panel interaction harness =="
 run_interaction_harness "panel interaction" panel-interaction-harness.qml \
 	"$PANEL_INTERACTION_LINE" overlays 30 || failed=1
 
-# The other two panels, which do not open like those five. The control centre
+# The other two panels, which do not open like those five. The control center
 # rises through a signal into a handler inside BarWindow and a loader that
-# BarWindow keeps to itself; the notification centre is the one loader in the
+# BarWindow keeps to itself; the notification center is the one loader in the
 # shell with directVisibility set, a branch nothing else here has ever taken.
 echo
-echo "== QML centre interaction harness =="
-run_interaction_harness "centre interaction" centre-interaction-harness.qml \
-	"$CENTRE_INTERACTION_LINE" sections 40 || failed=1
+echo "== QML center interaction harness =="
+run_interaction_harness "center interaction" center-interaction-harness.qml \
+	"$CENTER_INTERACTION_LINE" sections 40 || failed=1
 
 # smoketest.qml calls Qt.quit() on its own; the timeout only catches a hang.
 smoke_output=$(timeout "$SMOKE_TIMEOUT" qs -p smoketest.qml 2>&1)
 smoke_status=$?
 
-# Strip ANSI colour so the pattern matching sees plain text.
+# Strip ANSI color so the pattern matching sees plain text.
 smoke_output=$(printf '%s\n' "$smoke_output" | sed -E 's/\x1b\[[0-9;]*m//g')
 
 if [[ "$smoke_status" -eq 124 ]]; then
@@ -277,10 +277,10 @@ if ! grep -qF "$LIFECYCLE_LINE" <<<"$smoke_output"; then
 	failed=1
 fi
 
-# A colour role whose QML binding never took reads as black, which no static
+# A color role whose QML binding never took reads as black, which no static
 # check can see. The smoke test compares every role against its palette.
 if ! grep -qF "$ROLES_LINE" <<<"$smoke_output"; then
-	echo "-- FAILED: the 16 colour roles did not resolve to their palette"
+	echo "-- FAILED: the 16 color roles did not resolve to their palette"
 	failed=1
 fi
 

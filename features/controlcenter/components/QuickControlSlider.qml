@@ -6,7 +6,7 @@ import ".."
 Item {
     id: control
 
-    // Still injected rather than read from the AppTheme singleton. Colours no
+    // Still injected rather than read from the AppTheme singleton. Colors no
     // longer need this — theme/runtime now holds everything that pulls in the
     // Quickshell plugin — but the sizing and motion tokens this reads are still
     // stubbed by tst_QuickControlSlider.

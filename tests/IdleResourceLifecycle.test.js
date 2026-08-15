@@ -166,7 +166,7 @@ for (const [overlayPath, namespace] of [
 	);
 }
 
-// Lifecycle behaviour stays inside OverlayLifecycleLoader; the shell must not
+// Lifecycle behavior stays inside OverlayLifecycleLoader; the shell must not
 // reimplement it, whether as named helpers or inline in a handler.
 assert.equal(shell.includes("function openLoader(loader)"), false);
 assert.equal(shell.includes("function toggleLoader(loader)"), false);

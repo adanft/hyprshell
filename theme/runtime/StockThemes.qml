@@ -20,7 +20,7 @@ QtObject {
 
     // Colors is a plain palette holder with no Quickshell dependency, so the
     // active theme is pushed into it rather than pulled out of here. That keeps
-    // every component that reads a colour loadable outside the shell runtime.
+    // every component that reads a color loadable outside the shell runtime.
     onThemeDataChanged: Colors.palette = themeData
 
     // Themes are exactly 16 roles. PaletteRoles validates them; nothing is

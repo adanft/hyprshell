@@ -6,10 +6,10 @@ import "../../../shared/components"
 import ".."
 
 // A Row and nothing wrapping it. It used to be an Item whose implicit size came
-// from an inner Row that was in turn anchored to the centre of that Item: each
+// from an inner Row that was in turn anchored to the center of that Item: each
 // side waiting on the other, which Qt settles inconsistently, so the pills drew
-// off-centre and the widest one spilled past the module's own background. A Row
-// reports its own size, and the bar centres it from outside.
+// off-center and the widest one spilled past the module's own background. A Row
+// reports its own size, and the bar centers it from outside.
 Row {
     id: root
 
@@ -24,7 +24,7 @@ Row {
     required property var services
 
     // How far a workspace holding nothing is faded back from one holding
-    // windows. The two wear the same colour; this is the whole difference.
+    // windows. The two wear the same color; this is the whole difference.
     readonly property real unusedVeil: 0.5
 
     spacing: theme.spacing.space4
@@ -48,7 +48,7 @@ Row {
             // The accent marks one workspace on the whole desk: the one being
             // typed into. A monitor showing a workspace without holding the
             // keyboard says so by the width of its pill, which no other
-            // workspace has, so it needs no colour of its own.
+            // workspace has, so it needs no color of its own.
             readonly property bool accented: active && root.monitorFocused
 
             width: active ? StatusBarSizing.workspaceSlotSize * 2 : StatusBarSizing.workspaceSlotSize
@@ -63,10 +63,10 @@ Row {
                 }
             }
 
-            // Filling the pill rather than sitting centred inside it. A text
+            // Filling the pill rather than sitting centered inside it. A text
             // box is as tall as the font's line — 14.31px here, not a whole
-            // number — so centring it within eighteen puts its top on a
-            // fractional pixel and the glyph rasterises onto whichever row that
+            // number — so centering it within eighteen puts its top on a
+            // fractional pixel and the glyph rasterizes onto whichever row that
             // lands nearest. Given the pill itself to align in, the alignment
             // happens against exact edges instead.
             AppText {
@@ -95,8 +95,8 @@ Row {
     }
 
     // A workspace at rest wears secondary, and one holding nothing wears the
-    // same colour faded back. Emptiness is an amount of one tone rather than a
-    // second tone, so the row stays a single colour with some of it dimmed —
+    // same color faded back. Emptiness is an amount of one tone rather than a
+    // second tone, so the row stays a single color with some of it dimmed —
     // and how dim is a dial rather than a search for a role that lands right.
     //
     // The surface roles are deliberately not used here. They would put these

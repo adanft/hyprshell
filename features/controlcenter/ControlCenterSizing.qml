@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 import "../../theme"
 
-// The control centre's own dimensions.
+// The control center's own dimensions.
 //
 // They carried a statusBar prefix from when this was a menu inside the bar,
 // which stopped being true a while ago and stopped being its name recently.

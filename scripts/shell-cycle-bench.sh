@@ -54,7 +54,7 @@ readonly INTERVAL=1
 # and that is the cost a person actually pays: a desktop shell spends almost all
 # of its life idle.
 #
-# The CPU bound is a median rather than a peak, because the sampler quantises to
+# The CPU bound is a median rather than a peak, because the sampler quantizes to
 # whole ticks and a single tick in a fifteen-second window says nothing. Measured
 # twice over 32 samples each: median 0.00%, peak 2.00%, identically both times.
 # Two therefore fails on anything sustained while tolerating half the window
@@ -237,7 +237,7 @@ fi
 # script, two cycles from cold read as descriptors 70 -> 83, threads 8 -> 19 and
 # RSS +53 MB, none of which is a leak: it is the cost of existing, paid once.
 #
-# A leak grows on every cycle. Lazy initialisation grows on the first. Warming
+# A leak grows on every cycle. Lazy initialization grows on the first. Warming
 # up puts both ends of the comparison on the warm side of that line, so what is
 # left to see is only the part that repeats.
 #

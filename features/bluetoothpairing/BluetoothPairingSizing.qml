@@ -8,7 +8,7 @@ import QtQuick
 // invisible: it added a `space32` that does not exist, got NaN for a height,
 // and drew nothing at all without QML saying a word.
 QtObject {
-    // Matches the control centre's own action buttons. A dialog that answers a
+    // Matches the control center's own action buttons. A dialog that answers a
     // question should not invent a button size the rest of the shell has
     // already settled on.
     readonly property int actionHeight: 38

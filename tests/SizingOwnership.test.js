@@ -7,7 +7,7 @@ const featuresDir = path.join(root, "features");
 
 // A dimension lives with the feature that draws it.
 //
-// Eighty-five per cent of them had exactly one reader, so keeping them central
+// Eighty-five percent of them had exactly one reader, so keeping them central
 // meant every name had to carry its owner — appLauncherMaxWidth said which
 // feature it belonged to because the file it sat in could not. The icons went
 // the other way for the opposite reason: enough of them crossed that splitting
@@ -57,7 +57,7 @@ for (const feature of features) {
 }
 
 // Nothing in the shared file may name a feature: that is the tell that it drifted
-// back to the centre.
+// back to the center.
 const shared = fs.readFileSync(path.join(root, "theme/Sizing.qml"), "utf8");
 const drifted = [...shared.matchAll(/readonly property (?:int|real) (\w+):/g)]
 	.map(([, name]) => name)

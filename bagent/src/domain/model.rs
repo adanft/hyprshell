@@ -9,7 +9,7 @@ use std::fmt;
 /// Identifies one in-flight exchange.
 ///
 /// The token is what the interface sends back with an answer, so a late reply
-/// to a question that has already been withdrawn can be recognised and dropped
+/// to a question that has already been withdrawn can be recognized and dropped
 /// instead of being applied to whatever came next.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 pub struct Token(u64);

@@ -52,7 +52,7 @@ ShellRoot {
     // content Loader mid-incubation and Qt says so, at AppLauncher.qml:354:
     // "Cannot create delegate" and "Object or context destroyed during
     // incubation". That is reachable by hand — two keybinds in quick succession
-    // do it — so it is a real behaviour of the shell, recorded here rather than
+    // do it — so it is a real behavior of the shell, recorded here rather than
     // filtered out of the run. Lower this to see it again.
     readonly property int actionGraceMs: 250
 

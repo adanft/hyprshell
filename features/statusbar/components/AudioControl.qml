@@ -17,7 +17,7 @@ Item {
     readonly property int volume: source ? services.audio.sourceVolume : services.audio.sinkVolume
     readonly property bool muted: source ? services.audio.sourceMuted : services.audio.sinkMuted
     // Muted and unavailable are one state here: iconText() already collapses
-    // them into the same glyph, so the colour follows.
+    // them into the same glyph, so the color follows.
     readonly property bool moduleDisabled: !available || muted
     readonly property color textColor: moduleDisabled ? Colors.outline : Colors.on_surface
 

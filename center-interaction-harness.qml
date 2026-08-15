@@ -4,32 +4,32 @@
 //
 // The overlays go through OverlayArbiter and OverlayLifecycleLoader, and
 // panel-interaction-harness.qml drives that. These two do not. The control
-// centre is opened by a signal that rises BarLayout -> BarContent -> BarWindow
+// center is opened by a signal that rises BarLayout -> BarContent -> BarWindow
 // and lands on a handler inside BarWindow.qml, which toggles its own
 // requestedOpen, flips a private LazyLoader and calls open(anchorItem, section)
-// on the next tick. The notification centre is a loader with
+// on the next tick. The notification center is a loader with
 // directVisibility: true, a branch of OverlayLifecycleLoader that nothing else
 // in the suite has ever taken — the lifecycle harness leaves it at its default.
 //
 // Two things here are real and one is a reconstruction, and the difference
 // matters when reading a failure:
 //
-//   Real: BarWindow's control-centre handler, its private loader, and
+//   Real: BarWindow's control-center handler, its private loader, and
 //     ControlCenter.open()/close(). The signal is emitted on the actual
 //     BarContent instance, so the whole chain below it runs.
 //   Real: OverlayLifecycleLoader with directVisibility set, and the
 //     NotificationCenter it loads.
 //   Reconstructed: the line that connects the bar's notification signal to that
 //     loader, because it is declared in shell.qml and a harness cannot reach
-//     into it. What is proved here is the loader's behaviour, not shell.qml's
+//     into it. What is proved here is the loader's behavior, not shell.qml's
 //     wiring — scripts/shell-cycle-bench.sh is the stage that runs shell.qml.
 //
-// Deliberately stops at the edge of the shell. The control centre's sections
+// Deliberately stops at the edge of the shell. The control center's sections
 // are exercised by name, and nothing is asked of BlueZ or NetworkManager: those
 // live on the system bus, which the isolated session does not isolate, so a
 // test that toggled them would be flipping a real radio on a real machine.
 //
-//     qs -p centre-interaction-harness.qml
+//     qs -p center-interaction-harness.qml
 
 import QtQuick
 import Quickshell
@@ -73,10 +73,10 @@ ShellRoot {
         services: serviceState
 
         // The reconstruction. shell.qml writes this same line.
-        onOpenNotificationCenterRequested: notificationCentreLoader.toggle()
+        onOpenNotificationCenterRequested: notificationCenterLoader.toggle()
 
         OverlayLifecycleLoader {
-            id: notificationCentreLoader
+            id: notificationCenterLoader
 
             directVisibility: true
 
@@ -84,7 +84,7 @@ ShellRoot {
 
             Notifications.NotificationCenter {
                 services: serviceState
-                barWindow: notificationCentreLoader.ownerWindow
+                barWindow: notificationCenterLoader.ownerWindow
             }
         }
     }
@@ -94,7 +94,7 @@ ShellRoot {
     // and only a reference we hold can prove what it did. One says the path
     // works, the other says the panel does.
     Controlcenter.ControlCenter {
-        id: directCentre
+        id: directCenter
 
         services: serviceState
         barWindow: barWindow
@@ -107,7 +107,7 @@ ShellRoot {
         // either way — so this is not fixing an observed run of duplicate lines,
         // it is removing the race that decides whether there is one.
         pollTimer.running = false;
-        console.error(`CENTRE-INTERACTION-HARNESS: ${message}`);
+        console.error(`CENTER-INTERACTION-HARNESS: ${message}`);
         Qt.quit();
     }
 
@@ -140,12 +140,12 @@ ShellRoot {
         if (root.phase === 1 || root.phase === 2)
             return true;
         if (root.phase === 3)
-            return directCentre.menuOpen && directCentre.expandedNetworkSection === root.sections[root.sectionIndex];
+            return directCenter.menuOpen && directCenter.expandedNetworkSection === root.sections[root.sectionIndex];
         if (root.phase === 4)
-            return !directCentre.menuOpen;
+            return !directCenter.menuOpen;
         if (root.phase === 5)
-            return notificationCentreLoader.item !== null && notificationCentreLoader.item.visible;
-        return notificationCentreLoader.item === null;
+            return notificationCenterLoader.item !== null && notificationCenterLoader.item.visible;
+        return notificationCenterLoader.item === null;
     }
 
     Timer {
@@ -177,7 +177,7 @@ ShellRoot {
             root.barContent = root.findBarContent(barWindow.contentItem);
             root.sectionIndex = 0;
             root.phase = 1;
-            root.waitingFor = "the bar to accept a control centre request";
+            root.waitingFor = "the bar to accept a control center request";
             return;
         }
 
@@ -219,8 +219,8 @@ ShellRoot {
 
             root.sectionIndex = 0;
             root.phase = 3;
-            root.waitingFor = `the control centre to open on section "${root.sections[0]}"`;
-            directCentre.open(root.barContent, root.sections[0]);
+            root.waitingFor = `the control center to open on section "${root.sections[0]}"`;
+            directCenter.open(root.barContent, root.sections[0]);
             return;
         }
 
@@ -229,8 +229,8 @@ ShellRoot {
         // break silently.
         if (root.phase === 3) {
             root.phase = 4;
-            root.waitingFor = "the control centre to close";
-            directCentre.close();
+            root.waitingFor = "the control center to close";
+            directCenter.close();
             return;
         }
 
@@ -238,13 +238,13 @@ ShellRoot {
             root.sectionIndex++;
             if (root.sectionIndex < root.sections.length) {
                 root.phase = 3;
-                root.waitingFor = `the control centre to open on section "${root.sections[root.sectionIndex]}"`;
-                directCentre.open(root.barContent, root.sections[root.sectionIndex]);
+                root.waitingFor = `the control center to open on section "${root.sections[root.sectionIndex]}"`;
+                directCenter.open(root.barContent, root.sections[root.sectionIndex]);
                 return;
             }
 
             root.phase = 5;
-            root.waitingFor = "the notification centre to open";
+            root.waitingFor = "the notification center to open";
             barWindow.openNotificationCenterRequested();
             return;
         }
@@ -255,15 +255,15 @@ ShellRoot {
             // rather than when it reports closing. Both halves are only reached
             // through this flag.
             root.phase = 6;
-            root.waitingFor = "the notification centre to be destroyed on toggle";
-            notificationCentreLoader.toggle();
+            root.waitingFor = "the notification center to be destroyed on toggle";
+            notificationCenterLoader.toggle();
             return;
         }
 
         pollTimer.running = false;
 
-        console.info(`CENTRE-INTERACTION-HARNESS: sections exercised: ${root.sections.length}`);
-        console.info("CENTRE-INTERACTION-HARNESS: control centre and notification centre passed");
+        console.info(`CENTER-INTERACTION-HARNESS: sections exercised: ${root.sections.length}`);
+        console.info("CENTER-INTERACTION-HARNESS: control center and notification center passed");
         Qt.quit();
     }
 }

@@ -1,4 +1,4 @@
-//! Turning an object path into a name a person recognises.
+//! Turning an object path into a name a person recognizes.
 //!
 //! `/org/bluez/hci0/dev_AA_BB_CC_DD_EE_FF` tells a user nothing. `BlueZ` knows
 //! the alias, so this asks. It is a separate adapter because a change in how

@@ -166,7 +166,7 @@ Scope {
             }
 
             // Do not disturb suppresses the popup, never the notification
-            // itself: it is tracked above first, so the centre still lists
+            // itself: it is tracked above first, so the center still lists
             // everything that arrived. Critical passes through, because the
             // point of it is the message you cannot afford to miss.
             if (root.notificationSuppressedByDnd(policy, notification)) {
@@ -257,7 +257,7 @@ Scope {
     }
 
     // clearNotificationPopups() stays absolute, because its other two callers
-    // are the user clearing everything and the centre taking over the display.
+    // are the user clearing everything and the center taking over the display.
     // Turning do not disturb on is neither: it must leave criticals standing.
     function clearNonCriticalNotificationPopups() {
         const isCritical = popup => popup && popup.urgency === NotificationUrgency.Critical

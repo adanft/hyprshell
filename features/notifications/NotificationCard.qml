@@ -516,9 +516,37 @@ Item {
                     }
 
                     Row {
+                        id: actionsRow
+
                         width: parent.width
                         spacing: card.actionSpacing
                         visible: card.hasActions
+
+                        // The row is shared out rather than left to each button
+                        // to size itself. A label is text the sender chose and
+                        // of no length anyone promised — a file name off a
+                        // hint, or whatever an application put on its own
+                        // action — and a Row does not wrap, inside a card that
+                        // clips. Sized from the text alone, one long label
+                        // pushes the buttons beside it past the card edge,
+                        // where they cannot be read and cannot be pressed.
+                        //
+                        // Below the minimum width the share wins anyway: a
+                        // cramped button that is still there beats a
+                        // comfortable one that is not.
+                        //
+                        // Floored at zero because the share is not bounded
+                        // below. The sender decides how many actions arrive, so
+                        // enough of them makes the spacing alone eat the row and
+                        // turn the subtraction negative — and a negative width
+                        // reaches the label as a negative width too, which is
+                        // not something a text layout is built to take. The
+                        // floor is what keeps the many-button case degrading
+                        // into cramped rather than into undefined.
+                        readonly property real buttonShare: card.actionCount > 0 ? Math.max(0, (width
+                                                                                                - card.actionSpacing
+                                                                                                * (card.actionCount - 1))
+                                                                                               / card.actionCount) : 0
 
                         Repeater {
                             model: card.actionCount
@@ -527,8 +555,10 @@ Item {
                                 required property int index
                                 readonly property var action: card.invokableActionAt(index)
 
-                                width: Math.max(actionText.implicitWidth + card.actionButtonHorizontalPadding,
-                                                card.actionButtonMinWidth)
+                                width: Math.min(Math.max(actionText.implicitWidth
+                                                         + card.actionButtonHorizontalPadding,
+                                                         card.actionButtonMinWidth),
+                                                actionsRow.buttonShare)
                                 height: card.actionButtonHeight
                                 radius: card.actionButtonRadius
                                 color: actionMouse.containsMouse || actionMouse.activeFocus ? Colors.hover : Colors.surface
@@ -538,6 +568,37 @@ Item {
                                     id: actionText
 
                                     anchors.centerIn: parent
+                                    // elide has nothing to elide within until
+                                    // the text is given a width. Left at its
+                                    // implicit one — which is what it was, and
+                                    // what the button above is measured from —
+                                    // the property was set and could never
+                                    // fire, so a long label grew instead of
+                                    // shortening. The button's own width is
+                                    // derived from implicitWidth rather than
+                                    // from this, so reading it back here does
+                                    // not feed itself.
+                                    // Floored for the same reason the share
+                                    // above is, and review had to point out
+                                    // that flooring the share alone only moved
+                                    // the problem down here: once enough
+                                    // actions squeeze a button narrower than
+                                    // its own padding, this subtraction is what
+                                    // goes negative instead.
+                                    width: Math.max(0, Math.min(implicitWidth,
+                                                                parent.width
+                                                                - card.actionButtonHorizontalPadding))
+                                    // Only the elided case can leave slack:
+                                    // elision cuts on a character boundary, so
+                                    // what is drawn is a little narrower than
+                                    // the width it was given. Unelided the
+                                    // width is the text's own and there is
+                                    // nothing to align. Review asked whether
+                                    // this carries weight — it carries that
+                                    // sliver, and centring it matches the
+                                    // anchors above rather than falling back to
+                                    // the left-aligned default.
+                                    horizontalAlignment: Text.AlignHCenter
                                     text: parent.action ? (parent.action.text || "Open") : "Open"
                                     color: actionMouse.containsMouse ? Colors.on_hover : Colors.on_surface_variant
                                     font.family: card.textFont

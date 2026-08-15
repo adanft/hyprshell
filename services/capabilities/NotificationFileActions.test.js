@@ -96,9 +96,42 @@ assert.equal(files.baseNameOf(path), "screenshot 2026-08-15.png");
 assert.equal(files.baseNameOf("/shot.png"), "shot.png");
 assert.equal(files.baseNameOf("shot.png"), "shot.png");
 assert.equal(files.baseNameOf(""), "");
-// A path ending in a slash has no name to show, and a button reading "Open "
-// with nothing after it would be worse than one reading "Open".
+// Unreachable through actionsFor, because isUsablePath refuses a path with no
+// name. Kept because openTextFor is exported on its own, and because "Open "
+// with nothing after it would be the worst of the three answers.
 assert.equal(files.openTextFor("/tmp/"), "Open");
+
+// A trailing slash is refused, and that is about the buttons rather than the
+// shell: "open this file" and "show me where it is" mean nothing about a
+// directory, and a path with no name would put back the bare "Open" that
+// naming the file exists to prevent.
+assert.equal(files.isUsablePath("/tmp/shot.png"), true);
+assert.equal(files.isUsablePath("/tmp/"), false);
+assert.equal(files.isUsablePath("/"), false);
+assert.equal(files.decodeFileUrl("file:///tmp/"), "");
+assert.equal(files.decodeFileUrl("file:///"), "");
+assert.deepEqual(files.actionsFor("/tmp/", () => {}), []);
+// A directory url must not stop a file url behind it from being used.
+assert.equal(files.firstLocalPath({ "x-kde-urls": ["file:///tmp/", "file:///tmp/b.png"] }), "/tmp/b.png");
+
+// The label is drawn from the path, so a character that changes how the rest of
+// a name renders can make the button disagree with the file it opens. A
+// right-to-left override is the sharp one: it reverses what follows, so
+// "txt.exe" reads as "exe.txt" while the process still receives the first.
+const rtlo = String.fromCharCode(0x202e);
+assert.equal(files.isUsablePath(`/tmp/holiday${rtlo}txt.exe`), false);
+assert.equal(files.decodeFileUrl(`file:///tmp/holiday%E2%80%AEtxt.exe`), "");
+// The rest of the bidirectional set, and the marks that come with it.
+for (const code of [0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x2066, 0x2067, 0x2068, 0x2069])
+	assert.equal(files.isUsablePath(`/tmp/a${String.fromCharCode(code)}b.png`), false, `U+${code.toString(16)}`);
+// C0 and DEL, which subsume the carriage return and newline this used to name
+// on their own. A NUL is the one that would end the argument early.
+for (const code of [0x00, 0x09, 0x0a, 0x0d, 0x1b, 0x7f])
+	assert.equal(files.isUsablePath(`/tmp/a${String.fromCharCode(code)}b.png`), false, `U+${code.toString(16)}`);
+// An ordinary non-ASCII name is not collateral: only the formatting characters
+// are refused, not everything outside ASCII.
+assert.equal(files.isUsablePath("/tmp/mañana-café-日本語.png"), true);
+assert.equal(files.decodeFileUrl("file:///tmp/ma%C3%B1ana.png"), "/tmp/ma\u00f1ana.png");
 assert.equal(built.some(action => action.identifier === "default"), false);
 
 built[0].invoke();

@@ -40,13 +40,30 @@ function urlList(hints) {
 	return urls;
 }
 
-// The path reaches a shell command below, so it is checked rather than trusted:
-// any program on the bus can send this hint. Absolute and single-line, and free
-// of the quote that would otherwise land inside the D-Bus literal in
-// revealArguments and change its shape.
+// Everything a path must be before it is allowed to name a button, because any
+// program on the bus can send this hint and the value reaches both a shell
+// command and a label rendered in the shell's own chrome.
+//
+// Absolute, and not ending in a slash. The second is about the buttons rather
+// than the shell: these two say "open this file" and "show me where it is",
+// neither of which means anything about a directory, and a path with no name
+// would put back the bare "Open" that naming the file exists to prevent.
+// Refusing it here rather than at the label keeps one invariant everywhere —
+// a usable path has a file name.
+//
+// The rejected characters were once just carriage return, newline and the
+// quote, which was enough while the path only had to survive the D-Bus literal
+// in revealArguments. It stopped being enough when the label started being
+// derived from the path: a right-to-left override reverses how the rest of the
+// name renders, so "Open txt.exe" can be made to read "Open exe.txt" while the
+// process still receives the first. The class now covers the C0 controls, DEL,
+// and the bidirectional formatting characters, so a label cannot disagree with
+// what it opens. \r and \n are inside the C0 range and no longer named twice.
+var REFUSED_IN_PATH = /[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069']/;
+
 function isUsablePath(value) {
 	var path = typeof value === "string" ? value : "";
-	return path.startsWith("/") && !/[\r\n']/.test(path);
+	return path.startsWith("/") && !path.endsWith("/") && !REFUSED_IN_PATH.test(path);
 }
 
 // Only `file://`, and only with an empty authority. The field carries URLs in
@@ -100,6 +117,11 @@ function baseNameOf(path) {
 // affordance unable to misrepresent itself, and it is also what removes the
 // reason the buttons used to displace the sender's own: "Open screenshot.png"
 // does not collide with an "Open" the sender offered.
+//
+// isUsablePath already refuses a path with no name, so the fallback is not
+// reachable through actionsFor. It stays because this is exported and tested on
+// its own, and because "Open " with nothing after it would be the worst of the
+// three answers.
 function openTextFor(path) {
 	var name = baseNameOf(path);
 	return name ? OPEN_TEXT + " " + name : OPEN_TEXT;

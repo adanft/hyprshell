@@ -22,6 +22,8 @@
 
 import QtQuick
 import Quickshell
+import Quickshell.Services.Notifications
+import "services/capabilities/NotificationFileActions.js" as NotificationFileActions
 import "features/applauncher" as Applauncher
 import "features/notifications" as Notifications
 import "features/powermenu" as Powermenu
@@ -174,6 +176,104 @@ ShellRoot {
             width: 320
             notificationService: serviceState.notification
         }
+    }
+
+    // An action label is text the sender chose, and nothing promised how long it
+    // would be: a file name off an x-kde-urls hint, or whatever an application
+    // put on its own button. The row does not wrap and the card clips, so a
+    // button sized from its text alone pushes its neighbours past the edge,
+    // where they can be neither read nor pressed.
+    //
+    // This is geometry, so nothing static can see it, and the property meant to
+    // prevent it was already set and already dead: the label carried
+    // elide: Text.ElideRight with no width to elide within, which is exactly the
+    // shape of a check that cannot fail. Asserted here with a name long enough
+    // to overflow on purpose.
+    function exerciseNotificationActionGeometry(service) {
+        // One long label in two buttons, which is the case the fix was written
+        // for, and then a crowded row, which is the case the share exists for.
+        // The first alone left the division that computes the share unexercised
+        // for any count but two, and that division is the whole reason a
+        // sender's fifth action cannot push the others off the card.
+        const longName = "a-screenshot-with-a-deliberately-unreasonable-file-name-for-this-check.png"
+        const ours = NotificationFileActions.actionsFor(`/tmp/${longName}`, function () {})
+        const crowd = []
+        for (let index = 0; index < 6; index++)
+            crowd.push({ identifier: `sender-${index}`, text: `Sender action ${index}`, invoke: function () {} })
+
+        return smoketest.checkNotificationActionGeometry(service, "one long label", ours, 2)
+            && smoketest.checkNotificationActionGeometry(service, "a crowded row", crowd.concat(ours), 8)
+    }
+
+    function checkNotificationActionGeometry(service, label, actions, expected) {
+        const entry = {
+            id: `smoketest-action-geometry-${expected}`,
+            summary: "Screenshot captured",
+            body: "",
+            appName: "smoketest",
+            image: "",
+            urgency: NotificationUrgency.Low,
+            actions: actions,
+            createdAt: Date.now(),
+            timestamp: Date.now()
+        }
+        const card = lifecycleCardComponent.createObject(service.notificationImageCaptureHost,
+                                                         { notificationData: entry, expanded: true })
+        if (!card) {
+            console.error(`SMOKETEST: notification action geometry card did not build for ${label}`)
+            Qt.quit()
+            return false
+        }
+
+        // Nothing here asserts a non-negative width. Both widths are floored in
+        // the card itself, so such a branch could not run, and a branch that
+        // cannot run is the shape of a check that only looks like one — which
+        // is the whole reason this function exists.
+        const buttons = smoketest.notificationActionButtons(card)
+        let failure = ""
+        if (buttons.length !== expected)
+            failure = `expected ${expected} action buttons, found ${buttons.length}`
+        for (const button of buttons) {
+            if (failure)
+                break
+            const text = button.children.find(child => child.hasOwnProperty("elide"))
+            // Half a pixel of slack, because these are logical pixels laid out
+            // in floating point and an exact comparison would fail on a rounding
+            // difference rather than on anything anyone could see.
+            if (!text)
+                failure = "an action button has no label"
+            else if (button.x + button.width > card.width + 0.5)
+                failure = `an action button reaches ${button.x + button.width} past the card's ${card.width}`
+            else if (text.width > button.width + 0.5)
+                failure = `an action label is wider than its button, ${text.width} against ${button.width}`
+            else if (text.implicitWidth > text.width && !text.truncated)
+                failure = "an action label overflows its width without eliding"
+        }
+
+        card.destroy()
+        if (failure) {
+            console.error(`SMOKETEST: notification action geometry (${label}): ${failure}`)
+            Qt.quit()
+            return false
+        }
+        return true
+    }
+
+    function notificationActionButtons(item) {
+        if (!item)
+            return []
+        const found = []
+        const walk = node => {
+            if (!node)
+                return
+            for (const child of (node.children || [])) {
+                if (child.hasOwnProperty("action") && child.hasOwnProperty("index"))
+                    found.push(child)
+                walk(child)
+            }
+        }
+        walk(item)
+        return found
     }
 
     function exerciseNotificationImageCapture(host) {
@@ -336,6 +436,8 @@ ShellRoot {
             }
             cardA.destroy()
             cardB.destroy()
+            if (!smoketest.exerciseNotificationActionGeometry(service))
+                return
             service.notificationHistory = service.notificationHistory.filter(entry => entry.id !== missingA.id
                                                                                && entry.id !== missingB.id)
             service.removeOwnedNotificationImage(published)

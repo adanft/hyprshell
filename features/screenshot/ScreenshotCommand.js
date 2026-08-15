@@ -41,7 +41,21 @@ case "$mode" in
   *) grim "$@" "$file" ;;
 esac
 wl-copy --type image/png < "$file"
-notify-send -u low -i image-png "Screenshot captured" "$(basename "$file")
+# x-kde-urls names the file for the shell, which is the notification daemon as
+# well as the thing that asked for this capture but has no other way to learn
+# what the name turned out to be. The hint is KDE's rather than ours on purpose:
+# Plasma, winbar and ukui-notification-daemon all already read it, so this
+# script keeps working as a screenshot tool under any of them.
+#
+# Sent, not clicked: a notify-send -A button would belong to this script, so it
+# would have to sit here waiting for the click and would die with the popup.
+#
+# A path is not a URI. Only two characters break the trip: a percent, which the
+# reader would take for an escape, and a quote, which would close the variant
+# literal below. Percent goes first or it would escape its own replacement.
+url=$(printf 'file://%s' "$file" | sed -e 's/%/%25/g' -e "s/'/%27/g")
+notify-send -u low -i image-png -h "variant:x-kde-urls:['$url']" \
+  "Screenshot captured" "$(basename "$file")
 Copied to clipboard"
 trap - EXIT HUP INT TERM
 `;

@@ -6,6 +6,7 @@ import Quickshell.Services.Notifications
 import "NotificationImagePersistence.js" as NotificationImagePersistence
 import "NotificationTimeActivity.js" as NotificationTimeActivity
 import "NotificationPopupTimeoutState.js" as NotificationPopupTimeoutState
+import "NotificationFileActions.js" as NotificationFileActions
 
 Scope {
     id: root
@@ -151,6 +152,9 @@ Scope {
         bodyMarkupSupported: true
         imageSupported: true
         persistenceSupported: true
+        // How a sender learns this shell will do something with the hint. KDE
+        // advertises the same string, and winbar copied it for the same reason.
+        extraHints: [NotificationFileActions.HINT_KEY]
         onNotification: notification => {
             const policy = root.evaluateNotificationPolicy(notification)
             if (policy.block) {
@@ -310,9 +314,34 @@ Scope {
         return true
     }
 
+    // The capture script names the file it just wrote in a hint, because the
+    // shell cannot hand itself a notification and so still hears about its own
+    // screenshot the same way it hears about anything else. Built here rather
+    // than sent as `notify-send -A` buttons, which would belong to the script
+    // and die with it — these are plain data, so they outlive the popup and
+    // still work from the notification center.
+    function notificationFileActions(path) {
+        return NotificationFileActions.actionsFor(path, function (args) {
+            Quickshell.execDetached(args)
+        })
+    }
+
+    function notificationFilePath(notification) {
+        return NotificationFileActions.firstLocalPath(notification ? notification.hints : null)
+    }
+
+    function resolveNotificationActions(notification) {
+        return NotificationFileActions.resolveActions(notification ? notification.actions : null,
+                                                      notification ? notification.hints : null,
+                                                      function (args) {
+                                                          Quickshell.execDetached(args)
+                                                      })
+    }
+
     function createNotificationPopup(notification, policy, historyEntryId) {
         root.notificationPopupSequence += 1
         const body = root.stripImages(notification.body || "")
+        const filePath = root.notificationFilePath(notification)
         const popup = {
             id: root.notificationPopupSequence,
             summary: root.stripImages(notification.summary || "Notification"),
@@ -325,7 +354,8 @@ Scope {
             persistedImagePath: "",
             ownedImage: false,
             urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
-            actions: notification.actions || [],
+            actions: root.resolveNotificationActions(notification),
+            filePath: filePath,
             transient: notification.transient,
             historyEntryId: historyEntryId || "",
             createdAt: Date.now()
@@ -354,6 +384,7 @@ Scope {
     function createNotificationHistoryEntry(notification, policy) {
         const body = root.stripImages(notification.body || "")
         const createdAt = Date.now()
+        const filePath = root.notificationFilePath(notification)
         return {
             id: `${createdAt}-${Math.random()}`,
             notification: notification,
@@ -365,7 +396,8 @@ Scope {
             desktopEntry: notification.desktopEntry || "",
             image: notification.image || "",
             urgency: policy && typeof policy.urgency === "number" ? policy.urgency : notification.urgency,
-            actions: notification.actions || [],
+            actions: root.resolveNotificationActions(notification),
+            filePath: filePath,
             createdAt: createdAt,
             timestamp: createdAt
         }
@@ -784,7 +816,13 @@ Scope {
             persistedImagePath: item.ownedImage ? item.persistedImagePath || "" : "",
             ownedImage: item.ownedImage === true,
             urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
+            // A sender's action carries a callback into a process that may be
+            // gone by the next run, so none of them survive the file. A
+            // file path is a string, and the buttons it stands for are built on
+            // this side, so it does — which is the whole reason they still work
+            // in the center days later, and why they outlive the sender's own.
             actions: [],
+            filePath: item.filePath || "",
             createdAt: item.createdAt || item.timestamp || Date.now(),
             timestamp: item.timestamp || item.createdAt || Date.now()
         }))
@@ -805,7 +843,12 @@ Scope {
             persistedImagePath: item.ownedImage === true ? item.persistedImagePath || "" : "",
             ownedImage: item.ownedImage === true,
             urgency: typeof item.urgency === "number" ? item.urgency : NotificationUrgency.Normal,
-            actions: [],
+            // Rebuilt from the stored path rather than restored, because an
+            // action is a live callback and only its subject can be written
+            // down. The guard runs again here: the file is editable by hand,
+            // and last run's check says nothing about this run's contents.
+            actions: root.notificationFileActions(item.filePath || ""),
+            filePath: NotificationFileActions.isUsablePath(item.filePath) ? item.filePath : "",
             createdAt: item.createdAt || item.timestamp || Date.now(),
             timestamp: item.timestamp || item.createdAt || Date.now()
         }))

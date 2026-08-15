@@ -53,4 +53,39 @@ assert.ok(
 	"the wait must run before the capture",
 );
 
+// The hint is how the shell learns which file this capture wrote, and it is the
+// only thing standing between a screenshot notification and two dead buttons.
+// The key is spelled in one other place, so it is read from there rather than
+// typed again: two copies of a string nobody checks is how they drift.
+const hintKey = require("../../services/capabilities/NotificationFileActions.js").HINT_KEY;
+assert.ok(
+	script.includes(`-h "variant:${hintKey}:['$url']"`),
+	`the capture must name its file in the ${hintKey} hint`,
+);
+// The signature is `as`, so the value is a list even when it holds one entry,
+// and each entry is a URI rather than a path. A scalar string here is what
+// ukui-notification-daemon sends and what Plasma refuses to read.
+assert.match(script, /printf 'file:\/\/%s'/);
+// Percent before quote: the other order would escape the replacement's own
+// percent and turn every quote into %2527.
+assert.ok(
+	script.indexOf("s/%/%25/g") < script.indexOf("s/'/%27/g"),
+	"percent must be encoded before the quote",
+);
+// Sent, not clicked: an action flag would make the button this script's own and
+// hold the process open waiting for it, which is what the hint exists to avoid.
+// Comments are stripped first — the prose above says "notify-send -A" to explain
+// why it is absent, and matching that would fail the run for saying so.
+const commands = script
+	.split("\n")
+	.filter(line => !/^\s*#/.test(line))
+	.join("\n");
+assert.equal(/notify-send[^\n]*(-A|--action)/.test(commands), false);
+// After the file exists and after the clipboard copy: a hint pointing at a path
+// nothing has written yet would open an empty viewer.
+assert.ok(
+	script.indexOf("wl-copy") < script.indexOf(hintKey),
+	"the hint must be sent after the file is written",
+);
+
 console.log("ScreenshotCommand: dynamic values remain positional and names are exclusive");

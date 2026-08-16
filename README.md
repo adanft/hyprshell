@@ -551,3 +551,7 @@ the design tokens — colors, typography, spacing, icons, shape, motion — in
 - The palettes are the work of their own authors: Catppuccin, Kanagawa,
   Rosé Pine, Ayu, One Dark, Atom One, Palenight, Aura, Aurora X and
   Hack The Box.
+
+## License
+
+[MIT](LICENSE). Use it, change it, ship it — ship the licence file with it.

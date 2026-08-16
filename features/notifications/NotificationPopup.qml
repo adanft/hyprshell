@@ -56,7 +56,7 @@ Item {
         property: "enterOffset"
         to: 0
         duration: popup.enterAnimationMs
-        easing.type: Easing.Linear
+        easing.type: popup.theme.motion.easingStandard
     }
 
     NumberAnimation {
@@ -66,7 +66,11 @@ Item {
         property: "enterOffset"
         to: popup.width + popup.theme.spacing.space16
         duration: popup.enterAnimationMs
-        easing.type: Easing.Linear
+        // The one curve here that is not the standard one. This is the only
+        // movement in the card that ends with nothing on screen, and a card that
+        // gathers speed on the way out reads as dismissed, where one that eases to
+        // a stop at the edge reads as hesitating.
+        easing.type: popup.theme.motion.easingExit
         onFinished: popup.exitFinished()
     }
 
@@ -102,7 +106,7 @@ Item {
 
         NumberAnimation {
             duration: popup.moveAnimationMs
-            easing.type: Easing.Linear
+            easing.type: popup.theme.motion.easingStandard
         }
     }
 }

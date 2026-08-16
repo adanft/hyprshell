@@ -357,7 +357,17 @@ Item {
 
                     width: card.iconSlotSize
                     height: card.iconSlotSize
-                    anchors.verticalCenter: parent.verticalCenter
+                    // Pinned to the top, like the close button across the row
+                    // (`closeButtonSlot`) and the chevron below it, which both
+                    // already were. Centered, it was the one thing in the header
+                    // that moved: this Row takes its height from its tallest
+                    // child, that child is the column whose body height is
+                    // animated, so the center it was anchored to slid down
+                    // through the whole expand and the icon slid with it — half
+                    // the growth, which on a long notification is further than
+                    // the icon is tall, while everything beside it stayed put.
+                    // A search for "Animation" never finds this; it is an anchor.
+                    anchors.top: parent.top
 
                     Image {
                         id: notificationImage
@@ -749,7 +759,7 @@ Item {
             id: renderedHeightAnimation
 
             duration: card.resizeAnimationMs
-            easing.type: Easing.Linear
+            easing.type: card.theme.motion.easingStandard
             onRunningChanged: card.inlineHeightAnimating = running
             onFinished: {
                 allocationFinalizeTimer.stop()

@@ -59,7 +59,7 @@ Row {
             Behavior on width {
                 NumberAnimation {
                     duration: root.theme.motion.durationShort
-                    easing.type: Easing.OutCubic
+                    easing.type: root.theme.motion.easingStandard
                 }
             }
 

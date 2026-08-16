@@ -15,7 +15,12 @@ PopupWindow {
     readonly property int bottomMargin: theme.spacing.space12
     readonly property int spacing: theme.spacing.space6
     property var popupItems: []
+    // Two heights, because they answer different questions. `stackHeight` is how
+    // tall the cards are drawn right now and moves every frame; `allocatedStackHeight`
+    // is how much room they have been promised and steps once per gesture. The
+    // window takes the second, and is therefore never smaller than the first.
     property real stackHeight: 0
+    property real allocatedStackHeight: 0
     property bool popupRepositionScheduled: false
     property bool popupRepositionWithoutYAnimation: false
     property string hoverOwnerId: ""
@@ -178,18 +183,9 @@ PopupWindow {
         }
     }
 
-    function calculateStackHeight() {
-        let y = 0
-        for (const item of popupItems) {
-            if (!item)
-                continue
-            y += root.popupSlotHeight(item) + root.spacing
-        }
-        return Math.max(0, y - root.spacing)
-    }
-
     function repositionPopups() {
         let y = 0
+        let allocated = 0
         for (const item of popupItems) {
             if (!item)
                 continue
@@ -199,20 +195,69 @@ PopupWindow {
                 item.y = y
 
             y += root.popupSlotHeight(item) + root.spacing
+            allocated += root.popupSlotAllocation(item) + root.spacing
         }
         stackHeight = Math.max(0, y - root.spacing)
+        allocatedStackHeight = Math.max(0, allocated - root.spacing)
     }
 
+    // Where a card sits, measured by what is actually painted this frame, so the
+    // cards below follow one that is growing instead of waiting for it to land.
+    // This only writes `y` on sibling items, which costs nothing outside this
+    // process — unlike the window, below.
+    //
+    // Read honestly, with no `||` chain. Zero used to fall through to
+    // `layoutHeight`, because zero is falsy, so a card that had not been given
+    // its data yet reserved the FULL slot for one frame and then collapsed to a
+    // few pixels before growing back. A fallback that cannot tell "not ready
+    // yet" from "nothing to show" reports the wrong one confidently.
     function popupSlotHeight(item) {
         if (!item)
             return 0
 
-        return item.renderedLayoutHeight || item.layoutHeight || 0
+        const rendered = Number(item.renderedLayoutHeight)
+        return Number.isFinite(rendered) && rendered > 0 ? rendered : 0
+    }
+
+    // What the WINDOW is sized by, and it must not be the painted height.
+    //
+    // This object is a PopupWindow — a real xdg_popup surface. Sizing it from a
+    // value that moves every frame asks the compositor to reconfigure that
+    // surface about thirteen times per expand at 60Hz, and twice that at 144.
+    // Nobody wrote "animate the window"; it arrived through the card's height
+    // Behavior and came out here.
+    //
+    // `allocatedLayoutHeight` is already the shape a container wants: the card
+    // computes it as the max of where it was and where it is going, and holds it
+    // there until the movement settles. So it steps once per gesture rather than
+    // once per frame, and it is never below what is painted — which is what lets
+    // `popupLayer`'s clip stay honest instead of cutting off the bottom of a
+    // card that is still growing.
+    function popupSlotAllocation(item) {
+        if (!item)
+            return 0
+
+        const allocated = Number(item.allocatedLayoutHeight)
+        if (Number.isFinite(allocated) && allocated > 0)
+            return allocated
+
+        // A card is given its data and measured in the same call stack, one turn
+        // before the deferred pass that sets its geometry, so for that turn it
+        // reports no allocation while already knowing how tall it will be. Only
+        // this reader falls back, and only to the card's own target: this is the
+        // one measurement where being too small is the answer that shows, since
+        // a window short of the card about to be painted into it clips that card.
+        // `popupSlotHeight` is asked a different question — what is on screen —
+        // and for that turn the honest answer really is nothing, so it does not
+        // fall back. The two used to share one reader, and it could only be right
+        // about one of them.
+        const target = Number(item.layoutHeight)
+        return Number.isFinite(target) && target > 0 ? target : 0
     }
 
     implicitWidth: popupWidth
-    implicitHeight: Math.max(1, Math.min(stackHeight, maxStackHeight))
-    visible: stackHeight > 0
+    implicitHeight: Math.max(1, Math.min(allocatedStackHeight, maxStackHeight))
+    visible: allocatedStackHeight > 0
     color: "transparent"
     anchor.window: barWindow
     anchor.rect.x: Math.max(theme.spacing.space6, barWindow.width - width - rightMargin)

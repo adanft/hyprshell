@@ -181,18 +181,105 @@ dump_session_log() {
 
 # The nested compositor appears in your session as one ordinary window, with
 # class `aquamarine`, and on a tiling compositor an ordinary window retiles the
-# workspace you are on. This script deliberately does not deal with that itself.
+# workspace you are on and can be scrolled off screen. This installs the rule
+# that stops that, so nothing has to be present in your own config for the suite
+# to work. Clone the repository and run it.
 #
-# It tried to, once, with `hyprctl keyword windowrule ...`. That fails outright
-# against a Lua config -- "keyword can't work with non-legacy parsers" -- and
-# still exits 0, so it reported success while doing nothing. Dispatching the
-# window away afterwards works, but only after it has already mapped and
-# retiled, which is the part worth avoiding.
+# This reverses what stood here before, which argued the script must not do it:
+# reaching into a live compositor is the coupling this script exists to remove,
+# and the rule belonged in your own config where you could see it. Two things
+# changed the answer. The first is that the attempt it was written after had
+# used `hyprctl keyword`, which refuses the rule and exits 0 — so the position
+# was partly a conclusion drawn from a tool that lies, and `hyprctl eval` does
+# not lie. The second is plainer: a suite that only works if something is
+# present in one developer's personal config does not work for anyone who
+# clones the repository, and that outranks the tidiness of the boundary. The
+# coupling is real and is the price; it is one rule, on one class, that no
+# session but a test run produces.
 #
-# The rule belongs in your own Hyprland config, where it applies before the
-# window ever maps and where you can see it. See the README, "Why --isolated
-# exists". Reaching into a live compositor from a test harness is the coupling
-# this script exists to remove; it should not reintroduce it one directory up.
+# Floating rather than hidden, and pinned: a tiling layout leaves a floating
+# window alone, so nothing gets retiled, and a pinned window stays mapped so the
+# nested compositor keeps receiving the frame callbacks its own timers run on. A
+# hidden or scrolled-away window is unmapped, and then every stage that waits on
+# a frame times out instead — a failure that reads exactly like a regression in
+# whatever happened to be running.
+#
+# Applied before the compositor starts, so it is in force the first time the
+# window maps. Dispatching afterwards also works, but only once the window has
+# already appeared and retiled, which is the part worth avoiding.
+#
+# Two ways in, because Hyprland has two config parsers and they disagree about
+# which one works:
+#
+#   `hyprctl keyword` is the obvious one and it is the trap. Against a Lua
+#   config it refuses -- "keyword can't work with non-legacy parsers" -- and
+#   still exits 0, so a script that trusts the status reports success while
+#   having done nothing at all. Measured on Hyprland 0.56.2. Its output is read
+#   instead of its status for exactly that reason.
+#
+#   `hyprctl eval` runs Lua and reports honestly: a call into a nil field exits
+#   7. That is the one to try first, and the only one whose exit code means
+#   anything.
+#
+# The rule lives until the compositor next reloads its config. It matches only
+# the class a nested compositor gets, so nothing else in your session is
+# affected, and the pin check further down is what proves it actually took —
+# this function reporting success is not the same as the window being pinned.
+# Whether an answer from `hyprctl keyword` is a refusal. Its status never is, so
+# this reads what it said. Matched case-insensitively rather than by cutting the
+# first letter off "invalid", which is the trick this used to play: it worked,
+# and it read as a typo, and the obvious correction to it would have silently
+# stopped catching the capitalised spelling.
+keyword_refused() {
+	local said
+	said=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+	[[ "$said" == *"non-legacy parsers"* || "$said" == *"invalid"* ]]
+}
+
+install_window_rule() {
+	local lua='hl.window_rule({ name = "qsrice-isolated-session", match = { class = "aquamarine" }, float = true, no_focus = true, pin = true })'
+
+	if hyprctl eval "$lua" >/dev/null 2>&1; then
+		return 0
+	fi
+
+	# Legacy parser, one property per call, and each one answered for.
+	#
+	# `pin` is checked as carefully as `float` because it is the one that matters
+	# most: a floating window that is not pinned still leaves the workspace alone,
+	# but it stops being drawn the moment you switch away, which is the failure
+	# this whole thing exists to prevent. An earlier version fired it and the next
+	# call blind and returned success regardless, so a compositor that took float
+	# and refused pin reported as installed. Three separate readers caught that
+	# independently, which is about how obvious it is from the outside and how
+	# invisible from within.
+	local said property
+	for property in float pin; do
+		said=$(hyprctl keyword windowrulev2 "$property, class:^(aquamarine)$" 2>&1)
+		if keyword_refused "$said"; then
+			return 1
+		fi
+	done
+
+	# nofocus is the one genuine convenience here: without it the nested window
+	# takes focus when it maps, which is irritating and nothing more. Not worth
+	# failing the run over, and said so rather than left to look like an oversight.
+	hyprctl keyword windowrulev2 "nofocus, class:^(aquamarine)$" >/dev/null 2>&1
+	return 0
+}
+
+# No `command -v hyprctl` here: the preflight near the top of this file already
+# exits when it is missing, so a second check would guard a state that cannot be
+# reached and invite someone to reason about it.
+if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+	if ! install_window_rule; then
+		echo "-- WARNING: this script could not install the window rule that keeps the" >&2
+		echo "   nested compositor floating and pinned, so your compositor accepted" >&2
+		echo "   neither its Lua nor its legacy form. The run continues; if the window" >&2
+		echo "   retiles your workspace or scrolls out of sight, that is why, and the" >&2
+		echo "   pin check below will say so in its own words." >&2
+	fi
+fi
 
 if ! dbus-daemon --session --fork --print-address=3 --print-pid=4 \
 	3>"$SESSION_DIR/bus.address" 4>"$SESSION_DIR/bus.pid"; then
@@ -300,14 +387,15 @@ done
 
 # Whether the window this compositor draws into will keep being drawn.
 #
-# Everything below depends on it and none of it is in this repository: the fix
-# is a window rule in the developer's own Hyprland config. Without it a run does
-# not fail cleanly, it fails as a timeout that looks exactly like a regression in
-# whatever stage happened to be running — which is how this cost an afternoon
-# before it was understood. So it is checked, and said plainly.
+# The rule that arranges it is installed above, so this is no longer a check on
+# something outside the repository — it is the check that the thing this script
+# just did actually happened. Those are not the same, and only this one looks at
+# the window. Without it a run does not fail cleanly: it fails as a timeout that
+# looks exactly like a regression in whatever stage happened to be running,
+# which is how it cost an afternoon before it was understood.
 #
-# A warning rather than a refusal: the rule is Hyprland's, the host may be
-# another compositor, and someone who knows the trade may want to run anyway.
+# A warning rather than a refusal: the host may be another compositor entirely,
+# and someone who knows the trade may want to run anyway.
 # Every outcome is named, including the ones where the check itself did not
 # work, because this warning has now been written wrong twice in the same way.
 #
@@ -325,8 +413,9 @@ pin_warning() {
 	echo "   Your compositor stops sending frame callbacks to a window that is not on" >&2
 	echo "   screen, and everything inside this session runs on those frames. Switch" >&2
 	echo "   workspace during a run and its timers stop; the stage that was waiting" >&2
-	echo "   then reports a timeout that reads like a regression. See the README," >&2
-	echo "   \"Why --isolated exists\", for the three-line rule that fixes it." >&2
+	echo "   then reports a timeout that reads like a regression. This script installs" >&2
+	echo "   the rule that prevents it, so seeing this means the rule did not take —" >&2
+	echo "   see \"Why --isolated exists\" in docs/development.md." >&2
 }
 
 if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v jq >/dev/null 2>&1; then

@@ -60,9 +60,104 @@ for needle in 'hyprctl clients -j' 'pinned' 'pin_warning "'; do
 	fi
 done
 
+# The rule installer, cut out the same way and driven against a stubbed hyprctl.
+#
+# It is here because of the trap inside it: against a Lua config `hyprctl
+# keyword` refuses the rule and still exits 0, so an installer that trusts the
+# status reports success while the window retiles the workspace anyway. That is
+# a check that cannot fail wearing a different hat, and nothing else in the
+# suite would notice — the run still passes, it just moves your windows.
+# Two functions, because the installer calls the one that decides what counts as
+# a refusal and neither is any use alone. Cut separately and joined, so the
+# sourced file has both and the extraction still anchors on text.
+awk '/^keyword_refused\(\) \{/ { inside = 1 } inside { print } inside && /^\}$/ { exit }' \
+	"$source_file" >"$work/install.sh"
+awk '/^install_window_rule\(\) \{/ { inside = 1 } inside { print } inside && /^\}$/ { exit }' \
+	"$source_file" >>"$work/install.sh"
+
+# The query, the refusal text, the honest route, and the call that joins them.
+# The last carries a space and a quote so it matches the call and not the
+# definition the extraction starts on — a bare name would be printed as the
+# first line of every possible capture and could never be missing.
+for needle in 'hyprctl eval' 'non-legacy parsers' 'hyprctl keyword' 'keyword_refused "'; do
+	if ! grep -qF -- "$needle" "$work/install.sh"; then
+		echo "-- FAILED: the text cut out of $source_file does not contain '$needle';" >&2
+		echo "   the rule installer has moved or been renamed and this test is reading the wrong lines." >&2
+		exit 1
+	fi
+done
+
 failures=0
 skipped=0
 cases=0
+
+# `stub` is the body of a fake hyprctl. `want` is the exit status the installer
+# should reach with it.
+#
+# Counted into the same `failures` and `cases` as everything below rather than
+# kept apart. The first version had its own counter and exited on the spot,
+# which cost twice: a failure here hid any pin check regression happening at the
+# same time, and on the way through, three outcomes ran that the closing line
+# never counted — so it named a total three short of what had actually been
+# exercised, in a file whose whole point is that the last line tells the truth.
+#
+# Only 127 can come back from a broken extraction — measured, against a
+# truncated function, a missing file and a function under another name — and no
+# case wants 127, so a capture that failed to capture cannot pass as a refusal.
+expect_install() {
+	local name="$1" stub="$2" want="$3"
+	local dir="$work/install-$name"
+	mkdir -p "$dir/bin"
+	printf '%s\n' "$stub" >"$dir/bin/hyprctl"
+	chmod +x "$dir/bin/hyprctl"
+
+	local got
+	PATH="$dir/bin:$PATH" bash -c "source '$work/install.sh'; install_window_rule" >/dev/null 2>&1
+	got=$?
+	cases=$((cases + 1))
+
+	if [[ "$got" -ne "$want" ]]; then
+		echo "-- FAILED: $name should have returned $want, returned $got" >&2
+		failures=$((failures + 1))
+	fi
+}
+
+# A Lua config: eval takes it, and nothing else is needed.
+expect_install lua-config '#!/bin/sh
+[ "$1" = "eval" ] && exit 0
+exit 1' 0
+
+# A legacy config: eval has no Lua to run, keyword accepts.
+expect_install legacy-config '#!/bin/sh
+[ "$1" = "eval" ] && exit 1
+exit 0' 0
+
+# The shape that must not read as success. Both refuse, and keyword lies with a
+# zero status while saying so in its output — which is why the output is what
+# gets read.
+expect_install both-refuse '#!/bin/sh
+[ "$1" = "eval" ] && exit 1
+echo "keyword can'"'"'t work with non-legacy parsers. Use eval."
+exit 0' 1
+
+# The outcome the other three cannot reach, and the one that matters most.
+#
+# Every stub above keys only on whether the first argument is `eval`, so the pin
+# call always shares the float call's fate. A compositor that takes float and
+# refuses pin is a real state, and it is the worst one: the window floats, so
+# nothing retiles and everything looks right, and then it stops being drawn the
+# moment you switch workspace — exactly the timeout this file exists to prevent.
+# An earlier version of the installer returned success there.
+#
+# Capitalised on purpose. The refusal is matched case-insensitively now, and
+# this is what says so: the previous spelling cut the leading letter off the
+# word to catch both, which worked and read as a typo.
+expect_install float-ok-pin-refused '#!/bin/sh
+[ "$1" = "eval" ] && exit 1
+case "$3" in
+pin*) echo "Invalid rule"; exit 0 ;;
+esac
+exit 0' 1
 
 # `writable` is the third of four positionals and spells itself out at the call
 # sites — `writable` or `unwritable`, not a bare yes or no, so a reader scanning
@@ -144,7 +239,7 @@ expect unwritable-error-path '#!/bin/sh
 echo "[{\"pid\":4242,\"pinned\":true}]"' unwritable 'The fault is here, not in your compositor'
 
 if [[ "$failures" -ne 0 ]]; then
-	echo "-- FAILED: $failures pin check outcome(s) wrong" >&2
+	echo "-- FAILED: $failures outcome(s) wrong" >&2
 	exit 1
 fi
 
@@ -154,7 +249,7 @@ fi
 # said every outcome was reachable. Whoever reads only this line and the exit
 # code — which is what CI reads — was told something that was not true.
 if [[ "$skipped" -ne 0 ]]; then
-	echo "pin check: $cases outcomes named, $skipped skipped and therefore unproven (see above)"
+	echo "isolated session: $cases outcomes named, $skipped skipped and therefore unproven (see above)"
 else
-	echo "pin check: all $cases outcomes named, and each one reachable"
+	echo "isolated session: all $cases outcomes named, and each one reachable"
 fi

@@ -111,7 +111,7 @@ if [[ "$compositor_only" == false ]]; then
 	# reporting nothing, and every time the suite stayed green.
 	echo
 	echo "== Shell tests =="
-	if ./scripts/tests/pin-check.test.sh; then
+	if ./scripts/isolated-session.test.sh; then
 		echo "-- Shell tests passed"
 	else
 		echo "-- Shell tests FAILED"

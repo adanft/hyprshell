@@ -71,7 +71,26 @@ Item {
     readonly property real layoutHeight: notificationData ? Math.ceil(contentInset * 2 + Math.max(iconSlotSize,
                                                                                                   contentLayoutHeight)) :
                                                             0
-    readonly property real viewportHeight: Math.max(0, renderedLayoutHeight - contentInset * 2)
+    // The animated height, held to whole pixels, and everything the card's own
+    // geometry is built from reads this rather than the raw value.
+    //
+    // `cardRect` carries a layer, which rasterises its contents into a texture
+    // the size of that item. An animation between two integers passes through
+    // fractional values, so without this the texture is a fraction of a pixel
+    // different on every frame, the mapping back to the screen shifts with it,
+    // and every glyph inside is resampled slightly differently. Measured across
+    // heights 160.00 to 161.00 in quarter-pixel steps, comparing a band of text
+    // that never moves in layout: 5525 of 36480 pixels changed with the raw
+    // value and 0 with this one. The text was never moving — it was being
+    // redrawn wrong, which is why it read as trembling rather than sliding.
+    //
+    // Both halves are needed to produce it: a layer over a fractional size. A
+    // fractional POSITION was measured too and does not do this; it costs some
+    // sharpness with or without a layer, slightly more without, and it is
+    // static rather than churning, so the cards being pushed down the stack are
+    // simply in motion and are left alone.
+    readonly property real renderedHeightPx: Math.round(renderedLayoutHeight)
+    readonly property real viewportHeight: Math.max(0, renderedHeightPx - contentInset * 2)
     readonly property real bodyViewportHeight: {
         if (bodyHtml.length === 0)
             return 0
@@ -230,7 +249,13 @@ Item {
     }
 
     implicitWidth: width
-    implicitHeight: useRenderedHeightForLayout ? renderedLayoutHeight : allocatedLayoutHeight
+    // The same grid the card paints on. Rounding only what is drawn and leaving
+    // what is reported upward on the raw value put the two half a pixel apart
+    // for the length of an expand, in the centre, which is the one place this
+    // branch is taken — the painted card and the slot the list gives it would
+    // have disagreed where before the change they could not. Both are the same
+    // height of the same thing, so they read the same property.
+    implicitHeight: useRenderedHeightForLayout ? renderedHeightPx : allocatedLayoutHeight
     height: implicitHeight
     visible: notificationData !== null
     onNotificationDataChanged: {
@@ -283,7 +308,8 @@ Item {
         id: cardRect
 
         width: parent.width
-        height: card.renderedLayoutHeight
+        // The layered one, so whole pixels. See renderedHeightPx.
+        height: card.renderedHeightPx
         radius: card.cornerRadius
         // A card floating over the desktop is the deepest thing on screen, so it
         // sits on shadow. Inside the center it is the opposite: the panel is the

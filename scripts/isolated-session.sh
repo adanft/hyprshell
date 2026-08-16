@@ -330,23 +330,61 @@ pin_warning() {
 }
 
 if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v jq >/dev/null 2>&1; then
-	host_clients=$(timeout 5 hyprctl clients -j 2>"$work_dir/hyprctl.err")
-	host_clients_status=$?
-
-	if [[ "$host_clients_status" -ne 0 || -z "$host_clients" ]]; then
-		pin_warning "your compositor did not answer when asked about this session's window (hyprctl exited ${host_clients_status}), so whether it is pinned is unknown."
+	# The third way this one check managed to report nothing, and the first that
+	# was this file's own fault: it wrote hyprctl's errors to a path built from a
+	# variable that was never assigned. Under `set -u` that fails inside the
+	# command substitution, which leaves the status non-zero and sends the code
+	# straight down the branch below — so a typo here wore the costume of a
+	# compositor that had simply not answered, and said so on every single run.
+	#
+	# Opened and checked before the query for that reason. A path this script
+	# cannot write is a bug in this script, and it now says so in those words
+	# rather than borrowing the compositor's.
+	hyprctl_error="$session_dir/hyprctl.err"
+	# `2>/dev/null` before the target, not after: redirections are applied left
+	# to right, so with the target first bash has already printed its own
+	# complaint by the time the silencer is in place, and the run says the same
+	# thing twice in two voices.
+	if ! : 2>/dev/null >"$hyprctl_error"; then
+		pin_warning "this session script could not open ${hyprctl_error} to capture hyprctl's errors, so the pin was never checked. The fault is here, not in your compositor."
 	else
-		pinned=$(jq -r --arg pid "$hypr_pid" '[.[] | select(.pid == ($pid | tonumber)) | .pinned]
-			| if length == 0 then "absent" else (.[0] | tostring) end' <<<"$host_clients")
-		case "$pinned" in
-		true) ;;
-		false)
-			pin_warning "this session's window is not pinned."
-			;;
-		*)
-			pin_warning "this session's window was not among your compositor's clients, so whether it is pinned is unknown."
-			;;
-		esac
+		# The status is read on its own line and not from inside an `if !`,
+		# where `$?` is the negation's own result and always zero. Written that
+		# way the warning reported "hyprctl exited 0" — a number that is both
+		# wrong and impossible, in the message whose whole job is to say what
+		# went wrong.
+		host_clients=$(timeout 5 hyprctl clients -j 2>"$hyprctl_error")
+		host_clients_status=$?
+
+		# Written down and then never read was the old shape of this file: the
+		# errors were captured and nothing ever opened them, so whatever hyprctl
+		# had to say died in a temporary directory.
+		# No `|| hyprctl_said=""` after this. `read` returns non-zero at end of
+		# file even when it has already filled the variable with a whole line
+		# that simply lacks a trailing newline, so the guard would wipe exactly
+		# what it had just captured — and a one-line diagnostic written without
+		# a newline is the ordinary shape. It was verified with a stub built on
+		# `echo`, which appends the newline and so could never reach the case.
+		hyprctl_said=""
+		read -r hyprctl_said <"$hyprctl_error" 2>/dev/null
+
+		if [[ "$host_clients_status" -ne 0 ]]; then
+			pin_warning "your compositor did not answer when asked about this session's window (hyprctl exited ${host_clients_status}${hyprctl_said:+; it said: ${hyprctl_said}}), so whether it is pinned is unknown."
+		elif [[ -z "$host_clients" ]]; then
+			pin_warning "your compositor answered with nothing when asked about this session's window, so whether it is pinned is unknown."
+		else
+			pinned=$(jq -r --arg pid "$hypr_pid" '[.[] | select(.pid == ($pid | tonumber)) | .pinned]
+				| if length == 0 then "absent" else (.[0] | tostring) end' <<<"$host_clients")
+			case "$pinned" in
+			true) ;;
+			false)
+				pin_warning "this session's window is not pinned."
+				;;
+			*)
+				pin_warning "this session's window was not among your compositor's clients, so whether it is pinned is unknown."
+				;;
+			esac
+		fi
 	fi
 fi
 

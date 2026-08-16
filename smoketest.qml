@@ -259,6 +259,69 @@ ShellRoot {
         return true
     }
 
+    // A card squeezed until its arithmetic runs out.
+    //
+    // Every size and position inside the card is a subtraction from the width
+    // it was given, and a subtraction has no floor unless someone writes one.
+    // Three of them had none, and one of those fed the action row, whose own
+    // floor would then have absorbed the negative and collapsed every button to
+    // nothing without an error anywhere — a floor upstream of no floor turns a
+    // fault into a disappearance.
+    //
+    // So this asserts the class rather than the three instances: nothing inside
+    // a card may have a negative size or sit at a negative position, whatever
+    // width the card was handed. The long name and time text are here because
+    // the header subtracts both of them from the row.
+    function exerciseNarrowCardGeometry(service) {
+        const entry = {
+            id: "smoketest-narrow-card",
+            summary: "A summary long enough to have nowhere to go",
+            body: "And a body besides",
+            appName: "an-application-with-a-name-nobody-would-choose",
+            image: "",
+            urgency: NotificationUrgency.Low,
+            actions: NotificationFileActions.actionsFor("/tmp/a-file-with-a-long-name.png", function () {}),
+            createdAt: Date.now(),
+            timestamp: Date.now()
+        }
+        const card = lifecycleCardComponent.createObject(service.notificationImageCaptureHost, {
+            notificationData: entry,
+            expanded: true,
+            width: 48,
+            timeText: "yesterday at 14:03"
+        })
+        if (!card) {
+            console.error("SMOKETEST: narrow card did not build")
+            Qt.quit()
+            return false
+        }
+
+        const offenders = []
+        const walk = (node, path) => {
+            if (!node)
+                return
+            for (const child of (node.children || [])) {
+                const where = `${path}/${child.toString().split("(")[0]}`
+                if (child.width < 0)
+                    offenders.push(`${where} width ${child.width}`)
+                if (child.height < 0)
+                    offenders.push(`${where} height ${child.height}`)
+                if (child.x < 0)
+                    offenders.push(`${where} x ${child.x}`)
+                walk(child, where)
+            }
+        }
+        walk(card, "card")
+
+        card.destroy()
+        if (offenders.length > 0) {
+            console.error(`SMOKETEST: narrow card geometry: ${offenders.slice(0, 4).join("; ")}`)
+            Qt.quit()
+            return false
+        }
+        return true
+    }
+
     function notificationActionButtons(item) {
         if (!item)
             return []
@@ -437,6 +500,8 @@ ShellRoot {
             cardA.destroy()
             cardB.destroy()
             if (!smoketest.exerciseNotificationActionGeometry(service))
+                return
+            if (!smoketest.exerciseNarrowCardGeometry(service))
                 return
             service.notificationHistory = service.notificationHistory.filter(entry => entry.id !== missingA.id
                                                                                && entry.id !== missingB.id)

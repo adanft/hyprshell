@@ -56,10 +56,23 @@ function urlList(hints) {
 // in revealArguments. It stopped being enough when the label started being
 // derived from the path: a right-to-left override reverses how the rest of the
 // name renders, so "Open txt.exe" can be made to read "Open exe.txt" while the
-// process still receives the first. The class now covers the C0 controls, DEL,
-// and the bidirectional formatting characters, so a label cannot disagree with
-// what it opens. \r and \n are inside the C0 range and no longer named twice.
-var REFUSED_IN_PATH = /[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069']/;
+// process still receives the first. So the class refuses anything that can make
+// the label disagree with what it opens — every C0 control and DEL, the marks
+// and the embedding, override and isolate sets, the line and paragraph
+// separators that would break a label that is meant to be one line, and the
+// invisible ones that let two different paths render identically.
+//
+// It is a list and not the Cf category, and that is measured rather than
+// preferred: `\p{Cf}` parses in Qt's engine and then matches nothing at all.
+// Node matches it correctly, so a guard written that way passes every unit test
+// here and is inert in the shell — the whole path check silently open, with no
+// failure anywhere to say so.
+//
+// Two format characters are deliberately allowed. U+200C and U+200D are how
+// Persian and the Indic scripts join and separate letters, and how an emoji
+// family is spelled, so refusing them would take ordinary file names with them.
+// They cannot reorder anything, which is what this guard is for.
+var REFUSED_IN_PATH = /[\u0000-\u001f\u007f\u00ad\u061c\u200b\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069\ufeff']/;
 
 function isUsablePath(value) {
 	var path = typeof value === "string" ? value : "";

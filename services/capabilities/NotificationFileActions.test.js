@@ -128,6 +128,21 @@ for (const code of [0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x2066, 0x20
 // on their own. A NUL is the one that would end the argument early.
 for (const code of [0x00, 0x09, 0x0a, 0x0d, 0x1b, 0x7f])
 	assert.equal(files.isUsablePath(`/tmp/a${String.fromCharCode(code)}b.png`), false, `U+${code.toString(16)}`);
+// The marks that reorder, the separators that break a one-line label, and the
+// invisible ones that let two different paths render the same. Named one by one
+// rather than taken from the Cf category, because that category parses in Qt's
+// engine and matches nothing: a guard written that way passes every assertion in
+// this file and is inert where it runs.
+for (const code of [0x00ad, 0x061c, 0x200b, 0x2028, 0x2029, 0xfeff])
+	assert.equal(files.isUsablePath(`/tmp/a${String.fromCharCode(code)}b.png`), false, `U+${code.toString(16)}`);
+
+// Allowed on purpose, and this is the assertion that stops someone widening the
+// class to the whole category. U+200C and U+200D join and separate letters in
+// Persian and the Indic scripts, and spell an emoji family; neither can reorder
+// anything, which is what the guard is for.
+assert.equal(files.isUsablePath(`/tmp/a${String.fromCharCode(0x200c)}b.png`), true, "U+200C");
+assert.equal(files.isUsablePath("/tmp/family-\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}.png"), true);
+
 // An ordinary non-ASCII name is not collateral: only the formatting characters
 // are refused, not everything outside ASCII.
 assert.equal(files.isUsablePath("/tmp/mañana-café-日本語.png"), true);

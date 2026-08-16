@@ -104,6 +104,20 @@ if [[ "$compositor_only" == false ]]; then
 		failed=1
 	fi
 
+	# The pin check drives a stubbed hyprctl, so it needs no compositor and
+	# belongs here rather than among the stages that build one. It is the only
+	# shell in this repository with a test, and it earned one: the check it
+	# covers has been written wrong three times, every time in a way that left it
+	# reporting nothing, and every time the suite stayed green.
+	echo
+	echo "== Shell tests =="
+	if ./scripts/tests/pin-check.test.sh; then
+		echo "-- Shell tests passed"
+	else
+		echo "-- Shell tests FAILED"
+		failed=1
+	fi
+
 	if [[ "$js_only" == true ]]; then
 		echo "== QML component tests SKIPPED (--js) =="
 		echo "== QML smoke test SKIPPED (--js) =="

@@ -419,7 +419,16 @@ Item {
                 }
 
                 Column {
-                    width: cardContent.width - iconContainer.width - closeButtonSlot.width - cardContent.spacing * 2
+                    // Floored, and this is the one that matters most, because
+                    // everything below inherits it. The action row takes its
+                    // width from here, and the row's own share is floored too —
+                    // so a negative arriving from this line would be absorbed
+                    // down there and every action button would collapse to
+                    // nothing with no error anywhere. A floor that swallows a
+                    // fault upstream is worse than none; this one stops the
+                    // fault from being produced.
+                    width: Math.max(0, cardContent.width - iconContainer.width - closeButtonSlot.width
+                                    - cardContent.spacing * 2)
                     spacing: card.spacing
 
                     Row {
@@ -427,8 +436,12 @@ Item {
                         spacing: card.spacing
 
                         Text {
-                            width: Math.min(implicitWidth, parent.width - timeSeparator.implicitWidth
-                                            - timeLabel.implicitWidth - parent.spacing * 2)
+                            // The same shape as the action label, and floored
+                            // for the same reason: the timestamp beside it is
+                            // whatever the clock made it, so a long one on a
+                            // narrow card takes this below zero.
+                            width: Math.max(0, Math.min(implicitWidth, parent.width - timeSeparator.implicitWidth
+                                                        - timeLabel.implicitWidth - parent.spacing * 2))
                             text: card.notificationData ? (card.notificationData.appName || "App") : "App"
                             color: Colors.on_surface_variant
                             font.family: card.textFont
@@ -675,8 +688,13 @@ Item {
 
             width: card.closeButtonSize
             height: card.closeButtonSize
-            x: parent.width - card.contentInsetRight - card.closeButtonSize
-               - card.theme.spacing.space6 - card.closeButtonSize
+            // A position rather than a size, so the floor buys something
+            // different: unfloored, a card narrow enough puts this off the left
+            // edge of a parent that clips, and the control disappears. At zero
+            // it overlaps the content instead, which is ugly and reachable —
+            // the better of the two, since nobody can press what is not drawn.
+            x: Math.max(0, parent.width - card.contentInsetRight - card.closeButtonSize
+                        - card.theme.spacing.space6 - card.closeButtonSize)
             y: card.contentInset
             visible: bodyContainer.canExpand || card.expanded
 

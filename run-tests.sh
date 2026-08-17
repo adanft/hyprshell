@@ -97,7 +97,7 @@ if [[ "$compositor_only" == false ]]; then
 
 	echo
 	echo "== Python benchmark tests =="
-	if python3 scripts/qsrice-bench.test.py; then
+	if python3 scripts/hyprshell-bench.test.py; then
 		echo "-- Python benchmark tests passed"
 	else
 		echo "-- Python benchmark tests FAILED"

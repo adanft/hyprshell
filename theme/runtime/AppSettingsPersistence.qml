@@ -9,13 +9,12 @@ Item {
     signal startupSettled
 
     readonly property string configDir: Quickshell.env("XDG_CONFIG_HOME") || `${Quickshell.env("HOME")}/.config`
-    readonly property string configRoot: `${configDir}/qsrice`
+    readonly property string configRoot: `${configDir}/hyprshell`
     readonly property string configFile: `${configRoot}/settings.json`
-    readonly property string legacyFile: `${configDir}/qscomponents/settings.json`
-    property bool migrationReady: false
+    property bool configDirReady: false
     property bool startupStarted: false
     property bool startupSettledEmitted: false
-    readonly property bool ready: migrationReady && startupSettledEmitted
+    readonly property bool ready: configDirReady && startupSettledEmitted
 
     readonly property var settingsReloadTimer: Timer {
         interval: 100
@@ -24,7 +23,7 @@ Item {
     }
 
     readonly property var settingsFileView: FileView {
-        path: persistence.migrationReady ? persistence.configFile : ""
+        path: persistence.configDirReady ? persistence.configFile : ""
         printErrors: false
         watchChanges: true
         atomicWrites: true
@@ -81,6 +80,15 @@ Item {
         startupSettled()
     }
 
+    // Make the directory and say so. There is nothing else to wait for: a
+    // settings file that is not there yet reaches the view as FileNotFound,
+    // which the load-failure path already treats as "use the defaults".
+    //
+    // This used to also look for a file under the shell's earlier names and copy
+    // it forward. That is gone deliberately, along with the names: one directory
+    // is the whole story now, and a migration chain is a thing that has to be
+    // extended and guarded at every rename forever. Removing it is why the
+    // three lists that had to be kept in step with each other went too.
     function ensureConfigDir() {
         const mkdir = mkdirComponent.createObject(persistence)
         mkdir.onExited.connect(function (exitCode) {
@@ -89,55 +97,13 @@ Item {
                 persistence.settleStartup()
                 return
             }
-            const exists = existsComponent.createObject(persistence)
-            exists.onExited.connect(function (newExitCode) {
-                exists.destroy()
-                if (newExitCode === 0) {
-                    persistence.migrationReady = true
-                    return
-                }
-                migrateOldSettings()
-            })
-            exists.exec(["test", "-e", configFile])
+            persistence.configDirReady = true
         })
         mkdir.exec(["mkdir", "-p", configRoot])
     }
 
-    function migrateOldSettings() {
-        const oldExists = oldExistsComponent.createObject(persistence)
-        oldExists.onExited.connect(function (exitCode) {
-            oldExists.destroy()
-            if (exitCode !== 0) {
-                persistence.migrationReady = true
-                return
-            }
-
-            const copy = copyComponent.createObject(persistence)
-            copy.onExited.connect(function (copyExitCode) {
-                copy.destroy()
-                migrationReady = true
-                if (copyExitCode !== 0)
-                    persistence.settleStartup()
-            })
-            copy.exec(["cp", "-n", "--", legacyFile, configFile])
-        })
-        oldExists.exec(["test", "-e", legacyFile])
-    }
-
     Component {
         id: mkdirComponent
-        Process {}
-    }
-    Component {
-        id: existsComponent
-        Process {}
-    }
-    Component {
-        id: oldExistsComponent
-        Process {}
-    }
-    Component {
-        id: copyComponent
         Process {}
     }
 }

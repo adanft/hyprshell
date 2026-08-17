@@ -35,7 +35,7 @@ function normalizedText(value, label, optional) {
 	return text;
 }
 
-var managedMarker = "# qsrice managed theme";
+var managedMarker = "# hyprshell managed theme";
 
 // Exactly what the two programs paint, and nothing else. A palette holds sixteen
 // roles; the other eight would be unread names in a file, and every one of them

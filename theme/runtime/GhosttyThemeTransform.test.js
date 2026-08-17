@@ -49,18 +49,18 @@ function apply(input, themeId = "catppuccin") {
 }
 
 for (const [input, expected] of [
-	["", "# qsrice managed theme\ntheme = Catppuccin Mocha"],
+	["", "# hyprshell managed theme\ntheme = Catppuccin Mocha"],
 	[
 		"font-family = Keep This\n",
-		"font-family = Keep This\n# qsrice managed theme\ntheme = Catppuccin Mocha\n",
+		"font-family = Keep This\n# hyprshell managed theme\ntheme = Catppuccin Mocha\n",
 	],
 	[
 		"font-family = Keep This\r\n",
-		"font-family = Keep This\r\n# qsrice managed theme\r\ntheme = Catppuccin Mocha\r\n",
+		"font-family = Keep This\r\n# hyprshell managed theme\r\ntheme = Catppuccin Mocha\r\n",
 	],
 	[
 		"font-family = Keep This",
-		"font-family = Keep This\n# qsrice managed theme\ntheme = Catppuccin Mocha",
+		"font-family = Keep This\n# hyprshell managed theme\ntheme = Catppuccin Mocha",
 	],
 ])
 	assert.equal(
@@ -70,11 +70,11 @@ for (const [input, expected] of [
 	);
 
 const managed =
-	"theme = User Theme\n# qsrice managed theme\ntheme = Old Theme\nforeground = #abcdef\n";
+	"theme = User Theme\n# hyprshell managed theme\ntheme = Old Theme\nforeground = #abcdef\n";
 const updated = apply(managed, "rose-pine");
 assert.equal(
 	updated,
-	"theme = User Theme\n# qsrice managed theme\ntheme = Rose Pine\nforeground = #abcdef\n",
+	"theme = User Theme\n# hyprshell managed theme\ntheme = Rose Pine\nforeground = #abcdef\n",
 );
 assert.equal(
 	apply(updated, "rose-pine"),
@@ -87,29 +87,46 @@ assert.equal(
 	"only the marker-owned theme line is changed",
 );
 assert.throws(
-	() => apply("# qsrice managed theme\nfont-family = Mono\n"),
+	() => apply("# hyprshell managed theme\nfont-family = Mono\n"),
 	/not followed by a theme assignment/,
 );
+// The shell's own block is found by its one marker and updated in place.
+//
+// There used to be a list of every marker the shell had ever written, so a
+// config carrying an older name was still recognised. That went with the rest
+// of the legacy handling: one name now, and a config carrying an older marker
+// is simply not ours — the next theme change appends a fresh block and leaves
+// the old lines where they are, for their owner to delete.
 assert.equal(
-	apply("# qscomponents managed theme\ntheme = Old Theme\n", "rose-pine"),
-	"# qscomponents managed theme\ntheme = Rose Pine\n",
+	apply("# hyprshell managed theme\ntheme = Old Theme\n", "rose-pine"),
+	"# hyprshell managed theme\ntheme = Rose Pine\n",
 );
+
+// And no earlier name is recognised, which is the half that says the decision
+// held rather than merely that the current name works.
+for (const gone of ["# qsrice managed theme", "# qscomponents managed theme"])
+	assert.equal(
+		apply(`${gone}\ntheme = Old Theme\n`, "rose-pine"),
+		`${gone}\ntheme = Old Theme\n# hyprshell managed theme\ntheme = Rose Pine\n`,
+		`${gone} is left alone rather than adopted`,
+	);
+
 assert.throws(
 	() =>
 		apply(
-			"# qsrice managed theme\ntheme = One\n# qsrice managed theme\ntheme = Two\n",
+			"# hyprshell managed theme\ntheme = One\n# hyprshell managed theme\ntheme = Two\n",
 		),
-	/multiple qsrice/,
+	/multiple hyprshell/,
 );
 assert.equal(
 	apply("theme = User Theme\n"),
-	"theme = User Theme\n# qsrice managed theme\ntheme = Catppuccin Mocha\n",
+	"theme = User Theme\n# hyprshell managed theme\ntheme = Catppuccin Mocha\n",
 );
 const existingColors =
 	"foreground = #abcdef\npalette = 0 = not-a-color\nselection-background = custom-value\n";
 assert.equal(
 	apply(existingColors),
-	existingColors + "# qsrice managed theme\ntheme = Catppuccin Mocha\n",
+	existingColors + "# hyprshell managed theme\ntheme = Catppuccin Mocha\n",
 	"existing color assignments are preserved without parsing or migration",
 );
 

@@ -6,7 +6,7 @@ never starts the shell, and uses only the Python standard library plus Linux
 ``/proc``. Samples are optionally written as JSONL; the human summary is kept
 on a different stream so machine-readable output stays valid.
 
-Example: ``qsrice-bench.py --scenario baseline --duration 60 --jsonl
+Example: ``hyprshell-bench.py --scenario baseline --duration 60 --jsonl
 baseline.jsonl``; for a direct PID use ``--pid 1234``.
 """
 
@@ -560,11 +560,11 @@ def discover_qs_pid(config_path: str | os.PathLike[str]) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="qsrice-bench.py",
+        prog="hyprshell-bench.py",
         description=(
             "Measure an existing qs process and its descendants via /proc.\n\n"
-            "Example: qsrice-bench.py --scenario baseline --duration 60 "
-            "--jsonl baseline.jsonl; direct PID mode: qsrice-bench.py "
+            "Example: hyprshell-bench.py --scenario baseline --duration 60 "
+            "--jsonl baseline.jsonl; direct PID mode: hyprshell-bench.py "
             "--pid 1234 --scenario baseline --duration 60 --jsonl -"
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

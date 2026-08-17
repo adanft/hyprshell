@@ -1,5 +1,4 @@
-var managedMarker = "# qsrice managed theme";
-var legacyManagedMarker = "# qscomponents managed theme";
+var managedMarker = "# hyprshell managed theme";
 
 // Ghostty ships its own theme catalog, so the terminal is told a name rather
 // than a palette. Every id in themes.json needs an entry: nativeThemeForId
@@ -56,16 +55,13 @@ function appendManagedTheme(config, nativeTheme) {
 function updateManagedTheme(config, nativeTheme) {
 	var markerIndexes = [];
 	for (var index = 0; index < config.lines.length; index++) {
-		if (
-			config.lines[index].trim() === managedMarker ||
-			config.lines[index].trim() === legacyManagedMarker
-		)
+		if (config.lines[index].trim() === managedMarker)
 			markerIndexes.push(index);
 	}
 
 	if (markerIndexes.length === 0) return false;
 	if (markerIndexes.length !== 1)
-		throw new Error("multiple qsrice managed Ghostty theme markers");
+		throw new Error("multiple hyprshell managed Ghostty theme markers");
 
 	var themeLineIndex = markerIndexes[0] + 1;
 	if (
@@ -75,7 +71,7 @@ function updateManagedTheme(config, nativeTheme) {
 		)
 	)
 		throw new Error(
-			"qsrice managed Ghostty theme marker is not followed by a theme assignment",
+			"hyprshell managed Ghostty theme marker is not followed by a theme assignment",
 		);
 
 	config.lines[themeLineIndex] = "theme = " + nativeTheme;

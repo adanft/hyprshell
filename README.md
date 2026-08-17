@@ -1,6 +1,6 @@
 <div align="center">
 
-# qsrice
+# hyprshell
 
 **A Wayland desktop shell for Hyprland.**
 
@@ -90,27 +90,27 @@ paru -S quickshell-git
 pacman -S ttf-nerd-fonts-symbols
 
 # 3. clone — anywhere you like, this is just the Quickshell convention
-git clone https://github.com/adanft/qsrice.git ~/.config/quickshell/qsrice
+git clone https://github.com/adanft/hyprshell.git ~/.config/quickshell/hyprshell
 ```
 
-> Clone it somewhere other than `~/.config/qsrice`. That directory is where the
+> Clone it somewhere other than `~/.config/hyprshell`. That directory is where the
 > shell keeps its own `settings.json`, and putting the checkout there leaves
 > state sitting inside your working tree.
 
 Then two things in your `hyprland.lua` — start it, and bind it:
 
 ```lua
-local qsrice = os.getenv("HOME") .. "/.config/quickshell/qsrice"
+local hyprshell = os.getenv("HOME") .. "/.config/quickshell/hyprshell"
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("qs -p " .. qsrice)
+    hl.exec_cmd("qs -p " .. hyprshell)
 end)
 
-hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call applauncher toggle"))
-hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call themeselector toggle"))
-hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call wallpaperselector toggle"))
-hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call powermenu toggle"))
-hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. qsrice .. " call screenshot toggle"))
+hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call applauncher toggle"))
+hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call themeselector toggle"))
+hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call wallpaperselector toggle"))
+hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call powermenu toggle"))
+hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call screenshot toggle"))
 ```
 
 That is the whole integration. The control center and the notification center
@@ -282,7 +282,7 @@ Browses `~/Wallpapers` — override with `AWWW_WALLPAPERS_DIR`.
 
 Three format filters — **png**, **jpg**, **gif** — toggle independently, so
 several can be on at once. Thumbnails are cached under
-`$XDG_CACHE_HOME/qsrice/wallpapers`.
+`$XDG_CACHE_HOME/hyprshell/wallpapers`.
 
 </details>
 
@@ -309,7 +309,7 @@ brightness of its own `surface` color, not by what its name claims.
 A theme can also be set from a script, which is what the IPC `set` is for:
 
 ```sh
-qs ipc -p ~/.config/quickshell/qsrice call themeselector set kanagawa-dragon
+qs ipc -p ~/.config/quickshell/hyprshell call themeselector set kanagawa-dragon
 ```
 
 </details>
@@ -352,11 +352,11 @@ Five targets, each taking `open` and `toggle`; the theme selector also takes
 `set <name>`:
 
 ```sh
-qs ipc -p ~/.config/quickshell/qsrice call applauncher       toggle
-qs ipc -p ~/.config/quickshell/qsrice call themeselector     toggle
-qs ipc -p ~/.config/quickshell/qsrice call wallpaperselector toggle
-qs ipc -p ~/.config/quickshell/qsrice call powermenu         toggle
-qs ipc -p ~/.config/quickshell/qsrice call screenshot        toggle
+qs ipc -p ~/.config/quickshell/hyprshell call applauncher       toggle
+qs ipc -p ~/.config/quickshell/hyprshell call themeselector     toggle
+qs ipc -p ~/.config/quickshell/hyprshell call wallpaperselector toggle
+qs ipc -p ~/.config/quickshell/hyprshell call powermenu         toggle
+qs ipc -p ~/.config/quickshell/hyprshell call screenshot        toggle
 ```
 
 ---
@@ -451,13 +451,21 @@ theme. Everything else in that file is left alone.
 
 | Path | What |
 |---|---|
-| `~/.config/qsrice/settings.json` | Current theme and wallpaper. Migrated from `~/.config/qscomponents/` on first run. |
+| `~/.config/hyprshell/settings.json` | Current theme and wallpaper. Created on first run. |
 | `~/.config/hypr/theme.conf` | Generated. Owned by the shell. |
 | `~/.config/ghostty/config.ghostty` | A marked block inside your own config. |
 | `~/Wallpapers` | Where the selector looks. Override with `AWWW_WALLPAPERS_DIR`. |
 | `~/Pictures/Screenshots` | Where captures land. |
-| `$XDG_CACHE_HOME/qsrice/wallpapers` | Thumbnails. |
-| `$XDG_CACHE_HOME/qsrice/notification-images` | Notification images, so history survives a restart. |
+| `$XDG_CACHE_HOME/hyprshell/wallpapers` | Thumbnails. |
+| `$XDG_CACHE_HOME/hyprshell/notification-images` | Notification images, so history survives a restart. |
+
+> **Coming from an older version, under an older name?** Nothing is carried over
+> and nothing is deleted. Your theme and wallpaper start at the defaults, the
+> wallpaper thumbnails rebuild themselves, and notification history loses its
+> images. The old directories are still there — `~/.config/qsrice`,
+> `~/.config/qscomponents`, and the matching ones under your cache — so if you
+> want the old settings back, copy `settings.json` across and restart the shell.
+> Delete them when you are done; nothing reads them any more.
 
 ---
 

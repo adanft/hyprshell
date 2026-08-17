@@ -54,7 +54,12 @@ readonly RUNTIME_PATH_BUDGET=24
 
 # The directories the shell writes to, from the README's "Where it keeps things".
 # Everything else under your config directory is linked back to the real one.
-readonly OWNED_CONFIG=(hypr qsrice qscomponents ghostty)
+#
+# Exactly the directories the shell reads or writes, and no name it used to go
+# by. Everything absent from this list is symlinked to yours, so a name that
+# belongs here and is missing hands a test run your real directory instead of an
+# empty one.
+readonly OWNED_CONFIG=(hypr hyprshell ghostty)
 
 for tool in Hyprland dbus-daemon hyprctl; do
 	if ! command -v "$tool" >/dev/null 2>&1; then
@@ -100,7 +105,7 @@ if ! run_dir=$(mktemp -d "$HOST_RUNTIME_DIR/q.XXXXXX"); then
 	exit 1
 fi
 
-if ! session_dir=$(mktemp -d "$HOST_RUNTIME_DIR/qsrice-isolated.XXXXXX"); then
+if ! session_dir=$(mktemp -d "$HOST_RUNTIME_DIR/hyprshell-isolated.XXXXXX"); then
 	rmdir "$run_dir" 2>/dev/null
 	echo "-- INCONCLUSIVE: could not create the session directory" >&2
 	exit 1
@@ -125,7 +130,7 @@ cleanup() {
 	# were created under: an unguarded rm -rf here would take the runtime
 	# directory of the session this script exists to protect.
 	[[ "$RUN_DIR" == "$HOST_RUNTIME_DIR"/q.* ]] && rm -rf "$RUN_DIR"
-	[[ "$SESSION_DIR" == "$HOST_RUNTIME_DIR"/qsrice-isolated.* ]] && rm -rf "$SESSION_DIR"
+	[[ "$SESSION_DIR" == "$HOST_RUNTIME_DIR"/hyprshell-isolated.* ]] && rm -rf "$SESSION_DIR"
 }
 trap cleanup EXIT INT TERM
 
@@ -237,7 +242,7 @@ keyword_refused() {
 }
 
 install_window_rule() {
-	local lua='hl.window_rule({ name = "qsrice-isolated-session", match = { class = "aquamarine" }, float = true, no_focus = true, pin = true })'
+	local lua='hl.window_rule({ name = "hyprshell-isolated-session", match = { class = "aquamarine" }, float = true, no_focus = true, pin = true })'
 
 	if hyprctl eval "$lua" >/dev/null 2>&1; then
 		return 0

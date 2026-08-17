@@ -1,4 +1,4 @@
-# Working on qsrice
+# Working on hyprshell
 
 ```sh
 ./run-tests.sh             # everything, on the compositor you are using
@@ -51,7 +51,7 @@ flipping a real radio on a real machine.
 
 `scripts/shell-cycle-bench.sh` is the only stage that runs `shell.qml` itself.
 It opens and closes every overlay over `qs ipc`, the way a person does, while
-`scripts/qsrice-bench.py` samples the process tree. Its verdict is deliberately
+`scripts/hyprshell-bench.py` samples the process tree. Its verdict is deliberately
 lopsided: **file descriptors fail the run, memory only reports.** A descriptor a
 closed overlay never released is an integer that does not drift, while RSS moves
 with the allocator underneath it, so a memory threshold tight enough to catch a
@@ -88,7 +88,7 @@ can match. In the Lua config format:
 
 ```lua
 hl.window_rule({
-	name = "qsrice-isolated-session",
+	name = "hyprshell-isolated-session",
 	match = { class = "aquamarine" },
 	float = true,
 	no_focus = true,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for qsrice-bench.py using only synthetic data."""
+"""Unit tests for hyprshell-bench.py using only synthetic data."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ import tempfile
 import unittest
 
 
-SCRIPT = Path(__file__).with_name("qsrice-bench.py")
-SPEC = importlib.util.spec_from_file_location("qsrice_bench", SCRIPT)
+SCRIPT = Path(__file__).with_name("hyprshell-bench.py")
+SPEC = importlib.util.spec_from_file_location("hyprshell_bench", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 bench = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = bench

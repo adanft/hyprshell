@@ -19,8 +19,8 @@
 
 var HINT_KEY = "x-kde-urls";
 
-var OPEN_IDENTIFIER = "qsrice-file-open";
-var REVEAL_IDENTIFIER = "qsrice-file-reveal";
+var OPEN_IDENTIFIER = "hyprshell-file-open";
+var REVEAL_IDENTIFIER = "hyprshell-file-reveal";
 var OPEN_TEXT = "Open";
 var REVEAL_TEXT = "Show in folder";
 
@@ -157,7 +157,7 @@ function revealArguments(path) {
 		' --object-path /org/freedesktop/FileManager1' +
 		' --method org.freedesktop.FileManager1.ShowItems "[\'file://$1\']" ""' +
 		" >/dev/null 2>&1 || exec xdg-open \"$2\"";
-	return ["sh", "-c", script, "qsrice-file-reveal", path, directory];
+	return ["sh", "-c", script, "hyprshell-file-reveal", path, directory];
 }
 
 // Shaped like the actions Quickshell hands over for a real sender — identifier,

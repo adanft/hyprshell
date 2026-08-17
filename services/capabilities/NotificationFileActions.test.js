@@ -73,7 +73,7 @@ assert.deepEqual(reveal.slice(0, 2), ["sh", "-c"]);
 // The path travels as a positional argument, never spliced into the script
 // text. That is what keeps the command one shape whatever the hint carried.
 assert.equal(reveal[2].includes(path), false);
-assert.deepEqual(reveal.slice(3), ["qsrice-file-reveal", path, "/home/someone/Pictures/Screenshots"]);
+assert.deepEqual(reveal.slice(3), ["hyprshell-file-reveal", path, "/home/someone/Pictures/Screenshots"]);
 assert.match(reveal[2], /org\.freedesktop\.FileManager1\.ShowItems/);
 assert.match(reveal[2], /\|\| exec xdg-open "\$2"/);
 

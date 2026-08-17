@@ -12,7 +12,7 @@
 # actually open these overlays have never been called by a test.
 #
 # So this drives them the way a person does, through `qs ipc`, while
-# qsrice-bench.py samples the process tree.
+# hyprshell-bench.py samples the process tree.
 #
 # The verdict is deliberately lopsided:
 #
@@ -85,7 +85,7 @@ if [[ -z "${WAYLAND_DISPLAY:-}" && -z "${DISPLAY:-}" ]]; then
 	exit 1
 fi
 
-work_dir=$(mktemp -d "${TMPDIR:-/tmp}/qsrice-cycle.XXXXXX") || exit 1
+work_dir=$(mktemp -d "${TMPDIR:-/tmp}/hyprshell-cycle.XXXXXX") || exit 1
 shell_log="$work_dir/shell.log"
 samples="$work_dir/samples.jsonl"
 idle_samples="$work_dir/idle.jsonl"
@@ -119,7 +119,7 @@ cleanup() {
 		[[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
 	done
 	wait 2>/dev/null
-	[[ "$work_dir" == "${TMPDIR:-/tmp}"/qsrice-cycle.* ]] && rm -rf "$work_dir"
+	[[ "$work_dir" == "${TMPDIR:-/tmp}"/hyprshell-cycle.* ]] && rm -rf "$work_dir"
 }
 # A bash signal handler that returns hands control back to where the script was
 # interrupted, so a single trap on EXIT INT TERM does not stop anything: the body
@@ -206,7 +206,7 @@ cycle_once() {
 # warm, its thread pools are up and its caches are full, and "idle" would mean
 # something different. This is the shell as it sits between the moments a person
 # uses it.
-python3 scripts/qsrice-bench.py \
+python3 scripts/hyprshell-bench.py \
 	--pid "$shell_pid" \
 	--scenario idle \
 	--duration "$IDLE_SECONDS" \
@@ -252,7 +252,7 @@ cycle_once "the warm-up cycle" open
 toggles=$((CYCLES * ${#TARGETS[@]} * 2))
 duration=$(python3 -c "print(max(8, int($toggles * $SETTLE + $WARMUP + 4)))")
 
-python3 scripts/qsrice-bench.py \
+python3 scripts/hyprshell-bench.py \
 	--pid "$shell_pid" \
 	--scenario panel-cycles \
 	--duration "$duration" \

@@ -6,7 +6,7 @@ Item {
     id: cache
 
     readonly property string cacheRoot: (Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env("HOME") || ""}/.cache`)
-                                        + "/qsrice/wallpapers"
+                                        + "/hyprshell/wallpapers"
 
     readonly property int maxJobs: 1
     readonly property int generationTimeoutMs: 15000

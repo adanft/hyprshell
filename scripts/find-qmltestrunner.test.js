@@ -4,7 +4,7 @@ const os = require("node:os");
 const path = require("node:path");
 const childProcess = require("node:child_process");
 
-const directory = fs.mkdtempSync(path.join(os.tmpdir(), "qsrice-qmlrunner-"));
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), "hyprshell-qmlrunner-"));
 const pathRunner = path.join(directory, "qmltestrunner");
 fs.writeFileSync(pathRunner, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
 const finder = path.join(__dirname, "find-qmltestrunner.sh");

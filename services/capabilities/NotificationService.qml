@@ -28,7 +28,7 @@ Scope {
     readonly property int maxPopupIngressPerSecond: 6
     readonly property int maxNotificationQueueSize: 32
     readonly property string notificationImageCacheDirectory: `${Quickshell.env("XDG_CACHE_HOME") || `${Quickshell.env(
-                                                                  "HOME")}/.cache`}/qsrice/notification-images`
+                                                                  "HOME")}/.cache`}/hyprshell/notification-images`
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 10000
     property int notificationTimeoutCritical: 0

@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const persistence = require("./NotificationImagePersistence.js");
 
-const cacheDirectory = "/cache/qsrice/notification-images";
+const cacheDirectory = "/cache/hyprshell/notification-images";
 const generatedPath = `${cacheDirectory}/notif_1700000000000_42_1.png`;
 const retryPath = `${cacheDirectory}/notif_1700000000000_42_2.png`;
 const liveImage = "image://qsimage/live-1";

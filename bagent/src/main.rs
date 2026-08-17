@@ -32,7 +32,7 @@ use zbus::zvariant::ObjectPath;
 /// enough that a forgotten dialog does not hold a pairing open all afternoon.
 const PATIENCE: Duration = Duration::from_mins(2);
 
-const AGENT_PATH: ObjectPath<'static> = ObjectPath::from_static_str_unchecked("/org/qsrice/bagent");
+const AGENT_PATH: ObjectPath<'static> = ObjectPath::from_static_str_unchecked("/org/hyprshell/bagent");
 
 const SOCKET_NAME: &str = "bagent.sock";
 

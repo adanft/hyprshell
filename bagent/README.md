@@ -142,7 +142,7 @@ RUST_LOG=bagent=debug ./target/release/bagent
 ```
 
 The adapter must also be pairable, which is separate from having an agent. The
-qsrice shell now binds that to the adapter's power, so there is nothing to set
+hyprshell shell now binds that to the adapter's power, so there is nothing to set
 by hand; without it, BlueZ refuses the pairing before any agent is asked.
 
 ## Tests

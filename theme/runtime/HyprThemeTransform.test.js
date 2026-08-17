@@ -68,7 +68,7 @@ const conf = command.renderThemeConf(theme, appearance);
 
 assert.equal(
 	conf,
-	`# qsrice managed theme
+	`# hyprshell managed theme
 # Written by the shell. Edits are lost on the next theme change.
 # hyprlock sources this; hyprland.lua reads it back.
 

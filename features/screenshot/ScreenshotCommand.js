@@ -63,7 +63,7 @@ trap - EXIT HUP INT TERM
 		"sh",
 		"-c",
 		script,
-		"qsrice-screenshot",
+		"hyprshell-screenshot",
 		String(mode || "all"),
 		includeCursor ? "1" : "0",
 		String(monitorName || ""),

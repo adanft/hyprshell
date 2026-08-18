@@ -9,24 +9,28 @@ wallpapers and themes — and paints Hyprshell, Hyprland and Ghostty to match.
 
 </div>
 
-<!-- SCREENSHOTS — drop the PNGs into docs/screenshots/ and delete this comment
-     wrapper. Suggested set: bar.png, launcher.png, control-center.png,
-     notifications.png, theme-selector.png
-
 <div align="center">
-  <img src="docs/screenshots/bar.png" width="90%">
+  <img src="docs/screenshots/bar.webp" width="100%" alt="The status bar: workspaces, CPU and RAM and the tray on the left, the clock in the middle, and the radios, sound, battery and date on the right">
 </div>
 
 <details>
-<summary><b>More screenshots</b></summary>
+<summary><b>The panels — click to open</b></summary>
+<br>
+
+| App launcher | Control center |
+|:---:|:---:|
+| <img src="docs/screenshots/launcher.webp" alt="The app launcher, filtering desktop entries into a grid"> | <img src="docs/screenshots/control-center.webp" alt="The control center, with Ethernet, Wi-Fi, sound, microphone and Bluetooth"> |
+| **Notification center** | **Power menu** |
+| <img src="docs/screenshots/notifications.webp" alt="The notification center, showing history"> | <img src="docs/screenshots/powermenu.webp" alt="The power menu: lock, suspend, log out, reboot, power off"> |
+| **Theme selector** | **Wallpaper selector** |
+| <img src="docs/screenshots/theme-selector.webp" alt="The theme selector, showing the thirteen palettes"> | <img src="docs/screenshots/wallpaper-selector.webp" alt="The wallpaper selector, browsing a directory as a thumbnail grid"> |
+
 <div align="center">
-  <img src="docs/screenshots/launcher.png" width="90%">
-  <img src="docs/screenshots/control-center.png" width="90%">
-  <img src="docs/screenshots/notifications.png" width="90%">
-  <img src="docs/screenshots/theme-selector.png" width="90%">
+  <b>Screenshot tool</b><br>
+  <img src="docs/screenshots/screenshot.webp" width="70%" alt="The screenshot tool, with its four modes, the delay and the cursor toggle">
 </div>
+
 </details>
--->
 
 ## Features
 

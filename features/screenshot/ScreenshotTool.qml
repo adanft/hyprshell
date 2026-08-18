@@ -38,7 +38,12 @@ Scope {
 
     function capture(mode) {
         const monitorName = panel.screen ? panel.screen.name : ""
-        const processArgs = ScreenshotCommand.processArguments(mode, includeCursor, monitorName, tool.delaySeconds)
+        // How long the overlay takes to be off the screen after close() -- hiding
+        // it is a request, and the compositor keeps drawing while it animates out.
+        // The wait happens in the launched process rather than here, because
+        // closing destroys this component and nothing here outlives it.
+        const settleSeconds = tool.theme.motion.durationNormal / 1000
+        const processArgs = ScreenshotCommand.processArguments(mode, includeCursor, monitorName, tool.delaySeconds, settleSeconds)
         close()
         Qt.callLater(() => {
             Quickshell.execDetached(processArgs)

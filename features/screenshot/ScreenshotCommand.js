@@ -1,10 +1,11 @@
-function processArguments(mode, includeCursor, monitorName, delaySeconds) {
+function processArguments(mode, includeCursor, monitorName, delaySeconds, settleSeconds) {
 	const script = String.raw`
 set -eu
 mode=$1
 cursor=$2
 monitor=$3
 delay=$4
+settle=$5
 dir=$HOME/Pictures/Screenshots
 mkdir -p -- "$dir"
 # The tool hides itself before this runs, but the compositor drops the layer
@@ -19,6 +20,14 @@ while [ "$waited" -lt 50 ]; do
   sleep 0.02
   waited=$((waited + 1))
 done
+# The wait above answers "has the compositor accepted the unmap", and it does so
+# at once -- it returns on its first look and protects nothing. What is still on
+# screen is the overlay animating out, and that has a duration: the shell's own,
+# handed in rather than invented here.
+#
+# It is waited in this process because closing the panel destroys the component
+# that asked for the capture, so nothing on that side lives long enough to wait.
+sleep "$settle"
 sleep "$delay"
 file=$(mktemp -- "$dir/screenshot_$(date +%Y-%m-%d-%H-%M-%S-%3N)-XXXXXX.png")
 cleanup() { rm -f -- "$file"; }
@@ -67,10 +76,12 @@ trap - EXIT HUP INT TERM
 		String(mode || "all"),
 		includeCursor ? "1" : "0",
 		String(monitorName || ""),
-		// The 0.2 that used to be added here was padding for the overlay
-		// teardown; the script now waits for that surface directly, so this is
-		// only the timer the user asked for.
+		// Two separate waits, kept apart on purpose: this one is the timer the
+		// user asked for, and the next is how long the overlay takes to leave.
+		// Folding the padding into the delay is what this used to do, and it
+		// made a 0 second delay mean 0.2.
 		String(Math.max(0, Number(delaySeconds) || 0)),
+		String(Math.max(0, Number(settleSeconds) || 0)),
 	];
 }
 

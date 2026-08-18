@@ -31,7 +31,7 @@ HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 | Area                     | Support                                                                                                                                                                       |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Required runtime         | Hyprland and Quickshell (`qs`). HyprShell uses Hyprland IPC and Wayland layer-shell surfaces.                                                                                 |
-| Core utilities           | `awww`/`awww-daemon`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.                            |
+| Feature packages         | `awww`/`awww-daemon`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.                            |
 | Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, power-profiles-daemon, Ghostty, and a locker such as hyprlock. Their services/features are independent of shell startup. |
 | Missing hardware         | Missing Bluetooth, Wi-Fi, Ethernet, or microphone stays unavailable/inert. Battery and backlight modules hide without matching hardware.                                      |
 | Unsupported environments | Non-Hyprland compositors are not supported. Other distributions may work with equivalent package names, but this guide targets Arch Linux and Hyprland.                       |
@@ -40,27 +40,16 @@ HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 
 ### 1. Install dependencies
 
-Choose **one** package path; do not run both.
-
-Official Arch packages:
+Install the stable packages from Arch's official repositories. No AUR helper is required for this setup.
 
 ```sh
-sudo pacman -S --needed hyprland quickshell awww ttf-nerd-fonts-symbols \
-  networkmanager bluez bluez-utils pipewire wireplumber upower \
-  power-profiles-daemon accountsservice grim slurp wl-clipboard jq \
-  imagemagick libnotify glib2 ghostty brightnessctl
+sudo pacman -S --needed curl tar coreutils hyprland quickshell awww \
+  ttf-nerd-fonts-symbols networkmanager bluez bluez-utils pipewire \
+  wireplumber upower power-profiles-daemon accountsservice grim slurp \
+  wl-clipboard jq imagemagick libnotify glib2 ghostty brightnessctl
 ```
 
-Using `paru` with the AUR Quickshell package:
-
-```sh
-paru -S --needed hyprland quickshell-git awww ttf-nerd-fonts-symbols \
-  networkmanager bluez bluez-utils pipewire wireplumber upower \
-  power-profiles-daemon accountsservice grim slurp wl-clipboard jq \
-  imagemagick libnotify glib2 ghostty brightnessctl
-```
-
-`quickshell` and `awww` are available from Arch's official `extra` repository. `quickshell-git` is the AUR alternative.
+`curl`, `tar`, and `coreutils` provide the downloader and archive/checksum tools used by the installer. Hyprland and Quickshell are startup-critical. The remaining packages support specific features such as networking, audio, notifications, screenshots, wallpapers, and typography.
 
 ### 2. Install HyprShell
 
@@ -72,7 +61,11 @@ The installer places the shell in `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell` 
 
 ### 3. Add the Hyprland configuration
 
-HyprShell does not replace your Hyprland configuration. Add the following to `hyprland.lua`, adapting the surrounding configuration to your setup:
+HyprShell does not replace your Hyprland configuration. Add the following sections to `hyprland.lua`, adapting the surrounding configuration to your setup.
+
+#### Essential startup
+
+This is the only Hyprland configuration required to start the shell:
 
 ```lua
 local config_home = os.getenv("XDG_CONFIG_HOME")
@@ -81,21 +74,58 @@ if not config_home or config_home == "" then
 end
 
 local hyprshell = config_home .. "/hyprshell"
+
+hl.on("hyprland.start", function()
+    hl.exec_cmd("qs -p " .. hyprshell)
+end)
+```
+
+#### Optional keybinds
+
+Add panel/action IPC binds separately when you want them:
+
+```lua
+hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call applauncher toggle"))
+hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call themeselector toggle"))
+hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call wallpaperselector toggle"))
+hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call powermenu toggle"))
+hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call screenshot toggle"))
+```
+
+#### Optional wallpaper support
+
+Wallpaper changes need `awww-daemon`, but the shell itself does not. Add this line inside the `hyprland.start` callback above, before the `qs` command:
+
+```lua
+hl.exec_cmd("awww-daemon")
+```
+
+#### Optional Hyprland theme synchronization
+
+Skip this section if you want to keep your existing Hyprland colors. To synchronize active borders, inactive borders, and the compositor background with HyprShell, add this after any competing border or background configuration:
+
+```lua
 local theme_file = config_home .. "/hypr/theme.conf"
 
-local function read_theme()
+local function read_hyprshell_theme()
     local theme = {}
     local file = io.open(theme_file, "r")
-    if not file then return theme end
+    if not file then
+        return theme
+    end
+
     for line in file:lines() do
         local name, value = line:match("^%s*%$([%w_]+)%s*=%s*(.-)%s*$")
-        if name and value ~= "" then theme[name] = value end
+        if name and value ~= "" then
+            theme[name] = value
+        end
     end
     file:close()
     return theme
 end
 
-local theme = read_theme()
+local theme = read_hyprshell_theme()
+
 hl.config({
     general = {
         col = {
@@ -108,32 +138,24 @@ hl.config({
         background_color = theme.shadow or "rgb(11111b)",
     },
 })
-
-hl.on("hyprland.start", function()
-    hl.exec_cmd("awww-daemon")
-    hl.exec_cmd("qs -p " .. hyprshell)
-end)
-
-hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call applauncher toggle"))
-hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call themeselector toggle"))
-hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call wallpaperselector toggle"))
-hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call powermenu toggle"))
-hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call screenshot toggle"))
 ```
 
-The three theme mappings are `primary` → `general.col.active_border`, `outline` → `general.col.inactive_border`, and `shadow` → `misc.background_color`. Keep `disable_hyprland_logo = true` so the background color is visible. Catppuccin fallbacks are used until the generated palette exists. HyprShell writes `theme.conf` and calls `hyprctl reload`; it does not replace your configuration. Put this configuration after competing border/background settings.
-
-`awww-daemon` must run before wallpaper changes can appear. The daemon is not started by HyprShell itself. NetworkManager and BlueZ service activity affects their controls only, not shell startup.
+The mapping is `primary` → `active_border`, `outline` → `inactive_border`, and `shadow` → `background_color`. HyprShell owns the generated `theme.conf` file and calls `hyprctl reload` when these colors change.
 
 ### 4. Verify
 
-Run these checks separately:
+Check the required runtime and installed pairing agent separately:
 
 ```sh
 command -v qs
 command -v hyprland || command -v Hyprland
-command -v awww-daemon
 command -v bagent
+```
+
+Wallpaper support has its own optional check:
+
+```sh
+command -v awww-daemon
 ```
 
 Then launch the shell directly if it is not already running:
@@ -143,12 +165,18 @@ config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
 qs -p "$config_home/hyprshell"
 ```
 
-You should see the bar. Use the configured keybinds to open a panel; choose a wallpaper to verify that `awww-daemon` is working.
+You should see the bar. If you added the optional keybinds or wallpaper support, verify those features separately.
+
+## Typography
+
+`ttf-nerd-fonts-symbols` provides `Symbols Nerd Font`, which HyprShell uses for icons. The shell still starts without it, but icons render as missing-glyph boxes.
+
+Body text requests `SF Pro Display`. It is not bundled or installed by `install.sh`; when it is absent, Qt uses another system font, so HyprShell does not depend on it for startup. The files are available from the [San Francisco Pro Fonts repository](https://github.com/chris-short/apple-san-francisco-pro-fonts), whose README points back to Apple. Review the included restrictive Apple font license before installing or using it on Linux.
 
 ## Configuration and storage
 
 - `settings.json` stores the current theme and wallpaper under `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell/`. It is created on first run and preserved by upgrades.
-- `${XDG_CONFIG_HOME:-$HOME/.config}/hypr/theme.conf` is generated and may be overwritten by HyprShell. Include it from your Hyprland and hyprlock configuration as appropriate.
+- `${XDG_CONFIG_HOME:-$HOME/.config}/hypr/theme.conf` is generated and may be overwritten by HyprShell. The optional snippet above parses it for Hyprland; hyprlock may source it separately.
 - Ghostty synchronization is conditional: when Ghostty is installed, HyprShell updates a marked block in `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config.ghostty`.
 - Wallpapers are read from `$AWWW_WALLPAPERS_DIR`, or `$HOME/Wallpapers` when it is unset. Screenshots go to `$HOME/Pictures/Screenshots`.
 - Cache data is stored under `${XDG_CACHE_HOME:-$HOME/.cache}/hyprshell/`.
@@ -157,11 +185,7 @@ You should see the bar. Use the configured keybinds to open a panel; choose a wa
 
 ### Empty icon boxes
 
-Install the symbol font and restart the shell:
-
-```sh
-sudo pacman -S --needed ttf-nerd-fonts-symbols
-```
+Confirm that `ttf-nerd-fonts-symbols` from the dependency step is installed, then restart the shell.
 
 ### The shell does not start
 
@@ -173,7 +197,7 @@ The shell does not create Hyprland binds automatically. Add the IPC binds from t
 
 ### Wallpapers do not change
 
-Start `awww-daemon` from the Hyprland start hook, then try again:
+Start the optional `awww-daemon` from the Hyprland start hook, then try again:
 
 ```sh
 awww-daemon &

@@ -117,16 +117,19 @@ Other rules the agent holds to:
 
 ## Installing it
 
+Installed shells already have it — the release ships it built. This is the
+from-source path, for working on it:
+
 ```sh
-../install.sh                        # into ~/.local/bin
+../scripts/install-bagent.sh                        # into ~/.local/bin
 ```
 
 System-wide takes two steps, because the build must not run as root: a build
 under sudo compiles every dependency with privileges none of them need.
 
 ```sh
-../install.sh                        # build as yourself
-PREFIX=/usr/local sudo ../install.sh # install what you just built
+../scripts/install-bagent.sh                        # build as yourself
+PREFIX=/usr/local sudo ../scripts/install-bagent.sh # install what you just built
 ```
 
 The shell launches it **by name**, the way it launches bluetoothctl and grim, so

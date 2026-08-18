@@ -1,101 +1,164 @@
-#!/usr/bin/env bash
+#!/bin/sh
 #
-# Builds bagent and puts it where the shell can find it.
+# The one-line install.
 #
-#     ./install.sh                        into ~/.local/bin
+#     curl -fsSL https://raw.githubusercontent.com/adanft/hyprshell/main/install.sh | sh
 #
-#     ./install.sh                        for everyone on the machine: build as
-#     PREFIX=/usr/local sudo ./install.sh  yourself, then install as root
+# Downloads the current release, puts the shell in ~/.config/hyprshell and the
+# Bluetooth pairing agent on your PATH. Nothing is compiled and nothing is
+# cloned: the release already carries a built bagent, and the repository — tests,
+# harnesses, Rust sources, this script's own siblings — never reaches you.
 #
-# bagent is the Bluetooth pairing agent. Quickshell cannot serve a D-Bus object,
-# so `org.bluez.Agent1` lives in this separate process; without it every pairing
-# that needs a person to confirm a code is refused before you see it.
+# Run it again to upgrade. Your settings.json is not touched.
 #
-# The shell launches it by name, the same way it launches bluetoothctl and grim,
-# so what matters is that it lands somewhere on PATH. Nothing else is installed:
-# the shell itself runs from this directory.
+#     HYPRSHELL_VERSION=v0.2.0  sh install.sh   a specific release
+#     HYPRSHELL_BIN_DIR=~/bin   sh install.sh   somewhere else for bagent
 #
-# Exits non-zero if the build fails or the binary cannot be placed.
+# Written for POSIX sh, because the documented way to run it is a pipe into sh
+# and that is not always bash.
 
-set -uo pipefail
+set -eu
 
-cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+readonly REPO="adanft/hyprshell"
+readonly ARCHIVE="hyprshell.tar.gz"
 
-readonly PREFIX="${PREFIX:-$HOME/.local}"
-readonly BIN_DIR="$PREFIX/bin"
-readonly TARGET="$BIN_DIR/bagent"
-readonly BUILT="bagent/target/release/bagent"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+SHELL_DIR="$CONFIG_HOME/hyprshell"
+BIN_DIR="${HYPRSHELL_BIN_DIR:-$HOME/.local/bin}"
+VERSION="${HYPRSHELL_VERSION:-latest}"
 
-echo "== bagent =="
+# What the last install put here. Kept so an upgrade removes exactly what it
+# placed and nothing else — settings.json lives in this same directory, and a
+# blanket wipe would take a theme and a wallpaper with it every time.
+readonly MANIFEST=".install-manifest"
 
-if ! command -v cargo >/dev/null 2>&1; then
-	echo "-- FAILED: cargo is not installed"
-	echo "   Rust builds this. On Arch: pacman -S rust"
+say() { printf '%s\n' "$*"; }
+fail() {
+	printf -- '-- FAILED: %s\n' "$*" >&2
 	exit 1
-fi
+}
 
-# Never as root.
-#
-# The documented system-wide install runs this whole script under sudo, and a
-# build under sudo compiles every dependency in the tree as root — running each
-# crate's build script and proc macro with privileges none of them need. Only
-# placing the file needs root, so under root the build is refused and an
-# already-built binary is required instead.
-if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
-	if [[ ! -x "$BUILT" ]]; then
-		echo "-- FAILED: refusing to build as root"
-		echo "   Build it as yourself first, then install:"
-		echo "       ./install.sh"
-		echo "       PREFIX=/usr/local sudo ./install.sh"
-		exit 1
-	fi
-	echo "-- using the binary already built (a root build is refused)"
+# Installing into $HOME as root leaves every file owned by root, and the shell
+# then cannot write its own settings. Only $HOME is written here, so there is
+# nothing root is needed for.
+[ "$(id -u)" -eq 0 ] && fail "do not run this as root — it installs into $HOME"
+
+for tool in curl tar sha256sum install; do
+	command -v "$tool" >/dev/null 2>&1 || fail "$tool is required and not installed"
+done
+
+if [ -n "${HYPRSHELL_BASE_URL:-}" ]; then
+	# Where the assets are fetched from, for trying a build before it is a
+	# release. `file://$PWD/dist` after scripts/make-release.sh --dry-run runs
+	# this whole script against what you just packed.
+	base="$HYPRSHELL_BASE_URL"
+elif [ "$VERSION" = latest ]; then
+	# GitHub resolves this redirect to the newest release's asset, so the version
+	# never has to be discovered first. No API call, so no rate limit and no JSON
+	# to parse without jq.
+	base="https://github.com/$REPO/releases/latest/download"
 else
-	echo "-- building (release)"
-	if ! cargo build --release --manifest-path bagent/Cargo.toml; then
-		echo "-- FAILED: the build did not finish"
-		exit 1
-	fi
+	base="https://github.com/$REPO/releases/download/$VERSION"
 fi
 
-if [[ ! -x "$BUILT" ]]; then
-	echo "-- FAILED: $BUILT is missing after a build that reported success"
-	exit 1
+work=$(mktemp -d) || fail "could not create a temporary directory"
+# Leaving a half-unpacked tree in /tmp on every failed run is how a disk fills up
+# quietly, so this is cleaned on the way out however the script leaves.
+trap 'rm -rf "$work"' EXIT INT TERM
+
+say "== hyprshell =="
+say "-- downloading ($VERSION)"
+
+curl -fsSL "$base/$ARCHIVE" -o "$work/$ARCHIVE" ||
+	fail "could not download $base/$ARCHIVE"
+curl -fsSL "$base/$ARCHIVE.sha256" -o "$work/$ARCHIVE.sha256" ||
+	fail "could not download the checksum for $ARCHIVE"
+
+# The archive arrived over the network and is about to be unpacked into your
+# config. Checking it costs one command.
+say "-- verifying"
+(cd "$work" && sha256sum -c "$ARCHIVE.sha256" >/dev/null 2>&1) ||
+	fail "the checksum does not match — the download is corrupt or tampered with"
+
+tar -xzf "$work/$ARCHIVE" -C "$work" || fail "the archive could not be unpacked"
+
+readonly UNPACKED="$work/hyprshell"
+[ -f "$UNPACKED/shell.qml" ] ||
+	fail "the archive does not look like a hyprshell release"
+
+version=$(cat "$UNPACKED/VERSION" 2>/dev/null || echo unknown)
+
+# Remove what the previous install placed, from its own record, before writing
+# the new tree. Without this an entry dropped between versions would linger in
+# your config forever, and Quickshell would keep loading it.
+if [ -f "$SHELL_DIR/$MANIFEST" ]; then
+	say "-- replacing the previous install"
+	while IFS= read -r entry; do
+		# Anything with a slash, empty, or relative is refused rather than
+		# trusted: this file decides what gets deleted, so it is read as data and
+		# never as a path to follow.
+		case "$entry" in
+		"" | */* | .* ) continue ;;
+		esac
+		rm -rf -- "${SHELL_DIR:?}/$entry"
+	done <"$SHELL_DIR/$MANIFEST"
+	rm -f -- "$SHELL_DIR/$MANIFEST"
 fi
 
-# -D creates the directory, and the mode is stated rather than inherited from
-# whatever umask happens to be in force.
-if ! install -Dm755 "$BUILT" "$TARGET"; then
-	echo "-- FAILED: could not write $TARGET"
-	if [[ ! -w "$BIN_DIR" && ! -w "$PREFIX" ]]; then
-		echo "   $BIN_DIR is not writable."
-		echo "   Re-run with sudo, or leave PREFIX at its default."
-	fi
-	exit 1
+mkdir -p -- "$SHELL_DIR" || fail "could not create $SHELL_DIR"
+
+say "-- installing the shell into $SHELL_DIR"
+: >"$work/manifest"
+for path in "$UNPACKED"/*; do
+	entry=$(basename -- "$path")
+	# bin/ is the agent, which belongs on PATH rather than in a config directory.
+	[ "$entry" = bin ] && continue
+	cp -R -- "$path" "$SHELL_DIR/" || fail "could not write $SHELL_DIR/$entry"
+	printf '%s\n' "$entry" >>"$work/manifest"
+done
+cp -- "$work/manifest" "$SHELL_DIR/$MANIFEST"
+
+if [ -x "$UNPACKED/bin/bagent" ]; then
+	say "-- installing bagent into $BIN_DIR"
+	install -Dm755 -- "$UNPACKED/bin/bagent" "$BIN_DIR/bagent" ||
+		fail "could not write $BIN_DIR/bagent"
+
+	# Installed somewhere the shell will never look is the one failure that looks
+	# like success, so it is checked rather than assumed.
+	case ":$PATH:" in
+	*":$BIN_DIR:"*) ;;
+	*)
+		say "-- WARNING: $BIN_DIR is not on your PATH"
+		say "   The shell launches bagent by name, so it will not be found there."
+		say "   Add it to PATH, or re-run with HYPRSHELL_BIN_DIR set somewhere that is."
+		;;
+	esac
 fi
 
-echo "-- installed: $TARGET"
+command -v qs >/dev/null 2>&1 ||
+	say "-- WARNING: quickshell (qs) is not installed — the shell cannot start without it"
+command -v hyprland >/dev/null 2>&1 || command -v Hyprland >/dev/null 2>&1 ||
+	say "-- WARNING: Hyprland is not installed — the shell cannot start without it"
 
-# Installed somewhere the shell will never look is the one failure that looks
-# like success, so it is checked rather than assumed.
-case ":$PATH:" in
-*":$BIN_DIR:"*)
-	;;
-*)
-	echo "-- WARNING: $BIN_DIR is not on your PATH"
-	echo "   The shell launches bagent by name, so it will not be found there."
-	echo "   Add it to PATH, or install with PREFIX=/usr/local instead."
-	;;
-esac
+say ""
+say "Installed hyprshell $version."
+say ""
+say "Add this to your hyprland.lua — the launch hook, and one bind per panel:"
+say ""
+cat <<'LUA'
+    local hyprshell = os.getenv("HOME") .. "/.config/hyprshell"
 
-resolved="$(command -v bagent 2>/dev/null)"
-if [[ -n "$resolved" && "$resolved" != "$TARGET" ]]; then
-	echo "-- WARNING: another bagent comes first on PATH: $resolved"
-	echo "   That one is what the shell will run."
-fi
+    hl.on("hyprland.start", function()
+        hl.exec_cmd("qs -p " .. hyprshell)
+    end)
 
-echo
-echo "The shell starts and stops it with the Bluetooth adapter, so there is no"
-echo "service to enable. Restart the shell to pick this up:"
-echo
-echo "    pkill -x qs && qs -p $(pwd)"
+    hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call applauncher toggle"))
+    hl.bind("SUPER + T", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call themeselector toggle"))
+    hl.bind("SUPER + B", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call wallpaperselector toggle"))
+    hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call powermenu toggle"))
+    hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call screenshot toggle"))
+LUA
+say ""
+say "Then start it:"
+say ""
+say "    qs -p $SHELL_DIR"

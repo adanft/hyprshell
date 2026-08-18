@@ -5,3 +5,4 @@
 .codegraph
 __pycache__/
 target/
+dist/

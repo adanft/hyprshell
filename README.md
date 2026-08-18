@@ -1,115 +1,117 @@
-<div align="center">
+# HyprShell
 
-# hyprshell
-
-**A Wayland desktop shell for Hyprland.**
-
-One process draws your bar, launcher, control center, notifications, screenshots,
-wallpapers and themes — and paints Hyprshell, Hyprland and Ghostty to match.
-
-</div>
+HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher, control center, notifications, screenshots, wallpapers, and live theme synchronization.
 
 <div align="center">
-  <img src="docs/screenshots/bar.webp" width="100%" alt="The shell on an empty desktop: the status bar across the top, with workspaces, CPU and RAM and the tray on the left, the clock in the middle, and the radios, sound, battery and date on the right">
+  <img src="docs/screenshots/bar.webp" width="100%" alt="HyprShell status bar across the top of a desktop">
 </div>
 
 <details>
-<summary><b>The panels — click to open</b></summary>
-<br>
+<summary>More screenshots</summary>
 
-| App launcher | Control center |
-|:---:|:---:|
-| <img src="docs/screenshots/launcher.webp" alt="The app launcher, filtering desktop entries into a grid"> | <img src="docs/screenshots/control-center.webp" alt="The control center, with Ethernet, Wi-Fi, sound, microphone and Bluetooth"> |
-| **Notification center** | **Power menu** |
-| <img src="docs/screenshots/notifications.webp" alt="The notification center, showing history"> | <img src="docs/screenshots/powermenu.webp" alt="The power menu: lock, suspend, log out, reboot, power off"> |
-| **Theme selector** | **Wallpaper selector** |
-| <img src="docs/screenshots/theme-selector.webp" alt="The theme selector, showing the thirteen palettes"> | <img src="docs/screenshots/wallpaper-selector.webp" alt="The wallpaper selector, browsing a directory as a thumbnail grid"> |
+|                                Launcher                                 |                             Control center                              |
+| :---------------------------------------------------------------------: | :---------------------------------------------------------------------: |
+| <img src="docs/screenshots/launcher.webp" alt="Application launcher" /> | <img src="docs/screenshots/control-center.webp" alt="Control center" /> |
 
-<div align="center">
-  <b>Screenshot tool</b><br>
-  <img src="docs/screenshots/screenshot.webp" width="70%" alt="The screenshot tool, with its four modes, the delay and the cursor toggle">
-</div>
+|                                Notifications                                |                           Power menu                           |
+| :-------------------------------------------------------------------------: | :------------------------------------------------------------: |
+| <img src="docs/screenshots/notifications.webp" alt="Notification center" /> | <img src="docs/screenshots/powermenu.webp" alt="Power menu" /> |
 
 </details>
+
+## What you get
+
+- **A useful desktop surface:** workspaces, system status, tray, clock, network, audio, power, battery, brightness, and notifications.
+- **Fast actions:** an app launcher, control center, notification history, power menu, and screenshot tool.
+- **Personalization:** wallpaper browsing, thirteen palettes, Hyprland border/background colors, and conditional Ghostty synchronization.
+- **Graceful degradation:** unavailable radios, audio inputs, and other integrations remain unavailable or inert; battery and backlight modules hide when the hardware is absent.
+
+## Requirements and support
+
+| Area                     | Support                                                                                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Required runtime         | Hyprland and Quickshell (`qs`). HyprShell uses Hyprland IPC and Wayland layer-shell surfaces.                                                                                 |
+| Core utilities           | `awww`/`awww-daemon`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.                            |
+| Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, power-profiles-daemon, Ghostty, and a locker such as hyprlock. Their services/features are independent of shell startup. |
+| Missing hardware         | Missing Bluetooth, Wi-Fi, Ethernet, or microphone stays unavailable/inert. Battery and backlight modules hide without matching hardware.                                      |
+| Unsupported environments | Non-Hyprland compositors are not supported. Other distributions may work with equivalent package names, but this guide targets Arch Linux and Hyprland.                       |
 
 ## Quick start
 
-From a fresh Arch install to the desktop in the screenshots above. Package names
-are Arch's; on another distribution the binaries are the same and only the names
-move.
+### 1. Install dependencies
 
-### 1. Install everything
+Choose **one** package path; do not run both.
 
-```sh
-# the three it cannot start without: the compositor, the runtime, and the font
-# every icon in the shell is a codepoint from
-sudo pacman -S hyprland ttf-nerd-fonts-symbols
-
-# the desktop services it reads over D-Bus
-sudo pacman -S networkmanager bluez bluez-utils pipewire wireplumber \
-               upower power-profiles-daemon accountsservice
-
-# the commands it shells out to
-sudo pacman -S grim slurp wl-clipboard jq imagemagick libnotify glib2 ghostty
-```
+Official Arch packages:
 
 ```sh
-# the runtime and the wallpaper daemon are not in the official repositories
-paru -S quickshell-git awww
+sudo pacman -S --needed hyprland quickshell awww ttf-nerd-fonts-symbols \
+  networkmanager bluez bluez-utils pipewire wireplumber upower \
+  power-profiles-daemon accountsservice grim slurp wl-clipboard jq \
+  imagemagick libnotify glib2 ghostty brightnessctl
 ```
 
-Nothing above is strictly required past the first line. Each piece buys exactly
-one feature and the shell starts without it — no `imagemagick` means the
-wallpaper grid falls back to full images, no `libnotify` means a capture lands
-on disk without telling you.
-
-<details>
-<summary><b>Laptops — one more package</b></summary>
+Using `paru` with the AUR Quickshell package:
 
 ```sh
-sudo pacman -S brightnessctl
+paru -S --needed hyprland quickshell-git awww ttf-nerd-fonts-symbols \
+  networkmanager bluez bluez-utils pipewire wireplumber upower \
+  power-profiles-daemon accountsservice grim slurp wl-clipboard jq \
+  imagemagick libnotify glib2 ghostty brightnessctl
 ```
 
-The brightness control needs it, and reports itself unavailable and disappears
-without it. The battery readout needs nothing extra: `upower` is already above,
-and both modules hide themselves on hardware that has no backlight and no
-battery, which is why a desktop shows neither.
+`quickshell` and `awww` are available from Arch's official `extra` repository. `quickshell-git` is the AUR alternative.
 
-</details>
-
-### 2. Turn on the two services that need it
-
-```sh
-sudo systemctl enable --now NetworkManager bluetooth
-```
-
-That is the whole list. `upower`, `power-profiles-daemon` and `accountsservice`
-are D-Bus activated and `pipewire` and `wireplumber` are socket activated, so
-they start the moment something asks for them — enabling them changes nothing.
-
-### 3. Install the shell
+### 2. Install HyprShell
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/adanft/hyprshell/main/install.sh | sh
 ```
 
-That puts the shell in `~/.config/hyprshell` and the `bagent` Bluetooth pairing
-agent on your PATH. Nothing is compiled and nothing is cloned. Run the same line
-again to upgrade: it replaces what it installed last time and leaves your
-`settings.json` alone.
+The installer places the shell in `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell` and installs `bagent` in `$HOME/.local/bin` by default. It warns, rather than failing, if `qs` or Hyprland is not present. Re-running the command upgrades the installed files and preserves `settings.json`.
 
-### 4. Configure Hyprland
+### 3. Add the Hyprland configuration
 
-Everything the shell needs from your `hyprland.lua`, and nothing else — it does
-not take your keybinds, set window rules, or touch anything you have not written
-here yourself.
+HyprShell does not replace your Hyprland configuration. Add the following to `hyprland.lua`, adapting the surrounding configuration to your setup:
 
 ```lua
-local hyprshell = os.getenv("HOME") .. "/.config/hyprshell"
+local config_home = os.getenv("XDG_CONFIG_HOME")
+if not config_home or config_home == "" then
+    config_home = os.getenv("HOME") .. "/.config"
+end
+
+local hyprshell = config_home .. "/hyprshell"
+local theme_file = config_home .. "/hypr/theme.conf"
+
+local function read_theme()
+    local theme = {}
+    local file = io.open(theme_file, "r")
+    if not file then return theme end
+    for line in file:lines() do
+        local name, value = line:match("^%s*%$([%w_]+)%s*=%s*(.-)%s*$")
+        if name and value ~= "" then theme[name] = value end
+    end
+    file:close()
+    return theme
+end
+
+local theme = read_theme()
+hl.config({
+    general = {
+        col = {
+            active_border = theme.primary or "rgb(cba6f7)",
+            inactive_border = theme.outline or "rgb(45475a)",
+        },
+    },
+    misc = {
+        disable_hyprland_logo = true,
+        background_color = theme.shadow or "rgb(11111b)",
+    },
+})
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("awww-daemon")            -- the wallpaper daemon
-    hl.exec_cmd("qs -p " .. hyprshell)    -- the shell
+    hl.exec_cmd("awww-daemon")
+    hl.exec_cmd("qs -p " .. hyprshell)
 end)
 
 hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call applauncher toggle"))
@@ -119,297 +121,93 @@ hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call powerme
 hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call screenshot toggle"))
 ```
 
-The control center and the notification center need no binds — they open from
-the bar, because both anchor themselves to the module you clicked.
+The three theme mappings are `primary` → `general.col.active_border`, `outline` → `general.col.inactive_border`, and `shadow` → `misc.background_color`. Keep `disable_hyprland_logo = true` so the background color is visible. Catppuccin fallbacks are used until the generated palette exists. HyprShell writes `theme.conf` and calls `hyprctl reload`; it does not replace your configuration. Put this configuration after competing border/background settings.
 
-`awww-daemon` has to be started here because the shell never starts it: it only
-ever runs `awww img` to apply a picture. With the daemon down, choosing a
-wallpaper looks like it worked and the screen does not change. You do not need
-`awww restore` — the daemon reads its own cache on start and puts the last
-wallpaper back.
+`awww-daemon` must run before wallpaper changes can appear. The daemon is not started by HyprShell itself. NetworkManager and BlueZ service activity affects their controls only, not shell startup.
 
-### 5. Locking, if you want it
+### 4. Verify
 
-The power menu's Lock runs `loginctl lock-session`. It asks logind to lock the
-session rather than launching a locker itself, so what appears is whatever is
-registered to answer — and nothing is, until you install one. `hyprlock` with
-`hypridle` running `lock_cmd` is the usual pair on Hyprland. Every other action
-in that menu goes straight to `systemctl` or `hyprctl` and needs nothing.
-
-### Confirm it came up
+Run these checks separately:
 
 ```sh
-qs -p ~/.config/hyprshell     # the bar appears, with icons rather than boxes
-command -v bagent awww-daemon # both resolve
+command -v qs
+command -v hyprland || command -v Hyprland
+command -v awww-daemon
+command -v bagent
 ```
 
-## Features
-
-### Status bar
-
-Always up, one row across the top, in three clusters. Modules that have nothing
-to report take no space rather than sitting there empty — a machine with no
-battery has no battery readout, not a dead one.
-
-- **Left**
-  - **Workspaces** — click a pill to focus that workspace
-  - **CPU** and **RAM** — live percentages
-  - **System tray** — the whole cluster is gone while nothing is in it
-- **Center**
-  - **Control center button** — opens it with nothing expanded
-  - **Clock**
-  - **Power profile**
-- **Right**
-  - **Network throughput** — up and down, a readout rather than a button
-  - **Wi-Fi** — *shortcut*
-  - **Bluetooth** — *shortcut*
-  - **Sound** — *shortcut*
-  - **Brightness** — laptops, or any machine with a backlight to set
-  - **Battery** — laptops, or anything else with one
-  - **Microphone** — *shortcut*
-  - **Notifications** — appears once there is something to show
-  - **Date**
-
-The four marked *shortcut* open the control center **already expanded** on their
-own section, so reaching Wi-Fi is one click rather than two. Notifications opens
-the notification center the same way.
-
-### App launcher
-
-Type to filter desktop entries. The search field never loses focus, so the
-arrows move through the grid and the text cursor without you reaching for
-anything: left and right walk the text while there is text to walk, and move
-between apps once there is not.
-
-### Control center
-
-Five sections, one expanded at a time. Every card carries its own toggle, so a
-radio can go off without opening anything.
-
-- **Ethernet** — bring a profile up or down
-- **Wi-Fi** — connect, disconnect, or forget a remembered network
-- **Bluetooth** — scan, connect, disconnect
-- **Audio output** — pick a device, and mute individual application streams
-- **Microphone** — pick a device
-
-Wi-Fi scanning is claimed while you are looking at it and released when you are
-not, rather than running for as long as the shell does.
-
-### Notification center
-
-History that survives a restart, images included. Do not disturb, clear all, and
-per-notification expand.
-
-### Screenshot tool
-
-Four modes, a delay of up to fifteen seconds, and the cursor in or out.
-
-- **All** — every screen
-- **Monitor** — one output
-- **Window** — the focused one, resolved through `hyprctl`
-- **Area** — dragged out with `slurp`
-
-Captures land on disk **and** on the clipboard, and the tool waits for its own
-overlay to be off the screen before the shutter, so it stays out of the picture.
-
-### Wallpaper selector
-
-Browses your wallpaper directory with search, format filters and cached
-thumbnails.
-
-### Theme selector
-
-Thirteen palettes, applied live — and not only to the shell. The same colors
-reach Hyprland's borders, hyprlock's fields and Ghostty's terminal through one
-generated file.
-
-### Power menu
-
-Lock, suspend, log out, reboot and power off, each behind a confirmation that a
-stray click cancels rather than confirms.
-
-### Bluetooth pairing
-
-A device asking for a PIN or a six-digit confirmation gets a real dialog, served
-by a small companion agent — because Quickshell cannot own a D-Bus object and
-BlueZ refuses a pairing nobody can answer.
-
----
-
-## Where it keeps things
-
-| Path | What |
-|---|---|
-| `~/.config/hyprshell` | The shell itself, put there by the installer. |
-| `~/.config/hyprshell/settings.json` | Current theme and wallpaper. Created on first run, and left alone by an upgrade. |
-| `~/.local/bin/bagent` | The Bluetooth pairing agent. |
-| `~/.config/hypr/theme.conf` | Generated. Owned by the shell. |
-| `~/.config/ghostty/config.ghostty` | A marked block inside your own config. |
-| `~/Wallpapers` | Where the selector looks. Override with `AWWW_WALLPAPERS_DIR`. |
-| `~/Pictures/Screenshots` | Where captures land. |
-| `$XDG_CACHE_HOME/hyprshell/wallpapers` | Thumbnails. |
-| `$XDG_CACHE_HOME/hyprshell/notification-images` | Notification images, so history survives a restart. |
-
----
-
-## FAQ
-
-<details>
-<summary><b>The bar is full of empty boxes.</b></summary>
-
-The Nerd Font is missing. `pacman -S ttf-nerd-fonts-symbols`. Every icon in the
-shell is a font codepoint, not an image, so there is nothing to fall back to.
-
-</details>
-
-<details>
-<summary><b>Nothing opens when I press my keys.</b></summary>
-
-The panels are not bound by the shell — you bind them yourself over the IPC. See
-[Quick start](#quick-start). Check the path in `-p` matches where it is installed:
-`~/.config/hyprshell`, unless you cloned it somewhere else to work on it.
-
-</details>
-
-<details>
-<summary><b>I picked a wallpaper and the screen did not change.</b></summary>
-
-`awww-daemon` is not running. The shell only ever runs `awww img`, and it does
-that detached — so nothing reports the failure back. The selector closes, the
-choice is saved, `theme.conf` updates, and the picture never lands.
+Then launch the shell directly if it is not already running:
 
 ```sh
-awww-daemon &          # then pick again
-awww query             # names your outputs if it is up
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+qs -p "$config_home/hyprshell"
 ```
 
-Start it from your `hyprland.lua` so it is there every session — see
-[step 4](#4-configure-hyprland). Worth knowing: your lock screen reads
-`$wallpaper` from `theme.conf`, so this can leave hyprlock showing a picture your
-desktop never did.
+You should see the bar. Use the configured keybinds to open a panel; choose a wallpaper to verify that `awww-daemon` is working.
 
-</details>
+## Configuration and storage
 
-<details>
-<summary><b>The Lock button does nothing.</b></summary>
+- `settings.json` stores the current theme and wallpaper under `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell/`. It is created on first run and preserved by upgrades.
+- `${XDG_CONFIG_HOME:-$HOME/.config}/hypr/theme.conf` is generated and may be overwritten by HyprShell. Include it from your Hyprland and hyprlock configuration as appropriate.
+- Ghostty synchronization is conditional: when Ghostty is installed, HyprShell updates a marked block in `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config.ghostty`.
+- Wallpapers are read from `$AWWW_WALLPAPERS_DIR`, or `$HOME/Wallpapers` when it is unset. Screenshots go to `$HOME/Pictures/Screenshots`.
+- Cache data is stored under `${XDG_CACHE_HOME:-$HOME/.cache}/hyprshell/`.
 
-Installing `hyprlock` is not enough. The power menu runs `loginctl lock-session`,
-which asks logind to lock the session rather than launching a locker itself — so
-something has to be listening for that. On Hyprland that is `hypridle`:
+## Troubleshooting
+
+### Empty icon boxes
+
+Install the symbol font and restart the shell:
+
+```sh
+sudo pacman -S --needed ttf-nerd-fonts-symbols
+```
+
+### The shell does not start
+
+Check `qs` and Hyprland separately with the commands above, then confirm that the `-p` path uses the same XDG config directory as the installer. The installer only warns when either prerequisite is absent.
+
+### Keybinds do nothing
+
+The shell does not create Hyprland binds automatically. Add the IPC binds from the Quick start section and reload Hyprland.
+
+### Wallpapers do not change
+
+Start `awww-daemon` from the Hyprland start hook, then try again:
+
+```sh
+awww-daemon &
+awww query
+```
+
+### Lock does nothing
+
+The power menu calls `loginctl lock-session`; it does not provide a locker. Configure a locker such as hyprlock through hypridle, for example:
 
 ```ini
-# ~/.config/hypr/hypridle.conf
 general {
     lock_cmd = pidof hyprlock || hyprlock
 }
 ```
 
-Every other power-menu action goes straight to `systemctl` or `hyprctl` and needs
-nothing registered, which is why Lock is the only one that can be silent.
-
-</details>
-
-<details>
-<summary><b>My first theme change did not stick.</b></summary>
-
-Known. The first change after the shell starts is written as the default instead,
-and the second one works. It affects every theme.
-
-</details>
-
-<details>
-<summary><b>Hyprland's borders do not follow the theme.</b></summary>
-
-Hyprland cannot `source` a hyprlang file from a Lua config, so nothing reads
-`theme.conf` until you parse it back yourself. The file holds one `$name = value`
-per line — read it in your `hyprland.lua` and feed `$primary` and `$outline` to
-`general.col`. An empty string is truthy in Lua, so a plain `theme[name] or
-fallback` is not enough.
-
-</details>
-
-<details>
-<summary><b>The lock screen's text is invisible on a light theme.</b></summary>
-
-Known. hyprlock's labels sit on the wallpaper, and `on_surface` is a dark color
-in the three light themes, so it disappears over a dark photo. There is no role
-for text over a picture because the shell never paints any — the bar sits on
-opaque `shadow`.
-
-</details>
-
-<details>
-<summary><b>The wallpaper selector seems to keep memory after closing.</b></summary>
-
-It does — about 46 MB, with 39 wallpapers on disk. It is not a leak: repeated
-opens add 39.5 MB, then 13.7, then 2.1, and stop. It is not the images either —
-eight wallpapers at 1920x1080 and the same eight at 320x180 retain the same
-number, so sixteen times less pixel data on disk costs nothing. What is left
-looks like a fixed cost of running the grid at all, around 20 MB, plus something
-small per card. Naming it properly needs a heap profiler.
-`features/wallpaperselector/WallpaperCard.qml` records every measurement and
-everything that was ruled out.
-
-</details>
-
-<details>
-<summary><b>Can I use it without Hyprland?</b></summary>
-
-Not as it stands. The bar and panels are Wayland layer-shell surfaces and would
-port, but workspaces, the window screenshot, the theme reload and the launch hook
-all go through Hyprland's IPC.
-
-</details>
-
----
-
 ## Development
 
-Working on it means the repository, not the installer:
+See [Development](docs/development.md) for the test environment and project conventions.
 
 ```sh
 git clone https://github.com/adanft/hyprshell.git
 cd hyprshell
-./scripts/install-bagent.sh   # builds bagent from source — needs `rust`
+./scripts/install-bagent.sh
 qs -p "$PWD"
+./run-tests.sh --js
 ```
-
-Clone it anywhere except `~/.config/hyprshell`. That is where an installed shell
-and its `settings.json` live, and a checkout on top of them leaves state sitting
-inside your working tree and the installer overwriting your work.
-
-Tests, the harnesses, and why the suite runs inside a nested compositor:
-**[`docs/development.md`](docs/development.md)**.
-
-```sh
-./run-tests.sh             # everything, on the compositor you are using
-./run-tests.sh --isolated  # everything, compositor stages nested away
-./run-tests.sh --js        # Node and Python only, no compositor needed
-```
-
-Releases are cut by hand. The script builds `bagent`, packs the runtime without
-the tests or harnesses, and attaches both the archive and its checksum to a
-GitHub release — which is what the installer's `latest` resolves to:
-
-```sh
-./scripts/make-release.sh v0.1.0 --dry-run   # build the assets, publish nothing
-./scripts/make-release.sh v0.1.0             # build and publish
-```
-
-Layout is vertical: each feature owns its components, sizing and tests under
-`features/`, shared pieces live in `shared/`, system access in `services/`, and
-the design tokens — colors, typography, spacing, icons, shape, motion — in
-`theme/`.
 
 ## Credits
 
-- [**Quickshell**](https://quickshell.org) by outfoxxed — the runtime this is
-  built on.
-- [**Hyprland**](https://hypr.land) — the compositor, and hyprlock alongside it.
-- The palettes are the work of their own authors: Catppuccin, Kanagawa,
-  Rosé Pine, Ayu, One Dark, Atom One, Palenight, Aura, Aurora X and
-  Hack The Box.
+- [Quickshell](https://quickshell.org) by outfoxxed
+- [Hyprland](https://hypr.land)
+- Catppuccin, Kanagawa, Rosé Pine, Ayu, One Dark, Atom One, Palenight, Aura, Aurora X, and Hack The Box for the palettes
 
 ## License
 
-[MIT](LICENSE). Use it, change it, ship it — ship the licence file with it.
+[MIT](LICENSE)

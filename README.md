@@ -10,7 +10,7 @@ wallpapers and themes — and paints Hyprshell, Hyprland and Ghostty to match.
 </div>
 
 <div align="center">
-  <img src="docs/screenshots/bar.webp" width="100%" alt="The status bar: workspaces, CPU and RAM and the tray on the left, the clock in the middle, and the radios, sound, battery and date on the right">
+  <img src="docs/screenshots/bar.webp" width="100%" alt="The shell on an empty desktop: the status bar across the top, with workspaces, CPU and RAM and the tray on the left, the clock in the middle, and the radios, sound, battery and date on the right">
 </div>
 
 <details>

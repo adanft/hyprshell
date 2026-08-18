@@ -32,47 +32,6 @@ wallpapers and themes — and paints Hyprshell, Hyprland and Ghostty to match.
 
 </details>
 
-## Features
-
-**Status bar.** Workspaces, CPU and RAM, system tray, clock, power profile,
-network throughput, Wi-Fi, Bluetooth, sound, backlight, battery, microphone,
-notifications, date.
-Four of those modules are shortcuts: clicking Wi-Fi opens the control center
-*already expanded* on Wi-Fi.
-
-**App launcher.** Type to filter desktop entries. The search field never loses
-focus, so the arrows move through the grid and the text cursor without you
-reaching for anything.
-
-**Control center.** Wi-Fi, Ethernet, Bluetooth, audio output and microphone, one
-section expanded at a time. Connect, forget, switch device, mute a single
-application's stream. Wi-Fi scanning is claimed while you are looking and
-released when you are not, rather than running forever.
-
-**Notification center.** History that survives a restart, images included. Do not
-disturb, clear all, and per-notification expand.
-
-**Screenshot tool.** All screens, one monitor, the focused window, or a region.
-Delay up to fifteen seconds, cursor optional. Lands on disk *and* on the
-clipboard, and waits for its own overlay to leave the screen first so it never
-appears in the shot.
-
-**Wallpaper selector.** Browses your wallpaper directory with search, format
-filters and cached thumbnails.
-
-**Theme selector.** Thirteen palettes, applied live — and not just to the shell.
-The same colors reach Hyprland's borders, hyprlock's fields and Ghostty's
-terminal through one generated file.
-
-**Power menu.** Lock, suspend, log out, reboot, power off, each behind a
-confirmation that a stray click cancels rather than confirms.
-
-**Bluetooth pairing.** A device asking for a PIN or a six-digit confirmation gets
-a real dialog, served by a small companion agent — because Quickshell cannot own
-a D-Bus object and BlueZ refuses a pairing nobody can answer.
-
----
-
 ## Quick start
 
 Four steps. The shell starts after the first three; the fourth is what makes it
@@ -155,6 +114,99 @@ command -v bagent awww-daemon # both resolve
 
 ---
 
+## Features
+
+### Status bar
+
+Always up, one row across the top, in three clusters. Modules that have nothing
+to report take no space rather than sitting there empty — a machine with no
+battery has no battery readout, not a dead one.
+
+- **Left**
+  - **Workspaces** — click a pill to focus that workspace
+  - **CPU** and **RAM** — live percentages
+  - **System tray** — the whole cluster is gone while nothing is in it
+- **Center**
+  - **Control center button** — opens it with nothing expanded
+  - **Clock**
+  - **Power profile**
+- **Right**
+  - **Network throughput** — up and down, a readout rather than a button
+  - **Wi-Fi** — *shortcut*
+  - **Bluetooth** — *shortcut*
+  - **Sound** — *shortcut*
+  - **Brightness** — laptops, or any machine with a backlight to set
+  - **Battery** — laptops, or anything else with one
+  - **Microphone** — *shortcut*
+  - **Notifications** — appears once there is something to show
+  - **Date**
+
+The four marked *shortcut* open the control center **already expanded** on their
+own section, so reaching Wi-Fi is one click rather than two. Notifications opens
+the notification center the same way.
+
+### App launcher
+
+Type to filter desktop entries. The search field never loses focus, so the
+arrows move through the grid and the text cursor without you reaching for
+anything: left and right walk the text while there is text to walk, and move
+between apps once there is not.
+
+### Control center
+
+Five sections, one expanded at a time. Every card carries its own toggle, so a
+radio can go off without opening anything.
+
+- **Ethernet** — bring a profile up or down
+- **Wi-Fi** — connect, disconnect, or forget a remembered network
+- **Bluetooth** — scan, connect, disconnect
+- **Audio output** — pick a device, and mute individual application streams
+- **Microphone** — pick a device
+
+Wi-Fi scanning is claimed while you are looking at it and released when you are
+not, rather than running for as long as the shell does.
+
+### Notification center
+
+History that survives a restart, images included. Do not disturb, clear all, and
+per-notification expand.
+
+### Screenshot tool
+
+Four modes, a delay of up to fifteen seconds, and the cursor in or out.
+
+- **All** — every screen
+- **Monitor** — one output
+- **Window** — the focused one, resolved through `hyprctl`
+- **Area** — dragged out with `slurp`
+
+Captures land on disk **and** on the clipboard, and the tool waits for its own
+overlay to be off the screen before the shutter, so it stays out of the picture.
+
+### Wallpaper selector
+
+Browses your wallpaper directory with search, format filters and cached
+thumbnails.
+
+### Theme selector
+
+Thirteen palettes, applied live — and not only to the shell. The same colors
+reach Hyprland's borders, hyprlock's fields and Ghostty's terminal through one
+generated file.
+
+### Power menu
+
+Lock, suspend, log out, reboot and power off, each behind a confirmation that a
+stray click cancels rather than confirms.
+
+### Bluetooth pairing
+
+A device asking for a PIN or a six-digit confirmation gets a real dialog, served
+by a small companion agent — because Quickshell cannot own a D-Bus object and
+BlueZ refuses a pairing nobody can answer.
+
+---
+
 ## Requirements
 
 Package names are Arch's, because that is where it was built and tested. On
@@ -217,11 +269,8 @@ stops looking the way it was drawn.
 
 ### The bar
 
-| Cluster | Holds | What responds |
-|---|---|---|
-| **Left** | Workspaces · CPU, RAM · system tray | A workspace pill focuses that workspace. Tray items open their own menus. The tray disappears when nothing is in it. |
-| **Center** | Control center button · clock · power profile | The button opens the control center with nothing expanded. |
-| **Right** | Network throughput · Wi-Fi · Bluetooth · sound · backlight · battery · microphone · notifications · date | Four are shortcuts — below. |
+[Features](#status-bar) names every module and where it sits. What is worth
+knowing while using it:
 
 | Click | Opens |
 |---|---|
@@ -231,7 +280,8 @@ stops looking the way it was drawn.
 | Microphone | Control center, microphone expanded |
 | Notifications | Notification center |
 
-The throughput readout is a readout, not a button.
+Tray items open their own menus, which belong to the application rather than to
+the shell. The throughput readout is a readout, not a button.
 
 ### One panel at a time, and how to close it
 
@@ -275,9 +325,6 @@ notification module again.
 
 <details>
 <summary><b>Screenshot tool</b></summary>
-
-Four modes: **All** (every screen), **Monitor**, **Window** (the focused one,
-resolved through `hyprctl`), **Area** (dragged with `slurp`).
 
 | Key | Does |
 |---|---|
@@ -340,20 +387,14 @@ qs ipc -p ~/.config/hyprshell call themeselector set kanagawa-dragon
 <details>
 <summary><b>Control center</b></summary>
 
-Five sections, one expanded at a time: **Ethernet**, **Wi-Fi**, **audio output**,
-**microphone**, **Bluetooth**. Clicking a section's body expands it; clicking the
-expanded one collapses it again. Each card also carries its own toggle, so a
-radio can go off without opening anything.
+[Features](#control-center) says what each section does. At the keyboard:
 
-Inside a section, rows respond to a click or to Enter / Space when focused:
-
-- **Wi-Fi** — connect, disconnect, or forget a remembered network.
-- **Ethernet** — bring a profile up or down.
-- **Audio output** and **microphone** — pick a device, and mute individual
-  playback streams per application.
-- **Bluetooth** — scan, connect, disconnect. A pairing that needs a human answer
-  raises its own dialog with an accept and a reject: **Enter** or **Space**
-  triggers whichever is focused, and **Escape** rejects.
+- Clicking a section's body expands it; clicking the expanded one collapses it.
+- Rows inside a section respond to a click, or to **Enter** / **Space** when
+  focused.
+- A pairing that needs a human answer raises its own dialog with an accept and a
+  reject: **Enter** or **Space** triggers whichever is focused, **Escape**
+  rejects.
 
 </details>
 

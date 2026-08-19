@@ -1,9 +1,9 @@
-# HyprShell
+# Hyprshell
 
-HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher, control center, notifications, screenshots, wallpapers, and internal palettes.
+Hyprshell is a Wayland desktop shell for Hyprland that combines a bar, launcher, control center, notifications, screenshots, wallpapers, and internal palettes.
 
 <div align="center">
-  <img src="docs/screenshots/bar.webp" width="100%" alt="HyprShell status bar across the top of a desktop">
+  <img src="docs/screenshots/bar.webp" width="100%" alt="Hyprshell status bar across the top of a desktop">
 </div>
 
 <details>
@@ -30,21 +30,21 @@ HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 
 | Area                     | Support                                                                                                                                            |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Required runtime         | Hyprland and Quickshell (`qs`). HyprShell uses Hyprland IPC and Wayland layer-shell surfaces.                                                      |
+| Required runtime         | Hyprland and Quickshell (`qs`). Hyprshell uses Hyprland IPC and Wayland layer-shell surfaces.                                                      |
 | Feature packages         | `awww`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.               |
 | Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, and power-profiles-daemon. Their services and features are independent of shell startup.      |
 | Missing hardware         | Missing Bluetooth, Wi-Fi, Ethernet, or microphone stays unavailable or inert. Battery and backlight modules hide without matching hardware.        |
 | Unsupported environments | Non-Hyprland compositors are not supported. Other distributions may work with equivalent packages, but this guide targets Arch Linux and Hyprland. |
 
-## What HyprShell does not manage
+## What Hyprshell does not manage
 
-HyprShell provides the desktop interface, not the surrounding session lifecycle. These responsibilities remain entirely user-owned:
+Hyprshell provides the desktop interface, not the surrounding session lifecycle. These responsibilities remain entirely user-owned:
 
 - **Session manager:** starts and supervises the graphical session, prepares its environment, and manages its lifecycle.
 - **Locker:** locks the screen and authenticates the user before restoring access.
 - **Idle manager:** watches for inactivity and decides when to lock, turn displays off, or suspend the system.
 
-Choose and configure these components independently. HyprShell does not install, start, or replace them; its power menu only requests a session lock through `loginctl lock-session`.
+Choose and configure these components independently. Hyprshell does not install, start, or replace them; its power menu only requests a session lock through `loginctl lock-session`.
 
 ## Quick start
 
@@ -61,7 +61,7 @@ sudo pacman -S --needed curl tar coreutils hyprland quickshell awww \
 
 `curl`, `tar`, and `coreutils` provide the downloader and archive/checksum tools used by the installer. Hyprland and Quickshell are startup-critical. The remaining packages support specific features such as networking, audio, notifications, screenshots, wallpapers, and typography.
 
-### 2. Install HyprShell
+### 2. Install Hyprshell
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/adanft/hyprshell/main/install.sh | sh
@@ -71,7 +71,7 @@ The installer places the shell in `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell` 
 
 ### 3. Configure Hyprland
 
-HyprShell does not replace your Hyprland configuration. Add this setup to `hyprland.lua`, adapting the surrounding configuration to your environment. The startup hook launches both the wallpaper daemon and the shell:
+Hyprshell does not replace your Hyprland configuration. Add this setup to `hyprland.lua`, adapting the surrounding configuration to your environment. The startup hook launches both the wallpaper daemon and the shell:
 
 ```lua
 local config_home = os.getenv("XDG_CONFIG_HOME")
@@ -119,9 +119,9 @@ You should see the bar. Verify wallpaper changes and any keybinds you added.
 
 ## Typography
 
-`ttf-nerd-fonts-symbols` provides `Symbols Nerd Font`, which HyprShell uses for icons. The shell still starts without it, but icons render as missing-glyph boxes.
+`ttf-nerd-fonts-symbols` provides `Symbols Nerd Font`, which Hyprshell uses for icons. The shell still starts without it, but icons render as missing-glyph boxes.
 
-Body text requests `SF Pro Display`. It is not bundled or installed by `install.sh`; when it is absent, Qt uses another system font, so HyprShell does not depend on it for startup. The files are available from the [San Francisco Pro Fonts repository](https://github.com/chris-short/apple-san-francisco-pro-fonts), whose README points back to Apple. Review the included restrictive Apple font license before installing or using it on Linux.
+Body text requests `SF Pro Display`. It is not bundled or installed by `install.sh`; when it is absent, Qt uses another system font, so Hyprshell does not depend on it for startup. The files are available from the [San Francisco Pro Fonts repository](https://github.com/chris-short/apple-san-francisco-pro-fonts), whose README points back to Apple. Review the included restrictive Apple font license before installing or using it on Linux.
 
 ## Configuration and storage
 

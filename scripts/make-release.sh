@@ -80,6 +80,9 @@ readonly STAGE="$OUT_DIR/hyprshell"
 mkdir -p -- "$STAGE/bin" || fail "could not create $STAGE"
 
 echo "-- staging the runtime"
+[[ -d Wallpapers ]] || fail "Wallpapers is missing from the working tree"
+mapfile -t WALLPAPER_FILES < <(find Wallpapers -maxdepth 1 -type f -regextype posix-extended -iregex '.*/[^/]+\.(png|jpg|jpeg|webp|gif|bmp|avif)$' -print | sort)
+[[ "${#WALLPAPER_FILES[@]}" -gt 0 ]] || fail "Wallpapers is empty or has no supported image files"
 for entry in "${RUNTIME_ENTRIES[@]}"; do
 	[[ -e "$entry" ]] || fail "$entry is missing from the working tree"
 	cp -R -- "$entry" "$STAGE/" || fail "could not stage $entry"
@@ -93,6 +96,10 @@ find "$STAGE" -name '*.test.js' -delete
 find "$STAGE" -type d -name tests -exec rm -rf -- {} + 2>/dev/null
 
 install -Dm755 -- "$BUILT" "$STAGE/bin/bagent" || fail "could not stage bagent"
+mkdir -p -- "$STAGE/Wallpapers" || fail "could not stage Wallpapers"
+for wallpaper in "${WALLPAPER_FILES[@]}"; do
+	install -m644 -- "$wallpaper" "$STAGE/Wallpapers/$(basename "$wallpaper")" || fail "could not stage $wallpaper"
+done
 # Debug symbols are two megabytes the user downloads and never reads.
 strip "$STAGE/bin/bagent" 2>/dev/null || echo "-- note: strip is unavailable, shipping unstripped"
 

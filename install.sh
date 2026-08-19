@@ -34,8 +34,8 @@ readonly MANIFEST=".install-manifest"
 
 say() { printf '%s\n' "$*"; }
 fail() {
-	printf -- '-- FAILED: %s\n' "$*" >&2
-	exit 1
+    printf -- '-- FAILED: %s\n' "$*" >&2
+    exit 1
 }
 
 # Installing into $HOME as root leaves every file owned by root, and the shell
@@ -44,21 +44,21 @@ fail() {
 [ "$(id -u)" -eq 0 ] && fail "do not run this as root — it installs into $HOME"
 
 for tool in curl tar sha256sum install; do
-	command -v "$tool" >/dev/null 2>&1 || fail "$tool is required and not installed"
+    command -v "$tool" >/dev/null 2>&1 || fail "$tool is required and not installed"
 done
 
 if [ -n "${HYPRSHELL_BASE_URL:-}" ]; then
-	# Where the assets are fetched from, for trying a build before it is a
-	# release. `file://$PWD/dist` after scripts/make-release.sh --dry-run runs
-	# this whole script against what you just packed.
-	base="$HYPRSHELL_BASE_URL"
+    # Where the assets are fetched from, for trying a build before it is a
+    # release. `file://$PWD/dist` after scripts/make-release.sh --dry-run runs
+    # this whole script against what you just packed.
+    base="$HYPRSHELL_BASE_URL"
 elif [ "$VERSION" = latest ]; then
-	# GitHub resolves this redirect to the newest release's asset, so the version
-	# never has to be discovered first. No API call, so no rate limit and no JSON
-	# to parse without jq.
-	base="https://github.com/$REPO/releases/latest/download"
+    # GitHub resolves this redirect to the newest release's asset, so the version
+    # never has to be discovered first. No API call, so no rate limit and no JSON
+    # to parse without jq.
+    base="https://github.com/$REPO/releases/latest/download"
 else
-	base="https://github.com/$REPO/releases/download/$VERSION"
+    base="https://github.com/$REPO/releases/download/$VERSION"
 fi
 
 work=$(mktemp -d) || fail "could not create a temporary directory"
@@ -70,21 +70,33 @@ say "== hyprshell =="
 say "-- downloading ($VERSION)"
 
 curl -fsSL "$base/$ARCHIVE" -o "$work/$ARCHIVE" ||
-	fail "could not download $base/$ARCHIVE"
+    fail "could not download $base/$ARCHIVE"
 curl -fsSL "$base/$ARCHIVE.sha256" -o "$work/$ARCHIVE.sha256" ||
-	fail "could not download the checksum for $ARCHIVE"
+    fail "could not download the checksum for $ARCHIVE"
 
 # The archive arrived over the network and is about to be unpacked into your
 # config. Checking it costs one command.
 say "-- verifying"
 (cd "$work" && sha256sum -c "$ARCHIVE.sha256" >/dev/null 2>&1) ||
-	fail "the checksum does not match — the download is corrupt or tampered with"
+    fail "the checksum does not match — the download is corrupt or tampered with"
 
 tar -xzf "$work/$ARCHIVE" -C "$work" || fail "the archive could not be unpacked"
 
 readonly UNPACKED="$work/hyprshell"
 [ -f "$UNPACKED/shell.qml" ] ||
-	fail "the archive does not look like a hyprshell release"
+    fail "the archive does not look like a hyprshell release"
+
+[ -d "$UNPACKED/Wallpapers" ] || fail "the release has no Wallpapers payload"
+wallpaper_count=0
+for wallpaper in "$UNPACKED/Wallpapers"/*; do
+    [ -f "$wallpaper" ] || fail "the Wallpapers payload contains a non-file entry"
+    case "$wallpaper" in
+    *.png | *.jpg | *.jpeg | *.webp | *.gif | *.bmp | *.avif) ;;
+    *) fail "the Wallpapers payload contains an unsupported file" ;;
+    esac
+    wallpaper_count=$((wallpaper_count + 1))
+done
+[ "$wallpaper_count" -gt 0 ] || fail "the Wallpapers payload is empty"
 
 version=$(cat "$UNPACKED/VERSION" 2>/dev/null || echo unknown)
 
@@ -92,53 +104,68 @@ version=$(cat "$UNPACKED/VERSION" 2>/dev/null || echo unknown)
 # the new tree. Without this an entry dropped between versions would linger in
 # your config forever, and Quickshell would keep loading it.
 if [ -f "$SHELL_DIR/$MANIFEST" ]; then
-	say "-- replacing the previous install"
-	while IFS= read -r entry; do
-		# Anything with a slash, empty, or relative is refused rather than
-		# trusted: this file decides what gets deleted, so it is read as data and
-		# never as a path to follow.
-		case "$entry" in
-		"" | */* | .* ) continue ;;
-		esac
-		rm -rf -- "${SHELL_DIR:?}/$entry"
-	done <"$SHELL_DIR/$MANIFEST"
-	rm -f -- "$SHELL_DIR/$MANIFEST"
+    say "-- replacing the previous install"
+    while IFS= read -r entry; do
+        # Anything with a slash, empty, or relative is refused rather than
+        # trusted: this file decides what gets deleted, so it is read as data and
+        # never as a path to follow.
+        case "$entry" in
+        "" | */* | .*) continue ;;
+        esac
+        rm -rf -- "${SHELL_DIR:?}/$entry"
+    done <"$SHELL_DIR/$MANIFEST"
+    rm -f -- "$SHELL_DIR/$MANIFEST"
 fi
 
 mkdir -p -- "$SHELL_DIR" || fail "could not create $SHELL_DIR"
+mkdir -p -- "$HOME/Wallpapers" || fail "could not create $HOME/Wallpapers"
+installed_wallpapers=0
+skipped_wallpapers=0
+for wallpaper in "$UNPACKED/Wallpapers"/*; do
+    name=$(basename -- "$wallpaper")
+    if [ -e "$HOME/Wallpapers/$name" ]; then
+        skipped_wallpapers=$((skipped_wallpapers + 1))
+    else
+        cp -- "$wallpaper" "$HOME/Wallpapers/$name" || fail "could not install wallpaper $name"
+        installed_wallpapers=$((installed_wallpapers + 1))
+    fi
+done
+say "-- wallpapers: $installed_wallpapers installed, $skipped_wallpapers skipped"
 
 say "-- installing the shell into $SHELL_DIR"
 : >"$work/manifest"
 for path in "$UNPACKED"/*; do
-	entry=$(basename -- "$path")
-	# bin/ is the agent, which belongs on PATH rather than in a config directory.
-	[ "$entry" = bin ] && continue
-	cp -R -- "$path" "$SHELL_DIR/" || fail "could not write $SHELL_DIR/$entry"
-	printf '%s\n' "$entry" >>"$work/manifest"
+    entry=$(basename -- "$path")
+    # bin/ and Wallpapers/ are special payloads, outside the config directory.
+    case "$entry" in
+    bin | Wallpapers) continue ;;
+    esac
+    cp -R -- "$path" "$SHELL_DIR/" || fail "could not write $SHELL_DIR/$entry"
+    printf '%s\n' "$entry" >>"$work/manifest"
 done
 cp -- "$work/manifest" "$SHELL_DIR/$MANIFEST"
 
 if [ -x "$UNPACKED/bin/bagent" ]; then
-	say "-- installing bagent into $BIN_DIR"
-	install -Dm755 -- "$UNPACKED/bin/bagent" "$BIN_DIR/bagent" ||
-		fail "could not write $BIN_DIR/bagent"
+    say "-- installing bagent into $BIN_DIR"
+    install -Dm755 -- "$UNPACKED/bin/bagent" "$BIN_DIR/bagent" ||
+        fail "could not write $BIN_DIR/bagent"
 
-	# Installed somewhere the shell will never look is the one failure that looks
-	# like success, so it is checked rather than assumed.
-	case ":$PATH:" in
-	*":$BIN_DIR:"*) ;;
-	*)
-		say "-- WARNING: $BIN_DIR is not on your PATH"
-		say "   The shell launches bagent by name, so it will not be found there."
-		say "   Add it to PATH, or re-run with HYPRSHELL_BIN_DIR set somewhere that is."
-		;;
-	esac
+    # Installed somewhere the shell will never look is the one failure that looks
+    # like success, so it is checked rather than assumed.
+    case ":$PATH:" in
+    *":$BIN_DIR:"*) ;;
+    *)
+        say "-- WARNING: $BIN_DIR is not on your PATH"
+        say "   The shell launches bagent by name, so it will not be found there."
+        say "   Add it to PATH, or re-run with HYPRSHELL_BIN_DIR set somewhere that is."
+        ;;
+    esac
 fi
 
 command -v qs >/dev/null 2>&1 ||
-	say "-- WARNING: quickshell (qs) is not installed — the shell cannot start without it"
+    say "-- WARNING: quickshell (qs) is not installed — the shell cannot start without it"
 command -v hyprland >/dev/null 2>&1 || command -v Hyprland >/dev/null 2>&1 ||
-	say "-- WARNING: Hyprland is not installed — the shell cannot start without it"
+    say "-- WARNING: Hyprland is not installed — the shell cannot start without it"
 
 say ""
 say "Installed hyprshell $version."

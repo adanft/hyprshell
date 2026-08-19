@@ -28,13 +28,23 @@ HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 
 ## Requirements and support
 
-| Area                     | Support                                                                                                                                                                       |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Required runtime         | Hyprland and Quickshell (`qs`). HyprShell uses Hyprland IPC and Wayland layer-shell surfaces.                                                                                 |
-| Feature packages         | `awww`/`awww-daemon`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.                            |
-| Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, power-profiles-daemon, and a locker such as hyprlock. Their services/features are independent of shell startup. |
-| Missing hardware         | Missing Bluetooth, Wi-Fi, Ethernet, or microphone stays unavailable/inert. Battery and backlight modules hide without matching hardware.                                      |
-| Unsupported environments | Non-Hyprland compositors are not supported. Other distributions may work with equivalent package names, but this guide targets Arch Linux and Hyprland.                       |
+| Area                     | Support                                                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Required runtime         | Hyprland and Quickshell (`qs`). HyprShell uses Hyprland IPC and Wayland layer-shell surfaces.                                                      |
+| Feature packages         | `awww`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.               |
+| Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, and power-profiles-daemon. Their services and features are independent of shell startup.      |
+| Missing hardware         | Missing Bluetooth, Wi-Fi, Ethernet, or microphone stays unavailable or inert. Battery and backlight modules hide without matching hardware.        |
+| Unsupported environments | Non-Hyprland compositors are not supported. Other distributions may work with equivalent packages, but this guide targets Arch Linux and Hyprland. |
+
+## What HyprShell does not manage
+
+HyprShell provides the desktop interface, not the surrounding session lifecycle. These responsibilities remain entirely user-owned:
+
+- **Session manager:** starts and supervises the graphical session, prepares its environment, and manages its lifecycle.
+- **Locker:** locks the screen and authenticates the user before restoring access.
+- **Idle manager:** watches for inactivity and decides when to lock, turn displays off, or suspend the system.
+
+Choose and configure these components independently. HyprShell does not install, start, or replace them; its power menu only requests a session lock through `loginctl lock-session`.
 
 ## Quick start
 
@@ -57,15 +67,11 @@ sudo pacman -S --needed curl tar coreutils hyprland quickshell awww \
 curl -fsSL https://raw.githubusercontent.com/adanft/hyprshell/main/install.sh | sh
 ```
 
-The installer places the shell in `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell` and installs `bagent` in `$HOME/.local/bin` by default. It warns, rather than failing, if `qs` or Hyprland is not present. Re-running the command upgrades the installed files and preserves `settings.json`.
+The installer places the shell in `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell` and installs `bagent` in `$HOME/.local/bin` by default. It warns, rather than failing, if `qs` or Hyprland is not present. Re-running the command upgrades the installed files and preserves `settings.json`. The installer supplies starter wallpapers in `$HOME/Wallpapers` and preserves existing files.
 
-### 3. Add the Hyprland configuration
+### 3. Configure Hyprland
 
-HyprShell does not replace your Hyprland configuration. Add the following sections to `hyprland.lua`, adapting the surrounding configuration to your setup.
-
-#### Essential startup
-
-This is the only Hyprland configuration required to start the shell:
+HyprShell does not replace your Hyprland configuration. Add this setup to `hyprland.lua`, adapting the surrounding configuration to your environment. The startup hook launches both the wallpaper daemon and the shell:
 
 ```lua
 local config_home = os.getenv("XDG_CONFIG_HOME")
@@ -76,13 +82,12 @@ end
 local hyprshell = config_home .. "/hyprshell"
 
 hl.on("hyprland.start", function()
+    hl.exec_cmd("awww-daemon")
     hl.exec_cmd("qs -p " .. hyprshell)
 end)
 ```
 
-#### Optional keybinds
-
-Add panel/action IPC binds separately when you want them:
+Add the IPC keybinds you want below the startup hook:
 
 ```lua
 hl.bind("SUPER + D", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call applauncher toggle"))
@@ -92,28 +97,15 @@ hl.bind("SUPER + X", hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call powerme
 hl.bind("Print",     hl.dsp.exec_cmd("qs ipc -p " .. hyprshell .. " call screenshot toggle"))
 ```
 
-#### Optional wallpaper support
-
-Wallpaper changes need `awww-daemon`, but the shell itself does not. Add this line inside the `hyprland.start` callback above, before the `qs` command:
-
-```lua
-hl.exec_cmd("awww-daemon")
-```
-
 ### 4. Verify
 
-Check the required runtime and installed pairing agent separately:
+Check the runtime, wallpaper daemon, and installed pairing agent together:
 
 ```sh
 command -v qs
 command -v hyprland || command -v Hyprland
-command -v bagent
-```
-
-Wallpaper support has its own optional check:
-
-```sh
 command -v awww-daemon
+command -v bagent
 ```
 
 Then launch the shell directly if it is not already running:
@@ -123,7 +115,7 @@ config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
 qs -p "$config_home/hyprshell"
 ```
 
-You should see the bar. If you added the optional keybinds or wallpaper support, verify those features separately.
+You should see the bar. Verify wallpaper changes and any keybinds you added.
 
 ## Typography
 
@@ -154,7 +146,7 @@ The shell does not create Hyprland binds automatically. Add the IPC binds from t
 
 ### Wallpapers do not change
 
-Start the optional `awww-daemon` from the Hyprland start hook, then try again:
+Confirm that `awww-daemon` starts from the Hyprland startup hook, then try again:
 
 ```sh
 awww-daemon &

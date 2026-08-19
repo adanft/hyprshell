@@ -54,9 +54,9 @@ Install the stable packages from Arch's official repositories. No AUR helper is 
 
 ```sh
 sudo pacman -S --needed curl tar coreutils hyprland quickshell awww \
-  ttf-nerd-fonts-symbols networkmanager bluez bluez-utils pipewire \
-  wireplumber upower power-profiles-daemon accountsservice grim slurp \
-  wl-clipboard jq imagemagick libnotify brightnessctl
+  ttf-nerd-fonts-symbols networkmanager bluez bluez-utils wireplumber \
+  upower power-profiles-daemon accountsservice grim slurp wl-clipboard \
+  jq imagemagick libnotify brightnessctl
 ```
 
 `curl`, `tar`, and `coreutils` provide the downloader and archive/checksum tools used by the installer. Hyprland and Quickshell are startup-critical. The remaining packages support specific features such as networking, audio, notifications, screenshots, wallpapers, and typography.

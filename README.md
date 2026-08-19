@@ -17,6 +17,14 @@ Hyprshell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 | :-------------------------------------------------------------------------: | :------------------------------------------------------------: |
 | <img src="docs/screenshots/notifications.webp" alt="Notification center" /> | <img src="docs/screenshots/powermenu.webp" alt="Power menu" /> |
 
+|                           Screenshot tool                            |                             Theme selector                              |
+| :------------------------------------------------------------------: | :---------------------------------------------------------------------: |
+| <img src="docs/screenshots/screenshot.webp" alt="Screenshot tool" /> | <img src="docs/screenshots/theme-selector.webp" alt="Theme selector" /> |
+
+|                               Wallpaper selector                                |
+| :-----------------------------------------------------------------------------: |
+| <img src="docs/screenshots/wallpaper-selector.webp" alt="Wallpaper selector" /> |
+
 </details>
 
 ## What you get

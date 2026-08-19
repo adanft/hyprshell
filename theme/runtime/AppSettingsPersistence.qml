@@ -83,12 +83,6 @@ Item {
     // Make the directory and say so. There is nothing else to wait for: a
     // settings file that is not there yet reaches the view as FileNotFound,
     // which the load-failure path already treats as "use the defaults".
-    //
-    // This used to also look for a file under the shell's earlier names and copy
-    // it forward. That is gone deliberately, along with the names: one directory
-    // is the whole story now, and a migration chain is a thing that has to be
-    // extended and guarded at every rename forever. Removing it is why the
-    // three lists that had to be kept in step with each other went too.
     function ensureConfigDir() {
         const mkdir = mkdirComponent.createObject(persistence)
         mkdir.onExited.connect(function (exitCode) {

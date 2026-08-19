@@ -11,8 +11,6 @@
 #
 #   features/statusbar/BarWindow.qml  reserves a layer-shell exclusive zone, so
 #     the compositor relayouts every window on the display the bar lands on.
-#   theme/runtime/HyprTheme.qml       runs `hyprctl reload`, so Hyprland
-#     re-applies its monitors, binds and window rules.
 #
 # What is isolated is what the shell writes and what would disturb you: its
 # config directory, its cache, its runtime sockets, its bus, its compositor.
@@ -59,7 +57,7 @@ readonly RUNTIME_PATH_BUDGET=24
 # by. Everything absent from this list is symlinked to yours, so a name that
 # belongs here and is missing hands a test run your real directory instead of an
 # empty one.
-readonly OWNED_CONFIG=(hypr hyprshell ghostty)
+readonly OWNED_CONFIG=(hypr hyprshell)
 
 for tool in Hyprland dbus-daemon hyprctl; do
 	if ! command -v "$tool" >/dev/null 2>&1; then

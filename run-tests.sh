@@ -11,9 +11,9 @@
 # benchmark tests.
 #
 # --isolated runs those stages inside a throwaway nested Hyprland instead, so
-# the exclusive zone the status bar reserves and the `hyprctl reload` the theme
-# runs land there rather than on your desktop. Prefer it while you are working
-# in the session; see scripts/isolated-session.sh.
+# the exclusive zone the status bar reserves lands there rather than on your
+# desktop. Prefer it while you are working in the session; see
+# scripts/isolated-session.sh.
 #
 # Exits non-zero if any stage fails or is inconclusive.
 
@@ -125,9 +125,9 @@ if [[ "$compositor_only" == false ]]; then
 	fi
 fi
 
-# Everything below reserves a layer-shell exclusive zone and can make the shell
-# reload Hyprland. Handing that a compositor of its own is the difference
-# between testing the shell and rearranging the desktop you are sitting at.
+# Everything below reserves a layer-shell exclusive zone. Handing that a
+# compositor of its own is the difference between testing the shell and
+# rearranging the desktop you are sitting at.
 if [[ "$isolated" == true ]]; then
 	echo
 	echo "== Compositor stages, isolated session =="
@@ -152,7 +152,7 @@ else
 	readonly QMLTESTRUNNER="$resolved_qmltestrunner"
 	# Each file runs from its own directory, because the tests reach their
 	# subjects through a relative import.
-	for test_file in tests/tst_*.qml features/controlcenter/tests/tst_*.qml theme/runtime/tests/tst_*.qml; do
+	for test_file in tests/tst_*.qml features/controlcenter/tests/tst_*.qml; do
 		test_dir=$(dirname "$test_file")
 		test_name=$(basename "$test_file")
 		if output=$(cd "$test_dir" && timeout 60 "$QMLTESTRUNNER" -input "$test_name" 2>&1); then

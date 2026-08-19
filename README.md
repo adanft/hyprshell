@@ -1,6 +1,6 @@
 # HyprShell
 
-HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher, control center, notifications, screenshots, wallpapers, and live theme synchronization.
+HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher, control center, notifications, screenshots, wallpapers, and internal palettes.
 
 <div align="center">
   <img src="docs/screenshots/bar.webp" width="100%" alt="HyprShell status bar across the top of a desktop">
@@ -23,7 +23,7 @@ HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 
 - **A useful desktop surface:** workspaces, system status, tray, clock, network, audio, power, battery, brightness, and notifications.
 - **Fast actions:** an app launcher, control center, notification history, power menu, and screenshot tool.
-- **Personalization:** wallpaper browsing, thirteen palettes, Hyprland border/background colors, and conditional Ghostty synchronization.
+- **Personalization:** wallpaper browsing and thirteen internal palettes.
 - **Graceful degradation:** unavailable radios, audio inputs, and other integrations remain unavailable or inert; battery and backlight modules hide when the hardware is absent.
 
 ## Requirements and support
@@ -32,7 +32,7 @@ HyprShell is a Wayland desktop shell for Hyprland that combines a bar, launcher,
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Required runtime         | Hyprland and Quickshell (`qs`). HyprShell uses Hyprland IPC and Wayland layer-shell surfaces.                                                                                 |
 | Feature packages         | `awww`/`awww-daemon`, `jq`, `imagemagick`, `libnotify`, `grim`, `slurp`, `wl-clipboard`, and the other packages in the installation command below.                            |
-| Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, power-profiles-daemon, Ghostty, and a locker such as hyprlock. Their services/features are independent of shell startup. |
+| Optional integrations    | NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, power-profiles-daemon, and a locker such as hyprlock. Their services/features are independent of shell startup. |
 | Missing hardware         | Missing Bluetooth, Wi-Fi, Ethernet, or microphone stays unavailable/inert. Battery and backlight modules hide without matching hardware.                                      |
 | Unsupported environments | Non-Hyprland compositors are not supported. Other distributions may work with equivalent package names, but this guide targets Arch Linux and Hyprland.                       |
 
@@ -46,7 +46,7 @@ Install the stable packages from Arch's official repositories. No AUR helper is 
 sudo pacman -S --needed curl tar coreutils hyprland quickshell awww \
   ttf-nerd-fonts-symbols networkmanager bluez bluez-utils pipewire \
   wireplumber upower power-profiles-daemon accountsservice grim slurp \
-  wl-clipboard jq imagemagick libnotify glib2 ghostty brightnessctl
+  wl-clipboard jq imagemagick libnotify brightnessctl
 ```
 
 `curl`, `tar`, and `coreutils` provide the downloader and archive/checksum tools used by the installer. Hyprland and Quickshell are startup-critical. The remaining packages support specific features such as networking, audio, notifications, screenshots, wallpapers, and typography.
@@ -100,48 +100,6 @@ Wallpaper changes need `awww-daemon`, but the shell itself does not. Add this li
 hl.exec_cmd("awww-daemon")
 ```
 
-#### Optional Hyprland theme synchronization
-
-Skip this section if you want to keep your existing Hyprland colors. To synchronize active borders, inactive borders, and the compositor background with HyprShell, add this after any competing border or background configuration:
-
-```lua
-local theme_file = config_home .. "/hypr/theme.conf"
-
-local function read_hyprshell_theme()
-    local theme = {}
-    local file = io.open(theme_file, "r")
-    if not file then
-        return theme
-    end
-
-    for line in file:lines() do
-        local name, value = line:match("^%s*%$([%w_]+)%s*=%s*(.-)%s*$")
-        if name and value ~= "" then
-            theme[name] = value
-        end
-    end
-    file:close()
-    return theme
-end
-
-local theme = read_hyprshell_theme()
-
-hl.config({
-    general = {
-        col = {
-            active_border = theme.primary or "rgb(cba6f7)",
-            inactive_border = theme.outline or "rgb(45475a)",
-        },
-    },
-    misc = {
-        disable_hyprland_logo = true,
-        background_color = theme.shadow or "rgb(11111b)",
-    },
-})
-```
-
-The mapping is `primary` → `active_border`, `outline` → `inactive_border`, and `shadow` → `background_color`. HyprShell owns the generated `theme.conf` file and calls `hyprctl reload` when these colors change.
-
 ### 4. Verify
 
 Check the required runtime and installed pairing agent separately:
@@ -176,8 +134,7 @@ Body text requests `SF Pro Display`. It is not bundled or installed by `install.
 ## Configuration and storage
 
 - `settings.json` stores the current theme and wallpaper under `${XDG_CONFIG_HOME:-$HOME/.config}/hyprshell/`. It is created on first run and preserved by upgrades.
-- `${XDG_CONFIG_HOME:-$HOME/.config}/hypr/theme.conf` is generated and may be overwritten by HyprShell. The optional snippet above parses it for Hyprland; hyprlock may source it separately.
-- Ghostty synchronization is conditional: when Ghostty is installed, HyprShell updates a marked block in `${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config.ghostty`.
+
 - Wallpapers are read from `$AWWW_WALLPAPERS_DIR`, or `$HOME/Wallpapers` when it is unset. Screenshots go to `$HOME/Pictures/Screenshots`.
 - Cache data is stored under `${XDG_CACHE_HOME:-$HOME/.cache}/hyprshell/`.
 

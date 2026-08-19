@@ -1,6 +1,5 @@
 pragma Singleton
 
-import "policy"
 import QtQuick
 import QtQml
 import Quickshell
@@ -26,36 +25,21 @@ QtObject {
     // Themes are exactly 16 roles. PaletteRoles validates them; nothing is
     // derived, so what a layout paints is what a theme authored.
     readonly property var fallbackRoles: ({
-                                              "catppuccin": PaletteRoles.FALLBACK_PALETTE
-                                          })
+        "catppuccin": PaletteRoles.FALLBACK_PALETTE
+    })
     readonly property var fallbackThemes: PaletteRoles.readPalettes(fallbackRoles)
 
     readonly property var sourceView: FileView {
         path: stockThemes.sourceFile
         printErrors: false
         watchChanges: true
-        onLoaded: {
-            stockThemes.load()
-            stockThemes.startupCoordinator.themeSourceReady = true
-        }
-        onLoadFailed: {
-            stockThemes.themes = stockThemes.fallbackThemes
-            stockThemes.startupCoordinator.themeSourceReady = true
-        }
+        onLoaded: stockThemes.load()
+        onLoadFailed: stockThemes.themes = stockThemes.fallbackThemes
+
         onFileChanged: reload()
     }
 
-    Component.onCompleted: {
-        Colors.palette = themeData
-        startupCoordinator.request(false)
-    }
-    readonly property var startupCoordinator: ThemeStartupCoordinator {
-        currentTheme: stockThemes.currentTheme
-        settingsReady: AppSettings.startupReady
-        onSyncRequested: function (themeId, force) {
-            stockThemes.syncExternalTheme(themeId, force)
-        }
-    }
+    Component.onCompleted: Colors.palette = themeData
 
     function defaultName() {
         return "catppuccin"
@@ -74,59 +58,30 @@ QtObject {
         }, themes[name]))
     }
 
-        function normalizeName(name) {
+    function normalizeName(name) {
         const value = String(name || "").trim().toLowerCase()
         return themes[value] ? value : defaultName()
     }
 
-        function theme(name) {
+    function theme(name) {
         return themes[normalizeName(name)] || fallbackThemes[defaultName()]
     }
 
-        function setTheme(name) {
+    function setTheme(name) {
         const nextTheme = normalizeName(name)
-        const changed = AppSettings.setCurrentTheme(nextTheme)
-        if (!changed)
-        scheduleExternalThemeSync(true)
-        return changed
+        return AppSettings.setCurrentTheme(nextTheme)
     }
 
-        function scheduleExternalThemeSync(force) {
-        startupCoordinator.request(force)
-    }
+    function load() {
+        try {
+            const parsedRoles = JSON.parse(sourceView.text())
+            if (!parsedRoles || !parsedRoles[defaultName()])
+                throw new Error("themes.json must include catppuccin")
 
-        function syncExternalTheme(themeId, force) {
-        const normalizedTheme = normalizeName(themeId)
-        const nextTheme = theme(normalizedTheme)
-        GhosttyTheme.sync(normalizedTheme, force)
-        syncHyprTheme(nextTheme)
-    }
-
-        function syncHyprTheme(nextTheme) {
-        HyprTheme.sync(nextTheme, AppSettings.currentWallpaper, AppTheme.typography.textFontFamily)
-    }
-
-    // theme.conf carries the wallpaper as well as the palette, because the lock
-    // screen shows both. A wallpaper is picked without touching the theme, so
-    // waiting for a theme change would leave the lock screen on the last
-    // wallpaper the theme happened to be changed under.
-    readonly property var wallpaperFollows: Connections {
-        target: AppSettings
-        function onCurrentWallpaperChanged() {
-            stockThemes.syncHyprTheme(stockThemes.themeData)
+            themes = PaletteRoles.readPalettes(parsedRoles)
+        } catch (error) {
+            console.warn(`Failed to load stock themes from ${sourceFile}: ${error}`)
+            themes = fallbackThemes
         }
     }
-
-        function load() {
-        try {
-        const parsedRoles = JSON.parse(sourceView.text())
-        if (!parsedRoles || !parsedRoles[defaultName()])
-        throw new Error("themes.json must include catppuccin")
-
-        themes = PaletteRoles.readPalettes(parsedRoles)
-    } catch (error) {
-        console.warn(`Failed to load stock themes from ${sourceFile}: ${error}`)
-        themes = fallbackThemes
-    }
-    }
-    }
+}

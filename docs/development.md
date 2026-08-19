@@ -69,16 +69,13 @@ scales with the cycles and the noise floor does not.
 
 The QML stages launch the shell for real, which means they do what the shell
 does: `features/statusbar/BarWindow.qml` reserves a layer-shell exclusive zone,
-and `theme/runtime/HyprTheme.qml` runs `hyprctl reload`. Aimed at the compositor
-you are working on, the first relayouts every window and the second makes
-Hyprland re-apply its monitors, binds and window rules — three times per run,
-once for each `qs` process the script starts.
+Aimed at the compositor you are working on, the first relayouts every window —
+three times per run, once for each `qs` process the script starts.
 
 `--isolated` hands those stages a session of their own: a nested Hyprland with a
 private D-Bus bus and private `XDG_*` directories, built by
 `scripts/isolated-session.sh` and configured by `scripts/isolated-hyprland.conf`.
-The exclusive zone is reserved there, the reload lands there, and `theme.conf`
-is written there rather than in `~/.config/hypr`.
+The exclusive zone is reserved there rather than on your desktop.
 
 The nested compositor is one ordinary window of class `aquamarine`, so on a
 tiling setup it retiles the workspace you are on while the suite runs. The
@@ -88,11 +85,11 @@ can match. In the Lua config format:
 
 ```lua
 hl.window_rule({
-	name = "hyprshell-isolated-session",
-	match = { class = "aquamarine" },
-	float = true,
-	no_focus = true,
-	pin = true,
+ name = "hyprshell-isolated-session",
+ match = { class = "aquamarine" },
+ float = true,
+ no_focus = true,
+ pin = true,
 })
 ```
 
